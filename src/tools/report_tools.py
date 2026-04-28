@@ -1,0 +1,1 @@
+# 参照 /mnt/h/DeepResearch/GraphRAG-Neo4j-DeepResearcher/projects/deep_research/v2/tools/report_tool.py 关于报告写作的工具
