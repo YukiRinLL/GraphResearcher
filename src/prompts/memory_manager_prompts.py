@@ -1,4 +1,4 @@
-analyze_content = """Generate a structured analysis of the following content by:
+extract_content = """Generate a structured analysis of the following content by:
 1. Identifying the most salient keywords (focus on nouns, verbs, and key concepts)
 2. Extracting core themes and contextual elements
 3. Creating relevant categorical tags

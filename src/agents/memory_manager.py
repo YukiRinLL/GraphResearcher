@@ -3,12 +3,12 @@ import logging
 from langchain.agents import create_agent
 from langchain.chat_models import init_chat_model
 from memory.graph import GraphManager
-from prompts.memory_manager_prompts import analyze_content
+from prompts.memory_manager_prompts import extract_content
 
 logger = logging.getLogger(__name__)
 
-ANALYZE_CONTENT_SCHEMA = {
-    "title": "ContentAnalysis",
+EXTRACT_CONTENT_SCHEMA = {
+    "title": "ContentExtractionResult",
     "description": "Structured semantic metadata extracted from document content.",
     "type": "object",
     "properties": {
@@ -52,17 +52,18 @@ class MemoryManager:
             max_retries=self.config.get("max_retries", 6),
         )
         self.analysis_model = self.model.with_structured_output(
-            ANALYZE_CONTENT_SCHEMA,
+            EXTRACT_CONTENT_SCHEMA,
             method="json_schema",
             strict=True,
         )
+        
         self.agent = create_agent(
             model=self.model,
         )
         self.graph = GraphManager()
 
-    def analyze_content(self, content: str) -> dict:
-        """Analyze content from document using LLM to extract semantic metadata.
+    def extract_content(self, content: str) -> dict:
+        """Extract semantic metadata from document content using LLM.
 
         Uses a language model to understand the content and extract:
         - Keywords: Important terms and concepts
@@ -72,7 +73,7 @@ class MemoryManager:
         - Summary: Concise summary of the whole document content
 
         Args:
-            content (str): The text content to analyze
+            content (str): The text content to extract
 
         Returns:
             Dict: Contains extracted metadata with keys:
@@ -82,15 +83,28 @@ class MemoryManager:
                 - statement: List[str]
                 - summary: str
         """
-        prompt = analyze_content + content
+        prompt = extract_content + content
         try:
             response = self.analysis_model.invoke(prompt)
             return response
         except Exception:
-            logger.exception("Error occurred while analyzing content")
+            logger.exception("Error occurred while extracting content")
             return {}
-
+        
+    def summary_subgraph(self, node_id: str) -> dict:
+        """
+            Summarize the content of the subgraph of the given node in the knowledge graph.
+        """
+        
     def add_memory(self, content: str, metadata: dict, **kwargs):
-        pass
+        """
+            Add a new memory to the knowledge graph, including content, metadata, and relationships.
+        """
 
-    def 
+    def find_related_nodes(self, content: str, node_type: str, top_k: int = 5) -> list:
+        """
+            Find related nodes in the knowledge graph based on the content and node type, returning the top K most relevant nodes.
+        """
+    
+    def find_nodes_by_keyword(self, keyword: str) -> list:
+        pass
