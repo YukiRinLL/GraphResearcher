@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GraphResearcher 图谱可视化</title>
+    <script src="https://visjs.github.io/vis-network/standalone/umd/vis-network.min.js"></script>
+    <link href="https://visjs.github.io/vis-network/standalone/umd/vis-network.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 15px;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+        .file-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #666;
+        }
+        .main-container {
+            display: flex;
+            height: calc(100vh - 120px);
+        }
+        #graph-container {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.98);
+            margin: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+        .sidebar {
+            width: 350px;
+            background: rgba(255, 255, 255, 0.95);
+            margin: 15px 15px 15px 0;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .sidebar h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+        }
+        .legend-label {
+            color: #666;
+            font-size: 14px;
+        }
+        .node-details {
+            margin-top: 20px;
+        }
+        .node-details h3 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .detail-item {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+        .detail-label {
+            font-weight: 600;
+            color: #555;
+            font-size: 13px;
+        }
+        .detail-value {
+            color: #333;
+            font-size: 14px;
+            margin-top: 4px;
+            word-break: break-word;
+        }
+        .stats {
+            margin-top: 20px;
+        }
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .stat-label {
+            color: #666;
+        }
+        .stat-value {
+            font-weight: 600;
+            color: #667eea;
+        }
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #999;
+            text-align: center;
+        }
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        .filter-section {
+            margin-top: 20px;
+        }
+        .filter-section h3 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .filter-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+        .filter-checkbox input {
+            cursor: pointer;
+        }
+        .filter-checkbox label {
+            color: #666;
+            font-size: 14px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 GraphResearcher 图谱可视化</h1>
+        <div class="controls">
+            <div class="file-input-wrapper">
+                <button class="btn btn-primary">📂 选择图谱文件</button>
+                <input type="file" id="file-input" accept=".jsonl">
+            </div>
+            <span class="file-label" id="file-name">未选择文件</span>
+            <button class="btn btn-secondary" onclick="resetView()">🔄 重置视图</button>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <div id="graph-container"></div>
+        <div class="sidebar">
+            <h2>📋 节点图例</h2>
+            <div id="legend"></div>
+            
+            <div class="filter-section">
+                <h3>🎯 节点筛选</h3>
+                <div id="filters"></div>
+            </div>
+            
+            <div class="stats">
+                <h2>📈 统计信息</h2>
+                <div id="stats"></div>
+            </div>
+            
+            <div class="node-details" id="node-details">
+                <h3>📌 选中节点详情</h3>
+                <div id="details-content" style="color: #999;">点击节点查看详情</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const nodeColors = {
+            'user_request': '#FF6B6B',
+            'query': '#4ECDC4',
+            'search_run': '#45B7D1',
+            'source': '#96CEB4',
+            'document': '#FFEAA7',
+            'statement': '#DDA0DD',
+            'evidence': '#98D8C8',
+            'entity': '#F7DC6F',
+            'conflict': '#E74C3C',
+            'analysis': '#3498DB',
+            'report_section': '#9B59B6'
+        };
+
+        const nodeIcons = {
+            'user_request': '👤',
+            'query': '❓',
+            'search_run': '🔍',
+            'source': '🌐',
+            'document': '📄',
+            'statement': '💬',
+            'evidence': '📋',
+            'entity': '🏷️',
+            'conflict': '⚔️',
+            'analysis': '📊',
+            'report_section': '📑'
+        };
+
+        const edgeColors = {
+            'has_query': '#4ECDC4',
+            'parent_of': '#95a5a6',
+            'searched_by': '#3498db',
+            'found_source': '#2ecc71',
+            'has_document': '#f39c12',
+            'extracted_statement': '#9b59b6',
+            'supported_by': '#27ae60',
+            'contradicted_by': '#e74c3c',
+            'mentions': '#34495e',
+            'related_to': '#7f8c8d',
+            'has_conflict': '#c0392b',
+            'resolves_gap': '#16a085',
+            'uses': '#8e44ad'
+        };
+
+        let network = null;
+        let allNodes = [];
+        let allEdges = [];
+        let visibleNodeTypes = new Set();
+
+        function loadJSONL(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const lines = e.target.result.split('\n').filter(line => line.trim());
+                const nodes = [];
+                const edges = [];
+                const nodeTypes = new Set();
+
+                lines.forEach(line => {
+                    try {
+                        const data = JSON.parse(line);
+                        if (data.kind === 'node') {
+                            nodeTypes.add(data.type);
+                            nodes.push({
+                                id: data.id,
+                                label: getNodeLabel(data),
+                                type: data.type,
+                                color: nodeColors[data.type] || '#999',
+                                shape: 'dot',
+                                size: 25,
+                                data: data
+                            });
+                        } else if (data.kind === 'edge') {
+                            edges.push({
+                                from: data.source,
+                                to: data.target,
+                                label: data.type,
+                                color: edgeColors[data.type] || '#999',
+                                arrows: 'to',
+                                data: data
+                            });
+                        }
+                    } catch (err) {
+                        console.error('解析行失败:', line, err);
+                    }
+                });
+
+                allNodes = nodes;
+                allEdges = edges;
+                visibleNodeTypes = new Set(nodeTypes);
+
+                document.getElementById('file-name').textContent = file.name;
+                updateLegend(nodeTypes);
+                updateFilters(nodeTypes);
+                updateStats(nodes, edges);
+                drawGraph(nodes, edges);
+            };
+            reader.readAsText(file);
+        }
+
+        function getNodeLabel(node) {
+            const maxLen = 20;
+            let text = '';
+            switch (node.type) {
+                case 'user_request': text = node.request; break;
+                case 'query': text = node.text; break;
+                case 'source': text = node.title || node.url; break;
+                case 'document': text = node.text; break;
+                case 'evidence': text = node.claim; break;
+                case 'conflict': text = node.description; break;
+                case 'analysis': text = node.text; break;
+                case 'report_section': text = node.title; break;
+                default: text = node.type;
+            }
+            return text.length > maxLen ? text.substring(0, maxLen) + '...' : text;
+        }
+
+        function drawGraph(nodes, edges) {
+            const container = document.getElementById('graph-container');
+            
+            const nodeDataSet = new vis.DataSet(nodes);
+            const edgeDataSet = new vis.DataSet(edges);
+
+            const data = {
+                nodes: nodeDataSet,
+                edges: edgeDataSet
+            };
+
+            const options = {
+                nodes: {
+                    font: {
+                        size: 12,
+                        color: '#333'
+                    },
+                    borderWidth: 2,
+                    borderWidthSelected: 4,
+                    shadow: true
+                },
+                edges: {
+                    font: {
+                        size: 10,
+                        color: '#666',
+                        strokeWidth: 3,
+                        strokeColor: '#fff'
+                    },
+                    smooth: {
+                        type: 'continuous'
+                    }
+                },
+                physics: {
+                    enabled: true,
+                    barnesHut: {
+                        gravitationalConstant: -3000,
+                        centralGravity: 0.3,
+                        springLength: 150,
+                        springConstant: 0.04
+                    },
+                    stabilization: {
+                        iterations: 100
+                    }
+                },
+                interaction: {
+                    hover: true,
+                    tooltipDelay: 200
+                }
+            };
+
+            if (network) {
+                network.destroy();
+            }
+            network = new vis.Network(container, data, options);
+
+            network.on('click', function(params) {
+                if (params.nodes.length > 0) {
+                    const nodeId = params.nodes[0];
+                    showNodeDetails(nodeId);
+                }
+            });
+        }
+
+        function showNodeDetails(nodeId) {
+            const node = allNodes.find(n => n.id === nodeId);
+            if (!node) return;
+
+            const data = node.data;
+            let html = '';
+            
+            for (const [key, value] of Object.entries(data)) {
+                if (key === 'id' || key === 'kind' || key === 'type') continue;
+                html += `
+                    <div class="detail-item">
+                        <div class="detail-label">${key}</div>
+                        <div class="detail-value">${value}</div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('details-content').innerHTML = html || '<div style="color: #999;">无额外属性</div>';
+        }
+
+        function updateLegend(nodeTypes) {
+            const legend = document.getElementById('legend');
+            let html = '';
+            nodeTypes.forEach(type => {
+                html += `
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: ${nodeColors[type] || '#999'}"></div>
+                        <span class="legend-label">${nodeIcons[type] || ''} ${type}</span>
+                    </div>
+                `;
+            });
+            legend.innerHTML = html;
+        }
+
+        function updateFilters(nodeTypes) {
+            const filters = document.getElementById('filters');
+            let html = '';
+            nodeTypes.forEach(type => {
+                html += `
+                    <div class="filter-checkbox">
+                        <input type="checkbox" id="filter-${type}" checked onchange="toggleNodeType('${type}')">
+                        <label for="filter-${type}">${nodeIcons[type] || ''} ${type}</label>
+                    </div>
+                `;
+            });
+            filters.innerHTML = html;
+        }
+
+        function toggleNodeType(type) {
+            const checkbox = document.getElementById(`filter-${type}`);
+            if (checkbox.checked) {
+                visibleNodeTypes.add(type);
+            } else {
+                visibleNodeTypes.delete(type);
+            }
+            filterGraph();
+        }
+
+        function filterGraph() {
+            const filteredNodes = allNodes.filter(n => visibleNodeTypes.has(n.type));
+            const filteredNodeIds = new Set(filteredNodes.map(n => n.id));
+            const filteredEdges = allEdges.filter(e => 
+                filteredNodeIds.has(e.from) && filteredNodeIds.has(e.to)
+            );
+            drawGraph(filteredNodes, filteredEdges);
+            updateStats(filteredNodes, filteredEdges);
+        }
+
+        function updateStats(nodes, edges) {
+            const stats = document.getElementById('stats');
+            const typeCount = {};
+            nodes.forEach(n => {
+                typeCount[n.type] = (typeCount[n.type] || 0) + 1;
+            });
+
+            let html = `
+                <div class="stat-item">
+                    <span class="stat-label">总节点数</span>
+                    <span class="stat-value">${nodes.length}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">总边数</span>
+                    <span class="stat-value">${edges.length}</span>
+                </div>
+            `;
+
+            for (const [type, count] of Object.entries(typeCount)) {
+                html += `
+                    <div class="stat-item">
+                        <span class="stat-label">${nodeIcons[type] || ''} ${type}</span>
+                        <span class="stat-value">${count}</span>
+                    </div>
+                `;
+            }
+
+            stats.innerHTML = html;
+        }
+
+        function resetView() {
+            if (network) {
+                network.fit();
+            }
+        }
+
+        document.getElementById('file-input').addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                loadJSONL(e.target.files[0]);
+            }
+        });
+    </script>
+</body>
+</html>
