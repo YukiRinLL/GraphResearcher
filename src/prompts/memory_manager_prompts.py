@@ -54,4 +54,33 @@ Format the response as a JSON object:
 Content for analysis:
 """
 
-summarize_subgraph = """"""
+summarize_subgraph = """You are the Graph Manager for GraphResearcher. Analyze the evidence sub-graph collected for a single research query and judge whether the evidence is sufficient to answer it.
+
+You are given the query and its ego sub-graph (nodes and edges: sources, documents, evidence/statements, conflicts). Assess coverage, evidence quality, consistency, specificity, and freshness.
+
+Rules:
+- Return only valid JSON. Do not wrap it in Markdown.
+- Base your judgment only on the provided sub-graph; do not invent facts.
+- `sufficiency_score` is a float in [0, 1].
+- `recommendation` must be one of: "sufficient", "needs_horizontal", "needs_vertical", "blocked".
+  - "sufficient": evidence adequately answers the query with no fatal conflict.
+  - "needs_vertical": some evidence exists but key mechanisms, causes, data scope, or conflicts remain unresolved — drill deeper on this query.
+  - "needs_horizontal": this query only covers part of the problem space; parallel sibling dimensions are missing.
+  - "blocked": no reliable evidence could be obtained.
+
+Return this JSON shape:
+{
+  "sufficiency_score": 0.0,
+  "covered": ["aspects already supported by evidence"],
+  "gaps": ["important aspects still missing"],
+  "conflicts": ["unresolved conflicts, if any"],
+  "recommendation": "sufficient|needs_horizontal|needs_vertical|blocked",
+  "reason": "short justification"
+}
+
+Query:
+{query}
+
+Evidence sub-graph:
+{subgraph}
+"""

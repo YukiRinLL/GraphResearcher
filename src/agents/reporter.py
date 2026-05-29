@@ -1,23 +1,22 @@
-from deepagents import create_deep_agent
+"""Reporter agent — a subagent that writes the report from the graph only.
 
-analyzer = {
-    "name": "analyzer",
-    "description": "Analyzes the search results.",
-    "system_prompt": config.analyzer_system_prompt,
-    "tools": [],
+The Reporter is defined purely by `prompts/reporter.md`. It is a plain
+`SubAgent` spec (no model override; it inherits the Orchestrator's model) with
+the Reporter-facing Graph Manager tools, and is delegated to by the
+Orchestrator via the built-in `task` tool.
+"""
+
+import config
+from tools.graph_manager_tools import REPORTER_TOOLS
+
+reporter = {
+    "name": "reporter",
+    "description": (
+        "Writes the final, citation-bound research report strictly from the "
+        "Research Graph. Reads the exported report context, binds each section "
+        "to the evidence/claims it uses, and returns the full report with "
+        "numbered citations and a references list."
+    ),
+    "system_prompt": config.reporter_system_prompt,
+    "tools": REPORTER_TOOLS,
 }
-
-
-web_searcher = {
-    "name": "web_searcher",
-    "description": "Searches the web for information.",
-    "system_prompt": config.web_searcher_system_prompt,
-    "tools": [web_search],
-}
-
-searcher = create_deep_agent(
-    model=config.orchestrator_model,
-    system_prompt=config.orchestrator_system_prompt,
-    middleware=(),
-    tools=[],
-)
