@@ -94,7 +94,7 @@ FILE_MARKER = {"type": "_graphresearcher", "source": "graph-researcher"}
 def get_default_graph_cache_dir() -> Path:
     if os.environ.get("REPO_BASE_DIR"):
         return Path(os.environ["REPO_BASE_DIR"]) / ".graphresearcher"
-    return Path.home() / ".graphresearcher"
+    return ".graphresearcher"
 
 
 def get_graph_file_path(cache_dir: Path, context: Optional[str] = None) -> Path:
