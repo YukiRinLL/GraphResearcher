@@ -1,13 +1,16 @@
 """GraphResearcher entry point.
 
 Loads environment, assembles the Orchestrator deep agent, and runs a research
-request end to end, streaming progress to the console.
+request end to end. Streams progress to the console while saving the research
+graph, final report, and run log under the output directory.
 
 Usage:
     uv run python main.py "your research request"
-    uv run python main.py            # then type the request when prompted
+    uv run python main.py "request" --max-rounds 8 --output-dir ./out
+    uv run python main.py "request" -r 0     # 0 = no search-round limit
 """
 
+import argparse
 import sys
 from pathlib import Path
 
@@ -32,49 +35,83 @@ from rich.markdown import Markdown  # noqa: E402
 console = Console()
 
 
-def run(request: str) -> None:
-    """Run the research loop for a single request and print the result.
+def run(request: str, output_dir: Path, max_rounds: int) -> None:
+    """Run the research loop for a single request and save the artifacts.
 
     Args:
         request: The user's research request.
+        output_dir: Directory for the research graph, report, and log.
+        max_rounds: Maximum number of Searcher dispatches; 0 means no limit.
     """
+    from tools import graph_manager_tools, middleware
+
+    middleware.configure(max_search_rounds=max_rounds)
+    graph_manager_tools.configure(output_dir=str(output_dir))
+
     from agents.orchestrator import orchestrator
 
-    console.rule("[bold]GraphResearcher")
-    console.print(f"[bold cyan]Request:[/] {request}\n")
+    log_path = output_dir / "run.log"
+    report_path = output_dir / "report.md"
+
+    def emit(line: str) -> None:
+        console.print(line)
+        log_file.write(line + "\n")
+        log_file.flush()
 
     final_text = ""
-    for chunk in orchestrator.stream(
-        {"messages": [{"role": "user", "content": request}]},
-        config={"recursion_limit": 1000},
-        stream_mode="values",
-    ):
-        messages = chunk.get("messages", [])
-        if not messages:
-            continue
-        last = messages[-1]
-        text = getattr(last, "content", "")
-        if isinstance(text, list):
-            text = "".join(p.get("text", "") if isinstance(p, dict) else str(p) for p in text)
-        kind = last.__class__.__name__
-        if text:
-            console.print(f"[dim]{kind}:[/] {text[:500]}")
-            final_text = text
+    with open(log_path, "w", encoding="utf-8") as log_file:
+        emit(f"Request: {request}")
+        emit(f"Output dir: {output_dir} | max search rounds: {max_rounds or 'unlimited'}\n")
+        for chunk in orchestrator.stream(
+            {"messages": [{"role": "user", "content": request}]},
+            config={"recursion_limit": 1000},
+            stream_mode="values",
+        ):
+            messages = chunk.get("messages", [])
+            if not messages:
+                continue
+            last = messages[-1]
+            text = getattr(last, "content", "")
+            if isinstance(text, list):
+                text = "".join(p.get("text", "") if isinstance(p, dict) else str(p) for p in text)
+            if text:
+                emit(f"[{last.__class__.__name__}] {text[:500]}")
+                final_text = text
+
+    report_path.write_text(final_text or "(no report produced)", encoding="utf-8")
 
     console.rule("[bold green]Final Report")
     console.print(Markdown(final_text or "(no report produced)"))
+    console.print(f"\n[dim]Saved: {report_path}, {output_dir / 'research_graph.jsonl'}, {log_path}[/]")
 
 
 def main() -> None:
-    """Parse the request from argv or stdin and run the research loop."""
-    if len(sys.argv) > 1:
-        request = " ".join(sys.argv[1:])
-    else:
-        request = console.input("[bold]Enter your research request:[/] ").strip()
+    """Parse arguments and run the research loop."""
+    parser = argparse.ArgumentParser(description="GraphResearcher — graph-driven deep research agent.")
+    parser.add_argument("request", nargs="*", help="The research request.")
+    parser.add_argument(
+        "-r",
+        "--max-rounds",
+        type=int,
+        default=6,
+        help="Maximum number of Searcher dispatches (search rounds); 0 means no limit. Default: 6.",
+    )
+    parser.add_argument(
+        "-o",
+        "--output-dir",
+        type=Path,
+        default=Path.cwd(),
+        help="Directory for the research graph, report, and log. Default: current directory.",
+    )
+    args = parser.parse_args()
+
+    request = " ".join(args.request).strip() or console.input("[bold]Enter your research request:[/] ").strip()
     if not request:
         console.print("[red]No request provided.[/]")
         return
-    run(request)
+
+    args.output_dir.mkdir(parents=True, exist_ok=True)
+    run(request, args.output_dir, args.max_rounds)
 
 
 if __name__ == "__main__":

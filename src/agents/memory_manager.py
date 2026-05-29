@@ -293,19 +293,29 @@ class MemoryManager:
     # -----------------------------
     # Reporter-facing
     # -----------------------------
-    def export_report_context(self, goal_id: str) -> dict:
+    def export_report_context(self, goal_id: Optional[str] = None) -> dict:
         """Export the full graph context needed to write the report.
 
+        Resolves the research goal from the graph's sole ``user_request`` node
+        when ``goal_id`` is missing or does not match a node, so the report
+        stage works without the caller tracking the exact ID.
+
         Args:
-            goal_id: The ``user_request`` node ID.
+            goal_id: The ``user_request`` node ID; resolved automatically if
+                omitted or unknown.
 
         Returns:
             dict with the goal node, the full sub-graph, and nodes grouped by
             type (``queries``, ``evidence``, ``conflicts``, ``analysis``,
             ``sources``, ``report_sections``).
         """
-        goal = graph_tools.get_node(goal_id, cache_dir=self.cache_dir)
-        subgraph = graph_tools.get_subgraph(goal_id, depth=8, cache_dir=self.cache_dir)
+        goal = graph_tools.get_node(goal_id, cache_dir=self.cache_dir) if goal_id else {}
+        if not goal:
+            requests = graph_tools.search_nodes("user_request", {}, cache_dir=self.cache_dir)
+            if requests:
+                goal = requests[0]
+                goal_id = goal["id"]
+        subgraph = graph_tools.get_subgraph(goal_id, depth=8, cache_dir=self.cache_dir) if goal_id else {"nodes": [], "edges": []}
 
         grouped: dict[str, list[dict]] = {
             "query": [],

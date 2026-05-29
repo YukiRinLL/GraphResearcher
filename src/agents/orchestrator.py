@@ -14,6 +14,7 @@ import config
 from agents.reporter import reporter
 from agents.searcher import searcher
 from tools.graph_manager_tools import ORCHESTRATOR_TOOLS
+from tools.middleware import SearchRoundLimitMiddleware
 
 searcher_subagent = {
     "name": "searcher",
@@ -30,4 +31,5 @@ orchestrator = create_deep_agent(
     system_prompt=config.orchestrator_system_prompt,
     tools=ORCHESTRATOR_TOOLS,
     subagents=[searcher_subagent, reporter],
+    middleware=[SearchRoundLimitMiddleware()],
 )

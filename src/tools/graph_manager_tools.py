@@ -16,13 +16,27 @@ from langchain_core.tools import tool
 from agents.memory_manager import MemoryManager
 
 _manager: Optional[MemoryManager] = None
+_cache_dir: Optional[str] = None
+
+
+def configure(output_dir: Optional[str] = None) -> None:
+    """Set where the Research Graph is stored for the current run.
+
+    Args:
+        output_dir: Directory for the graph file (``<output_dir>/research_graph.jsonl``);
+            ``None`` falls back to the default location. Rebuilds the shared
+            MemoryManager so the new location takes effect.
+    """
+    global _cache_dir, _manager
+    _cache_dir = output_dir
+    _manager = None
 
 
 def _mm() -> MemoryManager:
     """Return the shared MemoryManager, creating it on first use."""
     global _manager
     if _manager is None:
-        _manager = MemoryManager()
+        _manager = MemoryManager(cache_dir=_cache_dir)
     return _manager
 
 
@@ -194,11 +208,12 @@ def submit_search_result(query_id: str, evidence_package: dict) -> dict:
 # Reporter tools
 # -----------------------------
 @tool
-def export_report_context(goal_id: str) -> dict:
+def export_report_context(goal_id: Optional[str] = None) -> dict:
     """Export the graph context needed to write the report.
 
     Args:
-        goal_id: The user-request (research goal) node ID.
+        goal_id: The user-request (research goal) node ID. Optional — resolved
+            automatically from the graph when omitted or unknown.
 
     Returns:
         dict with the goal node, full sub-graph, and nodes grouped by type
