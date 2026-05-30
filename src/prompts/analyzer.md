@@ -14,4 +14,4 @@
 - 来源仅为低质（博客/论坛/转载/无作者无日期）时，降低 confidence 并在 limitations 中说明。
 
 # 返回给主代理
-返回结构化的抽取结果：每条 claim/evidence 绑定其来源，附 confidence、qualifiers、supports_or_contradicts，以及冲突候选、覆盖情况、剩余缺口。剩余缺口是交给 Orchestrator 判断的信息，不是触发再次检索的信号。由 Searcher 主代理负责按 Graph Manager 工具 schema 组装并提交。
+返回结构化的抽取结果：每个来源保留 web_searcher 给出的真实 url 与 title，每条 claim/evidence 绑定其来源，附 confidence、qualifiers、supports_or_contradicts，以及冲突候选、覆盖情况、剩余缺口。剩余缺口是交给 Orchestrator 判断的信息，不是触发再次检索的信号。由 Searcher 主代理负责按 Graph Manager 工具 schema 组装并提交。

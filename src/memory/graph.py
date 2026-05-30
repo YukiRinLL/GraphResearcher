@@ -187,13 +187,13 @@ class GraphManager:
         file_path = get_graph_file_path(self._cache_dir, self._context)
         file_path.parent.mkdir(parents=True, exist_ok=True)
 
-        lines = [json.dumps(FILE_MARKER)]
+        lines = [json.dumps(FILE_MARKER, ensure_ascii=False)]
 
         for node in self._nodes.values():
-            lines.append(json.dumps({"kind": "node", **node.to_dict()}))
+            lines.append(json.dumps({"kind": "node", **node.to_dict()}, ensure_ascii=False))
 
         for edge in self._edges:
-            lines.append(json.dumps({"kind": "edge", **edge.to_dict()}))
+            lines.append(json.dumps({"kind": "edge", **edge.to_dict()}, ensure_ascii=False))
 
         with open(file_path, 'w', encoding='utf-8') as f:
             for line in lines:

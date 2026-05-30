@@ -9,12 +9,18 @@ sub-agents via the built-in `task` tool:
 """
 
 from deepagents import create_deep_agent
+from langchain.agents.middleware import ModelRetryMiddleware
 
 import config
 from agents.reporter import reporter
 from agents.searcher import searcher
 from tools.graph_manager_tools import ORCHESTRATOR_TOOLS
-from tools.middleware import SearchRoundLimitMiddleware
+from tools.middleware import (
+    EmptyResponseRetryMiddleware,
+    ReportValidationMiddleware,
+    SearchRoundLimitMiddleware,
+    SensitiveWordsRetryMiddleware,
+)
 
 searcher_subagent = {
     "name": "searcher",
@@ -31,5 +37,11 @@ orchestrator = create_deep_agent(
     system_prompt=config.orchestrator_system_prompt,
     tools=ORCHESTRATOR_TOOLS,
     subagents=[searcher_subagent, reporter],
-    middleware=[SearchRoundLimitMiddleware()],
+    middleware=[
+        SearchRoundLimitMiddleware(),
+        ReportValidationMiddleware(),
+        EmptyResponseRetryMiddleware(),
+        SensitiveWordsRetryMiddleware(),
+        ModelRetryMiddleware(),
+    ],
 )

@@ -5,6 +5,9 @@ A structured deep research agent framework built on LangChain Deep Agents.Levera
 
 Run a research request end to end. The run streams progress to the console and
 saves the research graph, final report, and run log under the output directory.
+`run.log` mirrors **all** console output for the run — streamed progress, the
+final report, Python `logging`, warnings, and any exception traceback — so a
+failed run is fully diagnosable from the log.
 
 ```bash
 uv run python main.py "your research request"

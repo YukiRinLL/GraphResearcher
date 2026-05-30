@@ -49,6 +49,27 @@ def _parse_json(text: str) -> dict:
         return {}
 
 
+def _first(d: dict, *keys: str) -> Optional[Any]:
+    """Return the first non-empty value among ``keys`` in ``d``.
+
+    Lets the evidence-package reader accept several field-name variants the
+    Searcher/analyzer may emit (e.g. ``summary_zh`` vs ``document_summary``)
+    without the writer dropping content on a field-name mismatch.
+
+    Args:
+        d: The mapping to read from.
+        *keys: Candidate keys, in priority order.
+
+    Returns:
+        The first value that is present and truthy, or ``None``.
+    """
+    for key in keys:
+        value = d.get(key)
+        if value:
+            return value
+    return None
+
+
 class MemoryManager:
     """LLM-powered manager of the Research Graph."""
 
@@ -192,6 +213,38 @@ class MemoryManager:
     # -----------------------------
     # Searcher-facing
     # -----------------------------
+    def _resolve_query_id(self, query_id: str) -> Optional[str]:
+        """Map a possibly-mangled query reference to a real ``query`` node ID.
+
+        The Orchestrator sometimes passes a truncated ID (the ``_<uuid8>``
+        suffix dropped) or a human label instead of the exact node ID, which
+        would orphan the search run from the goal. This recovers the real ID by,
+        in order: an exact node hit, a prefix match against existing query node
+        IDs, and an exact/contained text match.
+
+        Args:
+            query_id: The (possibly mangled) query reference from the caller.
+
+        Returns:
+            The matching ``query`` node ID, or ``None`` if nothing matches.
+        """
+        if not query_id:
+            return None
+        node = graph_tools.get_node(query_id, cache_dir=self.cache_dir)
+        if node and node.get("type") == "query":
+            return query_id
+
+        queries = graph_tools.search_nodes("query", {}, cache_dir=self.cache_dir)
+        for q in queries:
+            qid = q.get("id", "")
+            if qid.startswith(query_id) or query_id.startswith(qid):
+                return qid
+        for q in queries:
+            text = q.get("text") or ""
+            if text and (text == query_id or query_id in text or text in query_id):
+                return q.get("id")
+        return None
+
     def get_query_context(self, query_id: str) -> dict:
         """Return existing context for a query to avoid duplicate searching.
 
@@ -201,10 +254,11 @@ class MemoryManager:
         Returns:
             dict with the ``query`` node and its ``existing_subgraph``.
         """
+        resolved = self._resolve_query_id(query_id) or query_id
         return {
-            "query": graph_tools.get_node(query_id, cache_dir=self.cache_dir),
+            "query": graph_tools.get_node(resolved, cache_dir=self.cache_dir),
             "existing_subgraph": graph_tools.get_query_subgraph(
-                query_id, depth=4, cache_dir=self.cache_dir
+                resolved, depth=4, cache_dir=self.cache_dir
             ),
         }
 
@@ -232,14 +286,27 @@ class MemoryManager:
                 return None
             return ref_map.get(ref, ref)
 
-        run_id = graph_tools.add_node("search_run", {"query_id": query_id}, cache_dir=self.cache_dir)
-        graph_tools.add_edge(query_id, run_id, "searched_by", cache_dir=self.cache_dir)
+        # Recover the real query node ID; the Orchestrator may pass a truncated
+        # ID or a label, which would otherwise orphan this run from the goal.
+        resolved_query_id = self._resolve_query_id(query_id)
+        warning = None
+        if resolved_query_id is None:
+            warning = (
+                f"query_id {query_id!r} 未能匹配到任何 query 节点，本次搜索结果可能与研究目标失联；"
+                "请用 init_research 返回的精确 query 节点 ID 重新派发。"
+            )
+            resolved_query_id = query_id
+
+        run_id = graph_tools.add_node(
+            "search_run", {"query_id": resolved_query_id}, cache_dir=self.cache_dir
+        )
+        graph_tools.add_edge(resolved_query_id, run_id, "searched_by", cache_dir=self.cache_dir)
 
         for source in evidence_package.get("sources", []) or []:
             source_id = graph_tools.create_source(
-                url=source.get("url", ""),
-                title=source.get("title"),
-                source_type=source.get("source_type"),
+                url=_first(source, "url") or "",
+                title=_first(source, "title"),
+                source_type=_first(source, "source_type", "type"),
                 cache_dir=self.cache_dir,
             )
             if source.get("local_ref"):
@@ -248,8 +315,8 @@ class MemoryManager:
 
         for document in evidence_package.get("documents", []) or []:
             doc_id = graph_tools.create_document(
-                text=document.get("document_summary", ""),
-                source_id=resolve(document.get("source_ref")),
+                text=_first(document, "document_summary", "summary_zh", "summary", "text", "content") or "",
+                source_id=resolve(_first(document, "source_ref", "source")),
                 cache_dir=self.cache_dir,
             )
             if document.get("local_ref"):
@@ -257,29 +324,35 @@ class MemoryManager:
 
         # Claims and evidence both become evidence nodes carrying the assertion.
         for item in (evidence_package.get("claims", []) or []) + (evidence_package.get("evidence", []) or []):
-            claim_text = item.get("statement") or item.get("evidence_text") or ""
+            claim_text = _first(item, "statement", "evidence_text", "text_zh", "text")
             if not claim_text:
                 continue
+            doc_ref = _first(item, "document_ref", "document")
+            sources_ref = item.get("sources") or item.get("document_refs")
+            if not doc_ref and isinstance(sources_ref, list) and sources_ref:
+                doc_ref = sources_ref[0]
             evidence_id = graph_tools.create_evidence(
                 claim=claim_text,
-                document_id=resolve(item.get("document_ref")),
-                source_id=resolve(item.get("source_ref")),
+                document_id=resolve(doc_ref),
+                source_id=resolve(_first(item, "source_ref", "source")),
                 cache_dir=self.cache_dir,
             )
             if item.get("local_ref"):
                 ref_map[item["local_ref"]] = evidence_id
 
         for conflict in evidence_package.get("conflicts", []) or []:
-            evidence_ids = [resolve(r) for r in conflict.get("evidence_refs", []) or [] if resolve(r)]
+            refs = conflict.get("evidence_refs") or conflict.get("related_claims") or []
+            evidence_ids = [resolve(r) for r in refs if resolve(r)]
             graph_tools.create_conflict(
-                description=conflict.get("description", ""),
+                description=_first(conflict, "description", "description_zh") or "",
                 evidence_ids=evidence_ids,
                 cache_dir=self.cache_dir,
             )
 
         graph_tools.save_graph(cache_dir=self.cache_dir)
-        return {
+        result = {
             "search_run_id": run_id,
+            "query_id": resolved_query_id,
             "ref_map": ref_map,
             "written": {
                 "sources": len(evidence_package.get("sources", []) or []),
@@ -289,6 +362,9 @@ class MemoryManager:
                 "conflicts": len(evidence_package.get("conflicts", []) or []),
             },
         }
+        if warning:
+            result["warning"] = warning
+        return result
 
     # -----------------------------
     # Reporter-facing

@@ -19,7 +19,9 @@ Usage:
 
 import argparse
 import logging
+import re
 import sys
+import traceback
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -41,6 +43,49 @@ from rich.console import Console  # noqa: E402  (import after sys.path setup)
 from rich.markdown import Markdown  # noqa: E402
 
 console = Console()
+
+_ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[ -/]*[@-~]")
+
+
+class _Tee:
+    """Mirror a text stream to a log file (ANSI-stripped) while passing through.
+
+    Wrapping ``sys.stdout``/``sys.stderr`` with this captures *everything* the
+    process prints — rich output, ``logging``, warnings, and tracebacks — into
+    the run log, while the terminal still gets the original (colored) stream.
+    ``isatty``/``fileno`` proxy to the wrapped stream so rich keeps the real
+    terminal's width and color.
+    """
+
+    def __init__(self, stream: object, log_file: object) -> None:
+        """Wrap ``stream`` and tee writes into ``log_file``."""
+        self._stream = stream
+        self._log = log_file
+
+    def write(self, data: str) -> int:
+        """Write to the terminal stream and an ANSI-stripped copy to the log."""
+        self._stream.write(data)
+        self._log.write(_ANSI_RE.sub("", data))
+        self._log.flush()
+        return len(data)
+
+    def flush(self) -> None:
+        """Flush both the terminal stream and the log file."""
+        self._stream.flush()
+        self._log.flush()
+
+    def isatty(self) -> bool:
+        """Proxy ``isatty`` so rich detects the real terminal."""
+        return self._stream.isatty()
+
+    def fileno(self) -> int:
+        """Proxy ``fileno`` so rich can read the real terminal size."""
+        return self._stream.fileno()
+
+    def __getattr__(self, name: str) -> object:
+        """Delegate any other attribute to the wrapped stream."""
+        return getattr(self._stream, name)
+
 
 # Verbosity presets. Each maps to defaults for the four low-level log knobs;
 # any explicit override flag wins over the preset value.
@@ -95,16 +140,6 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
         max_rounds: Maximum number of Searcher dispatches; 0 means no limit.
         opts: Resolved logging options from :func:`resolve_log_options`.
     """
-    if opts["log_level"] != "NONE":
-        logging.basicConfig(level=getattr(logging, opts["log_level"]))
-
-    from tools import graph_manager_tools, middleware
-
-    middleware.configure(max_search_rounds=max_rounds)
-    graph_manager_tools.configure(output_dir=str(output_dir))
-
-    from agents.orchestrator import orchestrator
-
     log_path = output_dir / "run.log"
     report_path = output_dir / "report.md"
 
@@ -113,9 +148,9 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
     stream_progress = opts["stream"]
 
     def emit(line: str) -> None:
-        console.print(line)
-        log_file.write(line + "\n")
-        log_file.flush()
+        # markup=False / highlight=False: message text contains literal "[...]"
+        # tags; the _Tee on sys.stdout mirrors this into the log file.
+        console.print(line, markup=False, highlight=False)
 
     def clip(text: str) -> str:
         return text[:truncate] if truncate and len(text) > truncate else text
@@ -134,46 +169,95 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
         if text:
             emit(f"{prefix}[{kind}] {clip(text)}")
 
+    def assemble_report_from_graph() -> str:
+        """Build the report from the graph's ``report_section`` nodes.
+
+        The graph is the single source of truth for the report: the Reporter
+        writes one ``report_section`` node per section. Concatenate them in
+        write order (node IDs are ``<timestamp>_<uuid>`` so lexicographic sort
+        is chronological). Returns ``""`` when no sections exist (e.g. the
+        simple-answer path that skips Stage 3), so the caller can fall back.
+        """
+        try:
+            from tools import graph_tools
+
+            sections = graph_tools.search_nodes("report_section", {}, cache_dir=str(output_dir))
+        except Exception:
+            return ""
+        if not sections:
+            return ""
+        parts = []
+        for node in sorted(sections, key=lambda n: n.get("id", "")):
+            title = (node.get("title") or "").strip()
+            content = (node.get("content") or "").strip()
+            if title and content:
+                parts.append(f"## {title}\n\n{content}")
+            elif title or content:
+                parts.append(title or content)
+        return "\n\n".join(parts).strip()
+
     final_text = ""
+    orig_stdout, orig_stderr = sys.stdout, sys.stderr
+    # Tee stdout+stderr into run.log so EVERYTHING printed — rich output,
+    # logging, warnings, and tracebacks — is captured, not just emitted lines.
     with open(log_path, "w", encoding="utf-8") as log_file:
-        emit(f"Request: {request}")
-        emit(f"Output dir: {output_dir} | max search rounds: {max_rounds or 'unlimited'}\n")
+        sys.stdout = _Tee(orig_stdout, log_file)
+        sys.stderr = _Tee(orig_stderr, log_file)
+        try:
+            if opts["log_level"] != "NONE":
+                logging.basicConfig(level=getattr(logging, opts["log_level"]))
 
-        stream_kwargs = {"config": {"recursion_limit": 1000}, "stream_mode": "values"}
-        if opts["subgraphs"]:
-            stream_kwargs["subgraphs"] = True
+            from tools import graph_manager_tools, middleware
 
-        # In "values" mode each chunk is the full state snapshot; track how many
-        # messages we have already printed so we surface every new one, not just
-        # the last of each superstep.
-        seen_by_ns: dict[tuple, int] = {}
-        for chunk in orchestrator.stream({"messages": [{"role": "user", "content": request}]}, **stream_kwargs):
-            namespace: tuple = ()
+            middleware.configure(max_search_rounds=max_rounds)
+            graph_manager_tools.configure(output_dir=str(output_dir))
+
+            from agents.orchestrator import orchestrator
+
+            emit(f"Request: {request}")
+            emit(f"Output dir: {output_dir} | max search rounds: {max_rounds or 'unlimited'}\n")
+
+            stream_kwargs = {"config": {"recursion_limit": 1000}, "stream_mode": "values"}
             if opts["subgraphs"]:
-                namespace, chunk = chunk
-            messages = chunk.get("messages", []) if isinstance(chunk, dict) else []
-            if not messages:
-                continue
+                stream_kwargs["subgraphs"] = True
 
-            # Always capture the latest text as the running report candidate.
-            last_text = _content_text(messages[-1])
-            if last_text:
-                final_text = last_text
+            # In "values" mode each chunk is the full state snapshot; track how
+            # many messages we have already printed so we surface every new one,
+            # not just the last of each superstep.
+            seen_by_ns: dict[tuple, int] = {}
+            for chunk in orchestrator.stream({"messages": [{"role": "user", "content": request}]}, **stream_kwargs):
+                namespace: tuple = ()
+                if opts["subgraphs"]:
+                    namespace, chunk = chunk
+                messages = chunk.get("messages", []) if isinstance(chunk, dict) else []
+                if not messages:
+                    continue
 
-            if not stream_progress:
-                continue
+                # Always capture the latest text as the running report candidate.
+                last_text = _content_text(messages[-1])
+                if last_text:
+                    final_text = last_text
 
-            prefix = f"[{'/'.join(namespace)}] " if namespace else ""
-            start = seen_by_ns.get(namespace, 0)
-            for message in messages[start:]:
-                emit_message(message, prefix)
-            seen_by_ns[namespace] = len(messages)
+                if not stream_progress:
+                    continue
 
-    report_path.write_text(final_text or "(no report produced)", encoding="utf-8")
-
-    console.rule("[bold green]Final Report")
-    console.print(Markdown(final_text or "(no report produced)"))
-    console.print(f"\n[dim]Saved: {report_path}, {output_dir / 'research_graph.jsonl'}, {log_path}[/]")
+                prefix = f"[{'/'.join(namespace)}] " if namespace else ""
+                start = seen_by_ns.get(namespace, 0)
+                for message in messages[start:]:
+                    emit_message(message, prefix)
+                seen_by_ns[namespace] = len(messages)
+        except Exception:
+            console.print("[red]Run failed with an exception (captured in run.log):[/]")
+            console.print(traceback.format_exc(), markup=False, highlight=False)
+        finally:
+            # The graph's report_section nodes are the report's source of truth;
+            # fall back to the last streamed message only when none were written.
+            report_text = assemble_report_from_graph() or final_text or "(no report produced)"
+            report_path.write_text(report_text, encoding="utf-8")
+            console.rule("[bold green]Final Report")
+            console.print(Markdown(report_text))
+            console.print(f"\n[dim]Saved: {report_path}, {output_dir / 'research_graph.jsonl'}, {log_path}[/]")
+            sys.stdout, sys.stderr = orig_stdout, orig_stderr
 
 
 def main() -> None:

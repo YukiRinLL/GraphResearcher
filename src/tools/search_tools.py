@@ -14,6 +14,9 @@ from tavily import TavilyClient
 
 _tavily_client: Optional[TavilyClient] = None
 
+# Cap per-result raw page text returned to the agent (chars).
+_MAX_RAW_CONTENT_CHARS = 4000
+
 SERPER_ENDPOINTS = {
     "general": "https://google.serper.dev/search",
     "news": "https://google.serper.dev/news",
@@ -66,7 +69,14 @@ def serper_search(
             json={"q": query, "num": max_results},
             timeout=30,
         )
-        response.raise_for_status()
+        if response.status_code >= 400:
+            # Surface Serper's own message (e.g. "Not enough credits") rather than a bare HTTP code.
+            return {
+                "error": f"HTTP {response.status_code}: {response.text[:200]}",
+                "query": query,
+                "results": [],
+                "note": "Serper search failed (see error). The alternate engine will be tried.",
+            }
         data = response.json()
         items = data.get("news") if topic == "news" else data.get("organic")
         results = [
@@ -78,13 +88,16 @@ def serper_search(
             }
             for item in (items or [])[:max_results]
         ]
-        return {"query": query, "results": results, "raw": data}
+        # Return only the normalized results; echoing the full raw Serper
+        # response back into the conversation bloats context and enlarges the
+        # surface that the proxy's content filter can trip on.
+        return {"query": query, "results": results}
     except Exception as e:  # noqa: BLE001 — surface any search failure as data, not a crash
         return {
             "error": f"{type(e).__name__}: {e}",
             "query": query,
             "results": [],
-            "note": "Search failed (e.g. rate limit or network). Try fewer/slower queries, or proceed with evidence already collected.",
+            "note": "Search request failed (see error for the exact cause). Try the alternate engine, adjust the query, or proceed with evidence already collected.",
         }
 
 
@@ -109,16 +122,24 @@ def tavily_search(
         of crashing the whole run.
     """
     try:
-        return _client().search(
+        response = _client().search(
             query,
             max_results=max_results,
             include_raw_content=include_raw_content,
             topic=topic,
         )
+        # Cap per-result raw page text so a few long pages don't flood the
+        # conversation (context bloat + larger content-filter surface).
+        if include_raw_content and isinstance(response, dict):
+            for item in response.get("results", []) or []:
+                raw = item.get("raw_content")
+                if isinstance(raw, str) and len(raw) > _MAX_RAW_CONTENT_CHARS:
+                    item["raw_content"] = raw[:_MAX_RAW_CONTENT_CHARS] + "…(truncated)"
+        return response
     except Exception as e:  # noqa: BLE001 — surface any search failure as data, not a crash
         return {
             "error": f"{type(e).__name__}: {e}",
             "query": query,
             "results": [],
-            "note": "Search failed (e.g. rate limit or network). Try fewer/slower queries, or proceed with evidence already collected.",
+            "note": "Search request failed (see error for the exact cause). Try the alternate engine, adjust the query, or proceed with evidence already collected.",
         }

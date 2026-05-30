@@ -8,16 +8,23 @@ evidence package to the Research Graph via the Graph Manager tools.
 """
 
 from deepagents import create_deep_agent
+from langchain.agents.middleware import ModelRetryMiddleware
 
 import config
 from tools.graph_manager_tools import SEARCHER_TOOLS
+from tools.middleware import (
+    EmptyResponseRetryMiddleware,
+    SearchFallbackMiddleware,
+    SensitiveWordsRetryMiddleware,
+)
 from tools.search_tools import serper_search, tavily_search
 
 web_searcher = {
     "name": "web_searcher",
     "description": "Runs web searches and reads page content; returns raw, traceable source material.",
     "system_prompt": config.web_searcher_system_prompt,
-    "tools": [serper_search, tavily_search],
+    "tools": [tavily_search, serper_search],
+    "middleware": [SearchFallbackMiddleware()],
 }
 
 analyzer = {
@@ -32,4 +39,5 @@ searcher = create_deep_agent(
     system_prompt=config.searcher_system_prompt,
     tools=SEARCHER_TOOLS,
     subagents=[web_searcher, analyzer],
+    middleware=[EmptyResponseRetryMiddleware(), SensitiveWordsRetryMiddleware(), ModelRetryMiddleware()],
 )
