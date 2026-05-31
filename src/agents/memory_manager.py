@@ -49,6 +49,28 @@ def _parse_json(text: str) -> dict:
         return {}
 
 
+# Internal scheduling/bookkeeping fields that the Orchestrator uses to drive the
+# research loop but that must never leak into the Reporter's writing context —
+# otherwise the model narrates graph state (e.g. "this query is blocked").
+_INTERNAL_NODE_FIELDS = ("kind", "status", "sufficiency_score")
+
+
+def _strip_internal_fields(node: dict) -> dict:
+    """Return a copy of a node dict without internal scheduling fields.
+
+    Keeps ``id``, ``type`` and all content fields (``text`` / ``claim`` /
+    ``url`` / ``title`` / ``content`` / ...) so citations and section binding
+    still work; drops the bookkeeping fields in ``_INTERNAL_NODE_FIELDS``.
+
+    Args:
+        node: A node dict as returned by the graph toolkit.
+
+    Returns:
+        A cleaned shallow copy (the graph is not modified).
+    """
+    return {k: v for k, v in node.items() if k not in _INTERNAL_NODE_FIELDS}
+
+
 def _first(d: dict, *keys: str) -> Optional[Any]:
     """Return the first non-empty value among ``keys`` in ``d``.
 
@@ -393,7 +415,15 @@ class MemoryManager:
             if requests:
                 goal = requests[0]
                 goal_id = goal["id"]
-        subgraph = graph_tools.get_subgraph(goal_id, depth=8, cache_dir=self.cache_dir) if goal_id else {"nodes": [], "edges": []}
+        raw_subgraph = graph_tools.get_subgraph(goal_id, depth=8, cache_dir=self.cache_dir) if goal_id else {"nodes": [], "edges": []}
+
+        # Strip internal scheduling fields from every node before they reach the
+        # Reporter, so the writing context carries content only (not graph state).
+        goal = _strip_internal_fields(goal) if goal else goal
+        subgraph = {
+            "nodes": [_strip_internal_fields(n) for n in raw_subgraph.get("nodes", [])],
+            "edges": raw_subgraph.get("edges", []),
+        }
 
         grouped: dict[str, list[dict]] = {
             "query": [],
@@ -403,7 +433,7 @@ class MemoryManager:
             "source": [],
             "report_section": [],
         }
-        for node in subgraph.get("nodes", []):
+        for node in subgraph["nodes"]:
             node_type = node.get("type")
             if node_type in grouped:
                 grouped[node_type].append(node)
