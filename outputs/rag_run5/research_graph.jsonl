@@ -1,0 +1,450 @@
+{"type": "_graphresearcher", "source": "graph-researcher"}
+{"kind": "node", "id": "20260531215324262446_1a206374", "type": "user_request", "request": "整理截至当前日期（2026-05-31）全球具身智能（embodied intelligence）发展的主要技术路线，并对各路线代表性公司做对比：其技术路径、产品/研发进度、商业化进度、融资情况、团队/关键人物情况。输出为中文研究报告，面向产业从业者与投资人。默认时间窗口：近5年为主，必要时追溯关键里程碑。", "research_goal": "整理截至2026-05-31全球具身智能（embodied intelligence）发展的主要技术路线，并对各路线代表性公司进行对比分析（技术路径、产品/研发进度、商业化进度、融资情况、团队/关键人物），形成面向产业从业者与投资人的中文研究报告（近5年为主，必要时追溯关键里程碑）。", "language": "中文"}
+{"kind": "node", "id": "20260531215324271558_d0f44c73", "type": "query", "text": "截至2026-05-31，全球具身智能的主要技术路线有哪些（按机器人形态/任务、学习范式、模型架构与训练数据/仿真、系统工程栈等维度分类）？各路线关键里程碑与近5年演进趋势是什么？", "status": "pending"}
+{"kind": "node", "id": "20260531215324287307_672d135d", "type": "query", "text": "通用人形/通用机器人路线：筛选全球代表性公司名单（含中美欧等），并收集对比其技术路径（端到端/模块化、VLA/VLM/世界模型/强化学习/模仿学习等）、硬件平台与传感器/执行器方案、软件栈与数据策略。", "status": "pending"}
+{"kind": "node", "id": "20260531215324301052_df2fc2c3", "type": "query", "text": "仓储物流/工业移动操作（AMR+机械臂、拣选/搬运/装配等）具身智能路线：代表性公司与产品落地场景梳理；对比其产品/研发进度、客户与部署规模、商业模式与收入线索。", "status": "pending"}
+{"kind": "node", "id": "20260531215324314297_6d51c9bb", "type": "query", "text": "家用/服务机器人（清洁、陪护、餐饮零售等）具身智能路线：代表性公司与核心能力（导航、操作、对话、任务规划等）对比；商业化进度与区域市场差异（中美欧日等）。", "status": "pending"}
+{"kind": "node", "id": "20260531215324329583_c6566502", "type": "query", "text": "具身智能关键使能技术与平台路线：围绕VLA/VLM、世界模型、仿真与合成数据、遥操作/数据采集、机器人操作系统与开发平台（含开源）等，梳理主要技术提供方/平台公司及其产品化与生态合作进展。", "status": "pending"}
+{"kind": "node", "id": "20260531215324343106_6bc0d438", "type": "query", "text": "代表性公司投融资与团队画像对比：近5年主要融资事件（轮次、金额区间、投资方、估值线索）、并购/战略合作；核心团队与关键人物背景（学术/产业经历）、组织与人才流动趋势。", "status": "pending"}
+{"kind": "node", "id": "20260531215617066627_849ee0c1", "type": "search_run", "query_id": "20260531215324287307_672d135d"}
+{"kind": "node", "id": "20260531215617086806_405884e8", "type": "source", "url": "https://bostondynamics.com/blog/electric-new-era-for-atlas/", "title": "An Electric New Era for Atlas", "source_type": "blog"}
+{"kind": "node", "id": "20260531215617101306_e7d934de", "type": "source", "url": "https://www.fftai.com/products-gr1", "title": "Fourier GR-1 - FOURIER-Robotics", "source_type": "other"}
+{"kind": "node", "id": "20260531215617115283_d864e0af", "type": "source", "url": "https://fftai.com/uploads/upload/files/20240925/a81ec73e48d9f8046b5b673601075e8d.pdf", "title": "[PDF] Fourier GR-1", "source_type": "report"}
+{"kind": "node", "id": "20260531215617130451_ec8c04ae", "type": "source", "url": "https://techcrunch.com/2025/02/25/apptroniks-humanoid-robots-take-the-first-steps-toward-building-themselves/", "title": "Apptronik’s humanoid robots take the first steps toward building themselves", "source_type": "news"}
+{"kind": "node", "id": "20260531215617145335_8ca67b6f", "type": "source", "url": "https://www.bizjournals.com/austin/news/2026/02/11/apptronik-austin-robotics-startup-adds-millions.html", "title": "Apptronik secures $520M from Mercedes-Benz, John Deere and Qatar Investment Authority", "source_type": "news"}
+{"kind": "node", "id": "20260531215617159172_49a7503f", "type": "document", "text": "Boston Dynamics 在官方博客中宣布退役液压版 Atlas，并发布“fully electric Atlas”。文章表示电驱 Atlas 将更强壮、运动范围更广，并将探索多种夹爪（gripper variations）以适配客户环境的操作需求。商业化与试点路径方面，文中称合作将从 Hyundai 开始，并表示会像 Stretch 一样先与小范围创新客户合作迭代 Atlas 的应用。", "source_id": "20260531215617086806_405884e8"}
+{"kind": "node", "id": "20260531215617172025_1ee94819", "type": "document", "text": "Fourier Intelligence 官网的 GR-1 产品介绍页（当前仅有检索摘要线索）被描述为 GR-1 的官方规格/能力说明入口；摘要线索显示页面包含“Powered by LLM”等表述。由于未读取到页面原文具体段落，当前无法确认其具体规格、传感器/执行器参数或量产/交付信息。", "source_id": "20260531215617101306_e7d934de"}
+{"kind": "node", "id": "20260531215617185185_c8bc84fc", "type": "document", "text": "Fourier Intelligence 发布的 GR-1 PDF 资料（2024-09-25；当前 raw_content 获取失败，仅有检索摘要线索）据称提及 Fourier 的 Smart Actuator (FSA) 将 motor/driver/reducer/encoder 集成为单一模块，为 GR-1 提供动力与控制。由于未能读取 PDF 原文，无法进一步核对扭矩、自由度、速度、负载等具体参数与口径。", "source_id": "20260531215617115283_d864e0af"}
+{"kind": "node", "id": "20260531215617198886_2fa96972", "type": "document", "text": "TechCrunch 报道（当前仅有检索摘要线索，未读取到正文原文）称 Apptronik 宣布与美国制造/供应链公司 Jabil 建立新的试点合作伙伴关系。摘要未提供试点范围、时间线、Apollo 机型配置或商业条款细节。", "source_id": "20260531215617130451_ec8c04ae"}
+{"kind": "node", "id": "20260531215617216174_f2002b14", "type": "document", "text": "Austin Business Journal 报道（当前仅有检索摘要线索，未读取到正文原文）称 Apptronik 在 2026-02-11 披露获得 5.2 亿美元融资，摘要提及投资方包括 Mercedes-Benz、John Deere、Qatar Investment Authority 等。由于未读取正文，无法确认轮次/融资结构、领投方、估值、资金用途等细节与原话表述。", "source_id": "20260531215617145335_8ca67b6f"}
+{"kind": "node", "id": "20260531215617232253_9f8f711e", "type": "evidence", "claim": "Boston Dynamics 已宣布退役液压版 Atlas，并发布 fully electric Atlas。", "status": "pending"}
+{"kind": "node", "id": "20260531215617252672_1d53a810", "type": "evidence", "claim": "Boston Dynamics 表示电驱 Atlas 将比以往更强壮（stronger）且具有更广的运动范围（broader range of motion）。", "status": "pending"}
+{"kind": "node", "id": "20260531215617272958_9ad6e647", "type": "evidence", "claim": "Boston Dynamics 表示将探索多种夹爪（gripper variations）以适配客户环境中的操作需求。", "status": "pending"}
+{"kind": "node", "id": "20260531215617293134_970355e1", "type": "evidence", "claim": "Boston Dynamics 表示其 Atlas 的合作/试点将从 Hyundai 开始，并将先与小范围创新客户合作迭代应用（类似 Stretch 的商业化路径）。", "status": "pending"}
+{"kind": "node", "id": "20260531215617312800_d1b38e12", "type": "evidence", "claim": "Fourier Intelligence 的 GR-1 官方产品页包含“Powered by LLM”等表述。", "status": "pending"}
+{"kind": "node", "id": "20260531215617333666_8848c263", "type": "evidence", "claim": "Fourier Intelligence 的 GR-1 资料中提到 Smart Actuator (FSA) 将 motor/driver/reducer/encoder 集成为单一模块，用于为 GR-1 提供动力与控制。", "status": "pending"}
+{"kind": "node", "id": "20260531215617356476_e201ce56", "type": "evidence", "claim": "Apptronik 宣布与 Jabil 建立新的试点合作伙伴关系。", "status": "pending"}
+{"kind": "node", "id": "20260531215617377413_e42d3b5c", "type": "evidence", "claim": "Apptronik 在 2026-02-11 披露获得 5.2 亿美元融资，投资方包括 Mercedes-Benz、John Deere、Qatar Investment Authority。", "status": "pending"}
+{"kind": "node", "id": "20260531215617397759_4584a372", "type": "evidence", "claim": "来源摘要指向 Boston Dynamics 官方博客：公司“宣布退役液压 Atlas，并发布 fully electric Atlas”。（限制：此处为已提供的忠实摘要转述，未附原文逐句引文片段）", "status": "pending"}
+{"kind": "node", "id": "20260531215617417730_32283788", "type": "evidence", "claim": "来源摘要称文中写到电驱 Atlas 将“stronger, with a broader range of motion”。（限制：未提供可核对的原文段落引用）", "status": "pending"}
+{"kind": "node", "id": "20260531215617443444_ea327462", "type": "evidence", "claim": "来源摘要称文中提到将探索“gripper variations”以适配客户环境的操作需求。 （限制：未提供原文逐句引用）", "status": "pending"}
+{"kind": "node", "id": "20260531215617466776_76cba431", "type": "evidence", "claim": "来源摘要称商业化/试点路径：合作将从 Hyundai 开始，并会像 Stretch 一样先与小范围创新客户合作迭代 Atlas 应用。 （限制：未提供原文逐句引用）", "status": "pending"}
+{"kind": "node", "id": "20260531215617488708_ffe42ae7", "type": "evidence", "claim": "检索摘要线索显示 Fourier GR-1 产品页包含“Powered by LLM”等描述，并作为官方规格/能力说明入口。 （限制：未读取网页原文，属于 snippet 级证据）", "status": "pending"}
+{"kind": "node", "id": "20260531215617510811_335269cb", "type": "evidence", "claim": "检索摘要线索显示 Fourier GR-1 PDF 提及 Smart Actuator (FSA) 将 motor/driver/reducer/encoder 集成为单一模块，为 GR-1 提供动力与控制。 （限制：raw_content 获取失败，未能核对 PDF 原文具体段落）", "status": "pending"}
+{"kind": "node", "id": "20260531215617531728_b0b60594", "type": "evidence", "claim": "检索摘要线索显示 TechCrunch 报道称 Apptronik 宣布与美国制造/供应链公司 Jabil 建立新的试点合作伙伴关系。 （限制：未读取到报道正文，属于 snippet 级证据）", "status": "pending"}
+{"kind": "node", "id": "20260531215617554007_faae9acd", "type": "evidence", "claim": "检索摘要线索显示 Austin Business Journal 报道：Apptronik 于 2026-02-11 披露获得 5.2 亿美元融资扩展，投资方包括 Mercedes-Benz、John Deere、Qatar Investment Authority 等。 （限制：未读取到正文原文，金额/轮次口径待核对）", "status": "pending"}
+{"kind": "node", "id": "20260531215656009074_246c1fc9", "type": "search_run", "query_id": "20260531215324271558_d0f44c73"}
+{"kind": "node", "id": "20260531215656033348_15007cba", "type": "source", "url": "https://arxiv.org/abs/2307.15818", "title": "RT-2: Vision-Language-Action Models Transfer Web Knowledge to Robotic Control", "source_type": "paper"}
+{"kind": "node", "id": "20260531215656047480_0bf80250", "type": "source", "url": "https://robotics-transformer2.github.io/", "title": "RT-2: Vision-Language-Action Models", "source_type": "other"}
+{"kind": "node", "id": "20260531215656061300_14109416", "type": "source", "url": "https://arxiv.org/abs/2212.06817", "title": "RT-1: Robotics Transformer for Real-World Control at Scale", "source_type": "paper"}
+{"kind": "node", "id": "20260531215656076658_e284268f", "type": "source", "url": "https://research.google/blog/rt-1-robotics-transformer-for-real-world-control-at-scale/", "title": "RT-1: Robotics Transformer for real-world control at scale", "source_type": "blog"}
+{"kind": "node", "id": "20260531215656092351_dff0c62c", "type": "source", "url": "https://arxiv.org/abs/2303.03378", "title": "PaLM-E: An Embodied Multimodal Language Model", "source_type": "paper"}
+{"kind": "node", "id": "20260531215656107200_b7e95060", "type": "source", "url": "https://arxiv.org/pdf/2204.01691", "title": "Do As I Can, Not As I Say: Grounding Language in Robotic Affordances", "source_type": "paper"}
+{"kind": "node", "id": "20260531215656122163_da27f7a9", "type": "source", "url": "https://arxiv.org/abs/2303.04137", "title": "Visuomotor Policy Learning via Action Diffusion", "source_type": "paper"}
+{"kind": "node", "id": "20260531215656136099_05eb02de", "type": "source", "url": "https://github.com/real-stanford/diffusion_policy", "title": "real-stanford/diffusion_policy: [RSS 2023] Diffusion Policy", "source_type": "repo"}
+{"kind": "node", "id": "20260531215656150450_dda79a9f", "type": "source", "url": "https://arxiv.org/abs/2308.12952", "title": "BridgeData V2: A Dataset for Robot Learning at Scale", "source_type": "paper"}
+{"kind": "node", "id": "20260531215656167990_0b0ad165", "type": "source", "url": "https://arxiv.org/abs/2401.02117", "title": "Learning Bimanual Mobile Manipulation with Low-Cost Whole-Body Teleoperation", "source_type": "paper"}
+{"kind": "node", "id": "20260531215656182081_cfdaeee8", "type": "source", "url": "https://nvidianews.nvidia.com/news/foundation-model-isaac-robotics-platform", "title": "NVIDIA Announces Project GR00T Foundation Model for Humanoid Robots and Major Isaac Robotics Platform Update", "source_type": "press release"}
+{"kind": "node", "id": "20260531215656197327_39a425f2", "type": "source", "url": "https://nvidianews.nvidia.com/news/nvidia-isaac-gr00t-n1-open-humanoid-robot-foundation-model-simulation-frameworks", "title": "NVIDIA Announces Isaac GR00T N1 — the World’s First Open Humanoid Robot Foundation Model — and Simulation Frameworks to Speed Robot Development", "source_type": "press release"}
+{"kind": "node", "id": "20260531215656212266_444fce29", "type": "source", "url": "https://deepmind.google/blog/open-sourcing-mujoco/", "title": "Open-sourcing MuJoCo", "source_type": "blog"}
+{"kind": "node", "id": "20260531215656227518_d7380361", "type": "source", "url": "https://arxiv.org/abs/1910.07113", "title": "Solving Rubik's Cube with a Robot Hand", "source_type": "paper"}
+{"kind": "node", "id": "20260531215656240498_d4eb1735", "type": "document", "text": "该 arXiv 论文提出 RT-2，并以“Vision-Language-Action Models”为核心，旨在将互联网规模的视觉-语言模型中的知识迁移到机器人控制任务中；论文标题明确为“Transfer Web Knowledge to Robotic Control”。", "source_id": "20260531215656033348_15007cba"}
+{"kind": "node", "id": "20260531215656254649_950f15fa", "type": "document", "text": "RT-2 官方项目页，为论文与演示/补充材料的入口型页面（素材未包含页面正文细节、作者与日期信息）。", "source_id": "20260531215656047480_0bf80250"}
+{"kind": "node", "id": "20260531215656268676_7e9178fd", "type": "document", "text": "该 arXiv 论文提出 RT-1（Robotics Transformer），主题为“Real-World Control at Scale”，属于用 Transformer 作为机器人控制策略的研究路线；素材未包含论文版本日期与具体实验数据细节。", "source_id": "20260531215656061300_14109416"}
+{"kind": "node", "id": "20260531215656282767_301b14a1", "type": "document", "text": "Google Research Blog 于 2022-12-13 发布博文解读 RT-1，属于研究团队的一手说明类来源；素材未包含博文内的数据规模、实验指标等细节原文摘录。", "source_id": "20260531215656076658_e284268f"}
+{"kind": "node", "id": "20260531215656299167_2a62be55", "type": "document", "text": "该 arXiv 论文《PaLM-E: An Embodied Multimodal Language Model》于 2023-03-06 发布，主题为具身多模态语言模型（将多模态信息用于具身任务）。", "source_id": "20260531215656092351_dff0c62c"}
+{"kind": "node", "id": "20260531215656313045_2c5e475c", "type": "document", "text": "该 arXiv PDF 论文《Do As I Can, Not As I Say: Grounding Language in Robotic Affordances》（SayCan）PDF 显示日期为 2022-08-16，主题为将语言与机器人可供性（affordances）进行对齐/grounding，以实现“Do as I can”式的可执行指令落地。", "source_id": "20260531215656107200_b7e95060"}
+{"kind": "node", "id": "20260531215656327064_5ce3f09e", "type": "document", "text": "该 arXiv 论文《Visuomotor Policy Learning via Action Diffusion》于 2023-03-07 发布，提出用动作扩散（action diffusion）进行视觉-运动策略学习的路线。", "source_id": "20260531215656122163_da27f7a9"}
+{"kind": "node", "id": "20260531215656342798_f30286c4", "type": "document", "text": "GitHub 仓库 real-stanford/diffusion_policy 为 Diffusion Policy 的开源实现入口（素材未包含仓库 commit 时间、license、release tag 等细节）。", "source_id": "20260531215656136099_05eb02de"}
+{"kind": "node", "id": "20260531215656358925_73c9168a", "type": "document", "text": "该 arXiv 论文《BridgeData V2: A Dataset for Robot Learning at Scale》提供一个面向“robot learning at scale”的数据集论文来源；素材未包含版本日期、数据规模与采集协议细节。", "source_id": "20260531215656150450_dda79a9f"}
+{"kind": "node", "id": "20260531215656375725_92ca2924", "type": "document", "text": "该 arXiv 论文《Learning Bimanual Mobile Manipulation with Low-Cost Whole-Body Teleoperation》（Mobile ALOHA）于 2024-01-04 发布，主题为低成本全身遥操作用于学习双臂移动操作。", "source_id": "20260531215656167990_0b0ad165"}
+{"kind": "node", "id": "20260531215656390394_021cf7ca", "type": "document", "text": "NVIDIA Newsroom 于 2024-03-18 发布新闻稿，宣布 Project GR00T：面向人形机器人的 foundation model，并同时宣布 Isaac Robotics 平台更新。", "source_id": "20260531215656182081_cfdaeee8"}
+{"kind": "node", "id": "20260531215656407300_ae5242d4", "type": "document", "text": "NVIDIA Newsroom 于 2025-03-18 发布新闻稿，宣布 Isaac GR00T N1，并在标题中宣称其为“世界首个开放的人形机器人基础模型”，同时提及仿真框架以加速机器人开发。", "source_id": "20260531215656197327_39a425f2"}
+{"kind": "node", "id": "20260531215656430776_2e567798", "type": "document", "text": "Google DeepMind Blog 于 2022-05-23 发布博文《Open-sourcing MuJoCo》，宣布 MuJoCo 被开源，属于仿真/工具链路线的重要事件节点。", "source_id": "20260531215656212266_444fce29"}
+{"kind": "node", "id": "20260531215656447544_94f06749", "type": "document", "text": "该 arXiv 论文《Solving Rubik's Cube with a Robot Hand》于 2019-10-16 发布，常作为灵巧操作与 sim2real（含域随机化等）方向的代表性里程碑论文之一（素材仅提供标题与日期信息）。", "source_id": "20260531215656227518_d7380361"}
+{"kind": "node", "id": "20260531215656463611_8815f0d6", "type": "evidence", "claim": "RT-2 提出“Vision-Language-Action Models”，目标是将“web knowledge”迁移到机器人控制（robotic control）。", "status": "pending"}
+{"kind": "node", "id": "20260531215656489977_496b338e", "type": "evidence", "claim": "RT-2 的研究表述包括：将基于互联网规模数据训练的视觉-语言模型能力直接并入端到端机器人控制，以提升泛化能力。", "status": "pending"}
+{"kind": "node", "id": "20260531215656514838_0555a14e", "type": "evidence", "claim": "RT-1 的论文题目为“RT-1: Robotics Transformer for Real-World Control at Scale”。", "status": "pending"}
+{"kind": "node", "id": "20260531215656536200_017b4a94", "type": "evidence", "claim": "Google Research Blog 于 2022-12-13 发布了 RT-1 的官方解读文章。", "status": "pending"}
+{"kind": "node", "id": "20260531215656559205_a3a31df5", "type": "evidence", "claim": "PaLM-E（An Embodied Multimodal Language Model）于 2023-03-06 在 arXiv 发布。", "status": "pending"}
+{"kind": "node", "id": "20260531215656584235_42e32b49", "type": "evidence", "claim": "SayCan 论文《Do As I Can, Not As I Say: Grounding Language in Robotic Affordances》的 arXiv PDF 显示日期为 2022-08-16。", "status": "pending"}
+{"kind": "node", "id": "20260531215656606952_6ebba700", "type": "evidence", "claim": "《Visuomotor Policy Learning via Action Diffusion》于 2023-03-07 在 arXiv 发布。", "status": "pending"}
+{"kind": "node", "id": "20260531215656637491_8063a334", "type": "evidence", "claim": "Diffusion Policy 存在对应开源实现仓库 real-stanford/diffusion_policy（GitHub）。", "status": "pending"}
+{"kind": "node", "id": "20260531215656664180_4788ae2b", "type": "evidence", "claim": "《BridgeData V2: A Dataset for Robot Learning at Scale》作为“robot learning at scale”的数据集论文在 arXiv 提供版本。", "status": "pending"}
+{"kind": "node", "id": "20260531215656689557_33e1cd6e", "type": "evidence", "claim": "Mobile ALOHA 论文《Learning Bimanual Mobile Manipulation with Low-Cost Whole-Body Teleoperation》于 2024-01-04 在 arXiv 发布。", "status": "pending"}
+{"kind": "node", "id": "20260531215656714777_22e2ba0f", "type": "evidence", "claim": "NVIDIA 于 2024-03-18 新闻稿宣布 Project GR00T：面向人形机器人的 foundation model，并提到 Isaac Robotics 平台更新。", "status": "pending"}
+{"kind": "node", "id": "20260531215656737073_7b35a961", "type": "evidence", "claim": "NVIDIA 于 2025-03-18 新闻稿宣布 Isaac GR00T N1，并宣称其为“世界首个开放的人形机器人基础模型”，同时提到用于加速机器人开发的仿真框架。", "status": "pending"}
+{"kind": "node", "id": "20260531215656756511_203b8056", "type": "evidence", "claim": "Google DeepMind Blog 于 2022-05-23 发布《Open-sourcing MuJoCo》，宣布 MuJoCo 被开源。", "status": "pending"}
+{"kind": "node", "id": "20260531215656777255_4b09f73e", "type": "evidence", "claim": "《Solving Rubik's Cube with a Robot Hand》于 2019-10-16 在 arXiv 发布。", "status": "pending"}
+{"kind": "node", "id": "20260531215656797068_115cabb7", "type": "evidence", "claim": "arXiv 论文标题为“RT-2: Vision-Language-Action Models Transfer Web Knowledge to Robotic Control”（2023-07-28），直接表述 RT-2 的模型类别（Vision-Language-Action）与目标（将 web knowledge 迁移到 robotic control）。", "status": "pending"}
+{"kind": "node", "id": "20260531215656818341_7eae7e67", "type": "evidence", "claim": "素材忠实摘要指出：论文研究将“互联网规模视觉-语言模型能力”直接并入“端到端机器人控制”以提升泛化（摘要级表述；未提供具体实验指标与方法细节摘录）。", "status": "pending"}
+{"kind": "node", "id": "20260531215656839016_841d88f3", "type": "evidence", "claim": "arXiv 页面显示论文题目为“RT-1: Robotics Transformer for Real-World Control at Scale”。", "status": "pending"}
+{"kind": "node", "id": "20260531215656858692_a78b1068", "type": "evidence", "claim": "Google Research Blog 页面信息：文章“RT-1: Robotics Transformer for real-world control at scale”发布日期为 2022-12-13。", "status": "pending"}
+{"kind": "node", "id": "20260531215656878911_9e71d035", "type": "evidence", "claim": "arXiv 页面信息：论文“PaLM-E: An Embodied Multimodal Language Model”日期为 2023-03-06。", "status": "pending"}
+{"kind": "node", "id": "20260531215656899350_279c44be", "type": "evidence", "claim": "arXiv PDF（SayCan）页面信息：论文题为“Do As I Can, Not As I Say: Grounding Language in Robotic Affordances”，PDF 显示日期为 2022-08-16。", "status": "pending"}
+{"kind": "node", "id": "20260531215656920057_e473ce43", "type": "evidence", "claim": "arXiv 页面信息：论文“Visuomotor Policy Learning via Action Diffusion”日期为 2023-03-07。", "status": "pending"}
+{"kind": "node", "id": "20260531215656944551_ced32865", "type": "evidence", "claim": "GitHub 仓库存在：real-stanford/diffusion_policy（仓库标题含“[RSS 2023] Diffusion Policy”），作为 Diffusion Policy 的代码实现入口。", "status": "pending"}
+{"kind": "node", "id": "20260531215656967277_b5397c19", "type": "evidence", "claim": "arXiv 页面存在论文条目“BridgeData V2: A Dataset for Robot Learning at Scale”，对应数据集论文来源可用于“robot learning at scale”的数据路线引用（素材未给出发布日期与数据集规模）。", "status": "pending"}
+{"kind": "node", "id": "20260531215656991150_df547740", "type": "evidence", "claim": "arXiv 页面信息：论文“Learning Bimanual Mobile Manipulation with Low-Cost Whole-Body Teleoperation”日期为 2024-01-04。", "status": "pending"}
+{"kind": "node", "id": "20260531215657021382_8021fba7", "type": "evidence", "claim": "NVIDIA Newsroom 新闻稿（2024-03-18）标题为“NVIDIA Announces Project GR00T Foundation Model for Humanoid Robots and Major Isaac Robotics Platform Update”，表述 Project GR00T（humanoid foundation model）及 Isaac 平台更新。", "status": "pending"}
+{"kind": "node", "id": "20260531215657043163_8e9f9e14", "type": "evidence", "claim": "NVIDIA Newsroom 新闻稿（2025-03-18）标题为“NVIDIA Announces Isaac GR00T N1 — the World’s First Open Humanoid Robot Foundation Model — and Simulation Frameworks to Speed Robot Development”，包含“world’s first open humanoid robot foundation model”与“simulation frameworks”表述。", "status": "pending"}
+{"kind": "node", "id": "20260531215657065409_c4538a92", "type": "evidence", "claim": "Google DeepMind Blog 页面信息：博文题为“Open-sourcing MuJoCo”，发布日期为 2022-05-23，表述 MuJoCo 被开源。", "status": "pending"}
+{"kind": "node", "id": "20260531215657087287_93f4b69d", "type": "evidence", "claim": "arXiv 页面信息：论文“Solving Rubik's Cube with a Robot Hand”日期为 2019-10-16。", "status": "pending"}
+{"kind": "node", "id": "20260531215657109765_f675deba", "type": "conflict", "description": "同一方向的“开放/开源”表述口径潜在冲突：NVIDIA 在 2025-03-18 新闻稿标题中宣称 GR00T N1 为“World’s First Open Humanoid Robot Foundation Model”，但在当前素材集中缺少独立第三方来源或明确的“open”定义（如权重/数据/许可证开源范围）来交叉验证或限定口径；因此该“first/open”属于可被未来来源反驳/限定的候选冲突点。"}
+{"kind": "edge", "source": "20260531215324262446_1a206374", "target": "20260531215324271558_d0f44c73", "type": "has_query"}
+{"kind": "edge", "source": "20260531215324262446_1a206374", "target": "20260531215324287307_672d135d", "type": "has_query"}
+{"kind": "edge", "source": "20260531215324262446_1a206374", "target": "20260531215324301052_df2fc2c3", "type": "has_query"}
+{"kind": "edge", "source": "20260531215324262446_1a206374", "target": "20260531215324314297_6d51c9bb", "type": "has_query"}
+{"kind": "edge", "source": "20260531215324262446_1a206374", "target": "20260531215324329583_c6566502", "type": "has_query"}
+{"kind": "edge", "source": "20260531215324262446_1a206374", "target": "20260531215324343106_6bc0d438", "type": "has_query"}
+{"kind": "edge", "source": "20260531215324287307_672d135d", "target": "20260531215617066627_849ee0c1", "type": "searched_by"}
+{"kind": "edge", "source": "20260531215617066627_849ee0c1", "target": "20260531215617086806_405884e8", "type": "found_source"}
+{"kind": "edge", "source": "20260531215617066627_849ee0c1", "target": "20260531215617101306_e7d934de", "type": "found_source"}
+{"kind": "edge", "source": "20260531215617066627_849ee0c1", "target": "20260531215617115283_d864e0af", "type": "found_source"}
+{"kind": "edge", "source": "20260531215617066627_849ee0c1", "target": "20260531215617130451_ec8c04ae", "type": "found_source"}
+{"kind": "edge", "source": "20260531215617066627_849ee0c1", "target": "20260531215617145335_8ca67b6f", "type": "found_source"}
+{"kind": "edge", "source": "20260531215617086806_405884e8", "target": "20260531215617159172_49a7503f", "type": "has_document"}
+{"kind": "edge", "source": "20260531215617101306_e7d934de", "target": "20260531215617172025_1ee94819", "type": "has_document"}
+{"kind": "edge", "source": "20260531215617115283_d864e0af", "target": "20260531215617185185_c8bc84fc", "type": "has_document"}
+{"kind": "edge", "source": "20260531215617130451_ec8c04ae", "target": "20260531215617198886_2fa96972", "type": "has_document"}
+{"kind": "edge", "source": "20260531215617145335_8ca67b6f", "target": "20260531215617216174_f2002b14", "type": "has_document"}
+{"kind": "edge", "source": "20260531215617159172_49a7503f", "target": "20260531215617232253_9f8f711e", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215617086806_405884e8", "target": "20260531215617232253_9f8f711e", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215617159172_49a7503f", "target": "20260531215617252672_1d53a810", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215617086806_405884e8", "target": "20260531215617252672_1d53a810", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215617159172_49a7503f", "target": "20260531215617272958_9ad6e647", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215617086806_405884e8", "target": "20260531215617272958_9ad6e647", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215617159172_49a7503f", "target": "20260531215617293134_970355e1", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215617086806_405884e8", "target": "20260531215617293134_970355e1", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215617172025_1ee94819", "target": "20260531215617312800_d1b38e12", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215617101306_e7d934de", "target": "20260531215617312800_d1b38e12", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215617185185_c8bc84fc", "target": "20260531215617333666_8848c263", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215617115283_d864e0af", "target": "20260531215617333666_8848c263", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215617198886_2fa96972", "target": "20260531215617356476_e201ce56", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215617130451_ec8c04ae", "target": "20260531215617356476_e201ce56", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215617216174_f2002b14", "target": "20260531215617377413_e42d3b5c", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215617145335_8ca67b6f", "target": "20260531215617377413_e42d3b5c", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215617159172_49a7503f", "target": "20260531215617397759_4584a372", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215617086806_405884e8", "target": "20260531215617397759_4584a372", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215617159172_49a7503f", "target": "20260531215617417730_32283788", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215617086806_405884e8", "target": "20260531215617417730_32283788", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215617159172_49a7503f", "target": "20260531215617443444_ea327462", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215617086806_405884e8", "target": "20260531215617443444_ea327462", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215617159172_49a7503f", "target": "20260531215617466776_76cba431", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215617086806_405884e8", "target": "20260531215617466776_76cba431", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215617172025_1ee94819", "target": "20260531215617488708_ffe42ae7", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215617101306_e7d934de", "target": "20260531215617488708_ffe42ae7", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215617185185_c8bc84fc", "target": "20260531215617510811_335269cb", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215617115283_d864e0af", "target": "20260531215617510811_335269cb", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215617198886_2fa96972", "target": "20260531215617531728_b0b60594", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215617130451_ec8c04ae", "target": "20260531215617531728_b0b60594", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215617216174_f2002b14", "target": "20260531215617554007_faae9acd", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215617145335_8ca67b6f", "target": "20260531215617554007_faae9acd", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215324271558_d0f44c73", "target": "20260531215656009074_246c1fc9", "type": "searched_by"}
+{"kind": "edge", "source": "20260531215656009074_246c1fc9", "target": "20260531215656033348_15007cba", "type": "found_source"}
+{"kind": "edge", "source": "20260531215656009074_246c1fc9", "target": "20260531215656047480_0bf80250", "type": "found_source"}
+{"kind": "edge", "source": "20260531215656009074_246c1fc9", "target": "20260531215656061300_14109416", "type": "found_source"}
+{"kind": "edge", "source": "20260531215656009074_246c1fc9", "target": "20260531215656076658_e284268f", "type": "found_source"}
+{"kind": "edge", "source": "20260531215656009074_246c1fc9", "target": "20260531215656092351_dff0c62c", "type": "found_source"}
+{"kind": "edge", "source": "20260531215656009074_246c1fc9", "target": "20260531215656107200_b7e95060", "type": "found_source"}
+{"kind": "edge", "source": "20260531215656009074_246c1fc9", "target": "20260531215656122163_da27f7a9", "type": "found_source"}
+{"kind": "edge", "source": "20260531215656009074_246c1fc9", "target": "20260531215656136099_05eb02de", "type": "found_source"}
+{"kind": "edge", "source": "20260531215656009074_246c1fc9", "target": "20260531215656150450_dda79a9f", "type": "found_source"}
+{"kind": "edge", "source": "20260531215656009074_246c1fc9", "target": "20260531215656167990_0b0ad165", "type": "found_source"}
+{"kind": "edge", "source": "20260531215656009074_246c1fc9", "target": "20260531215656182081_cfdaeee8", "type": "found_source"}
+{"kind": "edge", "source": "20260531215656009074_246c1fc9", "target": "20260531215656197327_39a425f2", "type": "found_source"}
+{"kind": "edge", "source": "20260531215656009074_246c1fc9", "target": "20260531215656212266_444fce29", "type": "found_source"}
+{"kind": "edge", "source": "20260531215656009074_246c1fc9", "target": "20260531215656227518_d7380361", "type": "found_source"}
+{"kind": "edge", "source": "20260531215656033348_15007cba", "target": "20260531215656240498_d4eb1735", "type": "has_document"}
+{"kind": "edge", "source": "20260531215656047480_0bf80250", "target": "20260531215656254649_950f15fa", "type": "has_document"}
+{"kind": "edge", "source": "20260531215656061300_14109416", "target": "20260531215656268676_7e9178fd", "type": "has_document"}
+{"kind": "edge", "source": "20260531215656076658_e284268f", "target": "20260531215656282767_301b14a1", "type": "has_document"}
+{"kind": "edge", "source": "20260531215656092351_dff0c62c", "target": "20260531215656299167_2a62be55", "type": "has_document"}
+{"kind": "edge", "source": "20260531215656107200_b7e95060", "target": "20260531215656313045_2c5e475c", "type": "has_document"}
+{"kind": "edge", "source": "20260531215656122163_da27f7a9", "target": "20260531215656327064_5ce3f09e", "type": "has_document"}
+{"kind": "edge", "source": "20260531215656136099_05eb02de", "target": "20260531215656342798_f30286c4", "type": "has_document"}
+{"kind": "edge", "source": "20260531215656150450_dda79a9f", "target": "20260531215656358925_73c9168a", "type": "has_document"}
+{"kind": "edge", "source": "20260531215656167990_0b0ad165", "target": "20260531215656375725_92ca2924", "type": "has_document"}
+{"kind": "edge", "source": "20260531215656182081_cfdaeee8", "target": "20260531215656390394_021cf7ca", "type": "has_document"}
+{"kind": "edge", "source": "20260531215656197327_39a425f2", "target": "20260531215656407300_ae5242d4", "type": "has_document"}
+{"kind": "edge", "source": "20260531215656212266_444fce29", "target": "20260531215656430776_2e567798", "type": "has_document"}
+{"kind": "edge", "source": "20260531215656227518_d7380361", "target": "20260531215656447544_94f06749", "type": "has_document"}
+{"kind": "edge", "source": "20260531215656240498_d4eb1735", "target": "20260531215656463611_8815f0d6", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215656033348_15007cba", "target": "20260531215656463611_8815f0d6", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215656240498_d4eb1735", "target": "20260531215656489977_496b338e", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215656033348_15007cba", "target": "20260531215656489977_496b338e", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215656268676_7e9178fd", "target": "20260531215656514838_0555a14e", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215656061300_14109416", "target": "20260531215656514838_0555a14e", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215656282767_301b14a1", "target": "20260531215656536200_017b4a94", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215656076658_e284268f", "target": "20260531215656536200_017b4a94", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215656299167_2a62be55", "target": "20260531215656559205_a3a31df5", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215656092351_dff0c62c", "target": "20260531215656559205_a3a31df5", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215656313045_2c5e475c", "target": "20260531215656584235_42e32b49", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215656107200_b7e95060", "target": "20260531215656584235_42e32b49", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215656327064_5ce3f09e", "target": "20260531215656606952_6ebba700", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215656122163_da27f7a9", "target": "20260531215656606952_6ebba700", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215656342798_f30286c4", "target": "20260531215656637491_8063a334", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215656136099_05eb02de", "target": "20260531215656637491_8063a334", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215656358925_73c9168a", "target": "20260531215656664180_4788ae2b", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215656150450_dda79a9f", "target": "20260531215656664180_4788ae2b", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215656375725_92ca2924", "target": "20260531215656689557_33e1cd6e", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215656167990_0b0ad165", "target": "20260531215656689557_33e1cd6e", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215656390394_021cf7ca", "target": "20260531215656714777_22e2ba0f", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215656182081_cfdaeee8", "target": "20260531215656714777_22e2ba0f", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215656407300_ae5242d4", "target": "20260531215656737073_7b35a961", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215656197327_39a425f2", "target": "20260531215656737073_7b35a961", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215656430776_2e567798", "target": "20260531215656756511_203b8056", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215656212266_444fce29", "target": "20260531215656756511_203b8056", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215656447544_94f06749", "target": "20260531215656777255_4b09f73e", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215656227518_d7380361", "target": "20260531215656777255_4b09f73e", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215656240498_d4eb1735", "target": "20260531215656797068_115cabb7", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215656033348_15007cba", "target": "20260531215656797068_115cabb7", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215656240498_d4eb1735", "target": "20260531215656818341_7eae7e67", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215656033348_15007cba", "target": "20260531215656818341_7eae7e67", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215656268676_7e9178fd", "target": "20260531215656839016_841d88f3", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215656061300_14109416", "target": "20260531215656839016_841d88f3", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215656282767_301b14a1", "target": "20260531215656858692_a78b1068", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215656076658_e284268f", "target": "20260531215656858692_a78b1068", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215656299167_2a62be55", "target": "20260531215656878911_9e71d035", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215656092351_dff0c62c", "target": "20260531215656878911_9e71d035", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215656313045_2c5e475c", "target": "20260531215656899350_279c44be", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215656107200_b7e95060", "target": "20260531215656899350_279c44be", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215656327064_5ce3f09e", "target": "20260531215656920057_e473ce43", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215656122163_da27f7a9", "target": "20260531215656920057_e473ce43", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215656342798_f30286c4", "target": "20260531215656944551_ced32865", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215656136099_05eb02de", "target": "20260531215656944551_ced32865", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215656358925_73c9168a", "target": "20260531215656967277_b5397c19", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215656150450_dda79a9f", "target": "20260531215656967277_b5397c19", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215656375725_92ca2924", "target": "20260531215656991150_df547740", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215656167990_0b0ad165", "target": "20260531215656991150_df547740", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215656390394_021cf7ca", "target": "20260531215657021382_8021fba7", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215656182081_cfdaeee8", "target": "20260531215657021382_8021fba7", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215656407300_ae5242d4", "target": "20260531215657043163_8e9f9e14", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215656197327_39a425f2", "target": "20260531215657043163_8e9f9e14", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215656430776_2e567798", "target": "20260531215657065409_c4538a92", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215656212266_444fce29", "target": "20260531215657065409_c4538a92", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215656447544_94f06749", "target": "20260531215657087287_93f4b69d", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531215656227518_d7380361", "target": "20260531215657087287_93f4b69d", "type": "supported_by"}
+{"kind": "edge", "source": "20260531215657109765_f675deba", "target": "20260531215657043163_8e9f9e14", "type": "has_conflict"}
+{"kind": "node", "id": "20260531215324271558_d0f44c73", "type": "query", "text": "截至2026-05-31，全球具身智能的主要技术路线有哪些（按机器人形态/任务、学习范式、模型架构与训练数据/仿真、系统工程栈等维度分类）？各路线关键里程碑与近5年演进趋势是什么？", "status": "needs_horizontal", "sufficiency_score": 0.28}
+{"kind": "node", "id": "20260531215324287307_672d135d", "type": "query", "text": "通用人形/通用机器人路线：筛选全球代表性公司名单（含中美欧等），并收集对比其技术路径（端到端/模块化、VLA/VLM/世界模型/强化学习/模仿学习等）、硬件平台与传感器/执行器方案、软件栈与数据策略。", "status": "needs_vertical", "sufficiency_score": 0.54}
+{"kind": "node", "id": "20260531215738154412_2d198673", "type": "query", "text": "补齐具身智能技术路线的“规划/控制/系统工程栈”维度：TAMP、MPC/优化控制、ROS2与实时控制、中间件与安全、边缘推理与算力架构，以及端到端 vs 模块化的工程权衡（2019-2026）有哪些权威来源与里程碑？", "status": "pending", "expansion_type": "horizontal", "reason": "当前路线分类证据过度集中在VLA/VLM与扩散策略，缺少规划控制与系统工程栈的证据，需横向补齐。"}
+{"kind": "node", "id": "20260531215738164944_4e9f8deb", "type": "query", "text": "补齐具身智能技术路线的“数据与仿真/合成数据”维度：机器人数据集（规模、协议、代表集如BridgeData V2等）、遥操作采集、仿真到真机（sim2real、域随机化）、生成式合成数据与评测基准（2019-2026）的关键里程碑与证据。", "status": "pending", "expansion_type": "horizontal", "reason": "现有数据/仿真证据不足，缺少规模、方法与演进细节；需横向扩展。"}
+{"kind": "node", "id": "20260531215738173254_ed27887f", "type": "query", "text": "对Apptronik（Apollo）做纵向深挖：技术架构（控制/学习/感知）、硬件规格与量产计划、Jabil试点细节、融资条款与投资方、核心团队背景（截至2026-05-31）。", "status": "pending", "expansion_type": "vertical", "reason": "现有证据仅有融资金额与试点摘要，需纵向补齐技术与商业化细节以满足对比要求。"}
+{"kind": "node", "id": "20260531215738180539_73f6a440", "type": "query", "text": "对Fourier Intelligence（GR-1/后续型号）做纵向深挖：技术路径（是否端到端/大模型结合）、硬件平台（FSA/传感器）、产品迭代与交付、商业化与融资、核心团队（截至2026-05-31）。", "status": "pending", "expansion_type": "vertical", "reason": "现有证据主要是官网产品概述，缺少融资与商业化及技术栈细节。"}
+{"kind": "edge", "source": "20260531215324271558_d0f44c73", "target": "20260531215738154412_2d198673", "type": "parent_of"}
+{"kind": "edge", "source": "20260531215324271558_d0f44c73", "target": "20260531215738164944_4e9f8deb", "type": "parent_of"}
+{"kind": "edge", "source": "20260531215324287307_672d135d", "target": "20260531215738173254_ed27887f", "type": "parent_of"}
+{"kind": "edge", "source": "20260531215324287307_672d135d", "target": "20260531215738180539_73f6a440", "type": "parent_of"}
+{"kind": "node", "id": "20260531215743693624_5f33c41d", "type": "analysis", "text": "收敛/局限记录（2026-05-31）：由于系统搜索预算在本次运行中仅允许2次searcher派发，导致仅对“技术路线总体框架”和“通用人形/通用机器人代表公司”获得部分证据，且多为摘要级。仓储物流/工业移动操作与家用/服务机器人两条初始query未能检索入图；投融资与团队画像也仅在少数公司（如Apptronik）上有证据。后续报告将基于现有证据给出‘路线框架+已覆盖公司’的研究性梳理，并显式披露证据缺口，不对未入图的公司/路线做无引用断言。"}
+{"kind": "node", "id": "20260531215907860036_dfed60f0", "type": "report_section", "title": "报告大纲（证据绑定版）", "content": "以下为本报告的大纲与证据绑定计划（仅用于写作过程，非最终交付正文的一部分）。\n\n1) ## 摘要\n- 计划使用 evidence：\n  - RT-1/RT-2/VLA：20260531215656858692_a78b1068，20260531215656536200_017b4a94，20260531215656797068_115cabb7，20260531215656463611_8815f0d6，20260531215656489977_496b338e，20260531215656818341_7eae7e67\n  - 具身多模态：20260531215656878911_9e71d035，20260531215656559205_a3a31df5\n  - 语言落地：20260531215656584235_42e32b49\n  - 扩散策略：20260531215656606952_6ebba700，20260531215656920057_e473ce43，20260531215656637491_8063a334，20260531215656944551_ced32865\n  - 遥操作：20260531215656991150_df547740，20260531215656689557_33e1cd6e\n  - 数据集：20260531215656664180_4788ae2b，20260531215656967277_b5397c19\n  - 仿真平台：20260531215656756511_203b8056，20260531215657065409_c4538a92\n  - 平台与人形FM：20260531215656714777_22e2ba0f，20260531215657021382_8021fba7，20260531215656737073_7b35a961，20260531215657043163_8e9f9e14\n  - 公司案例：\n    - Boston Dynamics Atlas：20260531215617232253_9f8f711e，20260531215617252672_1d53a810，20260531215617272958_9ad6e647，20260531215617293134_970355e1\n    - Apptronik 融资/试点：20260531215617377413_e42d3b5c，20260531215617554007_faae9acd，20260531215617356476_e201ce56，20260531215617531728_b0b60594\n    - Fourier GR-1：20260531215617312800_d1b38e12，20260531215617488708_ffe42ae7，20260531215617333666_8848c263，20260531215617510811_335269cb\n\n2) ## 研究范围与方法（含关键假设与证据缺口披露）\n- 计划使用 evidence：\n  - 时间戳/里程碑仅来自论文/新闻稿/博客发布日期：\n    - 20260531215656858692_a78b1068（RT-1 博文日期）\n    - 20260531215656878911_9e71d035（PaLM-E 日期）\n    - 20260531215656584235_42e32b49（SayCan PDF 日期）\n    - 20260531215656797068_115cabb7（RT-2 标题与日期）\n    - 20260531215656606952_6ebba700（Diffusion Policy 日期）\n    - 20260531215656991150_df547740（Mobile ALOHA 日期）\n    - 20260531215656756511_203b8056（MuJoCo 开源日期）\n    - 20260531215656714777_22e2ba0f（NVIDIA Project GR00T 新闻稿）\n    - 20260531215656737073_7b35a961（NVIDIA GR00T N1 新闻稿）\n  - 证据缺口将围绕：公司团队/估值/量产/交付/客户规模等在现有材料中缺失；以及若干来源为 snippet 摘要级。\n\n3) ## 具身智能技术路线框架\n- VLA/VLM到控制：RT-1/RT-2（20260531215656514838_0555a14e，20260531215656839016_841d88f3，20260531215656858692_a78b1068，20260531215656536200_017b4a94，20260531215656797068_115cabb7，20260531215656463611_8815f0d6，20260531215656489977_496b338e，20260531215656818341_7eae7e67）\n- 具身多模态：PaLM-E（20260531215656878911_9e71d035，20260531215656559205_a3a31df5）\n- 语言到可供性：SayCan（20260531215656584235_42e32b49，20260531215656899350_279c44be）\n- 扩散策略：Action Diffusion + 代码实现（20260531215656606952_6ebba700，20260531215656920057_e473ce43，20260531215656637491_8063a334，20260531215656944551_ced32865）\n- 遥操作数据采集：Mobile ALOHA（20260531215656991150_df547740，20260531215656689557_33e1cd6e）\n- 数据集：BridgeData V2（20260531215656664180_4788ae2b，20260531215656967277_b5397c19）\n- 仿真平台：MuJoCo 开源（20260531215656756511_203b8056，20260531215657065409_c4538a92）\n- 人形 foundation model 平台：NVIDIA Project GR00T/Isaac/GR00T N1（20260531215656714777_22e2ba0f，20260531215657021382_8021fba7，20260531215656737073_7b35a961，20260531215657043163_8e9f9e14）\n\n4) ## 代表性公司与路线案例（Boston Dynamics、Apptronik、Fourier；以及平台型：NVIDIA Isaac/GR00T）\n- Boston Dynamics（Atlas）：20260531215617232253_9f8f711e，20260531215617252672_1d53a810，20260531215617272958_9ad6e647，20260531215617293134_970355e1\n- Apptronik：融资与投资方（20260531215617377413_e42d3b5c；并披露其为摘要级证据：20260531215617554007_faae9acd）；与 Jabil 试点合作（20260531215617356476_e201ce56；并披露其为摘要级证据：20260531215617531728_b0b60594）\n- Fourier：GR-1“Powered by LLM”（20260531215617312800_d1b38e12；并披露其为摘要级证据：20260531215617488708_ffe42ae7）；FSA 集成模块（20260531215617333666_8848c263；并披露 raw_content 未核对：20260531215617510811_335269cb）\n- NVIDIA Isaac/GR00T：Project GR00T（20260531215656714777_22e2ba0f，20260531215657021382_8021fba7）；Isaac GR00T N1 “world’s first open …”与仿真框架（20260531215656737073_7b35a961，20260531215657043163_8e9f9e14）\n\n5) ## 对产业与投资的启示\n- 仅从上述路线与公司公开表述中做一般性归纳；主要使用 evidence 同第3、4章。\n- 并在此章披露“NVIDIA open/first 口径不确定性”相关风险提示：20260531215657043163_8e9f9e14 + 冲突节点 20260531215657109765_f675deba\n\n6) ## 局限性与后续调研清单\n- 归纳现有材料在公司层面（团队、估值、量产交付、客户与收入）与技术层面（数据规模、评测指标、控制/系统工程栈）缺口；引用冲突节点与 snippet 限制说明：\n  - 20260531215657109765_f675deba（open 口径冲突）\n  - 20260531215617554007_faae9acd，20260531215617531728_b0b60594，20260531215617488708_ffe42ae7，20260531215617510811_335269cb 等摘要级证据限制\n", "section_type": "outline"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215656858692_a78b1068", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215656536200_017b4a94", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215656797068_115cabb7", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215656463611_8815f0d6", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215656489977_496b338e", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215656818341_7eae7e67", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215656878911_9e71d035", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215656559205_a3a31df5", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215656584235_42e32b49", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215656606952_6ebba700", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215656920057_e473ce43", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215656637491_8063a334", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215656944551_ced32865", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215656991150_df547740", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215656689557_33e1cd6e", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215656664180_4788ae2b", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215656967277_b5397c19", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215656756511_203b8056", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215657065409_c4538a92", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215656714777_22e2ba0f", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215657021382_8021fba7", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215656737073_7b35a961", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215657043163_8e9f9e14", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215617232253_9f8f711e", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215617252672_1d53a810", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215617272958_9ad6e647", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215617293134_970355e1", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215617377413_e42d3b5c", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215617554007_faae9acd", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215617356476_e201ce56", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215617531728_b0b60594", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215617312800_d1b38e12", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215617488708_ffe42ae7", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215617333666_8848c263", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215617510811_335269cb", "type": "uses"}
+{"kind": "edge", "source": "20260531215907860036_dfed60f0", "target": "20260531215657109765_f675deba", "type": "uses"}
+{"kind": "node", "id": "20260531215938011204_a32c6187", "type": "report_section", "title": "摘要", "content": "具身智能在近年出现两条相互促进的技术主线：其一是以视觉-语言-动作（VLA）/具身多模态模型为代表的“从互联网知识到机器人控制”的端到端策略学习与泛化路线，代表性工作包括 RT-1（面向真实世界规模化控制的 Robotics Transformer）与 RT-2（Vision-Language-Action Models，将 web knowledge 迁移到机器人控制，并将互联网规模视觉-语言模型能力并入端到端控制以提升泛化）[1][2][3][4][5]，以及具身多模态语言模型 PaLM-E[6]与语言—可供性对齐的 SayCan[7]。其二是以生成式方法与数据工程为抓手，强化策略学习的可扩展性与可落地性：动作扩散（Action Diffusion）用于视觉-运动策略学习（2023-03-07 发布）[8]，并存在开源实现入口 Diffusion Policy[9]；面向双臂移动操作的低成本全身遥操作数据采集（Mobile ALOHA，2024-01-04）为“可规模采集的高质量示教数据”提供了方法学样例[10]；在数据层面，BridgeData V2 作为“robot learning at scale”的数据集论文入口提供了可引用锚点[11]；在仿真层面，MuJoCo 于 2022-05-23 开源，为仿真与工具链生态演进提供了关键节点[12]。\n\n在产业端，本报告选取具备公开证据的代表主体进行对比：Boston Dynamics 宣布退役液压 Atlas 并发布全电驱 Atlas，强调“更强壮、更大运动范围”并探索多种夹爪以适配客户环境操作需求；其试点/商业化路径表述为从 Hyundai 开始，并先与小范围创新客户迭代应用[13]。Apptronik 在 2026-02-11 披露获得 5.2 亿美元融资，投资方包括 Mercedes-Benz、John Deere、Qatar Investment Authority；并被报道宣布与制造/供应链公司 Jabil 建立新的试点合作伙伴关系[14][15]。Fourier Intelligence 的 GR-1 官方资料出现“Powered by LLM”表述，并提到 Smart Actuator（FSA）将电机/驱动/减速器/编码器集成为单一模块以提供动力与控制[16][17]。平台侧，NVIDIA 在 2024-03-18 宣布面向人形机器人的 Project GR00T foundation model，并更新 Isaac Robotics 平台；在 2025-03-18 新闻稿中宣布 Isaac GR00T N1，并在标题中使用“world’s first open humanoid robot foundation model”与“simulation frameworks”表述[18][19]。\n\n需要特别披露的是：关于 NVIDIA “世界首个开放（open）的人形机器人基础模型”的口径，本轮证据仅包含其新闻稿标题层表述，缺少对“open”的明确范围定义（例如权重/数据/许可证开放边界）及独立第三方交叉验证，因此该“first/open”更应被视为一种营销性主张而非已被严格证实的技术事实[19]。", "section_type": "abstract"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215656858692_a78b1068", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215656536200_017b4a94", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215656839016_841d88f3", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215656514838_0555a14e", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215656797068_115cabb7", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215656463611_8815f0d6", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215656489977_496b338e", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215656818341_7eae7e67", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215656878911_9e71d035", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215656559205_a3a31df5", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215656584235_42e32b49", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215656606952_6ebba700", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215656920057_e473ce43", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215656637491_8063a334", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215656944551_ced32865", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215656991150_df547740", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215656689557_33e1cd6e", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215656664180_4788ae2b", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215656756511_203b8056", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215657065409_c4538a92", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215617232253_9f8f711e", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215617252672_1d53a810", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215617272958_9ad6e647", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215617293134_970355e1", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215617377413_e42d3b5c", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215617356476_e201ce56", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215617312800_d1b38e12", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215617333666_8848c263", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215656714777_22e2ba0f", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215656737073_7b35a961", "type": "uses"}
+{"kind": "edge", "source": "20260531215938011204_a32c6187", "target": "20260531215657043163_8e9f9e14", "type": "uses"}
+{"kind": "node", "id": "20260531220008464061_649a5e05", "type": "report_section", "title": "研究范围与方法（含关键假设与证据缺口披露）", "content": "本报告面向产业从业者与投资人，目标是在截至 2026-05-31 的时间点，基于可核验公开材料，梳理具身智能的主要技术路线框架，并对若干具有代表性的公司/平台主体进行可比口径的对照。\n\n### 研究范围\n1) 技术路线覆盖范围（以“从模型到控制—从数据到仿真—从平台到落地”为主线）：\n- 视觉-语言-动作（VLA）/VLM 到控制：RT-1 与 RT-2 作为代表性论文/项目，分别强调“真实世界规模化控制”与“将 web knowledge 迁移到机器人控制”，并明确提出将互联网规模视觉-语言模型能力并入端到端机器人控制以提升泛化[1][2][3][4][5]。\n- 具身多模态与语言落地：PaLM-E（具身多模态语言模型）与 SayCan（语言与可供性 grounding）作为代表性路线锚点[6][7]。\n- 生成式策略学习：动作扩散（Action Diffusion）用于视觉-运动策略学习，并以 Diffusion Policy 的开源仓库作为工程实现入口[8][9]。\n- 数据采集与数据集：以 Mobile ALOHA（低成本全身遥操作用于学习双臂移动操作）与 BridgeData V2（robot learning at scale 数据集论文入口）作为“可规模数据”方向的公开锚点[10][11]。\n- 仿真平台与工具链：MuJoCo 的开源事件作为仿真生态的重要节点[12]。\n- 人形机器人 foundation model 平台：以 NVIDIA Project GR00T 与 Isaac GR00T N1 的官方新闻稿为平台型路线锚点[18][19]。\n\n2) 公司/平台样本范围（严格限定在本轮证据中出现且可引用者）：\n- Boston Dynamics（Atlas，电驱迭代与试点路径）[13]\n- Apptronik（Apollo：融资披露与试点合作伙伴关系）[14][15]\n- Fourier Intelligence（GR-1：LLM 相关表述与执行器模块化线索）[16][17]\n- NVIDIA Isaac/GR00T（平台与人形 foundation model 路线表述）[18][19]\n\n### 方法与关键假设\n- 时间窗口：以近 5 年为主，但允许引用更早的关键里程碑作为技术背景锚点（例如 2019 年灵巧操作代表性论文条目）[20]。\n- 证据层级：本报告优先采用论文、公司/研究机构官方博客、官方新闻稿等一手材料；当仅获得新闻摘要/snippet 级线索时，将在相关段落中明确其信息粒度限制，并避免推断更细的商业条款与技术细节[14][15][16][17]。\n- 推理边界：除对不同公开表述进行归纳性整理外，不引入图谱证据之外的市场规模、出货量、客户部署数量、估值与盈利能力等结论。\n\n### 已知证据缺口（将影响可比性）\n- 公司层面：本轮材料未能覆盖 Apptronik/Fourier 的量产计划、交付节奏、客户部署规模、收入模式细节与团队/关键人物画像；Apptronik 的融资信息与 Jabil 试点合作目前主要来自新闻摘要线索，缺少逐句可核对原文细节[14][15]。\n- 技术层面：RT-1 官方解读文章与若干论文条目在当前材料中未包含数据规模、实验指标与复现实验细节摘录；BridgeData V2 的数据规模、采集协议等信息亦未在本轮材料中展开[1][11]。\n- 口径冲突：关于 NVIDIA 在 2025-03-18 新闻稿标题中使用“world’s first open humanoid robot foundation model”的表述，本轮材料缺少对“open”范围的定义与第三方交叉验证，因而只能将其作为“官方宣称”呈现，并在后文作为风险点披露[19]。", "section_type": "methodology"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215656858692_a78b1068", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215656536200_017b4a94", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215656839016_841d88f3", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215656514838_0555a14e", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215656797068_115cabb7", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215656463611_8815f0d6", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215656489977_496b338e", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215656818341_7eae7e67", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215656878911_9e71d035", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215656559205_a3a31df5", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215656584235_42e32b49", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215656606952_6ebba700", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215656920057_e473ce43", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215656637491_8063a334", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215656944551_ced32865", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215656991150_df547740", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215656689557_33e1cd6e", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215656664180_4788ae2b", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215656967277_b5397c19", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215656756511_203b8056", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215657065409_c4538a92", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215656714777_22e2ba0f", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215657021382_8021fba7", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215656737073_7b35a961", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215657043163_8e9f9e14", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215617232253_9f8f711e", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215617377413_e42d3b5c", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215617554007_faae9acd", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215617356476_e201ce56", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215617531728_b0b60594", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215617312800_d1b38e12", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215617488708_ffe42ae7", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215617333666_8848c263", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215617510811_335269cb", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215657087287_93f4b69d", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215656777255_4b09f73e", "type": "uses"}
+{"kind": "edge", "source": "20260531220008464061_649a5e05", "target": "20260531215657109765_f675deba", "type": "uses"}
+{"kind": "node", "id": "20260531220042496777_b9c283d4", "type": "report_section", "title": "具身智能技术路线框架", "content": "本章以“从感知/语言到动作控制”为纵轴、以“数据与仿真—平台化工程能力”为横轴，归纳当前证据可覆盖的具身智能技术路线模块。\n\n### 1) VLA/VLM 到控制：从策略网络到端到端泛化\n- RT-1 路线：RT-1 的论文标题明确为“Robotics Transformer for Real-World Control at Scale”，并有研究团队在 2022-12-13 发布官方解读文章，作为该路线的公开锚点[1][2]。在本轮材料范围内，RT-1 的“规模化”更多体现为标题与官方解读文章的定位表述，尚无法进一步展开其数据规模与指标细节。\n- RT-2 路线：RT-2 的论文标题提出“Vision-Language-Action Models”，并明确其目标是“Transfer Web Knowledge to Robotic Control”[3][4]。同时，论文研究表述包含：将基于互联网规模数据训练的视觉-语言模型能力直接并入端到端机器人控制，以提升泛化能力[5]。这为产业侧理解“通用知识如何转化为可执行动作”提供了方法论参照：将网络世界的语义表征与机器人控制的动作空间通过端到端方式耦合。\n\n### 2) 具身多模态与语言落地：从“理解”到“可执行”\n- PaLM-E：该论文《PaLM-E: An Embodied Multimodal Language Model》于 2023-03-06 发布，作为“具身多模态语言模型”的代表性公开节点[6]。在本轮材料中，PaLM-E 的可引用信息主要是其论文定位与发布日期。\n- SayCan：论文《Do As I Can, Not As I Say: Grounding Language in Robotic Affordances》（SayCan）PDF 显示日期为 2022-08-16，主题为将语言与机器人可供性（affordances）进行对齐/grounding，使指令更贴近机器人“能做什么”的边界[7]。该路线对应的产业含义是：在将大语言模型引入机器人系统时，语言层输出需要通过可供性/约束机制与低层能力闭环对齐。\n\n### 3) 扩散策略与生成式控制：从判别式策略到生成式动作序列\n- Action Diffusion：论文《Visuomotor Policy Learning via Action Diffusion》于 2023-03-07 发布，提出用动作扩散（action diffusion）进行视觉-运动策略学习[8]。\n- 工程实现入口：GitHub 上存在开源仓库 real-stanford/diffusion_policy（标题含“[RSS 2023] Diffusion Policy”），作为 Diffusion Policy 的代码实现入口[9]。这使得扩散策略从论文走向可复用的工程组件成为可能（至少在代码获取层面）。\n\n### 4) 遥操作数据采集：用“可规模化示教”缩短策略迭代周期\n- Mobile ALOHA：论文《Learning Bimanual Mobile Manipulation with Low-Cost Whole-Body Teleoperation》于 2024-01-04 发布，主题为低成本全身遥操作用于学习双臂移动操作[10]。在缺少大规模真实世界交互数据时，该路线强调以更低成本、更高效率采集高质量示教数据，为后续模仿学习/策略学习提供燃料。\n\n### 5) 数据集：面向“robot learning at scale”的可复用数据资产\n- BridgeData V2：论文《BridgeData V2: A Dataset for Robot Learning at Scale》在 arXiv 提供版本，是“robot learning at scale”数据集方向的公开入口[11]。本轮材料未包含其数据规模、采集协议、标注形式等细节，因此本章仅将其作为“数据集路线存在”的锚点，而不对其质量与适用范围作进一步推断。\n\n### 6) 仿真平台：从工具链开源到生态扩散\n- MuJoCo：Google DeepMind 于 2022-05-23 发布《Open-sourcing MuJoCo》，宣布 MuJoCo 被开源[12]。对产业而言，这类仿真平台的开放通常意味着更低的研发门槛与更容易形成通用工具链（本报告不在证据之外评估其影响范围，仅基于“开源事件”做节点记录）。\n\n### 7) 人形 foundation model 与开发平台：把“模型能力”产品化为平台\n- NVIDIA Project GR00T：NVIDIA 于 2024-03-18 的新闻稿宣布 Project GR00T（面向人形机器人的 foundation model），并同时宣布 Isaac Robotics 平台更新[18]。\n- Isaac GR00T N1：NVIDIA 于 2025-03-18 新闻稿宣布 Isaac GR00T N1，并在标题中使用“the World’s First Open Humanoid Robot Foundation Model”以及“Simulation Frameworks to Speed Robot Development”等表述[19]。需要注意的是，“open/开放”的范围在本轮材料中未被进一步定义，因此对产业读者而言，这更像是平台定位与传播口径，尚不足以直接据此判断其开放程度、可获取性与生态可持续性（相关不确定性在后文冲突点中披露）。\n\n### 8) （补充背景锚点）灵巧操作与 sim2real 的早期代表节点\n- 《Solving Rubik's Cube with a Robot Hand》于 2019-10-16 发布，是灵巧操作方向常被引用的代表性论文条目之一[20]。本轮材料仅提供标题与日期信息，未展开其方法与实验细节。", "section_type": "main"}
+{"kind": "edge", "source": "20260531220042496777_b9c283d4", "target": "20260531215656858692_a78b1068", "type": "uses"}
+{"kind": "edge", "source": "20260531220042496777_b9c283d4", "target": "20260531215656536200_017b4a94", "type": "uses"}
+{"kind": "edge", "source": "20260531220042496777_b9c283d4", "target": "20260531215656839016_841d88f3", "type": "uses"}
+{"kind": "edge", "source": "20260531220042496777_b9c283d4", "target": "20260531215656514838_0555a14e", "type": "uses"}
+{"kind": "edge", "source": "20260531220042496777_b9c283d4", "target": "20260531215656797068_115cabb7", "type": "uses"}
+{"kind": "edge", "source": "20260531220042496777_b9c283d4", "target": "20260531215656463611_8815f0d6", "type": "uses"}
+{"kind": "edge", "source": "20260531220042496777_b9c283d4", "target": "20260531215656489977_496b338e", "type": "uses"}
+{"kind": "edge", "source": "20260531220042496777_b9c283d4", "target": "20260531215656818341_7eae7e67", "type": "uses"}
+{"kind": "edge", "source": "20260531220042496777_b9c283d4", "target": "20260531215656878911_9e71d035", "type": "uses"}
+{"kind": "edge", "source": "20260531220042496777_b9c283d4", "target": "20260531215656559205_a3a31df5", "type": "uses"}
+{"kind": "edge", "source": "20260531220042496777_b9c283d4", "target": "20260531215656584235_42e32b49", "type": "uses"}
+{"kind": "edge", "source": "20260531220042496777_b9c283d4", "target": "20260531215656606952_6ebba700", "type": "uses"}
+{"kind": "edge", "source": "20260531220042496777_b9c283d4", "target": "20260531215656920057_e473ce43", "type": "uses"}
+{"kind": "edge", "source": "20260531220042496777_b9c283d4", "target": "20260531215656637491_8063a334", "type": "uses"}
+{"kind": "edge", "source": "20260531220042496777_b9c283d4", "target": "20260531215656944551_ced32865", "type": "uses"}
+{"kind": "edge", "source": "20260531220042496777_b9c283d4", "target": "20260531215656991150_df547740", "type": "uses"}
+{"kind": "edge", "source": "20260531220042496777_b9c283d4", "target": "20260531215656689557_33e1cd6e", "type": "uses"}
+{"kind": "edge", "source": "20260531220042496777_b9c283d4", "target": "20260531215656664180_4788ae2b", "type": "uses"}
+{"kind": "edge", "source": "20260531220042496777_b9c283d4", "target": "20260531215656967277_b5397c19", "type": "uses"}
+{"kind": "edge", "source": "20260531220042496777_b9c283d4", "target": "20260531215656756511_203b8056", "type": "uses"}
+{"kind": "edge", "source": "20260531220042496777_b9c283d4", "target": "20260531215657065409_c4538a92", "type": "uses"}
+{"kind": "edge", "source": "20260531220042496777_b9c283d4", "target": "20260531215656714777_22e2ba0f", "type": "uses"}
+{"kind": "edge", "source": "20260531220042496777_b9c283d4", "target": "20260531215657021382_8021fba7", "type": "uses"}
+{"kind": "edge", "source": "20260531220042496777_b9c283d4", "target": "20260531215656737073_7b35a961", "type": "uses"}
+{"kind": "edge", "source": "20260531220042496777_b9c283d4", "target": "20260531215657043163_8e9f9e14", "type": "uses"}
+{"kind": "edge", "source": "20260531220042496777_b9c283d4", "target": "20260531215657087287_93f4b69d", "type": "uses"}
+{"kind": "edge", "source": "20260531220042496777_b9c283d4", "target": "20260531215656777255_4b09f73e", "type": "uses"}
+{"kind": "node", "id": "20260531220112171631_e25f1e92", "type": "report_section", "title": "代表性公司与路线案例", "content": "本章以“技术路径—产品进度—商业化进度—融资—团队”五栏口径，对本轮证据覆盖到的代表主体做对照。为避免超出证据边界，凡未在本轮材料中出现的细项，均明确标注为“未在本轮证据中覆盖”。\n\n### 1) Boston Dynamics（Atlas）\n- 技术路径：公司在官方博客宣布退役液压版 Atlas，并发布“fully electric Atlas”[13]。博客表述电驱 Atlas 将更强壮（stronger）且具有更广的运动范围（broader range of motion），并将探索多种夹爪（gripper variations）以适配客户环境中的操作需求[13]。\n- 产品进度：已公开发布“fully electric Atlas”（作为产品/平台迭代节点）[13]。\n- 商业化进度：官方博客表述其合作/试点路径将从 Hyundai 开始，并称会像 Stretch 一样先与小范围创新客户合作迭代 Atlas 的应用[13]。\n- 融资：未在本轮证据中覆盖。\n- 团队（关键人物/组织变化）：未在本轮证据中覆盖。\n\n### 2) Apptronik（Apollo）\n- 技术路径：未在本轮证据中覆盖（现有材料未包含其感知/控制/学习架构、硬件规格或训练数据策略）。\n- 产品进度：未在本轮证据中覆盖（现有材料未提供 Apollo 机型配置、工程样机状态或量产时间线）。\n- 商业化进度：新闻摘要线索显示 TechCrunch 报道称 Apptronik 宣布与美国制造/供应链公司 Jabil 建立新的试点合作伙伴关系，但摘要未提供试点范围、时间线、商业条款等细节[15]。\n- 融资：Austin Business Journal 报道（摘要线索）称 Apptronik 在 2026-02-11 披露获得 5.2 亿美元融资，摘要提及投资方包括 Mercedes-Benz、John Deere、Qatar Investment Authority 等[14]。\n- 团队（关键人物/组织变化）：未在本轮证据中覆盖。\n\n### 3) Fourier Intelligence（GR-1）\n- 技术路径：公司 GR-1 官方产品资料出现“Powered by LLM”表述，显示其在产品叙事中将大语言模型能力作为关键卖点之一[16]。\n- 产品进度：未在本轮证据中覆盖（现有材料未能提供 GR-1 具体规格、传感器/自由度/负载等参数，也未覆盖交付节奏）。\n- 商业化进度：未在本轮证据中覆盖。\n- 融资：未在本轮证据中覆盖。\n- 团队（关键人物/组织变化）：未在本轮证据中覆盖。\n- 补充（硬件与执行器模块化线索）：GR-1 资料中提到 Smart Actuator（FSA）将 motor/driver/reducer/encoder 集成为单一模块，用于为 GR-1 提供动力与控制[17]。\n\n### 4) NVIDIA（平台型：Isaac/GR00T）\n- 技术路径：NVIDIA 于 2024-03-18 新闻稿宣布 Project GR00T：面向人形机器人的 foundation model，并提到 Isaac Robotics 平台更新[18]。\n- 产品进度：NVIDIA 于 2025-03-18 新闻稿宣布 Isaac GR00T N1，并在标题中同时提及“Simulation Frameworks to Speed Robot Development”[19]。本轮材料未包含 GR00T N1 的具体开放内容、版本形态或可获取方式细节。\n- 商业化进度：未在本轮证据中覆盖（未提供客户、收入或部署信息）。\n- 融资：不适用/未在本轮证据中覆盖（新闻稿未提供融资信息）。\n- 团队（关键人物/组织变化）：未在本轮证据中覆盖。\n\n#### 必须披露的冲突点：关于“world’s first open”\nNVIDIA 在 2025-03-18 新闻稿标题中宣称 Isaac GR00T N1 为“the World’s First Open Humanoid Robot Foundation Model”[19]。然而，本轮材料缺少对“open/开放”具体含义与边界（例如是否开源权重、训练数据、许可协议或接口层开放）以及独立第三方来源的交叉验证，因此该“first/open”应被视为存在口径不确定性的官方宣称，需在后续尽调中进一步核验其可用性与开放程度[19]。", "section_type": "case_studies"}
+{"kind": "edge", "source": "20260531220112171631_e25f1e92", "target": "20260531215617232253_9f8f711e", "type": "uses"}
+{"kind": "edge", "source": "20260531220112171631_e25f1e92", "target": "20260531215617252672_1d53a810", "type": "uses"}
+{"kind": "edge", "source": "20260531220112171631_e25f1e92", "target": "20260531215617272958_9ad6e647", "type": "uses"}
+{"kind": "edge", "source": "20260531220112171631_e25f1e92", "target": "20260531215617293134_970355e1", "type": "uses"}
+{"kind": "edge", "source": "20260531220112171631_e25f1e92", "target": "20260531215617377413_e42d3b5c", "type": "uses"}
+{"kind": "edge", "source": "20260531220112171631_e25f1e92", "target": "20260531215617554007_faae9acd", "type": "uses"}
+{"kind": "edge", "source": "20260531220112171631_e25f1e92", "target": "20260531215617356476_e201ce56", "type": "uses"}
+{"kind": "edge", "source": "20260531220112171631_e25f1e92", "target": "20260531215617531728_b0b60594", "type": "uses"}
+{"kind": "edge", "source": "20260531220112171631_e25f1e92", "target": "20260531215617312800_d1b38e12", "type": "uses"}
+{"kind": "edge", "source": "20260531220112171631_e25f1e92", "target": "20260531215617488708_ffe42ae7", "type": "uses"}
+{"kind": "edge", "source": "20260531220112171631_e25f1e92", "target": "20260531215617333666_8848c263", "type": "uses"}
+{"kind": "edge", "source": "20260531220112171631_e25f1e92", "target": "20260531215617510811_335269cb", "type": "uses"}
+{"kind": "edge", "source": "20260531220112171631_e25f1e92", "target": "20260531215656714777_22e2ba0f", "type": "uses"}
+{"kind": "edge", "source": "20260531220112171631_e25f1e92", "target": "20260531215657021382_8021fba7", "type": "uses"}
+{"kind": "edge", "source": "20260531220112171631_e25f1e92", "target": "20260531215656737073_7b35a961", "type": "uses"}
+{"kind": "edge", "source": "20260531220112171631_e25f1e92", "target": "20260531215657043163_8e9f9e14", "type": "uses"}
+{"kind": "edge", "source": "20260531220112171631_e25f1e92", "target": "20260531215657109765_f675deba", "type": "uses"}
+{"kind": "node", "id": "20260531220144768666_85c896a6", "type": "report_section", "title": "对产业与投资的启示", "content": "本章仅基于前述公开证据中“技术路线的可见方向”与“公司/平台的公开表述”，抽象出对产业落地与投资决策更具操作性的启示；不引入市场规模、出货量等图谱外数字。\n\n### 1) 从“模型叙事”走向“可执行闭环”：语言/视觉能力需要与控制边界对齐\nRT-2 将 Vision-Language-Action 作为模型类别，并以“将 web knowledge 迁移到机器人控制”为目标，同时提出将互联网规模视觉-语言模型能力并入端到端控制以提升泛化[3][4][5]。与之呼应，SayCan 的核心是把语言与机器人可供性进行 grounding，使指令落地到“机器人能做的动作集合”上[7]。对产业与投资而言，这意味着：评估一条具身路线不能只看语言/视觉模型的能力演示，还需追问其如何与低层控制能力闭环对齐（例如通过可供性约束、端到端策略、或其他可验证接口），以及这种对齐是否能在目标场景中稳定复用[3][5][7]。\n\n### 2) 数据工程将决定迭代速度：低成本遥操作与可复用数据集是“扩展曲线”的关键支点\nMobile ALOHA 以“低成本全身遥操作”支持双臂移动操作学习，为“更高效地获取高质量示教数据”提供了公开范式[10]；BridgeData V2 则以“robot learning at scale”数据集论文入口的形式，指向数据资产化与复用的方向[11]。对企业经营与投研判断而言，需将数据采集链路（成本、吞吐、质量控制、覆盖任务分布）视为与模型结构同等重要的护城河来源，并在尽调中把“可持续数据供给”作为关键问题域[10][11]。\n\n### 3) 生成式策略（扩散）正在成为可工程化选项，但仍需与真实系统集成验证\n动作扩散路线在 2023 年以《Visuomotor Policy Learning via Action Diffusion》公开发布，并存在 Diffusion Policy 的开源实现入口[8][9]。对落地团队而言，开源实现降低了试验门槛，但是否能在具体硬件与场景上形成可靠的端到端能力，仍取决于与传感器、执行器、控制频率与安全机制的系统集成（本轮材料未覆盖这些工程细节，因此不作进一步断言）[8][9]。\n\n### 4) 仿真与平台化能力可能缩短开发周期，但“开放”口径需要严格拆解\nMuJoCo 的开源为仿真工具链生态提供了可复用基础[12]。平台侧，NVIDIA 在 2024-03-18 宣布面向人形机器人的 Project GR00T foundation model 并更新 Isaac Robotics 平台；2025-03-18 又宣布 Isaac GR00T N1，并在标题中宣称其为“world’s first open humanoid robot foundation model”，同时提及仿真框架以加速机器人开发[18][19]。对投资人与生态合作方而言，“平台是否开放”应拆解为：接口是否开放、模型权重是否可获取、许可证是否允许商用、训练数据/评测是否可复现等可核验维度。由于本轮证据缺少对“open”定义的细化与第三方交叉验证，该口径存在不确定性，需作为尽调重点风险项处理[19]。\n\n### 5) 人形公司落地路径更可能从“小范围试点+共创”开始\nBoston Dynamics 在电驱 Atlas 的官方博客中明确提及：合作将从 Hyundai 开始，并会像 Stretch 一样先与小范围创新客户合作迭代 Atlas 应用[13]。对产业方而言，这提示人形/通用机器人更现实的落地节奏可能是以试点共创验证价值闭环，再逐步拓展，而非一开始即追求大规模标准化部署（本结论仅基于 Boston Dynamics 的公开表述进行一般性归纳）[13]。\n\n### 6) 公司对比的一个实务结论：优先把“证据可核验程度”纳入投研评分\n本轮材料中，不同公司信息透明度差异显著：Boston Dynamics 的 Atlas 更新与试点路径来自官方博客，可核验度较高[13]；Apptronik 的融资与 Jabil 试点合作目前主要来自新闻摘要线索，缺少逐句原文与条款细节[14][15]；Fourier 的 GR-1 关键表述在公开资料中可见，但规格、交付与商业化信息未在本轮材料中展开[16][17]。因此，对投资决策而言，除技术路线判断外，建立一套“信息可核验度/可尽调度”的评分机制，能够更早识别信息不对称带来的风险与时间成本[13][14][15][16][17]。", "section_type": "implications"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215656797068_115cabb7", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215656463611_8815f0d6", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215656489977_496b338e", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215656818341_7eae7e67", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215656584235_42e32b49", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215656899350_279c44be", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215656991150_df547740", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215656689557_33e1cd6e", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215656664180_4788ae2b", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215656967277_b5397c19", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215656606952_6ebba700", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215656920057_e473ce43", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215656637491_8063a334", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215656944551_ced32865", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215656756511_203b8056", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215657065409_c4538a92", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215656714777_22e2ba0f", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215657021382_8021fba7", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215656737073_7b35a961", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215657043163_8e9f9e14", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215617232253_9f8f711e", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215617293134_970355e1", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215617377413_e42d3b5c", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215617554007_faae9acd", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215617356476_e201ce56", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215617531728_b0b60594", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215617312800_d1b38e12", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215617488708_ffe42ae7", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215617333666_8848c263", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215617510811_335269cb", "type": "uses"}
+{"kind": "edge", "source": "20260531220144768666_85c896a6", "target": "20260531215657109765_f675deba", "type": "uses"}
+{"kind": "node", "id": "20260531220215630571_33b60fac", "type": "report_section", "title": "局限性与后续调研清单", "content": "### 局限性\n1) 公司信息不完整导致横向可比性受限\n- Apptronik：现有材料仅覆盖 2026-02-11 披露的 5.2 亿美元融资与投资方名单，以及与 Jabil 的试点合作伙伴关系“已宣布”这一事实；但融资轮次/结构、估值、资金用途、试点范围与时间线、Apollo 机型配置、量产计划、客户部署与收入等关键变量未被本轮材料覆盖[14][15]。\n- Fourier：现有材料仅覆盖 GR-1 产品叙事中“Powered by LLM”表述与 Smart Actuator（FSA）模块化集成的线索；但产品规格、交付节奏、商业化路径、融资与团队信息未在本轮证据中覆盖，且部分信息来自摘要线索、未能逐段核对原文[16][17]。\n- NVIDIA Isaac/GR00T：新闻稿提供了 Project GR00T 与 Isaac GR00T N1 的发布节点，但缺少对模型开放范围、可获取方式、商业授权等实务信息[18][19]。\n\n2) 技术层面的“可复现细节”在本轮材料中不足\n- RT-1/RT-2/PaLM-E 等论文与官方解读在本轮材料中多以标题、发布日期与高层定位表述为主，缺少数据规模、评测指标与复现协议等细节摘录；因此本报告在技术路线框架中更偏向“路线存在与方向性”而非“性能对比”[1][3][6]。\n- BridgeData V2 在本轮材料中仅作为“robot learning at scale 数据集”的论文入口出现，缺少规模、采集协议与基准任务等信息，无法支撑对数据质量或覆盖范围的判断[11]。\n\n3) 口径不确定性（必须披露）：NVIDIA “world’s first open”\nNVIDIA 在 2025-03-18 新闻稿标题中宣称 Isaac GR00T N1 为“world’s first open humanoid robot foundation model”[19]。但本轮材料缺少对“open/开放”范围的正式定义（如权重、数据、许可证、接口开放边界）以及独立第三方来源交叉验证，因此该“first/open”主张在事实层面存在不确定性；在投研与合作决策中应以可核验条款与可获取资产为准，避免仅凭标题口径做结论[19]。\n\n### 后续调研清单（面向产业与投资尽调）\n1) 对 Apptronik 的补充核验：\n- 融资：轮次、结构、领投/跟投、估值、资金用途与资金到账节奏；\n- 试点：与 Jabil 的试点范围、时间线、KPI、商业条款；\n- 产品：Apollo 的硬件规格、量产计划、可靠性与安全认证路径；\n- 团队：核心管理层/技术负责人履历与组织架构。\n（上述条目之所以进入清单，是因为本轮材料仅覆盖融资金额/投资方与试点合作“已宣布”的摘要信息，细节缺失[14][15]。）\n\n2) 对 Fourier（GR-1）的补充核验：\n- “Powered by LLM”的具体落地形态（仅为交互/任务规划叙事，或已与控制闭环深度耦合）；\n- FSA 执行器的关键指标（扭矩密度、效率、寿命、成本、可靠性）与供应链可得性；\n- 交付/客户：是否已有交付、应用场景与部署规模；\n- 融资与团队：融资历史、投资方、关键人物。\n（本轮材料对规格与商业化细节缺乏覆盖，且部分信息未能逐段核对原文[16][17]。）\n\n3) 对 NVIDIA Isaac/GR00T 的补充核验：\n- “open”的定义与边界：是否开源权重/训练代码/数据，许可证是否允许商用与再分发；\n- GR00T N1 与仿真框架的产品形态：可下载资产、SDK/API、参考机器人、样例任务与评测；\n- 生态：与硬件厂商、系统集成商、开发者社区的合作机制。\n（本轮材料仅能确认发布节点与标题口径，缺乏可验证的开放细节[18][19]。）\n\n4) 技术路线侧补齐：\n- 数据：围绕遥操作、真机采集、合成数据与评测基准，补齐规模、协议与质量控制方法；\n- 系统工程：补齐规划/控制/实时系统/安全机制等“落地必需但本轮证据未覆盖”的工程栈参考来源；\n- 性能：对 RT-1/RT-2/扩散策略等路线在不同任务上的指标与失败模式建立可比对表。\n（本轮材料在上述维度多停留在方向性公开锚点层面[1][3][8][10][11]。）", "section_type": "limitations"}
+{"kind": "edge", "source": "20260531220215630571_33b60fac", "target": "20260531215617377413_e42d3b5c", "type": "uses"}
+{"kind": "edge", "source": "20260531220215630571_33b60fac", "target": "20260531215617554007_faae9acd", "type": "uses"}
+{"kind": "edge", "source": "20260531220215630571_33b60fac", "target": "20260531215617356476_e201ce56", "type": "uses"}
+{"kind": "edge", "source": "20260531220215630571_33b60fac", "target": "20260531215617531728_b0b60594", "type": "uses"}
+{"kind": "edge", "source": "20260531220215630571_33b60fac", "target": "20260531215617312800_d1b38e12", "type": "uses"}
+{"kind": "edge", "source": "20260531220215630571_33b60fac", "target": "20260531215617488708_ffe42ae7", "type": "uses"}
+{"kind": "edge", "source": "20260531220215630571_33b60fac", "target": "20260531215617333666_8848c263", "type": "uses"}
+{"kind": "edge", "source": "20260531220215630571_33b60fac", "target": "20260531215617510811_335269cb", "type": "uses"}
+{"kind": "edge", "source": "20260531220215630571_33b60fac", "target": "20260531215656714777_22e2ba0f", "type": "uses"}
+{"kind": "edge", "source": "20260531220215630571_33b60fac", "target": "20260531215657021382_8021fba7", "type": "uses"}
+{"kind": "edge", "source": "20260531220215630571_33b60fac", "target": "20260531215656737073_7b35a961", "type": "uses"}
+{"kind": "edge", "source": "20260531220215630571_33b60fac", "target": "20260531215657043163_8e9f9e14", "type": "uses"}
+{"kind": "edge", "source": "20260531220215630571_33b60fac", "target": "20260531215656858692_a78b1068", "type": "uses"}
+{"kind": "edge", "source": "20260531220215630571_33b60fac", "target": "20260531215656536200_017b4a94", "type": "uses"}
+{"kind": "edge", "source": "20260531220215630571_33b60fac", "target": "20260531215656797068_115cabb7", "type": "uses"}
+{"kind": "edge", "source": "20260531220215630571_33b60fac", "target": "20260531215656463611_8815f0d6", "type": "uses"}
+{"kind": "edge", "source": "20260531220215630571_33b60fac", "target": "20260531215656878911_9e71d035", "type": "uses"}
+{"kind": "edge", "source": "20260531220215630571_33b60fac", "target": "20260531215656559205_a3a31df5", "type": "uses"}
+{"kind": "edge", "source": "20260531220215630571_33b60fac", "target": "20260531215656606952_6ebba700", "type": "uses"}
+{"kind": "edge", "source": "20260531220215630571_33b60fac", "target": "20260531215656920057_e473ce43", "type": "uses"}
+{"kind": "edge", "source": "20260531220215630571_33b60fac", "target": "20260531215656991150_df547740", "type": "uses"}
+{"kind": "edge", "source": "20260531220215630571_33b60fac", "target": "20260531215656689557_33e1cd6e", "type": "uses"}
+{"kind": "edge", "source": "20260531220215630571_33b60fac", "target": "20260531215656664180_4788ae2b", "type": "uses"}
+{"kind": "edge", "source": "20260531220215630571_33b60fac", "target": "20260531215656967277_b5397c19", "type": "uses"}
+{"kind": "edge", "source": "20260531220215630571_33b60fac", "target": "20260531215657109765_f675deba", "type": "uses"}

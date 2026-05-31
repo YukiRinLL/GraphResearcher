@@ -216,8 +216,3 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
-
-# GraphResearcher run artifacts
-research_graph*.jsonl
-report*.md
-gr_test/

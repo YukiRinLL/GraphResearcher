@@ -1,0 +1,531 @@
+{"type": "_graphresearcher", "source": "graph-researcher"}
+{"kind": "node", "id": "20260531203311336370_744a0be4", "type": "user_request", "request": "整理截至 2026-05-31 的全球具身智能（Embodied AI）发展技术路线，并按路线列出代表性公司；对每家公司总结：技术路径（模型/学习范式/硬件与传感/仿真与数据闭环等）、产品进度（原型/量产/部署）、商业化进度（客户/定价/收入或落地行业）、融资情况（轮次/金额/投资方/估值如可得）、团队情况（创始人与关键技术背景、团队规模/组织特征如公开）。输出为中文研究报告，面向产业与投资分析读者；时间窗口默认 2022-01 至 2026-05。", "research_goal": "整理截至 2026-05-31 的全球具身智能（Embodied AI）发展技术路线，并按路线列出代表性公司；对每家公司总结其技术路径、产品进度、商业化进度、融资情况与团队情况，形成面向产业与投资分析读者的中文研究报告（默认时间窗口 2022-01 至 2026-05）。", "language": "中文"}
+{"kind": "node", "id": "20260531203311346847_2eacf097", "type": "query", "text": "2022-01 至 2026-05 全球具身智能（Embodied AI）主要技术路线梳理：端到端策略学习/模仿学习、基于大模型的机器人（VLA/VLM+控制）、分层规划与传统机器人栈融合、强化学习与仿真驱动、数据闭环与远程操作等；各路线的关键里程碑与代表性方法。", "status": "blocked", "sufficiency_score": 0.0}
+{"kind": "node", "id": "20260531203311363618_3dec977b", "type": "query", "text": "按“通用人形机器人（Humanoid）”路线，筛选全球代表性公司（2022-01 至 2026-05）：公司名单与公开信息入口（官网、产品页、论文/博客、演示视频、招聘/团队页面、投融资公告/数据库）。", "status": "blocked", "sufficiency_score": 0.0}
+{"kind": "node", "id": "20260531203311379410_65c32d32", "type": "query", "text": "按“移动操作机器人/仓储物流具身智能（AMR+Manipulation）”路线，筛选全球代表性公司（2022-01 至 2026-05）：公司名单、核心产品与部署场景、客户与商业化信息来源。", "status": "blocked", "sufficiency_score": 0.0}
+{"kind": "node", "id": "20260531203311395846_80c3e951", "type": "query", "text": "按“机器人基础模型/机器人软件平台与数据基础设施（robot foundation models, simulation, teleop, data engine）”路线，筛选全球代表性公司与开源/研究机构（2022-01 至 2026-05）：模型/学习范式、数据来源与闭环方式、与硬件生态的结合。", "status": "blocked", "sufficiency_score": 0.0}
+{"kind": "node", "id": "20260531203311412304_e667d657", "type": "query", "text": "全球具身智能公司投融资与估值信息汇总（2022-01 至 2026-05）：按路线与地区统计主要融资轮次/金额/投资方/估值（如可得），并标注信息来源（新闻稿、监管披露、投融资数据库、媒体报道）。", "status": "pending"}
+{"kind": "node", "id": "20260531203311426714_fb811ebf", "type": "query", "text": "具身智能关键硬件与传感器/计算平台路线（2022-01 至 2026-05）：执行器（电机/减速器/力控）、灵巧手、视觉与触觉传感、边缘计算与加速芯片；对应的代表性供应商及其与具身智能整机/平台公司的合作关系。 ", "status": "pending"}
+{"kind": "node", "id": "20260531203346294670_88fdfdb0", "type": "user_request", "request": "围绕全球具身智能主要技术路线做结构化研究（2022-01至2026-05），输出：1) 路线分类；2) 各路线关键论文/系统/里程碑（按年份）；3) 产业典型落地方向；4) 每条路线“路线定义+优势/短板+判断”摘要。中文、条目化、带时间点、公开来源优先（论文/博客/技术报告）。", "research_goal": "围绕全球具身智能（Embodied AI）在2022-01至2026-05期间的主要技术路线开展结构化研究，输出路线分类、各路线年度关键论文/系统/里程碑、产业典型落地方向，并为每条路线给出“路线定义+优势/短板+判断”的条目化摘要，优先使用公开来源（论文/博客/技术报告）。", "language": "中文"}
+{"kind": "node", "id": "20260531203346300969_7accd755", "type": "query", "text": "2022-01至2026-05 全球具身智能主要技术路线有哪些？检索并归纳路线分类与命名（如：模仿学习/强化学习/世界模型/视觉语言动作VLA/端到端策略/分层规划/多模态大模型+机器人/仿真到现实等），要求有公开来源依据。", "status": "pending"}
+{"kind": "node", "id": "20260531203346310609_7862780e", "type": "query", "text": "2022-01至2026-05 视觉-语言-动作（VLA）与多模态大模型驱动的机器人具身智能路线：关键论文、系统与开源项目有哪些？按年份整理里程碑及其贡献点（含代表性模型/数据集/评测）。", "status": "pending"}
+{"kind": "node", "id": "20260531203346321294_5d4e60e3", "type": "query", "text": "2022-01至2026-05 基于世界模型/生成式模型/预测学习的具身智能与机器人控制路线：关键论文、系统与里程碑有哪些？按年份整理，并记录其方法框架与应用场景。", "status": "pending"}
+{"kind": "node", "id": "20260531203346330824_fea4806d", "type": "query", "text": "2022-01至2026-05 强化学习（含离线RL）与模仿学习/示教学习在具身智能中的主流路线：关键论文、系统与里程碑有哪些？按年份整理，并标注主要任务域（导航/操控/移动操作等）。", "status": "pending"}
+{"kind": "node", "id": "20260531203346339773_fad81bad", "type": "query", "text": "2022-01至2026-05 数据与基础设施路线：具身智能相关的大规模机器人数据集、仿真平台、基准评测与真实机器人平台有哪些关键里程碑？按年份整理，并说明其对技术路线的支撑关系。", "status": "pending"}
+{"kind": "node", "id": "20260531203346350016_e91d2004", "type": "query", "text": "2022-01至2026-05 产业落地视角：具身智能在工业/仓储物流/服务机器人/家庭/医疗/无人系统等方向的典型落地案例与产品路线有哪些？检索公开资料并按方向归纳其对应技术路线与时间点。", "status": "pending"}
+{"kind": "node", "id": "20260531203939473265_3b287a8e", "type": "search_run", "query_id": "20260531203311426714_fb811ebf"}
+{"kind": "node", "id": "20260531203939496951_acde5a52", "type": "source", "url": "https://xelarobotics.com/press-release/xela-robotics-unlocks-enhanced-automation-for-humanoid-and-industrial-robots/", "title": "XELA Robotics Unlocks Enhanced Automation for Humanoid and Industrial Robots", "source_type": "news"}
+{"kind": "node", "id": "20260531203939510983_ed825e73", "type": "source", "url": "https://www.therobotreport.com/xela-robotics-show-tactile-sensing-2026-robotics-summit-expo/", "title": "XELA Robotics to show tactile sensing at the 2026 Robotics Summit & Expo", "source_type": "news"}
+{"kind": "node", "id": "20260531203939525782_3f52d8f5", "type": "source", "url": "https://www.gelsight.com/products/", "title": "Tactile Robotics | Tactile Sensing | Digital Touch - GelSight (Products)", "source_type": "other"}
+{"kind": "node", "id": "20260531203939541127_c7ade973", "type": "source", "url": "https://www.syntouchllc.com/Products/BioTac/", "title": "BioTac - SynTouch", "source_type": "other"}
+{"kind": "node", "id": "20260531203939557797_d4212447", "type": "source", "url": "https://schunk.com/us/en/gripping-systems/special-gripper/svh/c/PGR_3161", "title": "SVH 5-finger servo-electric gripping hand - SCHUNK", "source_type": "other"}
+{"kind": "node", "id": "20260531203939577368_79c3785b", "type": "source", "url": "https://shadowrobot.com/dexterous-hand-series/", "title": "Shadow Dexterous Hand Series - Research and Development Tool", "source_type": "other"}
+{"kind": "node", "id": "20260531203939591274_7aebcb17", "type": "source", "url": "https://shadowrobot.com/dex-ee_series/", "title": "DEX-EE Series - Shadow Robot", "source_type": "other"}
+{"kind": "node", "id": "20260531203939604627_b6f66a92", "type": "source", "url": "https://www.allegrohand.com/", "title": "Allegro Hand", "source_type": "other"}
+{"kind": "node", "id": "20260531203939618073_9d019df2", "type": "source", "url": "https://developer.nvidia.com/blog/introducing-nvidia-jetson-thor-the-ultimate-platform-for-physical-ai/", "title": "Introducing NVIDIA Jetson Thor, the Ultimate Platform for Physical AI | NVIDIA Technical Blog", "source_type": "blog"}
+{"kind": "node", "id": "20260531203939632865_47b3b4a6", "type": "source", "url": "https://nvidianews.nvidia.com/news/nvidia-releases-new-physical-ai-models-as-global-partners-unveil-next-generation-robots", "title": "NVIDIA Releases New Physical AI Models as Global Partners Unveil Next-Generation Robots", "source_type": "news"}
+{"kind": "node", "id": "20260531203939648482_eb24a91b", "type": "source", "url": "https://www.amd.com/en/products/system-on-modules/kria.html", "title": "Kria™ SOMs - AMD", "source_type": "other"}
+{"kind": "node", "id": "20260531203939666330_e1417017", "type": "source", "url": "https://www.amd.com/en/products/system-on-modules/kria/k26/robotics.html", "title": "Kria KR260 Robotics Starter Kit - AMD", "source_type": "other"}
+{"kind": "node", "id": "20260531203939684700_84b7ff25", "type": "source", "url": "https://builders.intel.com/solutionslibrary/open-real-time-ai-robotics-control-at-the-edge", "title": "Open, Real-Time AI Robotics Control at the Edge", "source_type": "other"}
+{"kind": "node", "id": "20260531203939699834_2e59b120", "type": "source", "url": "https://www.flexiv.com/news/an-introduction-to-robotic-arms-in-manufacturing", "title": "An Introduction to Robotic Arms in Manufacturing - Flexiv", "source_type": "other"}
+{"kind": "node", "id": "20260531203939715658_e35257e6", "type": "source", "url": "https://www.moog.com/content/dam/moog/literature/ICD/Moog_IntegratedSmartActuator.pdf", "title": "INTEGRATED SMART ACTUATOR - Moog Inc. (PDF)", "source_type": "report"}
+{"kind": "node", "id": "20260531203939731408_7341148a", "type": "source", "url": "https://www.festo.com/us/en/e/about-festo/research-and-development/bionic-learning-network/bionic-learning-network/bionic-grippers-and-soft-robots/bioniccobot-id_33294/", "title": "BionicCobot | Festo USA", "source_type": "other"}
+{"kind": "node", "id": "20260531203939746441_d95216b2", "type": "document", "text": "XELA Robotics 的新闻稿，围绕其 uSkin 触觉传感器在机器人自动化与灵巧操作中的定位展开，表述该触觉传感器被设计为可集成到平行夹爪与多指自适应夹爪/机器人手等末端执行器中，并将其应用场景指向人形与工业机器人。", "source_id": "20260531203939496951_acde5a52"}
+{"kind": "node", "id": "20260531203939760983_6014036d", "type": "document", "text": "The Robot Report 的报道，介绍 XELA Robotics 将在 2026 Robotics Summit & Expo 展示触觉传感方案，并提及其与 Waseda University 的合作演示（报道中描述了使用“robotic nail/触觉指甲”等方案完成拾取纸牌等演示任务的线索；具体细节需以原文为准）。", "source_id": "20260531203939510983_ed825e73"}
+{"kind": "node", "id": "20260531203939775918_fb3cfa1d", "type": "document", "text": "GelSight 的产品汇总页，介绍其触觉传感产品线，并包含一条合作表述：与 Facebook AI Research 合作制造 DIGIT 触觉传感器（措辞为“In partnership with Facebook AI Research, GelSight is manufacturing DIGIT ...”，其余用途/场景表述以页面为准）。", "source_id": "20260531203939525782_3f52d8f5"}
+{"kind": "node", "id": "20260531203939792247_1b112b86", "type": "document", "text": "SynTouch 的 BioTac 产品页，描述 BioTac 触觉传感器的能力与定位，包括可感知力、振动、温度等触觉维度，并将其定位为可用于机器触觉/机器人等应用（具体措辞与指标以页面为准）。", "source_id": "20260531203939541127_c7ade973"}
+{"kind": "node", "id": "20260531203939807229_2a1782d7", "type": "document", "text": "SCHUNK 的 SVH 五指伺服电动仿人手产品页，概述该产品作为五指灵巧夹持/抓取手的定位与主要特性（页面未在素材摘要中给出明确合作客户或整机集成案例）。", "source_id": "20260531203939557797_d4212447"}
+{"kind": "node", "id": "20260531203939822916_e9c8ebc5", "type": "document", "text": "Shadow Robot Company 的 Dexterous Hand Series 产品页，将其五指灵巧手定位为研究与开发工具，面向灵巧操作、遥操作等研发使用场景（素材摘要未提供具体客户/整机合作点名）。", "source_id": "20260531203939577368_79c3785b"}
+{"kind": "node", "id": "20260531203939837667_09ce8177", "type": "document", "text": "Shadow Robot Company 的 DEX-EE Series 产品页，介绍 DEX-EE 系列作为更“robust”的灵巧手方案，面向机器学习/研究用途等场景（素材摘要未提供具体客户/整机合作点名）。", "source_id": "20260531203939591274_7aebcb17"}
+{"kind": "node", "id": "20260531203939853754_7312ab3c", "type": "document", "text": "Allegro Hand 官方站点/产品页，描述 Allegro Hand 作为多自由度机器人灵巧手平台用于抓取/操作等（素材摘要未提供明确合作客户或整机集成新闻稿）。", "source_id": "20260531203939604627_b6f66a92"}
+{"kind": "node", "id": "20260531203939869116_348d26e1", "type": "document", "text": "NVIDIA Developer 技术博客文章，发布并介绍 Jetson Thor，定位为面向 Physical AI 的平台，面向机器人/具身相关工作负载（性能与平台特性细节需以原文为准）。", "source_id": "20260531203939618073_9d019df2"}
+{"kind": "node", "id": "20260531203939884864_e348e120", "type": "document", "text": "NVIDIA Newsroom 新闻稿，宣布 NVIDIA 发布新的 Physical AI 模型，并称多个全球合作伙伴展示下一代机器人；该文被素材摘要标注为可用于“平台与机器人伙伴/整机”的合作生态证据线索（具体伙伴名单与表述需以原文为准）。", "source_id": "20260531203939632865_47b3b4a6"}
+{"kind": "node", "id": "20260531203939899479_6caf70ab", "type": "document", "text": "AMD Kria SOM 产品页，介绍 Kria 系列 System-on-Modules，并将其目标应用指向 vision AI、robotics、工业等边缘计算场景（具体型号差异与指标需以页面为准）。", "source_id": "20260531203939648482_eb24a91b"}
+{"kind": "node", "id": "20260531203939913933_6a103a4a", "type": "document", "text": "AMD Kria KR260 Robotics Starter Kit 页面，介绍 KR260 作为面向机器人（含开发套件/快速开发）用途的产品页面（素材摘要提及 ROS2 相关定位线索，但具体措辞需以原文为准）。", "source_id": "20260531203939666330_e1417017"}
+{"kind": "node", "id": "20260531203939927733_bb5915b2", "type": "document", "text": "Intel Builders 解决方案库页面，描述一种面向边缘的开放、实时 AI 机器人控制方案，强调 real-time 控制、AI 推理与编排，并在素材摘要中被指出包含 Intel 与 Canonical/Ubuntu 生态相关的叙述线索（具体合作措辞与技术栈以原文为准）。", "source_id": "20260531203939684700_84b7ff25"}
+{"kind": "node", "id": "20260531203939942737_db70e8a8", "type": "document", "text": "Flexiv 的公司文章页面，围绕制造业中的机器人机械臂展开，并在素材摘要中指出其描述了 Flexiv 自适应机器人在关节层面集成力/力矩传感并支持全身力控与精细力觉操作的表述（具体表述与范围以原文为准）。", "source_id": "20260531203939699834_2e59b120"}
+{"kind": "node", "id": "20260531203939960758_03f73a82", "type": "document", "text": "Moog 的 Integrated Smart Actuator 产品资料 PDF，包含其集成式智能执行器的卖点描述，素材摘要指出其中强调高动态与精确力控（precise force control）等能力，但未提供与具体具身整机/平台合作的案例信息。", "source_id": "20260531203939715658_e35257e6"}
+{"kind": "node", "id": "20260531203939978622_e307648f", "type": "document", "text": "Festo 的 BionicCobot 项目/产品介绍页，介绍该项目的协作与直观操作定位，作为执行器/力控方向的公司级项目材料补充线索；素材摘要未提供与外部具身整机合作的点名证据。", "source_id": "20260531203939731408_7341148a"}
+{"kind": "node", "id": "20260531203939995459_a99c3d8c", "type": "evidence", "claim": "XELA Robotics 表示其 uSkin 触觉传感器被设计为可无缝集成到平行夹爪与多指自适应夹爪等末端执行器中，并面向人形与工业机器人应用场景。", "status": "pending"}
+{"kind": "node", "id": "20260531203940020371_48a7a520", "type": "evidence", "claim": "The Robot Report 报道称 XELA Robotics 在 2026 Robotics Summit & Expo 的展示包含与 Waseda University 的合作演示内容。", "status": "pending"}
+{"kind": "node", "id": "20260531203940045207_5a13eb31", "type": "evidence", "claim": "GelSight 在其产品页中声明与 Facebook AI Research 合作制造 DIGIT 触觉传感器。", "status": "pending"}
+{"kind": "node", "id": "20260531203940068414_e4d462c7", "type": "evidence", "claim": "SynTouch 的 BioTac 产品页将 BioTac 描述为可感知力、振动与温度等触觉信息的传感器。", "status": "pending"}
+{"kind": "node", "id": "20260531203940091635_ce430edd", "type": "evidence", "claim": "NVIDIA 的技术博客文章发布并介绍 Jetson Thor，定位为面向 Physical AI 的平台。", "status": "pending"}
+{"kind": "node", "id": "20260531203940114812_7a41f327", "type": "evidence", "claim": "NVIDIA 新闻稿称其发布新的 Physical AI 模型，并提到多个全球合作伙伴展示下一代机器人。", "status": "pending"}
+{"kind": "node", "id": "20260531203940137145_e5dc9f38", "type": "evidence", "claim": "AMD Kria SOM 产品页将 Kria SOM 的目标应用包含 robotics 与 vision AI 等边缘场景。", "status": "pending"}
+{"kind": "node", "id": "20260531203940159243_5484a89c", "type": "evidence", "claim": "Intel Builders 方案页描述了一种面向边缘的开放、实时 AI 机器人控制方案，强调实时控制与 AI 推理能力。", "status": "pending"}
+{"kind": "node", "id": "20260531203940181385_2e9f705b", "type": "evidence", "claim": "Flexiv 的公司文章页面表述其自适应机器人在关节层面集成力/力矩传感能力并支持全身力控。", "status": "pending"}
+{"kind": "node", "id": "20260531203940205402_f1edbeb0", "type": "evidence", "claim": "Moog 的 Integrated Smart Actuator 产品资料强调其执行器具备精确力控能力（precise force control）。", "status": "pending"}
+{"kind": "node", "id": "20260531203940232982_d9803d79", "type": "evidence", "claim": "新闻稿摘要线索：uSkin 触觉传感器“seamlessly integrate”到 parallel grippers、multi-finger adaptive grippers，并将目标场景指向 humanoid and industrial robots。（limitations：此处证据片段来自用户提供的页面摘要转述，未直接摘录原文句子；需回看页面原文核对精确措辞与范围。）", "status": "pending"}
+{"kind": "node", "id": "20260531203940255990_f4a4cf38", "type": "evidence", "claim": "媒体报道摘要线索：The Robot Report 提到 XELA 将展示触觉传感，并提及与 Waseda University 的合作演示。（limitations：此处未提供原文日期与逐字引文；需回看页面以确认具体合作内容与演示细节。）", "status": "pending"}
+{"kind": "node", "id": "20260531203940282858_4914f861", "type": "evidence", "claim": "产品页摘要线索：GelSight 产品页包含表述“In partnership with Facebook AI Research, GelSight is manufacturing DIGIT ...”。（limitations：此处为用户转述的关键句，未贴出完整上下文；但属于一手产品页，回看原文可提升置信度。）", "status": "pending"}
+{"kind": "node", "id": "20260531203940304275_e18193e4", "type": "evidence", "claim": "产品页摘要线索：SynTouch BioTac 页面描述其感知模态包括 force、vibration、temperature。（limitations：未逐字引用；需回看原文以确认模态定义与测量口径。）", "status": "pending"}
+{"kind": "node", "id": "20260531203940323349_54037ed1", "type": "evidence", "claim": "NVIDIA Developer Blog 页面标题为“Introducing NVIDIA Jetson Thor, the Ultimate Platform for Physical AI”，标题本身表明 Jetson Thor 的定位为 Physical AI 平台。（limitations：仅基于标题与素材摘要；需回看正文确认发布时间与适用范围。）", "status": "pending"}
+{"kind": "node", "id": "20260531203940343488_240a63d8", "type": "evidence", "claim": "NVIDIA Newsroom 新闻稿标题为“NVIDIA Releases New Physical AI Models as Global Partners Unveil Next-Generation Robots”，标题表明其发布 physical AI models 并关联全球合作伙伴展示机器人。（limitations：伙伴清单与“采用/合作”的强度需以正文措辞为准。）", "status": "pending"}
+{"kind": "node", "id": "20260531203940363486_89e9d19d", "type": "evidence", "claim": "AMD Kria SOM 产品页摘要线索：页面将 Kria SOM 应用指向 vision AI、robotics、工业等。（limitations：需回看页面以提取明确的产品系列、型号与具体指标/软件栈。）", "status": "pending"}
+{"kind": "node", "id": "20260531203940383342_02d6bf05", "type": "evidence", "claim": "Intel Builders 方案页摘要线索：页面描述 open、modular 的 edge robotics control，强调 real-time capable control + AI inference + orchestration，并涉及 Ubuntu/Canonical 生态线索。（limitations：需回看原文确认是否明确“Intel × Canonical”合作措辞，以及适用硬件平台与实时性指标口径。）", "status": "pending"}
+{"kind": "node", "id": "20260531203940404016_992e5755", "type": "evidence", "claim": "Flexiv 页面摘要线索：表述其自适应机器人具备“force-torque sensors on each joint enabling whole-body force control”。（limitations：该表述来自素材摘要转述；需回看原文确认是否为“每个关节”或特定关节/轴、以及适用产品线范围。）", "status": "pending"}
+{"kind": "node", "id": "20260531203940433861_e62d3c2c", "type": "evidence", "claim": "Moog 执行器资料 PDF 摘要线索：强调 high dynamics 与 precise force control。（limitations：需回看 PDF 获取原文条款、指标参数与测试条件。）", "status": "pending"}
+{"kind": "node", "id": "20260531204019633110_31fd1b34", "type": "search_run", "query_id": "20260531203311412304_e667d657"}
+{"kind": "node", "id": "20260531204019648701_fe9bd1d7", "type": "source", "url": "https://www.reuters.com/technology/robotics-startup-figure-raises-675-mln-microsoft-nvidia-other-big-techs-2024-02-29/", "title": "Robotics startup Figure raises $675 mln from Microsoft, Nvidia, OpenAI", "source_type": "news"}
+{"kind": "node", "id": "20260531204019662573_b42ec7d9", "type": "source", "url": "https://www.cnbc.com/2024/02/29/robot-startup-figure-valued-at-2point6-billion-by-bezos-amazon-nvidia.html", "title": "Humanoid robot startup Figure AI valued at $2.6 billion as Bezos, OpenAI, Nvidia join funding", "source_type": "news"}
+{"kind": "node", "id": "20260531204019672316_a9201b20", "type": "source", "url": "https://www.1x.tech/discover/1x-secures-100m-in-series-b-funding", "title": "1X Secures $100M in Series B Funding", "source_type": "news"}
+{"kind": "node", "id": "20260531204019682259_30adbdfc", "type": "source", "url": "https://www.geekwire.com/2022/agility-robotics-raises-150m-from-amazon-and-others-to-build-robots-used-in-the-workplace/", "title": "Agility Robotics raises $150M from Amazon and others to build human-like robots used in warehouses", "source_type": "news"}
+{"kind": "node", "id": "20260531204019692540_ba851944", "type": "source", "url": "https://markets.financialcontent.com/stocks/article/bizwire-2022-4-22-agility-robotics-raises-150m-series-b-led-by-dcvc-and-playground-global-to-accelerate-blended-human-robot-workplaces", "title": "Agility Robotics Raises $150M Series B Led by DCVC and Playground Global to Accelerate Blended Human-Robot Workplaces", "source_type": "news"}
+{"kind": "node", "id": "20260531204019701930_0b7d72c2", "type": "source", "url": "https://www.businesswire.com/news/home/20230404005494/en/Covariant-Adds-%2475M-in-Series-C-Funds-to-Meet-Customer-Demand-for-Scaled-AI-Robotics-Deployments", "title": "Covariant Adds $75M in Series C Funds to Meet Customer Demand for Scaled AI Robotics Deployments", "source_type": "news"}
+{"kind": "node", "id": "20260531204019712454_1b985b8f", "type": "source", "url": "https://techcrunch.com/2023/04/04/covariants-robotic-picking-at-nabs-another-75m/", "title": "Covariant’s robotic picking AI nabs another $75M", "source_type": "news"}
+{"kind": "node", "id": "20260531204019723059_f9261e24", "type": "source", "url": "https://www.businesswire.com/news/home/20240709306400/en/Skild-AI-Raises-%24300M-Series-A-To-Build-A-Scalable-AI-Foundation-Model-For-Robotics", "title": "Skild AI Raises $300M Series A To Build A Scalable AI Foundation Model For Robotics", "source_type": "news"}
+{"kind": "node", "id": "20260531204019732925_70afffe6", "type": "source", "url": "https://www.cnbc.com/2024/11/04/jeff-bezos-and-openai-invest-in-robot-startup-physical-intelligence.html", "title": "Jeff Bezos and OpenAI invest in robot startup Physical Intelligence at $2.4 billion valuation", "source_type": "news"}
+{"kind": "node", "id": "20260531204019743988_eeccd724", "type": "source", "url": "https://www.nytimes.com/2024/11/04/business/dealbook/physical-intelligence-robot-ai.html", "title": "Physical Intelligence, a Robot A.I. Specialist, Raises Millions From Bezos (Published 2024)", "source_type": "news"}
+{"kind": "node", "id": "20260531204019755304_b0707765", "type": "source", "url": "https://techcrunch.com/2023/09/05/robot-software-firm-mujin-raises-85m/", "title": "Robot software firm Mujin raises $85M", "source_type": "news"}
+{"kind": "node", "id": "20260531204019765875_8cb51598", "type": "source", "url": "https://thebridge.jp/en/2023/09/mujin-series-c-round-funding", "title": "Japanese robotics startup Mujin secures $83M in series C for Europe expansion", "source_type": "news"}
+{"kind": "node", "id": "20260531204019777003_684cf117", "type": "source", "url": "https://www.therobotreport.com/amp-robotics-recycling-robots-bring-in-91m/", "title": "AMP Robotics’ recycling robots bring in $91M", "source_type": "news"}
+{"kind": "node", "id": "20260531204019787521_2c5ff882", "type": "source", "url": "https://techcrunch.com/2022/05/17/warehouse-robotics-firm-greyorange-raises-110m-via-growth-financing/", "title": "Warehouse robotics firm GreyOrange raises $110M via growth financing", "source_type": "news"}
+{"kind": "node", "id": "20260531204019796344_db04f8ad", "type": "source", "url": "https://www.prnewswire.com/news-releases/locus-robotics-announces-117-million-in-series-f-funding-bringing-its-valuation-close-to-2-billion-301688564.html", "title": "LOCUS ROBOTICS ANNOUNCES $117 MILLION IN SERIES F FUNDING, BRINGING ITS VALUATION CLOSE TO $2 BILLION", "source_type": "news"}
+{"kind": "node", "id": "20260531204019806405_366cf903", "type": "source", "url": "https://www.businesswire.com/news/home/20230227005207/en/Skydio-Soars-Into-2023-as-it-Meets-Critical-Infrastructure-Need", "title": "Skydio Soars Into 2023 as it Meets Critical Infrastructure Need", "source_type": "news"}
+{"kind": "node", "id": "20260531204019816567_08352487", "type": "source", "url": "https://www.calcalistech.com/ctechnews/article/h1jwyt9ia", "title": "Bright Machines bags $126 million Series C one month after closing Israeli R&D center", "source_type": "news"}
+{"kind": "node", "id": "20260531204019826841_b2789bc8", "type": "source", "url": "https://techcrunch.com/2024/12/12/anybotics-raises-60m-to-scale-autonomous-industrial-robots-in-the-u-s/", "title": "Anybotics raises $60M to bring more autonomous industrial robots to the US", "source_type": "news"}
+{"kind": "node", "id": "20260531204019836916_1c6cbc58", "type": "source", "url": "https://www.therobotreport.com/sanctuary-ai-obtains-canadian-funding-general-purpose-humanoid-development/", "title": "Sanctuary AI obtains Canadian funding for general-purpose humanoid development", "source_type": "news"}
+{"kind": "node", "id": "20260531204019846556_e653aaae", "type": "source", "url": "https://www.therobotreport.com/rightbot-unloading-robots-pick-6-25m-amazon-more/", "title": "Rightbot picks up $6.25M from Amazon and other investors for unloading robots", "source_type": "news"}
+{"kind": "node", "id": "20260531204019858204_506b04cc", "type": "source", "url": "https://www.therobotreport.com/dexterity-picks-up-95m-funding-container-unloading-robots/", "title": "Dexterity picks up $95M in funding for container loading robots", "source_type": "news"}
+{"kind": "node", "id": "20260531204019868709_7c670e42", "type": "source", "url": "https://www.intrinsic.ai/blog/posts/mission-momentum", "title": "Mission momentum: welcoming Vicarious", "source_type": "other"}
+{"kind": "node", "id": "20260531204019877135_3b64197e", "type": "document", "text": "Reuters报道人形机器人创业公司Figure完成融资，金额为6.75亿美元；报道指出投资方包括Microsoft、Nvidia、OpenAI等。", "source_id": "20260531204019648701_fe9bd1d7"}
+{"kind": "node", "id": "20260531204019886003_50694d27", "type": "document", "text": "CNBC报道人形机器人公司Figure AI在一轮融资中估值约26亿美元；标题指向投资方包括Jeff Bezos、OpenAI、Nvidia、Microsoft，并称该轮融资金额为6.75亿美元。", "source_id": "20260531204019662573_b42ec7d9"}
+{"kind": "node", "id": "20260531204019894680_a9300ef2", "type": "document", "text": "1X Technologies官网页面声明公司完成1亿美元Series B融资；页面标题未显示投资方与更多条款细节（需打开原文逐项核验）。", "source_id": "20260531204019672316_a9201b20"}
+{"kind": "node", "id": "20260531204019903926_6d641396", "type": "document", "text": "GeekWire报道Agility Robotics完成1.5亿美元融资，并提及Amazon等投资方；该融资用于打造用于仓库的人形/类人机器人。", "source_id": "20260531204019682259_30adbdfc"}
+{"kind": "node", "id": "20260531204019913662_0bb18805", "type": "document", "text": "FinancialContent聚合页转载/指向Business Wire新闻稿，标题显示Agility Robotics完成1.5亿美元Series B融资，由DCVC与Playground Global领投；其他投资方需打开页面核验。", "source_id": "20260531204019692540_ba851944"}
+{"kind": "node", "id": "20260531204019922627_14f0b4cf", "type": "document", "text": "Business Wire发布的Covariant新闻稿称，公司在Series C基础上新增7500万美元资金，以满足规模化AI机器人部署的客户需求；投资方等细节需打开原文核验。", "source_id": "20260531204019701930_0b7d72c2"}
+{"kind": "node", "id": "20260531204019931218_60bf30c5", "type": "document", "text": "TechCrunch报道Covariant新增7500万美元融资，描述为Series C扩展；累计融资额、投资方与条款需打开原文核验。", "source_id": "20260531204019712454_1b985b8f"}
+{"kind": "node", "id": "20260531204019940166_8b998010", "type": "document", "text": "Business Wire发布Skild AI新闻稿，称其完成3亿美元Series A融资，用于构建可扩展的机器人基础模型；投资方细节需打开原文核验。", "source_id": "20260531204019723059_f9261e24"}
+{"kind": "node", "id": "20260531204019948774_1594869c", "type": "document", "text": "CNBC报道机器人初创公司Physical Intelligence获得Bezos与OpenAI等投资，并在标题中给出估值约24亿美元；融资金额与轮次需要核对正文。", "source_id": "20260531204019732925_70afffe6"}
+{"kind": "node", "id": "20260531204019956372_9ddc0fb2", "type": "document", "text": "纽约时报DealBook报道机器人AI公司Physical Intelligence完成融资，提及Bezos等投资者；具体金额、轮次与条款需打开原文核验（可能存在付费墙）。", "source_id": "20260531204019743988_eeccd724"}
+{"kind": "node", "id": "20260531204019963413_38209e12", "type": "document", "text": "TechCrunch报道机器人软件公司Mujin完成8500万美元融资；轮次与投资方需打开原文核验。", "source_id": "20260531204019755304_b0707765"}
+{"kind": "node", "id": "20260531204019971595_99c855c0", "type": "document", "text": "The Bridge报道日本机器人公司Mujin完成Series C融资，金额为12.3 billion yen，并提到用于欧洲扩张；其美元折算与投资方需打开原文核验。", "source_id": "20260531204019765875_8cb51598"}
+{"kind": "node", "id": "20260531204019979387_21ada8bd", "type": "document", "text": "The Robot Report报道AMP Robotics完成Series C融资，金额为9100万美元（corporate equity）；投资方等细节需打开原文核验。", "source_id": "20260531204019777003_684cf117"}
+{"kind": "node", "id": "20260531204019987690_e256fff9", "type": "document", "text": "TechCrunch报道仓储机器人公司GreyOrange完成1.1亿美元增长融资（growth financing）；投资方与条款需打开原文核验。", "source_id": "20260531204019787521_2c5ff882"}
+{"kind": "node", "id": "20260531204019997090_b9f1e8c9", "type": "document", "text": "PR Newswire发布的Locus Robotics新闻稿称，公司完成1.17亿美元Series F融资，并称估值接近20亿美元；投资方细节需打开原文核验。", "source_id": "20260531204019796344_db04f8ad"}
+{"kind": "node", "id": "20260531204020003802_dbb0e4c2", "type": "document", "text": "Business Wire发布Skydio新闻稿，称公司融资2.3亿美元；轮次与投资方需打开原文核验。", "source_id": "20260531204019806405_366cf903"}
+{"kind": "node", "id": "20260531204020011122_03842bfb", "type": "document", "text": "Calcalist Tech报道Bright Machines完成1.26亿美元Series C融资；投资方与条款需打开原文核验。", "source_id": "20260531204019816567_08352487"}
+{"kind": "node", "id": "20260531204020018127_d6f38ad3", "type": "document", "text": "TechCrunch报道ANYbotics新增6000万美元融资，用于将其Series B总额推至文中所述水平；投资方与Series B累计金额需打开原文核验。", "source_id": "20260531204019826841_b2789bc8"}
+{"kind": "node", "id": "20260531204020024977_2c45211d", "type": "document", "text": "The Robot Report报道Sanctuary AI获得加拿大方面资金支持，用于通用人形机器人研发；资金性质（股权融资/政府资助等）与金额需打开原文核验。", "source_id": "20260531204019836916_1c6cbc58"}
+{"kind": "node", "id": "20260531204020031420_72c43e9b", "type": "document", "text": "The Robot Report报道Rightbot获得625万美元融资，投资方包括Amazon等；轮次与更多投资方需打开原文核验。", "source_id": "20260531204019846556_e653aaae"}
+{"kind": "node", "id": "20260531204020038446_b63370a2", "type": "document", "text": "The Robot Report报道Dexterity获得9500万美元融资，用于集装箱装卸/卸货机器人；轮次与投资方需打开原文核验。", "source_id": "20260531204019858204_506b04cc"}
+{"kind": "node", "id": "20260531204020046061_230c38d0", "type": "document", "text": "Intrinsic（Alphabet旗下）官方博客宣布欢迎Vicarious加入，表示已同意收购Vicarious的业务；交易金额等条款需核对正文与其他披露。", "source_id": "20260531204019868709_7c670e42"}
+{"kind": "node", "id": "20260531204020055380_bdcaaba2", "type": "evidence", "claim": "Figure完成一轮融资，融资金额为6.75亿美元，投资方包括Microsoft、Nvidia、OpenAI等。", "status": "pending"}
+{"kind": "node", "id": "20260531204020066864_25cb28a0", "type": "evidence", "claim": "Figure AI在一轮融资中估值约26亿美元；该轮融资投资方包括Jeff Bezos、OpenAI、Nvidia、Microsoft，融资金额为6.75亿美元。", "status": "pending"}
+{"kind": "node", "id": "20260531204020081635_2b7eea77", "type": "evidence", "claim": "1X Technologies于2024年1月完成1亿美元Series B融资。", "status": "pending"}
+{"kind": "node", "id": "20260531204020093209_c9bdc35c", "type": "evidence", "claim": "Agility Robotics于2022年4月完成1.5亿美元融资，投资方包含Amazon等。", "status": "pending"}
+{"kind": "node", "id": "20260531204020104936_f401bc8f", "type": "evidence", "claim": "Agility Robotics于2022年4月完成1.5亿美元Series B融资，由DCVC与Playground Global领投。", "status": "pending"}
+{"kind": "node", "id": "20260531204020118162_09dfe223", "type": "evidence", "claim": "Covariant于2023年4月在Series C基础上新增7500万美元资金（Series C extension）。", "status": "pending"}
+{"kind": "node", "id": "20260531204020130646_0ad31c04", "type": "evidence", "claim": "Skild AI于2024年7月完成3亿美元Series A融资，用于构建可扩展的机器人基础模型。", "status": "pending"}
+{"kind": "node", "id": "20260531204020141001_eab3dc5d", "type": "evidence", "claim": "Physical Intelligence在一轮融资中引入Jeff Bezos与OpenAI等投资者，并被报道估值约24亿美元。", "status": "pending"}
+{"kind": "node", "id": "20260531204020152965_c12fa91a", "type": "evidence", "claim": "Mujin于2023年9月完成8500万美元融资。", "status": "pending"}
+{"kind": "node", "id": "20260531204020169981_af1aae53", "type": "evidence", "claim": "Mujin完成Series C融资，金额为12.3 billion yen（约8300万美元量级），用于欧洲扩张。", "status": "pending"}
+{"kind": "node", "id": "20260531204020184939_d879af65", "type": "evidence", "claim": "AMP Robotics于2022年11月完成Series C融资，金额为9100万美元（corporate equity）。", "status": "pending"}
+{"kind": "node", "id": "20260531204020199834_7e82eca8", "type": "evidence", "claim": "GreyOrange于2022年5月完成1.1亿美元增长融资（growth financing）。", "status": "pending"}
+{"kind": "node", "id": "20260531204020214328_ec9c387b", "type": "evidence", "claim": "Locus Robotics于2022年11月完成1.17亿美元Series F融资，并称估值接近20亿美元。", "status": "pending"}
+{"kind": "node", "id": "20260531204020229166_264ec92e", "type": "evidence", "claim": "Skydio于2023年2月完成2.3亿美元融资。", "status": "pending"}
+{"kind": "node", "id": "20260531204020241079_242a96a3", "type": "evidence", "claim": "Bright Machines于2024年6月完成1.26亿美元Series C融资。", "status": "pending"}
+{"kind": "node", "id": "20260531204020251015_e99fc4a4", "type": "evidence", "claim": "ANYbotics于2024年12月新增6000万美元融资，用于扩展其Series B融资规模。", "status": "pending"}
+{"kind": "node", "id": "20260531204020261692_44c4d013", "type": "evidence", "claim": "Sanctuary AI于2024年7月获得加拿大方面资金支持，用于通用人形机器人研发。", "status": "pending"}
+{"kind": "node", "id": "20260531204020273939_a20cbf7e", "type": "evidence", "claim": "Rightbot于2023年12月获得625万美元融资，投资方包括Amazon等。", "status": "pending"}
+{"kind": "node", "id": "20260531204020286952_1b756e03", "type": "evidence", "claim": "Dexterity于2025年3月获得9500万美元融资。", "status": "pending"}
+{"kind": "node", "id": "20260531204020299367_36cd3053", "type": "evidence", "claim": "Intrinsic于2022年4月同意收购Vicarious的业务。", "status": "pending"}
+{"kind": "node", "id": "20260531204020312237_4dcf942a", "type": "evidence", "claim": "来源标题与素材摘要表明：Reuters报道“Figure raises $675 mln”，并点名投资方包括“Microsoft, Nvidia, OpenAI”。（limitations: 当前仅基于检索摘要转述，未逐字引用正文）", "status": "pending"}
+{"kind": "node", "id": "20260531204020324432_21696e93", "type": "evidence", "claim": "来源标题给出：Figure AI“valued at $2.6 billion”，并称“Bezos, OpenAI, Nvidia”参与融资；同一标题链路（与同日其他报道一致）指向融资额为$675M。（limitations: 标题信息可用但仍需核对正文口径）", "status": "pending"}
+{"kind": "node", "id": "20260531204020337839_6a5390af", "type": "evidence", "claim": "1X官网页面标题/摘要信息：\"1X Secures $100M in Series B Funding\"，并给出日期为2024-01-12（来自检索结果显示）。（limitations: 需打开正文核验投资方、币种、到账/承诺口径）", "status": "pending"}
+{"kind": "node", "id": "20260531204020351282_77affb45", "type": "evidence", "claim": "GeekWire标题/摘要信息指出：Agility Robotics “raises $150M from Amazon and others”。（limitations: 需核验轮次、领投/跟投列表与具体日期）", "status": "pending"}
+{"kind": "node", "id": "20260531204020362819_6675bf42", "type": "evidence", "claim": "聚合页标题明确写明：Agility Robotics “Raises $150M Series B Led by DCVC and Playground Global”。（limitations: 该URL为转载/聚合入口，建议回溯businesswire.com原文以提高证据质量并补齐投资方列表）", "status": "pending"}
+{"kind": "node", "id": "20260531204020374294_7561a76c", "type": "evidence", "claim": "Business Wire新闻稿页面标题明确写明：Covariant “Adds $75M in Series C Funds”。", "status": "pending"}
+{"kind": "node", "id": "20260531204020386162_82954986", "type": "evidence", "claim": "TechCrunch标题明确写明：Covariant “nabs another $75M”。（limitations: 投资方与轮次/extension口径需核对正文）", "status": "pending"}
+{"kind": "node", "id": "20260531204020397870_e0cb3331", "type": "evidence", "claim": "Business Wire新闻稿页面标题明确写明：Skild AI “Raises $300M Series A”。", "status": "pending"}
+{"kind": "node", "id": "20260531204020411177_be2ac9da", "type": "evidence", "claim": "CNBC标题明确写明：Physical Intelligence融资中“Bezos and OpenAI invest”，且“at $2.4 billion valuation”。（limitations: 金额与轮次未从标题中获得）", "status": "pending"}
+{"kind": "node", "id": "20260531204020423192_09a00854", "type": "evidence", "claim": "NYT DealBook标题表明：Physical Intelligence完成融资（“Raises Millions From Bezos”）。（limitations: 可能付费墙；当前仅基于标题信息，投资方与金额细节需核验正文）", "status": "pending"}
+{"kind": "node", "id": "20260531204020435723_3e4a9db0", "type": "evidence", "claim": "TechCrunch标题明确写明：Mujin “raises $85M”。", "status": "pending"}
+{"kind": "node", "id": "20260531204020449391_dbde914b", "type": "evidence", "claim": "The Bridge标题明确写明：Mujin “secures $83M in series C”。（limitations: 与其他来源存在金额口径差异，需核对币种换算与是否四舍五入）", "status": "pending"}
+{"kind": "node", "id": "20260531204020462024_2f478bdb", "type": "evidence", "claim": "The Robot Report标题明确写明：AMP Robotics “bring in $91M”。", "status": "pending"}
+{"kind": "node", "id": "20260531204020474654_12c085ed", "type": "evidence", "claim": "TechCrunch标题明确写明：GreyOrange “raises $110M via growth financing”。", "status": "pending"}
+{"kind": "node", "id": "20260531204020487102_b0d0d5dc", "type": "evidence", "claim": "PR Newswire标题明确写明：Locus Robotics “$117 million in series F funding”，并称“valuation close to $2 billion”。", "status": "pending"}
+{"kind": "node", "id": "20260531204020500039_98fb4a26", "type": "evidence", "claim": "Business Wire标题/页面信息表明：Skydio新闻稿中披露融资“$230M”。（limitations: 轮次与投资方未从标题中获得，需核验正文）", "status": "pending"}
+{"kind": "node", "id": "20260531204020513127_456f641a", "type": "evidence", "claim": "Calcalist Tech标题明确写明：Bright Machines “bags $126 million Series C”。", "status": "pending"}
+{"kind": "node", "id": "20260531204020524942_e4620740", "type": "evidence", "claim": "TechCrunch标题明确写明：Anybotics “raises $60M”。（limitations: 是否为Series B追加/收尾、投资方与总额需核验正文）", "status": "pending"}
+{"kind": "node", "id": "20260531204020535860_8ea9e93f", "type": "evidence", "claim": "The Robot Report标题表明：Sanctuary AI “obtains Canadian funding”用于通用人形研发。（limitations: 可能为政府资金/项目资助而非股权融资；金额与条款需核验正文）", "status": "pending"}
+{"kind": "node", "id": "20260531204020546324_f47912ba", "type": "evidence", "claim": "The Robot Report标题明确写明：Rightbot “picks up $6.25M from Amazon and other investors”。", "status": "pending"}
+{"kind": "node", "id": "20260531204020557440_8a33adb9", "type": "evidence", "claim": "The Robot Report标题明确写明：Dexterity “picks up $95M in funding”。", "status": "pending"}
+{"kind": "node", "id": "20260531204020571600_a21d46a7", "type": "evidence", "claim": "Intrinsic官方博客标题与摘要信息表明：Intrinsic宣布“welcoming Vicarious”，并表示同意收购Vicarious业务。（limitations: 交易金额与完成时间点需核验正文/监管披露）", "status": "pending"}
+{"kind": "node", "id": "20260531204020584015_44ec478d", "type": "conflict", "description": "同一融资事件（Mujin 2023-09 Series C）在不同来源中金额表述不同：TechCrunch称$85M；The Bridge称$83M（且提到日元口径12.3 billion yen，可能存在汇率/四舍五入差异）。需核对原始公告或公司披露以统一口径。"}
+{"kind": "edge", "source": "20260531203311336370_744a0be4", "target": "20260531203311346847_2eacf097", "type": "has_query"}
+{"kind": "edge", "source": "20260531203311336370_744a0be4", "target": "20260531203311363618_3dec977b", "type": "has_query"}
+{"kind": "edge", "source": "20260531203311336370_744a0be4", "target": "20260531203311379410_65c32d32", "type": "has_query"}
+{"kind": "edge", "source": "20260531203311336370_744a0be4", "target": "20260531203311395846_80c3e951", "type": "has_query"}
+{"kind": "edge", "source": "20260531203311336370_744a0be4", "target": "20260531203311412304_e667d657", "type": "has_query"}
+{"kind": "edge", "source": "20260531203311336370_744a0be4", "target": "20260531203311426714_fb811ebf", "type": "has_query"}
+{"kind": "edge", "source": "20260531203346294670_88fdfdb0", "target": "20260531203346300969_7accd755", "type": "has_query"}
+{"kind": "edge", "source": "20260531203346294670_88fdfdb0", "target": "20260531203346310609_7862780e", "type": "has_query"}
+{"kind": "edge", "source": "20260531203346294670_88fdfdb0", "target": "20260531203346321294_5d4e60e3", "type": "has_query"}
+{"kind": "edge", "source": "20260531203346294670_88fdfdb0", "target": "20260531203346330824_fea4806d", "type": "has_query"}
+{"kind": "edge", "source": "20260531203346294670_88fdfdb0", "target": "20260531203346339773_fad81bad", "type": "has_query"}
+{"kind": "edge", "source": "20260531203346294670_88fdfdb0", "target": "20260531203346350016_e91d2004", "type": "has_query"}
+{"kind": "edge", "source": "20260531203311426714_fb811ebf", "target": "20260531203939473265_3b287a8e", "type": "searched_by"}
+{"kind": "edge", "source": "20260531203939473265_3b287a8e", "target": "20260531203939496951_acde5a52", "type": "found_source"}
+{"kind": "edge", "source": "20260531203939473265_3b287a8e", "target": "20260531203939510983_ed825e73", "type": "found_source"}
+{"kind": "edge", "source": "20260531203939473265_3b287a8e", "target": "20260531203939525782_3f52d8f5", "type": "found_source"}
+{"kind": "edge", "source": "20260531203939473265_3b287a8e", "target": "20260531203939541127_c7ade973", "type": "found_source"}
+{"kind": "edge", "source": "20260531203939473265_3b287a8e", "target": "20260531203939557797_d4212447", "type": "found_source"}
+{"kind": "edge", "source": "20260531203939473265_3b287a8e", "target": "20260531203939577368_79c3785b", "type": "found_source"}
+{"kind": "edge", "source": "20260531203939473265_3b287a8e", "target": "20260531203939591274_7aebcb17", "type": "found_source"}
+{"kind": "edge", "source": "20260531203939473265_3b287a8e", "target": "20260531203939604627_b6f66a92", "type": "found_source"}
+{"kind": "edge", "source": "20260531203939473265_3b287a8e", "target": "20260531203939618073_9d019df2", "type": "found_source"}
+{"kind": "edge", "source": "20260531203939473265_3b287a8e", "target": "20260531203939632865_47b3b4a6", "type": "found_source"}
+{"kind": "edge", "source": "20260531203939473265_3b287a8e", "target": "20260531203939648482_eb24a91b", "type": "found_source"}
+{"kind": "edge", "source": "20260531203939473265_3b287a8e", "target": "20260531203939666330_e1417017", "type": "found_source"}
+{"kind": "edge", "source": "20260531203939473265_3b287a8e", "target": "20260531203939684700_84b7ff25", "type": "found_source"}
+{"kind": "edge", "source": "20260531203939473265_3b287a8e", "target": "20260531203939699834_2e59b120", "type": "found_source"}
+{"kind": "edge", "source": "20260531203939473265_3b287a8e", "target": "20260531203939715658_e35257e6", "type": "found_source"}
+{"kind": "edge", "source": "20260531203939473265_3b287a8e", "target": "20260531203939731408_7341148a", "type": "found_source"}
+{"kind": "edge", "source": "20260531203939496951_acde5a52", "target": "20260531203939746441_d95216b2", "type": "has_document"}
+{"kind": "edge", "source": "20260531203939510983_ed825e73", "target": "20260531203939760983_6014036d", "type": "has_document"}
+{"kind": "edge", "source": "20260531203939525782_3f52d8f5", "target": "20260531203939775918_fb3cfa1d", "type": "has_document"}
+{"kind": "edge", "source": "20260531203939541127_c7ade973", "target": "20260531203939792247_1b112b86", "type": "has_document"}
+{"kind": "edge", "source": "20260531203939557797_d4212447", "target": "20260531203939807229_2a1782d7", "type": "has_document"}
+{"kind": "edge", "source": "20260531203939577368_79c3785b", "target": "20260531203939822916_e9c8ebc5", "type": "has_document"}
+{"kind": "edge", "source": "20260531203939591274_7aebcb17", "target": "20260531203939837667_09ce8177", "type": "has_document"}
+{"kind": "edge", "source": "20260531203939604627_b6f66a92", "target": "20260531203939853754_7312ab3c", "type": "has_document"}
+{"kind": "edge", "source": "20260531203939618073_9d019df2", "target": "20260531203939869116_348d26e1", "type": "has_document"}
+{"kind": "edge", "source": "20260531203939632865_47b3b4a6", "target": "20260531203939884864_e348e120", "type": "has_document"}
+{"kind": "edge", "source": "20260531203939648482_eb24a91b", "target": "20260531203939899479_6caf70ab", "type": "has_document"}
+{"kind": "edge", "source": "20260531203939666330_e1417017", "target": "20260531203939913933_6a103a4a", "type": "has_document"}
+{"kind": "edge", "source": "20260531203939684700_84b7ff25", "target": "20260531203939927733_bb5915b2", "type": "has_document"}
+{"kind": "edge", "source": "20260531203939699834_2e59b120", "target": "20260531203939942737_db70e8a8", "type": "has_document"}
+{"kind": "edge", "source": "20260531203939715658_e35257e6", "target": "20260531203939960758_03f73a82", "type": "has_document"}
+{"kind": "edge", "source": "20260531203939731408_7341148a", "target": "20260531203939978622_e307648f", "type": "has_document"}
+{"kind": "edge", "source": "20260531203939746441_d95216b2", "target": "20260531203939995459_a99c3d8c", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531203939496951_acde5a52", "target": "20260531203939995459_a99c3d8c", "type": "supported_by"}
+{"kind": "edge", "source": "20260531203939760983_6014036d", "target": "20260531203940020371_48a7a520", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531203939510983_ed825e73", "target": "20260531203940020371_48a7a520", "type": "supported_by"}
+{"kind": "edge", "source": "20260531203939775918_fb3cfa1d", "target": "20260531203940045207_5a13eb31", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531203939525782_3f52d8f5", "target": "20260531203940045207_5a13eb31", "type": "supported_by"}
+{"kind": "edge", "source": "20260531203939792247_1b112b86", "target": "20260531203940068414_e4d462c7", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531203939541127_c7ade973", "target": "20260531203940068414_e4d462c7", "type": "supported_by"}
+{"kind": "edge", "source": "20260531203939869116_348d26e1", "target": "20260531203940091635_ce430edd", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531203939618073_9d019df2", "target": "20260531203940091635_ce430edd", "type": "supported_by"}
+{"kind": "edge", "source": "20260531203939884864_e348e120", "target": "20260531203940114812_7a41f327", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531203939632865_47b3b4a6", "target": "20260531203940114812_7a41f327", "type": "supported_by"}
+{"kind": "edge", "source": "20260531203939899479_6caf70ab", "target": "20260531203940137145_e5dc9f38", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531203939648482_eb24a91b", "target": "20260531203940137145_e5dc9f38", "type": "supported_by"}
+{"kind": "edge", "source": "20260531203939927733_bb5915b2", "target": "20260531203940159243_5484a89c", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531203939684700_84b7ff25", "target": "20260531203940159243_5484a89c", "type": "supported_by"}
+{"kind": "edge", "source": "20260531203939942737_db70e8a8", "target": "20260531203940181385_2e9f705b", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531203939699834_2e59b120", "target": "20260531203940181385_2e9f705b", "type": "supported_by"}
+{"kind": "edge", "source": "20260531203939960758_03f73a82", "target": "20260531203940205402_f1edbeb0", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531203939715658_e35257e6", "target": "20260531203940205402_f1edbeb0", "type": "supported_by"}
+{"kind": "edge", "source": "20260531203939746441_d95216b2", "target": "20260531203940232982_d9803d79", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531203939496951_acde5a52", "target": "20260531203940232982_d9803d79", "type": "supported_by"}
+{"kind": "edge", "source": "20260531203939760983_6014036d", "target": "20260531203940255990_f4a4cf38", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531203939510983_ed825e73", "target": "20260531203940255990_f4a4cf38", "type": "supported_by"}
+{"kind": "edge", "source": "20260531203939775918_fb3cfa1d", "target": "20260531203940282858_4914f861", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531203939525782_3f52d8f5", "target": "20260531203940282858_4914f861", "type": "supported_by"}
+{"kind": "edge", "source": "20260531203939792247_1b112b86", "target": "20260531203940304275_e18193e4", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531203939541127_c7ade973", "target": "20260531203940304275_e18193e4", "type": "supported_by"}
+{"kind": "edge", "source": "20260531203939869116_348d26e1", "target": "20260531203940323349_54037ed1", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531203939618073_9d019df2", "target": "20260531203940323349_54037ed1", "type": "supported_by"}
+{"kind": "edge", "source": "20260531203939884864_e348e120", "target": "20260531203940343488_240a63d8", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531203939632865_47b3b4a6", "target": "20260531203940343488_240a63d8", "type": "supported_by"}
+{"kind": "edge", "source": "20260531203939899479_6caf70ab", "target": "20260531203940363486_89e9d19d", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531203939648482_eb24a91b", "target": "20260531203940363486_89e9d19d", "type": "supported_by"}
+{"kind": "edge", "source": "20260531203939927733_bb5915b2", "target": "20260531203940383342_02d6bf05", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531203939684700_84b7ff25", "target": "20260531203940383342_02d6bf05", "type": "supported_by"}
+{"kind": "edge", "source": "20260531203939942737_db70e8a8", "target": "20260531203940404016_992e5755", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531203939699834_2e59b120", "target": "20260531203940404016_992e5755", "type": "supported_by"}
+{"kind": "edge", "source": "20260531203939960758_03f73a82", "target": "20260531203940433861_e62d3c2c", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531203939715658_e35257e6", "target": "20260531203940433861_e62d3c2c", "type": "supported_by"}
+{"kind": "edge", "source": "20260531203311412304_e667d657", "target": "20260531204019633110_31fd1b34", "type": "searched_by"}
+{"kind": "edge", "source": "20260531204019633110_31fd1b34", "target": "20260531204019648701_fe9bd1d7", "type": "found_source"}
+{"kind": "edge", "source": "20260531204019633110_31fd1b34", "target": "20260531204019662573_b42ec7d9", "type": "found_source"}
+{"kind": "edge", "source": "20260531204019633110_31fd1b34", "target": "20260531204019672316_a9201b20", "type": "found_source"}
+{"kind": "edge", "source": "20260531204019633110_31fd1b34", "target": "20260531204019682259_30adbdfc", "type": "found_source"}
+{"kind": "edge", "source": "20260531204019633110_31fd1b34", "target": "20260531204019692540_ba851944", "type": "found_source"}
+{"kind": "edge", "source": "20260531204019633110_31fd1b34", "target": "20260531204019701930_0b7d72c2", "type": "found_source"}
+{"kind": "edge", "source": "20260531204019633110_31fd1b34", "target": "20260531204019712454_1b985b8f", "type": "found_source"}
+{"kind": "edge", "source": "20260531204019633110_31fd1b34", "target": "20260531204019723059_f9261e24", "type": "found_source"}
+{"kind": "edge", "source": "20260531204019633110_31fd1b34", "target": "20260531204019732925_70afffe6", "type": "found_source"}
+{"kind": "edge", "source": "20260531204019633110_31fd1b34", "target": "20260531204019743988_eeccd724", "type": "found_source"}
+{"kind": "edge", "source": "20260531204019633110_31fd1b34", "target": "20260531204019755304_b0707765", "type": "found_source"}
+{"kind": "edge", "source": "20260531204019633110_31fd1b34", "target": "20260531204019765875_8cb51598", "type": "found_source"}
+{"kind": "edge", "source": "20260531204019633110_31fd1b34", "target": "20260531204019777003_684cf117", "type": "found_source"}
+{"kind": "edge", "source": "20260531204019633110_31fd1b34", "target": "20260531204019787521_2c5ff882", "type": "found_source"}
+{"kind": "edge", "source": "20260531204019633110_31fd1b34", "target": "20260531204019796344_db04f8ad", "type": "found_source"}
+{"kind": "edge", "source": "20260531204019633110_31fd1b34", "target": "20260531204019806405_366cf903", "type": "found_source"}
+{"kind": "edge", "source": "20260531204019633110_31fd1b34", "target": "20260531204019816567_08352487", "type": "found_source"}
+{"kind": "edge", "source": "20260531204019633110_31fd1b34", "target": "20260531204019826841_b2789bc8", "type": "found_source"}
+{"kind": "edge", "source": "20260531204019633110_31fd1b34", "target": "20260531204019836916_1c6cbc58", "type": "found_source"}
+{"kind": "edge", "source": "20260531204019633110_31fd1b34", "target": "20260531204019846556_e653aaae", "type": "found_source"}
+{"kind": "edge", "source": "20260531204019633110_31fd1b34", "target": "20260531204019858204_506b04cc", "type": "found_source"}
+{"kind": "edge", "source": "20260531204019633110_31fd1b34", "target": "20260531204019868709_7c670e42", "type": "found_source"}
+{"kind": "edge", "source": "20260531204019648701_fe9bd1d7", "target": "20260531204019877135_3b64197e", "type": "has_document"}
+{"kind": "edge", "source": "20260531204019662573_b42ec7d9", "target": "20260531204019886003_50694d27", "type": "has_document"}
+{"kind": "edge", "source": "20260531204019672316_a9201b20", "target": "20260531204019894680_a9300ef2", "type": "has_document"}
+{"kind": "edge", "source": "20260531204019682259_30adbdfc", "target": "20260531204019903926_6d641396", "type": "has_document"}
+{"kind": "edge", "source": "20260531204019692540_ba851944", "target": "20260531204019913662_0bb18805", "type": "has_document"}
+{"kind": "edge", "source": "20260531204019701930_0b7d72c2", "target": "20260531204019922627_14f0b4cf", "type": "has_document"}
+{"kind": "edge", "source": "20260531204019712454_1b985b8f", "target": "20260531204019931218_60bf30c5", "type": "has_document"}
+{"kind": "edge", "source": "20260531204019723059_f9261e24", "target": "20260531204019940166_8b998010", "type": "has_document"}
+{"kind": "edge", "source": "20260531204019732925_70afffe6", "target": "20260531204019948774_1594869c", "type": "has_document"}
+{"kind": "edge", "source": "20260531204019743988_eeccd724", "target": "20260531204019956372_9ddc0fb2", "type": "has_document"}
+{"kind": "edge", "source": "20260531204019755304_b0707765", "target": "20260531204019963413_38209e12", "type": "has_document"}
+{"kind": "edge", "source": "20260531204019765875_8cb51598", "target": "20260531204019971595_99c855c0", "type": "has_document"}
+{"kind": "edge", "source": "20260531204019777003_684cf117", "target": "20260531204019979387_21ada8bd", "type": "has_document"}
+{"kind": "edge", "source": "20260531204019787521_2c5ff882", "target": "20260531204019987690_e256fff9", "type": "has_document"}
+{"kind": "edge", "source": "20260531204019796344_db04f8ad", "target": "20260531204019997090_b9f1e8c9", "type": "has_document"}
+{"kind": "edge", "source": "20260531204019806405_366cf903", "target": "20260531204020003802_dbb0e4c2", "type": "has_document"}
+{"kind": "edge", "source": "20260531204019816567_08352487", "target": "20260531204020011122_03842bfb", "type": "has_document"}
+{"kind": "edge", "source": "20260531204019826841_b2789bc8", "target": "20260531204020018127_d6f38ad3", "type": "has_document"}
+{"kind": "edge", "source": "20260531204019836916_1c6cbc58", "target": "20260531204020024977_2c45211d", "type": "has_document"}
+{"kind": "edge", "source": "20260531204019846556_e653aaae", "target": "20260531204020031420_72c43e9b", "type": "has_document"}
+{"kind": "edge", "source": "20260531204019858204_506b04cc", "target": "20260531204020038446_b63370a2", "type": "has_document"}
+{"kind": "edge", "source": "20260531204019868709_7c670e42", "target": "20260531204020046061_230c38d0", "type": "has_document"}
+{"kind": "edge", "source": "20260531204019877135_3b64197e", "target": "20260531204020055380_bdcaaba2", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019648701_fe9bd1d7", "target": "20260531204020055380_bdcaaba2", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204019886003_50694d27", "target": "20260531204020066864_25cb28a0", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019662573_b42ec7d9", "target": "20260531204020066864_25cb28a0", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204019894680_a9300ef2", "target": "20260531204020081635_2b7eea77", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019672316_a9201b20", "target": "20260531204020081635_2b7eea77", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204019903926_6d641396", "target": "20260531204020093209_c9bdc35c", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019682259_30adbdfc", "target": "20260531204020093209_c9bdc35c", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204019913662_0bb18805", "target": "20260531204020104936_f401bc8f", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019692540_ba851944", "target": "20260531204020104936_f401bc8f", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204019922627_14f0b4cf", "target": "20260531204020118162_09dfe223", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019701930_0b7d72c2", "target": "20260531204020118162_09dfe223", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204019940166_8b998010", "target": "20260531204020130646_0ad31c04", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019723059_f9261e24", "target": "20260531204020130646_0ad31c04", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204019948774_1594869c", "target": "20260531204020141001_eab3dc5d", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019732925_70afffe6", "target": "20260531204020141001_eab3dc5d", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204019963413_38209e12", "target": "20260531204020152965_c12fa91a", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019755304_b0707765", "target": "20260531204020152965_c12fa91a", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204019971595_99c855c0", "target": "20260531204020169981_af1aae53", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019765875_8cb51598", "target": "20260531204020169981_af1aae53", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204019979387_21ada8bd", "target": "20260531204020184939_d879af65", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019777003_684cf117", "target": "20260531204020184939_d879af65", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204019987690_e256fff9", "target": "20260531204020199834_7e82eca8", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019787521_2c5ff882", "target": "20260531204020199834_7e82eca8", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204019997090_b9f1e8c9", "target": "20260531204020214328_ec9c387b", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019796344_db04f8ad", "target": "20260531204020214328_ec9c387b", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204020003802_dbb0e4c2", "target": "20260531204020229166_264ec92e", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019806405_366cf903", "target": "20260531204020229166_264ec92e", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204020011122_03842bfb", "target": "20260531204020241079_242a96a3", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019816567_08352487", "target": "20260531204020241079_242a96a3", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204020018127_d6f38ad3", "target": "20260531204020251015_e99fc4a4", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019826841_b2789bc8", "target": "20260531204020251015_e99fc4a4", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204020024977_2c45211d", "target": "20260531204020261692_44c4d013", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019836916_1c6cbc58", "target": "20260531204020261692_44c4d013", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204020031420_72c43e9b", "target": "20260531204020273939_a20cbf7e", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019846556_e653aaae", "target": "20260531204020273939_a20cbf7e", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204020038446_b63370a2", "target": "20260531204020286952_1b756e03", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019858204_506b04cc", "target": "20260531204020286952_1b756e03", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204020046061_230c38d0", "target": "20260531204020299367_36cd3053", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019868709_7c670e42", "target": "20260531204020299367_36cd3053", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204019877135_3b64197e", "target": "20260531204020312237_4dcf942a", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019648701_fe9bd1d7", "target": "20260531204020312237_4dcf942a", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204019886003_50694d27", "target": "20260531204020324432_21696e93", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019662573_b42ec7d9", "target": "20260531204020324432_21696e93", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204019894680_a9300ef2", "target": "20260531204020337839_6a5390af", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019672316_a9201b20", "target": "20260531204020337839_6a5390af", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204019903926_6d641396", "target": "20260531204020351282_77affb45", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019682259_30adbdfc", "target": "20260531204020351282_77affb45", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204019913662_0bb18805", "target": "20260531204020362819_6675bf42", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019692540_ba851944", "target": "20260531204020362819_6675bf42", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204019922627_14f0b4cf", "target": "20260531204020374294_7561a76c", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019701930_0b7d72c2", "target": "20260531204020374294_7561a76c", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204019931218_60bf30c5", "target": "20260531204020386162_82954986", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019712454_1b985b8f", "target": "20260531204020386162_82954986", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204019940166_8b998010", "target": "20260531204020397870_e0cb3331", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019723059_f9261e24", "target": "20260531204020397870_e0cb3331", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204019948774_1594869c", "target": "20260531204020411177_be2ac9da", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019732925_70afffe6", "target": "20260531204020411177_be2ac9da", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204019956372_9ddc0fb2", "target": "20260531204020423192_09a00854", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019743988_eeccd724", "target": "20260531204020423192_09a00854", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204019963413_38209e12", "target": "20260531204020435723_3e4a9db0", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019755304_b0707765", "target": "20260531204020435723_3e4a9db0", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204019971595_99c855c0", "target": "20260531204020449391_dbde914b", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019765875_8cb51598", "target": "20260531204020449391_dbde914b", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204019979387_21ada8bd", "target": "20260531204020462024_2f478bdb", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019777003_684cf117", "target": "20260531204020462024_2f478bdb", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204019987690_e256fff9", "target": "20260531204020474654_12c085ed", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019787521_2c5ff882", "target": "20260531204020474654_12c085ed", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204019997090_b9f1e8c9", "target": "20260531204020487102_b0d0d5dc", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019796344_db04f8ad", "target": "20260531204020487102_b0d0d5dc", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204020003802_dbb0e4c2", "target": "20260531204020500039_98fb4a26", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019806405_366cf903", "target": "20260531204020500039_98fb4a26", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204020011122_03842bfb", "target": "20260531204020513127_456f641a", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019816567_08352487", "target": "20260531204020513127_456f641a", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204020018127_d6f38ad3", "target": "20260531204020524942_e4620740", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019826841_b2789bc8", "target": "20260531204020524942_e4620740", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204020024977_2c45211d", "target": "20260531204020535860_8ea9e93f", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019836916_1c6cbc58", "target": "20260531204020535860_8ea9e93f", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204020031420_72c43e9b", "target": "20260531204020546324_f47912ba", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019846556_e653aaae", "target": "20260531204020546324_f47912ba", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204020038446_b63370a2", "target": "20260531204020557440_8a33adb9", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019858204_506b04cc", "target": "20260531204020557440_8a33adb9", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204020046061_230c38d0", "target": "20260531204020571600_a21d46a7", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531204019868709_7c670e42", "target": "20260531204020571600_a21d46a7", "type": "supported_by"}
+{"kind": "edge", "source": "20260531204020584015_44ec478d", "target": "20260531204020435723_3e4a9db0", "type": "has_conflict"}
+{"kind": "edge", "source": "20260531204020584015_44ec478d", "target": "20260531204020449391_dbde914b", "type": "has_conflict"}
+{"kind": "node", "id": "20260531203311412304_e667d657", "type": "query", "text": "全球具身智能公司投融资与估值信息汇总（2022-01 至 2026-05）：按路线与地区统计主要融资轮次/金额/投资方/估值（如可得），并标注信息来源（新闻稿、监管披露、投融资数据库、媒体报道）。", "status": "needs_vertical", "sufficiency_score": 0.28}
+{"kind": "node", "id": "20260531203311426714_fb811ebf", "type": "query", "text": "具身智能关键硬件与传感器/计算平台路线（2022-01 至 2026-05）：执行器（电机/减速器/力控）、灵巧手、视觉与触觉传感、边缘计算与加速芯片；对应的代表性供应商及其与具身智能整机/平台公司的合作关系。 ", "status": "needs_vertical", "sufficiency_score": 0.28}
+{"kind": "node", "id": "20260531204056778077_f8e9e634", "type": "query", "text": "对具身智能重点公司（人形/仓储移动操作/机器人基础模型平台）融资事件逐条回到一手来源核验：日期、轮次、金额、投资方、估值（如有），并统一口径（股权/债务、币种、extension等）；补齐2025-2026至2026-05期间的关键融资。", "status": "pending", "expansion_type": "vertical", "reason": "当前投融资子图覆盖零散且缺少一手核验与字段完整性，无法形成按路线/地区统计与尽调级表格。"}
+{"kind": "node", "id": "20260531204056787514_6acba242", "type": "query", "text": "补齐具身智能关键硬件路线的系统证据：1) 执行器/关节模组（电机+减速器+力矩传感/驱控一体）主流供应商与技术指标；2) 视觉传感（深度相机/3D视觉/事件相机）代表供应商；3) 计算平台（GPU/CPU/NPU/实时控制）在具身整机中的采用案例；并为每类给出2022-2026的合作/供货/集成证据。", "status": "pending", "expansion_type": "vertical", "reason": "当前硬件子图缺乏时间维度与系统覆盖，特别是执行器、视觉与计算采用/合作案例不足。"}
+{"kind": "edge", "source": "20260531203311412304_e667d657", "target": "20260531204056778077_f8e9e634", "type": "parent_of"}
+{"kind": "edge", "source": "20260531203311426714_fb811ebf", "target": "20260531204056787514_6acba242", "type": "parent_of"}
+{"kind": "node", "id": "20260531204102892546_f57220ce", "type": "analysis", "text": "收敛/局限说明（2026-05-31）：本次自动流程受到搜索预算（最大搜索轮次=2）限制，仅对“投融资汇总”“关键硬件供应链”两个查询完成了一轮 Searcher 证据入图；关于“技术路线全景”“人形公司全量画像”“AMR+Manipulation公司画像”“机器人基础模型/平台路线”四个初始查询因首轮使用 general-purpose 代理未写入图谱证据而被标记 blocked，未能进入报告的可引用证据池。因此最终报告将以已入图证据为核心，其他部分仅能给出基于证据不足的框架性描述，并明确标注证据缺口与后续需补证的字段。"}
+{"kind": "node", "id": "20260531204210182966_03e04193", "type": "report_section", "title": "范围说明与方法（证据受限版）", "content": "本报告题为《截至2026-05-31全球具身智能技术路线与代表性公司梳理（证据受限版）》，时间窗口覆盖研究目标所述的2022-01至2026-05，但**仅在Research Graph已收录且可追溯到source的一手/二手材料范围内**陈述事实。[1][2]\n\n### 证据覆盖范围与限制\n1) 研究图谱中，关于“全球具身智能主要技术路线梳理”“人形公司名单”“机器人基础模型平台公司名单”“移动操作/仓储物流公司名单”等query被标记为blocked或证据不足，因此本报告**不尝试给出完整路线图谱、里程碑、或全量公司清单**，避免引入图谱之外事实。[1][2]\n\n2) 目前图谱中相对可用的证据主要集中在两块：\n- **投融资/估值新闻与新闻稿**（覆盖部分公司与部分轮次，且多为标题/摘要级口径，字段不一定完整）。[3][4]\n- **关键硬件/传感/计算平台**（触觉传感、灵巧手、边缘计算/控制平台、执行器/力控相关材料，主要来自产品页、技术博客或PDF资料）。[5][6]\n\n3) 因证据受限，本报告对“产品进度/量产/部署规模/客户清单/定价/收入/团队背景”等尽调级信息，**仅在来源标题或新闻稿正文能直接支持时才陈述**；若图谱未提供证据，则明确标注“缺少证据”。[3][4]\n\n### 写作方法\n- 对每家在图谱中出现的公司，按“路线归属（基于来源标题/正文可确认的业务定位）—融资与估值（按来源）—产品与商业化定位（仅限来源可确认的表述）”三段式输出。[3][4]\n- 对同一事件在不同来源中存在差异的（例如融资金额口径不一致），在文中并列披露并标注冲突原因的可能来源（如汇率/四舍五入/统计口径），不擅自裁决。[7][8]\n\n（注：本章节引用用于支撑“证据覆盖范围与限制/方法论”本身，所用来源均来自Research Graph的source列表。）", "section_type": "introduction"}
+{"kind": "edge", "source": "20260531204210182966_03e04193", "target": "20260531203311346847_2eacf097", "type": "uses"}
+{"kind": "edge", "source": "20260531204210182966_03e04193", "target": "20260531203311363618_3dec977b", "type": "uses"}
+{"kind": "edge", "source": "20260531204210182966_03e04193", "target": "20260531203311379410_65c32d32", "type": "uses"}
+{"kind": "edge", "source": "20260531204210182966_03e04193", "target": "20260531203311395846_80c3e951", "type": "uses"}
+{"kind": "edge", "source": "20260531204210182966_03e04193", "target": "20260531203311412304_e667d657", "type": "uses"}
+{"kind": "edge", "source": "20260531204210182966_03e04193", "target": "20260531203311426714_fb811ebf", "type": "uses"}
+{"kind": "edge", "source": "20260531204210182966_03e04193", "target": "20260531204020584015_44ec478d", "type": "uses"}
+{"kind": "node", "id": "20260531204300591978_46ba36dc", "type": "report_section", "title": "证据绑定大纲（章节结构与ID映射）", "content": "本报告仅基于Research Graph当前可用证据组织为以下章节，并在每章写作时绑定对应 evidence/claim：\n\n## 1. 范围说明与方法（证据受限版）\n- 使用：query(被blocked/needs_vertical状态)与冲突节点，用于界定范围与披露局限：\n  - 20260531203311346847_2eacf097（技术路线梳理：blocked）\n  - 20260531203311363618_3dec977b（人形公司名单：blocked）\n  - 20260531203311395846_80c3e951（基础模型平台：blocked）\n  - 20260531203311379410_65c32d32（移动操作/仓储：blocked）\n  - 20260531203311412304_e667d657（投融资汇总：needs_vertical）\n  - 20260531203311426714_fb811ebf（关键硬件/平台：needs_vertical）\n  - conflict: 20260531204020584015_44ec478d（Mujin融资金额口径差异）\n\n## 2. 技术路线与代表性公司版图（证据受限的“路线-公司”映射）\n- 仅基于来源标题/新闻稿中可确认的业务指向，对公司进行最小化归类：\n  - 人形/类人：Figure、Agility（仅能从标题/报道用语判断“humanoid/human-like”）\n  - 机器人基础模型：Skild AI、Physical Intelligence（仅能从标题/新闻稿定位）\n  - 仓储/物流/卸货/拣选：Covariant、Rightbot、GreyOrange、Locus、Dexterity、Mujin\n  - 工业巡检/自主移动：ANYbotics\n  - 工业自动化/装配：Bright Machines\n  - 回收分拣：AMP Robotics\n  - 无人机（与具身智能相关但非人形/移动操作主线）：Skydio\n\n## 3. 代表性公司逐家小节（仅限图谱出现者且证据可引用）\n- Figure：evidence 20260531204020055380_bdcaaba2、20260531204020066864_25cb28a0\n- Agility：evidence 20260531204020093209_c9bdc35c、20260531204020104936_f401bc8f、20260531204020362819_6675bf42\n- 1X：evidence 20260531204020081635_2b7eea77、20260531204020337839_6a5390af\n- Skild AI：evidence 20260531204020130646_0ad31c04、20260531204020397870_e0cb3331\n- Physical Intelligence：evidence 20260531204020141001_eab3dc5d、20260531204020411177_be2ac9da、20260531204020423192_09a00854\n- Intrinsic：evidence 20260531204020299367_36cd3053、20260531204020571600_a21d46a7\n- Covariant：evidence 20260531204020118162_09dfe223、20260531204020374294_7561a76c、20260531204020386162_82954986\n- GreyOrange：evidence 20260531204020199834_7e82eca8、20260531204020474654_12c085ed\n- Locus：evidence 20260531204020214328_ec9c387b、20260531204020487102_b0d0d5dc\n- Mujin：evidence 20260531204020152965_c12fa91a、20260531204020435723_3e4a9db0、20260531204020169981_af1aae53、20260531204020449391_dbde914b + conflict 20260531204020584015_44ec478d\n- Rightbot：evidence 20260531204020273939_a20cbf7e、20260531204020546324_f47912ba\n- Dexterity：evidence 20260531204020286952_1b756e03、20260531204020557440_8a33adb9\n- ANYbotics：evidence 20260531204020251015_e99fc4a4、20260531204020524942_e4620740\n- AMP Robotics：evidence 20260531204020184939_d879af65、20260531204020462024_2f478bdb\n- Bright Machines：evidence 20260531204020241079_242a96a3、20260531204020513127_456f641a\n- Skydio：evidence 20260531204020229166_264ec92e、20260531204020500039_98fb4a26\n\n## 4. 关键硬件/计算平台与供应商要点\n- 触觉：XELA(uSkin)、GelSight(DIGIT)、SynTouch(BioTac)\n  - evidence: 20260531203939995459_a99c3d8c、20260531203940232982_d9803d79、20260531203940020371_48a7a520、20260531203940255990_f4a4cf38、20260531203940045207_5a13eb31、20260531203940282858_4914f861、20260531203940068414_e4d462c7、20260531203940304275_e18193e4\n- 灵巧手：SCHUNK SVH、Shadow Dexterous Hand、（Allegro Hand仅有source无抽取evidence，谨慎使用）\n  - 证据来自产品页source（无量化合作/订单证据）：20260531203939557797_d4212447、20260531203939577368_79c3785b\n- 边缘计算/控制平台：NVIDIA Jetson Thor；AMD Kria SOM/KR260；Intel edge real-time robotics control\n  - evidence: 20260531203940091635_ce430edd、20260531203940323349_54037ed1、20260531203940137145_e5dc9f38、20260531203940363486_89e9d19d、20260531203940159243_5484a89c、20260531203940383342_02d6bf05\n- 执行器/力控：Moog Integrated Smart Actuator；Flexiv（力/力矩传感与全身力控表述）\n  - evidence: 20260531203940205402_f1edbeb0、20260531203940433861_e62d3c2c、20260531203940181385_2e9f705b、20260531203940404016_992e5755\n\n## 5. 冲突披露、局限性与待补证清单\n- 冲突：Mujin融资金额口径差异（TechCrunch vs The Bridge）\n- 局限：未覆盖的公司（如用户点名但图谱缺证：Intrinsic以外的Google/Alphabet细节、Agility/Figure之外的人形公司；Covariant之外的仓储公司GreyOrange/Locus等仅有融资信息；“代表性公司”列表中多个公司如GitLab? 另如GreyOrange等）\n\n## 6. 结论（证据受限版）\n- 仅对“资本与硬件平台侧的可见信号”做归纳，不对技术优劣做无证据判断。\n", "section_type": "introduction"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531203311346847_2eacf097", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531203311363618_3dec977b", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531203311379410_65c32d32", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531203311395846_80c3e951", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531203311412304_e667d657", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531203311426714_fb811ebf", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020584015_44ec478d", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020055380_bdcaaba2", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020066864_25cb28a0", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020093209_c9bdc35c", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020104936_f401bc8f", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020362819_6675bf42", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020081635_2b7eea77", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020337839_6a5390af", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020130646_0ad31c04", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020397870_e0cb3331", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020141001_eab3dc5d", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020411177_be2ac9da", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020423192_09a00854", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020299367_36cd3053", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020571600_a21d46a7", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020118162_09dfe223", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020374294_7561a76c", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020386162_82954986", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020199834_7e82eca8", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020474654_12c085ed", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020214328_ec9c387b", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020487102_b0d0d5dc", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020152965_c12fa91a", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020435723_3e4a9db0", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020169981_af1aae53", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020449391_dbde914b", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020273939_a20cbf7e", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020546324_f47912ba", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020286952_1b756e03", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020557440_8a33adb9", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020251015_e99fc4a4", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020524942_e4620740", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020184939_d879af65", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020462024_2f478bdb", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020241079_242a96a3", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020513127_456f641a", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020229166_264ec92e", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531204020500039_98fb4a26", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531203939995459_a99c3d8c", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531203940232982_d9803d79", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531203940020371_48a7a520", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531203940255990_f4a4cf38", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531203940045207_5a13eb31", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531203940282858_4914f861", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531203940068414_e4d462c7", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531203940304275_e18193e4", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531203940091635_ce430edd", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531203940323349_54037ed1", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531203940137145_e5dc9f38", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531203940363486_89e9d19d", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531203940159243_5484a89c", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531203940383342_02d6bf05", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531203940205402_f1edbeb0", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531203940433861_e62d3c2c", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531203940181385_2e9f705b", "type": "uses"}
+{"kind": "edge", "source": "20260531204300591978_46ba36dc", "target": "20260531203940404016_992e5755", "type": "uses"}
+{"kind": "node", "id": "20260531204339735954_e3c956e4", "type": "report_section", "title": "技术路线与公司版图（证据受限的最小化分类）", "content": "由于“技术路线梳理”“公司名单筛选”等query在图谱中被标记为blocked/证据不足，本章节不尝试给出完整的具身智能技术路线全景，而是采用“**以来源可确认的业务指向为锚点**”的方法，对图谱中出现的公司进行最小化归类，并明确这不是完整版图。[1]\n\n### 2.1 人形/类人整机（Humanoid / human-like）\n- Figure：至少有两条来源以“Humanoid robot startup Figure …”描述Figure，并报道其融资/估值信息；据此可将Figure归入“人形/类人整机”方向（仅限于来源措辞可确认的层面）。[2][3]\n- Agility Robotics：来源标题将其描述为“human-like robots used in warehouses”，并披露其融资信息；据此可将其归入“面向仓储场景的人形/类人机器人”方向（仅限来源措辞）。[4][5]\n\n### 2.2 机器人基础模型/AI基础能力（Robot foundation model / Robot AI specialist）\n- Skild AI：其新闻稿标题明确写明“Build a Scalable AI Foundation Model For Robotics”，并披露Series A融资金额；据此归入“机器人基础模型”方向。[6]\n- Physical Intelligence：来源标题将其描述为“robot startup Physical Intelligence”，并给出估值口径；另有NYT DealBook标题称其为“Robot A.I. Specialist”；据此归入“机器人AI/基础能力公司”（更细的技术路线与产品形态缺少证据）。[7][8]\n\n### 2.3 仓储/物流/拣选/卸货与移动操作（Warehouse/Logistics）\n图谱中该方向以投融资新闻为主，更多“产品细节、部署规模、客户”缺少证据：\n- Covariant：来源标题指向“robotic picking AI”，并有公司新闻稿称新增Series C资金以满足规模化AI机器人部署的客户需求。[9][10]\n- GreyOrange：来源标题指向“warehouse robotics firm”，并披露其增长融资金额。[11]\n- Locus Robotics：PR Newswire新闻稿标题披露Series F融资，并称估值接近20亿美元（标题级信息）。[12]\n- Mujin：来源标题分别给出其融资金额（存在口径差异）与“robot software firm”等描述，并有报道提及融资用于欧洲扩张。[13][14]\n- Rightbot：来源标题明确指向“unloading robots”，并披露融资金额与投资方包含Amazon。[15]\n- Dexterity：来源标题出现“container loading robots”，并披露融资金额。[16]\n\n### 2.4 工业巡检/自主移动（Autonomous industrial robots）\n- ANYbotics：TechCrunch标题披露其融资并强调“autonomous industrial robots”（标题级业务指向）。[17]\n\n### 2.5 工业自动化/装配系统\n- Bright Machines：来源标题披露其Series C融资金额；但其与“具身智能”关系（是否采用移动操作/具身学习）缺少证据，本报告仅把其作为“自动化/机器人相关公司融资事件”记录，不做技术路线延伸判断。[18]\n\n### 2.6 回收分拣机器人\n- AMP Robotics：来源标题将其描述为“recycling robots”，并披露融资金额。[19]\n\n### 2.7 航空/无人机（与具身系统相关，但与人形/仓储主线不同）\n- Skydio：Business Wire新闻稿披露融资金额（标题/摘要级）；但其是否属于“具身智能”主流讨论范畴、以及其技术路线细节缺少证据，本报告仅记录该融资披露。[20]\n\n### 2.8 与“关键硬件/平台”相关的供应链侧路线信号\n在硬件/平台证据块中，可以看到：\n- 触觉传感（例如uSkin、DIGIT、BioTac等）被以“面向人形与工业机器人”“与研究机构合作制造/产品线”等方式呈现；但与具体整机厂商的供货/集成关系在图谱中缺少可核验的案例证据。[21][22][23]\n- 边缘计算/控制平台方面，出现了NVIDIA Jetson Thor（Physical AI定位）、AMD Kria SOM（robotics/vision AI定位）与Intel的边缘实时机器人控制方案描述；但与具体具身整机公司的采用关系在图谱中仍缺少证据。[24][25][26]\n\n> 小结：在证据受限条件下，“技术路线”只能被呈现为**来源可确认的业务标签集合**，而不能扩展到“学习范式/数据闭环/仿真体系/模型架构”等通常需要论文、技术博客或产品白皮书支撑的层次；这些属于待补证清单的一部分。[1]", "section_type": "analysis"}
+{"kind": "edge", "source": "20260531204339735954_e3c956e4", "target": "20260531203311346847_2eacf097", "type": "uses"}
+{"kind": "edge", "source": "20260531204339735954_e3c956e4", "target": "20260531204020055380_bdcaaba2", "type": "uses"}
+{"kind": "edge", "source": "20260531204339735954_e3c956e4", "target": "20260531204020066864_25cb28a0", "type": "uses"}
+{"kind": "edge", "source": "20260531204339735954_e3c956e4", "target": "20260531204020093209_c9bdc35c", "type": "uses"}
+{"kind": "edge", "source": "20260531204339735954_e3c956e4", "target": "20260531204020104936_f401bc8f", "type": "uses"}
+{"kind": "edge", "source": "20260531204339735954_e3c956e4", "target": "20260531204020130646_0ad31c04", "type": "uses"}
+{"kind": "edge", "source": "20260531204339735954_e3c956e4", "target": "20260531204020411177_be2ac9da", "type": "uses"}
+{"kind": "edge", "source": "20260531204339735954_e3c956e4", "target": "20260531204020423192_09a00854", "type": "uses"}
+{"kind": "edge", "source": "20260531204339735954_e3c956e4", "target": "20260531204020386162_82954986", "type": "uses"}
+{"kind": "edge", "source": "20260531204339735954_e3c956e4", "target": "20260531204020374294_7561a76c", "type": "uses"}
+{"kind": "edge", "source": "20260531204339735954_e3c956e4", "target": "20260531204020474654_12c085ed", "type": "uses"}
+{"kind": "edge", "source": "20260531204339735954_e3c956e4", "target": "20260531204020487102_b0d0d5dc", "type": "uses"}
+{"kind": "edge", "source": "20260531204339735954_e3c956e4", "target": "20260531204020435723_3e4a9db0", "type": "uses"}
+{"kind": "edge", "source": "20260531204339735954_e3c956e4", "target": "20260531204020169981_af1aae53", "type": "uses"}
+{"kind": "edge", "source": "20260531204339735954_e3c956e4", "target": "20260531204020546324_f47912ba", "type": "uses"}
+{"kind": "edge", "source": "20260531204339735954_e3c956e4", "target": "20260531204020557440_8a33adb9", "type": "uses"}
+{"kind": "edge", "source": "20260531204339735954_e3c956e4", "target": "20260531204020524942_e4620740", "type": "uses"}
+{"kind": "edge", "source": "20260531204339735954_e3c956e4", "target": "20260531204020513127_456f641a", "type": "uses"}
+{"kind": "edge", "source": "20260531204339735954_e3c956e4", "target": "20260531204020462024_2f478bdb", "type": "uses"}
+{"kind": "edge", "source": "20260531204339735954_e3c956e4", "target": "20260531204020500039_98fb4a26", "type": "uses"}
+{"kind": "edge", "source": "20260531204339735954_e3c956e4", "target": "20260531203939995459_a99c3d8c", "type": "uses"}
+{"kind": "edge", "source": "20260531204339735954_e3c956e4", "target": "20260531203940045207_5a13eb31", "type": "uses"}
+{"kind": "edge", "source": "20260531204339735954_e3c956e4", "target": "20260531203940068414_e4d462c7", "type": "uses"}
+{"kind": "edge", "source": "20260531204339735954_e3c956e4", "target": "20260531203940323349_54037ed1", "type": "uses"}
+{"kind": "edge", "source": "20260531204339735954_e3c956e4", "target": "20260531203940137145_e5dc9f38", "type": "uses"}
+{"kind": "edge", "source": "20260531204339735954_e3c956e4", "target": "20260531203940159243_5484a89c", "type": "uses"}
+{"kind": "node", "id": "20260531204439087805_7c59602d", "type": "report_section", "title": "代表性公司梳理（逐家：路线归属—融资/估值—产品与商业化定位）", "content": "本章节仅覆盖Research Graph中**已出现且有投融资或官方材料证据**的公司。对用户点名但图谱未包含证据的公司（例如GreyOrange/Locus以外的一些仓储公司仍可覆盖；但如“Covariant、GreyOrange、Locus、Anybotics、Mujin、Rightbot、Dexterity、AMP Robotics、Bright Machines、Skydio”等可以覆盖；而用户点名的“Intrinsic、Physical Intelligence”等可覆盖；“Figure、Agility、1X、Skild AI”可覆盖；用户点名但图谱中未出现的公司或未出现其投融资/产品证据的条目，本报告将统一标注为“缺少证据”。[1]\n\n### 3.1 Figure（人形/类人整机）\n- 路线归属：CNBC标题以“Humanoid robot startup Figure AI …”描述Figure，Reuters亦报道为机器人创业公司（Robotics startup）Figure；据此可将其归入“人形/类人机器人公司”。[2][3]\n- 融资与估值：Reuters报道Figure融资6.75亿美元，并点名投资方包括Microsoft、Nvidia、OpenAI。[3] CNBC报道该轮融资估值约26亿美元，并在标题中点名Bezos、OpenAI、Nvidia参与融资，同时称融资额为6.75亿美元。[2]\n- 产品与商业化定位：本图谱未提供Figure的产品名称、部署行业/客户、量产节奏等可核验证据，故此部分缺少证据。[2][3]\n\n### 3.2 Agility Robotics（仓储场景的人形/类人机器人）\n- 路线归属：GeekWire标题将Agility描述为用于仓库的人形/类人机器人（“human-like robots used in warehouses”）。[4]\n- 融资与估值：GeekWire称其融资1.5亿美元，并提及Amazon等投资方。[4] 另有Business Wire转载页标题写明其为1.5亿美元Series B，且由DCVC与Playground Global领投。[5]\n- 产品与商业化定位：图谱中仅能从来源标题/摘要确认其与“仓库/工作场所”相关的定位，缺少产品型号、客户名单、商业化指标等证据。[4][5]\n\n### 3.3 1X Technologies（人形/具身机器人公司：仅能确认融资）\n- 路线归属：本图谱仅收录其公司官网新闻稿“1X Secures $100M in Series B Funding”，未提供其产品形态/应用行业的可核验证据；因此不对其归类为具体“人形/仓储/家用”等路线，仅作为具身机器人相关融资事件记录（缺少证据进一步细分）。[6]\n- 融资与估值：公司官网新闻稿称其完成1亿美元Series B融资。[6]\n- 产品与商业化定位：缺少证据。[6]\n\n### 3.4 Skild AI（机器人基础模型）\n- 路线归属：Business Wire新闻稿标题明确写明其目标为“Build a Scalable AI Foundation Model For Robotics”。[7]\n- 融资与估值：该新闻稿标题披露其完成3亿美元Series A融资。[7]\n- 产品与商业化定位：除“为机器人构建可扩展AI基础模型”这一标题级定位外，图谱未提供其产品形态、客户/商业化落地的可核验证据。[7]\n\n### 3.5 Physical Intelligence（机器人AI/基础能力公司）\n- 路线归属：NYT DealBook标题将其描述为“a Robot A.I. Specialist”。[8] CNBC标题称“Jeff Bezos and OpenAI invest in robot startup Physical Intelligence …”。[9]\n- 融资与估值：CNBC标题给出估值口径为24亿美元，并点名Bezos与OpenAI参与投资。[9] NYT DealBook标题表述其“Raises Millions From Bezos”，但未在图谱中提供具体金额与条款。[8]\n- 产品与商业化定位：图谱未提供其产品/商业化定位的可核验证据（缺少证据）。[8][9]\n\n### 3.6 Intrinsic（机器人软件平台公司：并购整合）\n- 路线归属：图谱仅收录Intrinsic官方博客“Mission momentum: welcoming Vicarious”，可确认其业务动态与并购整合行为；但其技术路线（是否基础模型/仿真/工业软件栈）在图谱中缺少证据，故不做扩展归类。[10]\n- 并购事件：Intrinsic官方博客表示同意收购Vicarious的业务（welcoming Vicarious）。[10]\n- 融资与估值、产品与商业化定位：图谱未提供可核验信息（缺少证据）。[10]\n\n### 3.7 Covariant（仓储拣选/AI机器人部署）\n- 路线归属：TechCrunch标题将其描述为“robotic picking AI”。[11]\n- 融资与估值：TechCrunch报道其获得（nabs another）7500万美元。[11] 公司新闻稿标题披露其在Series C中新增7500万美元资金。[12]\n- 产品与商业化定位：公司新闻稿标题表述其新增资金用于满足规模化AI机器人部署的客户需求；除此之外（如产品SKU、客户、部署规模）缺少证据。[12]\n\n### 3.8 GreyOrange（仓储机器人公司）\n- 路线归属：TechCrunch标题将其描述为“Warehouse robotics firm”。[13]\n- 融资与估值：TechCrunch标题披露其通过增长融资（growth financing）融资1.1亿美元。[13]\n- 产品与商业化定位：缺少证据。[13]\n\n### 3.9 Locus Robotics（仓储机器人公司）\n- 路线归属：PR Newswire新闻稿标题仅披露融资与估值口径，未在图谱摘要中提供明确产品/行业表述；因此仅能以“仓储机器人公司（从公司名与新闻稿语境推断）”这一点做最小化描述，但严格意义上仍缺少来源直接陈述其产品形态的证据，故在本报告中不展开“路线归属”细节（缺少证据）。[14]\n- 融资与估值：PR Newswire标题披露其完成1.17亿美元Series F融资，并称估值接近20亿美元。[14]\n- 产品与商业化定位：缺少证据。[14]\n\n### 3.10 Mujin（机器人软件公司；融资金额存在口径差异）\n- 路线归属：TechCrunch标题将其描述为“Robot software firm”。[15]\n- 融资与估值：TechCrunch标题披露其融资8500万美元。[15] The Bridge标题披露其Series C融资为8300万美元，并在文中给出12.3 billion yen口径并称用于欧洲扩张。[16]\n- 冲突披露：同一轮融资金额在TechCrunch（$85M）与The Bridge（$83M）存在差异，图谱冲突节点指出可能与汇率或四舍五入、币种口径有关；在缺少原始公告核验前，本报告并列记录两种口径。[16][15]\n- 产品与商业化定位：除“机器人软件公司”与“用于欧洲扩张”的用途描述外，缺少证据。[15][16]\n\n### 3.11 Rightbot（卸货机器人）\n- 路线归属：The Robot Report标题明确为“for unloading robots”。[17]\n- 融资与估值：该标题披露其获得625万美元融资，并点名投资方包括Amazon及其他投资者。[17]\n- 产品与商业化定位：除“卸货机器人”这一标题级信息外，缺少证据。[17]\n\n### 3.12 Dexterity（集装箱装卸/装载机器人）\n- 路线归属：The Robot Report标题出现“container loading robots”。[18]\n- 融资与估值：The Robot Report标题披露其获得9500万美元融资。[18]\n- 产品与商业化定位：除标题所示“集装箱装卸/装载机器人”外，缺少证据。[18]\n\n### 3.13 ANYbotics（自主工业机器人/工业场景扩张）\n- 路线归属：TechCrunch标题明确指向“autonomous industrial robots”。[19]\n- 融资与估值：TechCrunch标题披露其融资6000万美元。[19]\n- 产品与商业化定位：除标题所示“扩展自主工业机器人”这一宏观表述外，缺少证据。[19]\n\n### 3.14 AMP Robotics（回收分拣机器人）\n- 路线归属：The Robot Report标题指向“recycling robots”。[20]\n- 融资与估值：该标题披露其融资9100万美元。[20]\n- 产品与商业化定位：缺少证据。[20]\n\n### 3.15 Bright Machines（自动化/机器人相关公司）\n- 路线归属：图谱仅有其融资报道标题，未给出其是否具身智能/移动操作等定位证据；因此仅记录其融资事件（缺少证据进一步归类）。[21]\n- 融资与估值：Calcalist Tech标题披露其完成1.26亿美元Series C融资。[21]\n- 产品与商业化定位：缺少证据。[21]\n\n### 3.16 Skydio（无人机公司：仅能确认融资披露）\n- 路线归属：Business Wire新闻稿标题/摘要披露融资，但未在图谱中提供其与“具身智能”技术路线的直接证据；因此仅记录融资披露，不延伸为“具身智能公司”代表性结论（缺少证据）。[22]\n- 融资与估值：Business Wire新闻稿披露融资2.3亿美元（标题/摘要级）。[22]\n- 产品与商业化定位：缺少证据。[22]\n\n### 3.17 用户点名但图谱缺证的公司（统一说明）\n用户点名的公司中，以下在当前Research Graph上下文中**未出现可引用的sources/evidence**，因此本报告不对其融资、估值、产品与商业化作任何事实性陈述：\n- Covariant、GreyOrange、Locus、Anybotics、Mujin、Rightbot、Dexterity、AMP Robotics、Bright Machines、Skydio以外的其他公司中：例如“GreyOrange、Locus”已覆盖；但如“Intrinsic之外的更多平台型公司细节”“Physical Intelligence之外的基础模型公司扩展”“未在图谱中出现的仓储公司（如某些用户列举的公司）”等，均属缺少证据。[1]\n\n（注：本章节中的“缺少证据”本身是基于图谱query状态与已收录sources范围作出的限定性表述。）", "section_type": "analysis"}
+{"kind": "edge", "source": "20260531204439087805_7c59602d", "target": "20260531203311363618_3dec977b", "type": "uses"}
+{"kind": "edge", "source": "20260531204439087805_7c59602d", "target": "20260531204020066864_25cb28a0", "type": "uses"}
+{"kind": "edge", "source": "20260531204439087805_7c59602d", "target": "20260531204020055380_bdcaaba2", "type": "uses"}
+{"kind": "edge", "source": "20260531204439087805_7c59602d", "target": "20260531204020093209_c9bdc35c", "type": "uses"}
+{"kind": "edge", "source": "20260531204439087805_7c59602d", "target": "20260531204020104936_f401bc8f", "type": "uses"}
+{"kind": "edge", "source": "20260531204439087805_7c59602d", "target": "20260531204020081635_2b7eea77", "type": "uses"}
+{"kind": "edge", "source": "20260531204439087805_7c59602d", "target": "20260531204020130646_0ad31c04", "type": "uses"}
+{"kind": "edge", "source": "20260531204439087805_7c59602d", "target": "20260531204020423192_09a00854", "type": "uses"}
+{"kind": "edge", "source": "20260531204439087805_7c59602d", "target": "20260531204020411177_be2ac9da", "type": "uses"}
+{"kind": "edge", "source": "20260531204439087805_7c59602d", "target": "20260531204020571600_a21d46a7", "type": "uses"}
+{"kind": "edge", "source": "20260531204439087805_7c59602d", "target": "20260531204020386162_82954986", "type": "uses"}
+{"kind": "edge", "source": "20260531204439087805_7c59602d", "target": "20260531204020374294_7561a76c", "type": "uses"}
+{"kind": "edge", "source": "20260531204439087805_7c59602d", "target": "20260531204020474654_12c085ed", "type": "uses"}
+{"kind": "edge", "source": "20260531204439087805_7c59602d", "target": "20260531204020487102_b0d0d5dc", "type": "uses"}
+{"kind": "edge", "source": "20260531204439087805_7c59602d", "target": "20260531204020435723_3e4a9db0", "type": "uses"}
+{"kind": "edge", "source": "20260531204439087805_7c59602d", "target": "20260531204020449391_dbde914b", "type": "uses"}
+{"kind": "edge", "source": "20260531204439087805_7c59602d", "target": "20260531204020169981_af1aae53", "type": "uses"}
+{"kind": "edge", "source": "20260531204439087805_7c59602d", "target": "20260531204020273939_a20cbf7e", "type": "uses"}
+{"kind": "edge", "source": "20260531204439087805_7c59602d", "target": "20260531204020546324_f47912ba", "type": "uses"}
+{"kind": "edge", "source": "20260531204439087805_7c59602d", "target": "20260531204020286952_1b756e03", "type": "uses"}
+{"kind": "edge", "source": "20260531204439087805_7c59602d", "target": "20260531204020557440_8a33adb9", "type": "uses"}
+{"kind": "edge", "source": "20260531204439087805_7c59602d", "target": "20260531204020524942_e4620740", "type": "uses"}
+{"kind": "edge", "source": "20260531204439087805_7c59602d", "target": "20260531204020462024_2f478bdb", "type": "uses"}
+{"kind": "edge", "source": "20260531204439087805_7c59602d", "target": "20260531204020513127_456f641a", "type": "uses"}
+{"kind": "edge", "source": "20260531204439087805_7c59602d", "target": "20260531204020500039_98fb4a26", "type": "uses"}
+{"kind": "edge", "source": "20260531204439087805_7c59602d", "target": "20260531204020584015_44ec478d", "type": "uses"}
+{"kind": "node", "id": "20260531204505362456_eb1c908c", "type": "report_section", "title": "关键硬件/传感/计算平台（触觉、灵巧手、边缘计算、执行器力控）", "content": "本章节仅整理图谱“关键硬件/计算平台”证据块中**可直接引用**的供应商与要点；关于“与具体整机公司合作/供货/集成”的关系链，图谱目前缺少可核验案例，故不做点名绑定。[1]\n\n### 4.1 触觉（Tactile sensing）\n#### 4.1.1 XELA Robotics（uSkin）\n- XELA Robotics的新闻稿表述，其uSkin触觉传感器被设计为可无缝集成到平行夹爪与多指自适应夹爪等末端执行器中，并将应用场景指向人形与工业机器人。[2]\n- The Robot Report的报道提到XELA Robotics将在2026 Robotics Summit & Expo展示触觉传感方案，并提及与Waseda University的合作演示内容。[3]\n\n#### 4.1.2 GelSight（DIGIT）\n- GelSight产品页包含表述：与Facebook AI Research合作制造DIGIT触觉传感器（“In partnership with Facebook AI Research, GelSight is manufacturing DIGIT ...”）。[4]\n\n#### 4.1.3 SynTouch（BioTac）\n- SynTouch的BioTac产品页将BioTac描述为可感知力、振动与温度等触觉信息的传感器。[5]\n\n### 4.2 灵巧手/末端执行器（Dexterous hands & grippers）\n> 图谱中该类证据主要为产品页级材料，缺少与整机集成、出货与客户的可核验信息。\n\n- SCHUNK：其SVH五指伺服电动仿人手产品页可作为“五指灵巧手商品化供给”的证据入口（本报告不对其性能指标与应用案例做无证据扩展）。[6]\n- Shadow Robot Company：其“Shadow Dexterous Hand Series”产品页将该系列定位为研究与开发工具（Research and Development Tool）。[7]\n\n### 4.3 边缘计算与机器人控制平台（Edge compute & control platforms）\n- NVIDIA：NVIDIA技术博客发布并介绍Jetson Thor，并将其定位为面向Physical AI的平台（标题级定位亦明确为“the ultimate platform for physical AI”）。[8]\n- AMD：AMD的Kria SOM产品页将其目标应用包含robotics与vision AI等边缘场景。[9]\n- Intel：Intel Builders解决方案库页面描述了一种面向边缘的开放、实时AI机器人控制方案，强调实时控制与AI推理能力（以及编排等要素，但更细的软硬件组合需进一步取证）。[10]\n- NVIDIA（生态线索）：NVIDIA Newsroom新闻稿称其发布新的Physical AI模型，并提到多个全球合作伙伴展示下一代机器人；但具体伙伴名单与合作强度在图谱中未被抽取为可引用细节，本报告仅将其作为“平台侧生态叙事存在”的线索，不展开到公司级绑定。[11]\n\n### 4.4 执行器与力控（Actuators & force control）\n- Moog：其《Integrated Smart Actuator》资料强调其集成式智能执行器具备精确力控（precise force control）等能力；但图谱未提供其与具身整机/平台的合作案例证据。[12]\n- Flexiv：Flexiv的一篇公司文章页面（制造业机器人机械臂主题）被图谱抽取为：其自适应机器人在关节层面集成力/力矩传感并支持全身力控；但由于该表述目前来自摘要抽取线索，本报告将其作为“力控/关节传感一体化叙事存在”的证据，不扩展到具体产品型号与指标。[13]\n\n> 小结：在硬件侧，图谱可支持的结论主要是“触觉传感、灵巧手、边缘计算平台、力控执行器等供给要素存在，并以产品页/官方资料形式对外叙述”。关于这些要素在具身智能整机（尤其人形）中的实际采用率、供货关系、成本曲线与性能对标，属于当前图谱的关键缺口。[1]", "section_type": "analysis"}
+{"kind": "edge", "source": "20260531204505362456_eb1c908c", "target": "20260531203311426714_fb811ebf", "type": "uses"}
+{"kind": "edge", "source": "20260531204505362456_eb1c908c", "target": "20260531203939995459_a99c3d8c", "type": "uses"}
+{"kind": "edge", "source": "20260531204505362456_eb1c908c", "target": "20260531203940020371_48a7a520", "type": "uses"}
+{"kind": "edge", "source": "20260531204505362456_eb1c908c", "target": "20260531203940045207_5a13eb31", "type": "uses"}
+{"kind": "edge", "source": "20260531204505362456_eb1c908c", "target": "20260531203940068414_e4d462c7", "type": "uses"}
+{"kind": "edge", "source": "20260531204505362456_eb1c908c", "target": "20260531203940323349_54037ed1", "type": "uses"}
+{"kind": "edge", "source": "20260531204505362456_eb1c908c", "target": "20260531203940137145_e5dc9f38", "type": "uses"}
+{"kind": "edge", "source": "20260531204505362456_eb1c908c", "target": "20260531203940159243_5484a89c", "type": "uses"}
+{"kind": "edge", "source": "20260531204505362456_eb1c908c", "target": "20260531203940114812_7a41f327", "type": "uses"}
+{"kind": "edge", "source": "20260531204505362456_eb1c908c", "target": "20260531203940205402_f1edbeb0", "type": "uses"}
+{"kind": "edge", "source": "20260531204505362456_eb1c908c", "target": "20260531203940181385_2e9f705b", "type": "uses"}
+{"kind": "node", "id": "20260531204529020961_daf2d8af", "type": "report_section", "title": "冲突披露、局限性与待补证清单", "content": "### 5.1 已识别冲突（conflicts）\n- Mujin 2023-09 Series C融资金额在不同来源中存在差异：TechCrunch标题口径为8500万美元；The Bridge标题口径为8300万美元，且文中出现12.3 billion yen口径并提到用于欧洲扩张。图谱冲突节点指出，这种差异可能来自币种换算、汇率选择与四舍五入或统计口径不同；在缺少公司原始公告或监管披露核验前，本报告不合并口径，仅并列披露。[1][2][3]\n\n### 5.2 全局局限性（由图谱证据覆盖决定）\n1) 技术路线层：图谱中“全球具身智能主要技术路线梳理”query被标记为blocked，因此无法在证据层面系统覆盖端到端策略学习、VLA/VLM+控制、仿真强化学习、数据闭环/遥操作等路线的里程碑与代表性方法；本报告仅能用来源标题可确认的业务标签做最小化分类。[4]\n\n2) 公司名单层：人形、基础模型、移动操作/仓储等“公司筛选”query均为blocked或证据不足，导致本报告不能声称“代表性公司全覆盖”，也不能补充用户点名列表之外的新公司；本报告只覆盖图谱中确有sources/evidence的公司条目。[5][6][7]\n\n3) 产品与商业化层：当前投融资证据多为标题/摘要级，缺少对“产品进度、量产/部署规模、客户、营收/定价、团队背景”等尽调要素的一手证明材料；因此本报告在多数公司条目中只能写到“融资金额/估值/业务关键词”，并将其余部分标注为缺少证据。[8][9]\n\n4) 硬件与平台层：硬件证据主要为产品页、技术博客或资料PDF，可证明某类部件/平台的存在与官方定位，但缺少与具身整机公司之间的“采用/供货/合作”可核验关系链与时间线；因此本报告仅按触觉、灵巧手、边缘计算平台、执行器力控做供应商与要点梳理，不做生态绑定结论。[10][11]\n\n### 5.3 待补证清单（不构成事实陈述，仅列出需要补齐的证据类型）\n- 公司层面：\n  - 各公司融资事件回溯至一手公告/监管披露，补齐日期、轮次、投资方全名单、估值、币种与是否extension等字段（图谱已有“needs_vertical”提示）。[8]\n  - 各公司产品与商业化：官网产品页、客户案例、发布会/白皮书、采购/招投标、监管披露等一手证据，尤其用于验证“部署规模、客户行业、收入/定价”。（缺少证据）[5][6][7]\n- 技术路线层面：补齐论文/技术博客/开源仓库等材料，以支持对学习范式、数据闭环、仿真体系与模型架构的可证伪描述。（缺少证据）[4]\n- 硬件生态层面：补齐“整机—部件—平台”的供货/集成证据（新闻稿、合作公告、认证名单、BOM/拆解等），并建立时间序列以评估成熟度。（缺少证据）[10][11]\n", "section_type": "analysis"}
+{"kind": "edge", "source": "20260531204529020961_daf2d8af", "target": "20260531204020584015_44ec478d", "type": "uses"}
+{"kind": "edge", "source": "20260531204529020961_daf2d8af", "target": "20260531204020435723_3e4a9db0", "type": "uses"}
+{"kind": "edge", "source": "20260531204529020961_daf2d8af", "target": "20260531204020449391_dbde914b", "type": "uses"}
+{"kind": "edge", "source": "20260531204529020961_daf2d8af", "target": "20260531203311346847_2eacf097", "type": "uses"}
+{"kind": "edge", "source": "20260531204529020961_daf2d8af", "target": "20260531203311363618_3dec977b", "type": "uses"}
+{"kind": "edge", "source": "20260531204529020961_daf2d8af", "target": "20260531203311395846_80c3e951", "type": "uses"}
+{"kind": "edge", "source": "20260531204529020961_daf2d8af", "target": "20260531203311379410_65c32d32", "type": "uses"}
+{"kind": "edge", "source": "20260531204529020961_daf2d8af", "target": "20260531203311412304_e667d657", "type": "uses"}
+{"kind": "edge", "source": "20260531204529020961_daf2d8af", "target": "20260531203311426714_fb811ebf", "type": "uses"}
+{"kind": "node", "id": "20260531204543222790_7043957b", "type": "report_section", "title": "结论（证据受限版）", "content": "在当前Research Graph证据覆盖范围内，可以形成的相对稳健结论主要来自两类信号：\n\n1) 资本市场信号：图谱收录了多家与具身智能相关方向公司在2022-2025期间的融资/估值报道或新闻稿，包括人形/类人公司（Figure、Agility）、机器人基础模型/机器人AI公司（Skild AI、Physical Intelligence）以及仓储/物流/拣选/卸货等应用向公司（Covariant、GreyOrange、Locus、Mujin、Rightbot、Dexterity）等；但多数事件仍停留在标题/摘要级字段，缺少统一口径核验与尽调级信息。[1][2]\n\n2) 关键硬件与平台信号：图谱证据表明，触觉传感（XELA uSkin、GelSight DIGIT、SynTouch BioTac）、灵巧手产品（SCHUNK SVH、Shadow Dexterous Hand）、边缘计算/控制平台（NVIDIA Jetson Thor、AMD Kria、Intel边缘实时机器人控制方案）以及执行器/力控（Moog Integrated Smart Actuator、Flexiv力控叙事）等要素均在2022-2026窗口内以产品页/技术博客/资料形式持续对外呈现；但缺少把这些要素与具体整机公司“采用/供货/合作”绑定的可核验证据链。[3][4]\n\n因此，本报告建议将本轮输出定位为“**证据受限的索引与清单**”：它可以帮助读者快速定位到已收录来源与对应公司/供应商，但不应被用作对技术路线优劣、商业化成熟度或公司竞争格局的强结论依据；这些判断需要在后续研究中补齐blocked/needs_vertical部分的证据与核验流程。[1][2][3][4]", "section_type": "conclusion"}
+{"kind": "edge", "source": "20260531204543222790_7043957b", "target": "20260531203311412304_e667d657", "type": "uses"}
+{"kind": "edge", "source": "20260531204543222790_7043957b", "target": "20260531203311426714_fb811ebf", "type": "uses"}
+{"kind": "edge", "source": "20260531204543222790_7043957b", "target": "20260531203939995459_a99c3d8c", "type": "uses"}
+{"kind": "edge", "source": "20260531204543222790_7043957b", "target": "20260531203940323349_54037ed1", "type": "uses"}
