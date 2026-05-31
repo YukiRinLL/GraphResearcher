@@ -303,7 +303,9 @@ class MemoryManager:
         graph_tools.add_edge(resolved_query_id, run_id, "searched_by", cache_dir=self.cache_dir)
 
         for source in evidence_package.get("sources", []) or []:
-            source_id = graph_tools.create_source(
+            # Reuse an existing source node when the same URL was already
+            # written; deduplication is the Graph Manager's job at write time.
+            source_id = self.deduplicate_source(source) or graph_tools.create_source(
                 url=_first(source, "url") or "",
                 title=_first(source, "title"),
                 source_type=_first(source, "source_type", "type"),

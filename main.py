@@ -169,33 +169,6 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
         if text:
             emit(f"{prefix}[{kind}] {clip(text)}")
 
-    def assemble_report_from_graph() -> str:
-        """Build the report from the graph's ``report_section`` nodes.
-
-        The graph is the single source of truth for the report: the Reporter
-        writes one ``report_section`` node per section. Concatenate them in
-        write order (node IDs are ``<timestamp>_<uuid>`` so lexicographic sort
-        is chronological). Returns ``""`` when no sections exist (e.g. the
-        simple-answer path that skips Stage 3), so the caller can fall back.
-        """
-        try:
-            from tools import graph_tools
-
-            sections = graph_tools.search_nodes("report_section", {}, cache_dir=str(output_dir))
-        except Exception:
-            return ""
-        if not sections:
-            return ""
-        parts = []
-        for node in sorted(sections, key=lambda n: n.get("id", "")):
-            title = (node.get("title") or "").strip()
-            content = (node.get("content") or "").strip()
-            if title and content:
-                parts.append(f"## {title}\n\n{content}")
-            elif title or content:
-                parts.append(title or content)
-        return "\n\n".join(parts).strip()
-
     final_text = ""
     orig_stdout, orig_stderr = sys.stdout, sys.stderr
     # Tee stdout+stderr into run.log so EVERYTHING printed — rich output,
@@ -233,9 +206,10 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
                 if not messages:
                     continue
 
-                # Always capture the latest text as the running report candidate.
+                # The report is the Orchestrator's final reviewed message, so only
+                # capture top-level (namespace == ()) text — never a subagent's draft.
                 last_text = _content_text(messages[-1])
-                if last_text:
+                if last_text and not namespace:
                     final_text = last_text
 
                 if not stream_progress:
@@ -250,9 +224,10 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
             console.print("[red]Run failed with an exception (captured in run.log):[/]")
             console.print(traceback.format_exc(), markup=False, highlight=False)
         finally:
-            # The graph's report_section nodes are the report's source of truth;
-            # fall back to the last streamed message only when none were written.
-            report_text = assemble_report_from_graph() or final_text or "(no report produced)"
+            # The report is the Orchestrator's final reviewed message (it aggregates
+            # the Reporter's draft and revises it). The graph holds evidence and
+            # section→evidence bindings only, not the report itself.
+            report_text = final_text or "(no report produced)"
             report_path.write_text(report_text, encoding="utf-8")
             console.rule("[bold green]Final Report")
             console.print(Markdown(report_text))

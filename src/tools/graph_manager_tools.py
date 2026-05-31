@@ -172,19 +172,6 @@ def get_node(node_id: str) -> dict:
 # Searcher tools
 # -----------------------------
 @tool
-def get_query_context(query_id: str) -> dict:
-    """Read existing context for a query to avoid duplicate searching.
-
-    Args:
-        query_id: The query node ID.
-
-    Returns:
-        dict with the ``query`` node and its ``existing_subgraph``.
-    """
-    return _mm().get_query_context(query_id)
-
-
-@tool
 def submit_search_result(query_id: str, evidence_package: dict) -> dict:
     """Write a structured evidence package into the Research Graph.
 
@@ -260,7 +247,6 @@ ORCHESTRATOR_TOOLS: list[Any] = [
 ]
 
 SEARCHER_TOOLS: list[Any] = [
-    get_query_context,
     submit_search_result,
 ]
 
