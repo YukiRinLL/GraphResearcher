@@ -1,0 +1,375 @@
+{"type": "_graphresearcher", "source": "graph-researcher"}
+{"kind": "node", "id": "20260601195559699497_c1544c34", "type": "user_request", "request": "整理目前全球具身智能（Embodied AI/机器人+多模态大模型）发展的主要技术路线，并分别给出每条路线的代表性公司/机构；对每家代表公司说明：技术路径（核心方法与硬件/软件栈）、产品进度（原型/量产/落地案例）、商业化进度（客户/场景/收入线索）、融资情况（轮次/金额/时间/投资方，能获取到的公开信息）、团队情况（核心创始人/关键人才/背景）。时间以当前日期2026-06-01前的公开信息为准。输出为中文研究报告，含编号引用与参考文献。", "research_goal": "梳理截至2026-06-01前全球具身智能（Embodied AI：机器人 + 多模态大模型）发展的主要技术路线，并为每条路线给出代表性公司/机构清单；对每家代表公司/机构分别调研其技术路径（核心方法与硬件/软件栈）、产品进度（原型/量产/落地案例）、商业化进度（客户/场景/收入线索）、融资情况（轮次/金额/时间/投资方等公开信息）、团队情况（核心创始人/关键人才/背景），形成含编号引用与参考文献的中文研究报告。", "language": "中文"}
+{"kind": "node", "id": "20260601195559709852_561a319e", "type": "query", "text": "截至2026-06-01，全球具身智能（机器人+多模态大模型）有哪些主要技术路线/范式？按路线给出定义、关键技术要素（模型/数据/训练范式/控制方式/硬件形态）、代表性公司/机构与关键词。", "status": "pending"}
+{"kind": "node", "id": "20260601195559725540_75fcc27a", "type": "query", "text": "以“通用人形/通用移动操作机器人 + 端到端策略学习（模仿学习/强化学习/Transformer/行为克隆）+ 大规模机器人数据”为路线：识别全球代表性公司/机构，并分别检索其公开披露的技术栈、产品进度、落地案例与客户信息。", "status": "pending"}
+{"kind": "node", "id": "20260601195559738393_76e35b5a", "type": "query", "text": "以“视觉-语言-动作（VLA）或多模态大模型作为机器人通用接口（LLM/VLM/VLA 驱动规划+工具调用/技能库）”为路线：识别代表性公司/机构与其系统架构（云端/边缘、模型与中间层）、典型演示/产品与商业化进展。", "status": "pending"}
+{"kind": "node", "id": "20260601195559753418_6991f5e1", "type": "query", "text": "以“工业/仓储/物流等垂直场景机器人 + 感知与控制为主（非通用具身大模型或小模型）并逐步引入多模态模型提升泛化”为路线：梳理代表公司/机构（AMR、拣选、搬运、分拣等），并调研其产品规模化、客户/收入线索与集成生态。", "status": "pending"}
+{"kind": "node", "id": "20260601195559768408_80fe00b4", "type": "query", "text": "以“家用服务/消费级机器人（清洁、陪护、教育、家务协作等）结合多模态大模型/语音交互/本体技能”路线：梳理代表公司/机构，并调研其硬件平台、软件能力、量产与渠道、商业模式与融资信息。", "status": "pending"}
+{"kind": "node", "id": "20260601195559781743_a5d6fb34", "type": "query", "text": "对每条技术路线下的代表性公司/机构：系统检索其截至2026-06-01的融资与团队公开信息（轮次/金额/时间/投资方、核心创始人/关键人才履历），并汇总可核验来源以支持编号引用与参考文献。", "status": "pending"}
+{"kind": "node", "id": "20260601195853224236_cf96a0b7", "type": "search_run", "query_id": "20260601195559709852_561a319e"}
+{"kind": "node", "id": "20260601195853238741_f0b3e1f4", "type": "source", "url": "https://arxiv.org/html/2405.14093v8", "title": "A Survey on Vision-Language-Action Models for Embodied AI", "source_type": "paper"}
+{"kind": "node", "id": "20260601195853253022_81a87b77", "type": "source", "url": "https://arxiv.org/abs/2406.09246", "title": "OpenVLA: An Open-Source Vision-Language-Action Model", "source_type": "paper"}
+{"kind": "node", "id": "20260601195853266902_08368cc4", "type": "source", "url": "https://arxiv.org/abs/2307.15818", "title": "RT-2: Vision-Language-Action Models Transfer Web Knowledge to Robotic Control", "source_type": "paper"}
+{"kind": "node", "id": "20260601195853280917_a965e106", "type": "source", "url": "https://deepmind.google/blog/rt-2-new-model-translates-vision-and-language-into-action/", "title": "RT-2: New model translates vision and language into action", "source_type": "blog"}
+{"kind": "node", "id": "20260601195853294794_0b5d06e8", "type": "source", "url": "https://research.google/blog/rt-1-robotics-transformer-for-real-world-control-at-scale/", "title": "RT-1: Robotics Transformer for real-world control at scale", "source_type": "blog"}
+{"kind": "node", "id": "20260601195853310253_9065c613", "type": "source", "url": "https://arxiv.org/abs/2306.11706", "title": "RoboCat: A Self-Improving Generalist Agent for Robotic Manipulation", "source_type": "paper"}
+{"kind": "node", "id": "20260601195853324685_f5afefe1", "type": "source", "url": "https://deepmind.google/blog/robocat-a-self-improving-robotic-agent/", "title": "RoboCat: A self-improving robotic agent", "source_type": "blog"}
+{"kind": "node", "id": "20260601195853339862_1d178a17", "type": "source", "url": "https://diffusion-policy.cs.columbia.edu/diffusion_policy_2023.pdf", "title": "Visuomotor Policy Learning via Action Diffusion (Diffusion Policy)", "source_type": "paper"}
+{"kind": "node", "id": "20260601195853354736_a33c53d1", "type": "source", "url": "https://nvidianews.nvidia.com/news/foundation-model-isaac-robotics-platform", "title": "NVIDIA Announces Project GR00T Foundation Model for Humanoid Robots and Major Isaac Robotics Platform Update", "source_type": "report"}
+{"kind": "node", "id": "20260601195853369963_693c0429", "type": "source", "url": "https://nvidianews.nvidia.com/news/nvidia-isaac-gr00t-n1-open-humanoid-robot-foundation-model-simulation-frameworks", "title": "NVIDIA Announces Isaac GR00T N1 — the World’s First Open Humanoid Robot Foundation Model — and Simulation Frameworks to Speed Robot Development", "source_type": "report"}
+{"kind": "node", "id": "20260601195853383173_6afd1488", "type": "document", "text": "This survey discusses Vision-Language-Action (VLA) models for embodied AI, describing models that take visual and language inputs and output robot actions for embodied tasks, and organizes discussion around VLA design, training, datasets, and evaluation.", "source_id": "20260601195853238741_f0b3e1f4"}
+{"kind": "node", "id": "20260601195853396504_d2cd2954", "type": "document", "text": "The paper introduces OpenVLA, described as a 7B-parameter open-source vision-language-action model trained using a dataset that includes approximately 970k real-world robot demonstrations.", "source_id": "20260601195853253022_81a87b77"}
+{"kind": "node", "id": "20260601195853410950_eb8b37fa", "type": "document", "text": "The RT-2 paper presents vision-language-action models for robotic control, describing an approach that incorporates capabilities learned from internet-scale vision-language pretraining into end-to-end robot control to improve generalization.", "source_id": "20260601195853266902_08368cc4"}
+{"kind": "node", "id": "20260601195853425294_a79aa21a", "type": "document", "text": "The DeepMind blog post presents RT-2 as a model that translates vision and language into action, and explains the relationship between RT-2 and prior robotics work (including RT-1) in terms of combining robot data with vision-language model capabilities.", "source_id": "20260601195853280917_a965e106"}
+{"kind": "node", "id": "20260601195853438942_2a15a290", "type": "document", "text": "The Google Research blog post introduces RT-1 (Robotics Transformer) and describes training on a large real-robot dataset, specifying scale figures including 130k episodes and 700+ tasks collected across 13 robots.", "source_id": "20260601195853294794_0b5d06e8"}
+{"kind": "node", "id": "20260601195853452721_0b8646a5", "type": "document", "text": "The RoboCat paper describes a self-improving generalist agent for robotic manipulation, characterizing it as a visual goal-conditioned decision transformer that consumes action-labelled visual experience.", "source_id": "20260601195853310253_9065c613"}
+{"kind": "node", "id": "20260601195853468488_1ae62337", "type": "document", "text": "The DeepMind RoboCat blog post describes RoboCat as a self-improving robotic agent that learns many tasks and can transfer across different robot arms, emphasizing iterative improvement and generalist behavior.", "source_id": "20260601195853324685_f5afefe1"}
+{"kind": "node", "id": "20260601195853484818_e6108b43", "type": "document", "text": "The Diffusion Policy paper proposes representing visuomotor policy learning as a conditional denoising diffusion process, using diffusion to generate action sequences/trajectories for imitation and control.", "source_id": "20260601195853339862_1d178a17"}
+{"kind": "node", "id": "20260601195853499532_c95868da", "type": "document", "text": "NVIDIA's 2024 newsroom release announces Project GR00T, positioning it as a general-purpose foundation model for humanoid robots, alongside major updates to the Isaac robotics platform.", "source_id": "20260601195853354736_a33c53d1"}
+{"kind": "node", "id": "20260601195853514570_b3eb1bfc", "type": "document", "text": "NVIDIA's 2025 newsroom release announces Isaac GR00T N1, described as an open humanoid robot foundation model, and highlights simulation frameworks intended to accelerate robot development.", "source_id": "20260601195853369963_693c0429"}
+{"kind": "node", "id": "20260601195853529904_21a4446c", "type": "evidence", "claim": "Vision-Language-Action (VLA) models are models for embodied AI that take visual and language inputs and output robot actions to complete embodied tasks.", "status": "pending"}
+{"kind": "node", "id": "20260601195853552020_d83e85f1", "type": "evidence", "claim": "OpenVLA is a 7B-parameter open-source vision-language-action model.", "status": "pending"}
+{"kind": "node", "id": "20260601195853573831_607a2de5", "type": "evidence", "claim": "OpenVLA was trained using a dataset that includes approximately 970k real-world robot demonstrations.", "status": "pending"}
+{"kind": "node", "id": "20260601195853596546_f275bdf5", "type": "evidence", "claim": "RT-2 incorporates capabilities from internet-scale vision-language model pretraining into end-to-end robotic control to improve generalization.", "status": "pending"}
+{"kind": "node", "id": "20260601195853617562_69573963", "type": "evidence", "claim": "DeepMind describes RT-2 as a model that translates vision and language into action and connects it to RT-1 robotics data and capabilities.", "status": "pending"}
+{"kind": "node", "id": "20260601195853638997_eae9d621", "type": "evidence", "claim": "RT-1 was trained on a large-scale real-robot dataset with 130k episodes across 700+ tasks collected from 13 robots.", "status": "pending"}
+{"kind": "node", "id": "20260601195853661405_9e686c35", "type": "evidence", "claim": "RoboCat is described as a self-improving generalist agent for robotic manipulation based on a visual goal-conditioned decision transformer that consumes action-labelled visual experience.", "status": "pending"}
+{"kind": "node", "id": "20260601195853683287_bb5e579b", "type": "evidence", "claim": "DeepMind describes RoboCat as a self-improving robotic agent that learns many tasks and can transfer across different robot arms.", "status": "pending"}
+{"kind": "node", "id": "20260601195853705242_50b3766a", "type": "evidence", "claim": "Diffusion Policy represents visuomotor policy learning as a conditional denoising diffusion model used to generate actions or trajectories.", "status": "pending"}
+{"kind": "node", "id": "20260601195853726826_b10a31f2", "type": "evidence", "claim": "NVIDIA announced Project GR00T as a general-purpose foundation model for humanoid robots alongside an Isaac robotics platform update on 2024-03-18.", "status": "pending"}
+{"kind": "node", "id": "20260601195853749764_4fc8f01c", "type": "evidence", "claim": "NVIDIA announced Isaac GR00T N1 as an open humanoid robot foundation model and highlighted simulation frameworks to speed robot development on 2025-03-18.", "status": "pending"}
+{"kind": "node", "id": "20260601195853771109_f5c8c626", "type": "evidence", "claim": "The survey frames Vision-Language-Action (VLA) models as models that process vision and language and output robot actions for embodied tasks, and organizes the space around model design, training, data, and evaluation.", "status": "pending"}
+{"kind": "node", "id": "20260601195853793863_f8aad3cc", "type": "evidence", "claim": "The OpenVLA paper introduction/abstract describes OpenVLA as a 7B-parameter open-source VLA model.", "status": "pending"}
+{"kind": "node", "id": "20260601195853816646_03b18f63", "type": "evidence", "claim": "The OpenVLA paper states it is trained using data that includes about 970k real-world robot demonstrations.", "status": "pending"}
+{"kind": "node", "id": "20260601195853843652_42fc79aa", "type": "evidence", "claim": "The RT-2 paper abstract describes transferring knowledge from internet-scale vision-language model training into robotic control by producing actions from vision/language inputs, emphasizing improved generalization.", "status": "pending"}
+{"kind": "node", "id": "20260601195853869577_03833caf", "type": "evidence", "claim": "DeepMind’s RT-2 blog post presents RT-2 as translating vision and language into action and discusses it in relation to RT-1 and robot data used for training robotics policies.", "status": "pending"}
+{"kind": "node", "id": "20260601195853894336_8dd45b0b", "type": "evidence", "claim": "The RT-1 Google Research blog post reports that RT-1 was trained on 130k episodes covering 700+ tasks collected from 13 robots.", "status": "pending"}
+{"kind": "node", "id": "20260601195853918069_4ef73ccd", "type": "evidence", "claim": "The RoboCat paper abstract characterizes RoboCat as a self-improving generalist agent and describes it as a visual goal-conditioned decision transformer that consumes action-labelled visual experience.", "status": "pending"}
+{"kind": "node", "id": "20260601195853941906_af2bd71a", "type": "evidence", "claim": "DeepMind’s RoboCat blog post describes RoboCat as a self-improving agent that can learn multiple tasks and transfer across different robot arms.", "status": "pending"}
+{"kind": "node", "id": "20260601195853966387_94f632c1", "type": "evidence", "claim": "The Diffusion Policy paper describes representing a robot visuomotor policy as a conditional denoising diffusion model, using the diffusion process to generate actions/trajectories for control and imitation learning.", "status": "pending"}
+{"kind": "node", "id": "20260601195853988145_18532602", "type": "evidence", "claim": "NVIDIA’s 2024-03-18 newsroom release announces Project GR00T as a foundation model for humanoid robots and pairs the announcement with an Isaac robotics platform update.", "status": "pending"}
+{"kind": "node", "id": "20260601195854010663_61e105bb", "type": "evidence", "claim": "NVIDIA’s 2025-03-18 newsroom release announces Isaac GR00T N1 as an open humanoid robot foundation model and highlights simulation frameworks intended to accelerate robot development.", "status": "pending"}
+{"kind": "node", "id": "20260601195923818632_b5b3eb39", "type": "search_run", "query_id": "20260601195559725540_75fcc27a"}
+{"kind": "node", "id": "20260601195923835205_08d0f48c", "type": "source", "url": "https://www.figure.ai/news/project-go-big", "title": "Project Go-Big: Internet-Scale Humanoid Pretraining and Direct Human-to-Robot Transfer", "source_type": "report"}
+{"kind": "node", "id": "20260601195923853117_0e0ad399", "type": "source", "url": "https://www.figure.ai/news/introducing-figure-03", "title": "Introducing Figure 03", "source_type": "report"}
+{"kind": "node", "id": "20260601195923868957_cf0d3c57", "type": "source", "url": "https://bostondynamics.com/blog/atlas-evolution-from-research-robot-to-industrial-humanoid/", "title": "Atlas’ Evolution From Research Robot to Industrial Humanoid", "source_type": "blog"}
+{"kind": "node", "id": "20260601195923883858_8a4eddea", "type": "source", "url": "https://bostondynamics.com/blog/large-behavior-models-atlas-find-new-footing/", "title": "Large Behavior Models and Atlas Find New Footing", "source_type": "blog"}
+{"kind": "node", "id": "20260601195923898917_cbe22fef", "type": "source", "url": "https://pressroom.toyota.com/ai-powered-robot-by-boston-dynamics-and-toyota-research-institute-takes-a-key-step-towards-general-purpose-humanoids/", "title": "AI-Powered Robot by Boston Dynamics and Toyota Research Institute Takes a Key Step Towards General-Purpose Humanoids", "source_type": "report"}
+{"kind": "node", "id": "20260601195923914308_78a41902", "type": "source", "url": "https://developer.nvidia.com/blog/simplify-generalist-robot-policy-evaluation-in-simulation-with-nvidia-isaac-lab-arena/", "title": "Simplify Generalist Robot Policy Evaluation in Simulation with NVIDIA Isaac Lab-Arena | NVIDIA Technical Blog", "source_type": "blog"}
+{"kind": "node", "id": "20260601195923928804_e5258370", "type": "source", "url": "https://developer.nvidia.com/blog/building-generalist-humanoid-capabilities-with-nvidia-isaac-gr00t-n1-6-using-a-sim-to-real-workflow/", "title": "Building Generalist Humanoid Capabilities with NVIDIA Isaac GR00T N1.6 Using a Sim-to-Real Workflow", "source_type": "blog"}
+{"kind": "node", "id": "20260601195923942382_814d95d0", "type": "source", "url": "https://developer.nvidia.com/blog/streamline-robot-learning-with-whole-body-control-and-enhanced-teleoperation-in-nvidia-isaac-lab-2-3/", "title": "Streamline Robot Learning with Whole-Body Control and Enhanced Teleoperation in NVIDIA Isaac Lab 2.3", "source_type": "blog"}
+{"kind": "node", "id": "20260601195923958499_9a410774", "type": "source", "url": "https://www.therobotreport.com/nvidia-collaborates-global-robotics-leaders-make-physical-ai-reality/", "title": "NVIDIA works with global robotics leaders to make physical AI a reality", "source_type": "news"}
+{"kind": "node", "id": "20260601195923983374_08d15892", "type": "source", "url": "https://robotics-transformer2.github.io/", "title": "RT-2: Vision-Language-Action Models", "source_type": "other"}
+{"kind": "node", "id": "20260601195923998890_eae9ad1f", "type": "source", "url": "https://www.therobotreport.com/sanctuary-ai-integrates-tactile-sensors-into-phoenix-general-purpose-robots/", "title": "Sanctuary AI integrates tactile sensors into Phoenix general purpose robots", "source_type": "news"}
+{"kind": "node", "id": "20260601195924013230_880f02d5", "type": "document", "text": "Figure AI介绍“Project Go-Big”，强调通过人类视频采集构建互联网/行星规模的人形机器人预训练数据，并声称这些数据与训练方法可直接迁移到其名为Helix的系统以缓解机器人数据稀缺问题。", "source_id": "20260601195923835205_08d0f48c"}
+{"kind": "node", "id": "20260601195924028708_7a87c6b1", "type": "document", "text": "Figure AI发布第三代人形机器人平台Figure 03，并将其定位为为Helix、家庭场景以及规模化应用而设计的平台。", "source_id": "20260601195923853117_0e0ad399"}
+{"kind": "node", "id": "20260601195924043902_c3fd4fa6", "type": "document", "text": "Boston Dynamics博客讨论Atlas从研究机器人向工业人形机器人的演进与定位变化，侧重产品方向与背景说明。", "source_id": "20260601195923868957_cf0d3c57"}
+{"kind": "node", "id": "20260601195924060456_891e3440", "type": "document", "text": "Boston Dynamics博客提出在Atlas上推进“大行为模型（Large Behavior Models, LBMs）”，并描述该方向与Toyota Research Institute（TRI）合作相关。", "source_id": "20260601195923883858_8a4eddea"}
+{"kind": "node", "id": "20260601195924076813_de79d76b", "type": "document", "text": "Toyota Pressroom新闻稿介绍Toyota Research Institute与Boston Dynamics合作的进展，称其AI能力让Atlas实现使用AI的自主全身操作与运动行为，并将其表述为迈向通用人形机器人的一步。", "source_id": "20260601195923898917_cbe22fef"}
+{"kind": "node", "id": "20260601195924090522_45644764", "type": "document", "text": "NVIDIA技术博客介绍Isaac Lab-Arena，用于在仿真中以可扩展方式评测通用型（generalist）机器人策略，强调通用策略需要跨多任务与多环境运行。", "source_id": "20260601195923914308_78a41902"}
+{"kind": "node", "id": "20260601195924104575_8a03a9bb", "type": "document", "text": "NVIDIA技术博客描述使用Isaac GR00T N1.6并结合仿真到现实（sim-to-real）工作流来构建通用人形能力的思路，提到为使人形机器人有用需要跨感知、规划与全身控制等能力协同。", "source_id": "20260601195923928804_e5258370"}
+{"kind": "node", "id": "20260601195924119430_330ba194", "type": "document", "text": "NVIDIA技术博客介绍Isaac Lab 2.3中与全身控制和增强遥操作相关的能力，并讨论从真实世界演示训练机器人策略存在成本与泛化/过拟合挑战。", "source_id": "20260601195923942382_814d95d0"}
+{"kind": "node", "id": "20260601195924132433_18a96965", "type": "document", "text": "The Robot Report报道NVIDIA在GTC 2026期间关于“physical AI”与机器人开发者生态合作的对外信息，侧重生态合作而非具体算法或数据细节。", "source_id": "20260601195923958499_9a410774"}
+{"kind": "node", "id": "20260601195924146511_88dec854", "type": "document", "text": "Google DeepMind博客发布RT-2，描述其为视觉-语言-动作（VLA）模型，能够将视觉与语言直接映射为动作，并称其从web数据与机器人数据共同学习。", "source_id": "20260601195853280917_a965e106"}
+{"kind": "node", "id": "20260601195924159916_49a65652", "type": "document", "text": "RT-2项目主页概述RT-2作为视觉-语言-动作模型的核心思想，即将互联网规模训练的视觉语言模型能力融入端到端机器人控制以提升泛化。", "source_id": "20260601195923983374_08d15892"}
+{"kind": "node", "id": "20260601195924172659_154ba083", "type": "document", "text": "The Robot Report报道Sanctuary AI在其Phoenix通用机器人上集成触觉传感器，并引述其观点称触觉将促进遥操作并为训练具身AI模型提供更丰富数据。", "source_id": "20260601195923998890_eae9ad1f"}
+{"kind": "node", "id": "20260601195924187274_915fb605", "type": "evidence", "claim": "Figure AI的Project Go-Big使用人类视频采集来构建互联网/行星规模的人形预训练数据，并宣称这些能力可直接迁移到其Helix系统。", "status": "pending"}
+{"kind": "node", "id": "20260601195924209720_70a3df90", "type": "evidence", "claim": "Figure AI发布第三代人形机器人Figure 03，并将其描述为为Helix、家庭和规模化应用而设计的平台。", "status": "pending"}
+{"kind": "node", "id": "20260601195924237724_037e5273", "type": "evidence", "claim": "Boston Dynamics在Atlas上推进名为Large Behavior Models（LBMs）的大行为模型方向，并将其描述为与Toyota Research Institute合作相关的工作。", "status": "pending"}
+{"kind": "node", "id": "20260601195924258591_d82c4d06", "type": "evidence", "claim": "Toyota Research Institute与Boston Dynamics的合作使Atlas实现使用AI的自主全身操作与运动行为，并被表述为迈向通用人形机器人的关键一步。", "status": "pending"}
+{"kind": "node", "id": "20260601195924278291_3c7b1d5f", "type": "evidence", "claim": "NVIDIA发布Isaac Lab-Arena，用于在仿真中对通用型（generalist）机器人策略进行可扩展评测。", "status": "pending"}
+{"kind": "node", "id": "20260601195924301768_929a2f48", "type": "evidence", "claim": "NVIDIA技术博客描述使用Isaac GR00T N1.6结合sim-to-real工作流来构建通用人形能力。", "status": "pending"}
+{"kind": "node", "id": "20260601195924327985_ddeb02b6", "type": "evidence", "claim": "NVIDIA Isaac Lab 2.3提供与全身控制和增强遥操作相关的能力，并讨论从真实世界演示训练机器人策略的成本与泛化挑战。", "status": "pending"}
+{"kind": "node", "id": "20260601195924350259_e6bb12c2", "type": "evidence", "claim": "Google DeepMind的RT-2被描述为视觉-语言-动作（VLA）模型，可将视觉和语言转换为动作，并从web数据与机器人数据共同学习。", "status": "pending"}
+{"kind": "node", "id": "20260601195924371554_01e5e566", "type": "evidence", "claim": "RT-2项目主页将RT-2描述为把互联网规模训练的视觉语言模型能力纳入端到端机器人控制以提升泛化的VLA方法。", "status": "pending"}
+{"kind": "node", "id": "20260601195924391849_00e63273", "type": "evidence", "claim": "Sanctuary AI称在Phoenix通用机器人上集成触觉传感器将促进遥操作并为训练具身AI模型提供更丰富数据。", "status": "pending"}
+{"kind": "node", "id": "20260601195924411591_7d48a5e9", "type": "evidence", "claim": "Project Go-Big页面表述通过“human video collection”覆盖真实空间并收集可用于训练的技能数据，并宣称这些能力可以“transfer directly to Helix”。", "status": "pending"}
+{"kind": "node", "id": "20260601195924432112_f15e5cfd", "type": "evidence", "claim": "Introducing Figure 03页面将Figure 03描述为第三代人形机器人，并写明其“designed for Helix, the home, and the world at scale”等定位信息。", "status": "pending"}
+{"kind": "node", "id": "20260601195924452771_3b8d60b7", "type": "evidence", "claim": "Large Behavior Models and Atlas Find New Footing博客明确提出在Atlas上推进“Large Behavior Models (LBMs)”，并说明该方向与Toyota Research Institute的合作有关。", "status": "pending"}
+{"kind": "node", "id": "20260601195924473141_9dddf82d", "type": "evidence", "claim": "Toyota Pressroom新闻稿称合作让Atlas获得“autonomous whole-body manipulation and locomotion behaviors using AI”，并将其表述为迈向“general-purpose humanoids”的一步。", "status": "pending"}
+{"kind": "node", "id": "20260601195924496511_dbaad757", "type": "evidence", "claim": "Isaac Lab-Arena博客以“generalist robot policies must operate across diverse tasks …”为背景，介绍Isaac Lab-Arena用于可扩展的仿真评测通用型机器人策略。", "status": "pending"}
+{"kind": "node", "id": "20260601195924523466_6df9ba27", "type": "evidence", "claim": "GR00T N1.6博客将其描述为通过“sim-to-real workflow”构建“generalist humanoid capabilities”的路径与示例。", "status": "pending"}
+{"kind": "node", "id": "20260601195924547404_b8452623", "type": "evidence", "claim": "Isaac Lab 2.3博客讨论“Training robot policies from real-world demonstrations …”的成本与泛化挑战，并介绍whole-body control与teleoperation增强能力。", "status": "pending"}
+{"kind": "node", "id": "20260601195924571080_88e48f95", "type": "evidence", "claim": "DeepMind关于RT-2的博客将RT-2称为“vision-language-action (VLA) model”，并写明其“learns from both web and robotics data”，目标是将视觉与语言“translates … into action”。", "status": "pending"}
+{"kind": "node", "id": "20260601195924593356_8b502bd8", "type": "evidence", "claim": "RT-2项目主页阐述将互联网规模训练的视觉语言模型能力融入端到端机器人控制，以增强泛化能力的总体思路。", "status": "pending"}
+{"kind": "node", "id": "20260601195924615034_ec137c44", "type": "evidence", "claim": "The Robot Report报道Sanctuary AI在Phoenix通用机器人上集成触觉传感器，并引述其说法称触觉将促进teleoperation并为训练embodied AI models提供更丰富数据。", "status": "pending"}
+{"kind": "edge", "source": "20260601195559699497_c1544c34", "target": "20260601195559709852_561a319e", "type": "has_query"}
+{"kind": "edge", "source": "20260601195559699497_c1544c34", "target": "20260601195559725540_75fcc27a", "type": "has_query"}
+{"kind": "edge", "source": "20260601195559699497_c1544c34", "target": "20260601195559738393_76e35b5a", "type": "has_query"}
+{"kind": "edge", "source": "20260601195559699497_c1544c34", "target": "20260601195559753418_6991f5e1", "type": "has_query"}
+{"kind": "edge", "source": "20260601195559699497_c1544c34", "target": "20260601195559768408_80fe00b4", "type": "has_query"}
+{"kind": "edge", "source": "20260601195559699497_c1544c34", "target": "20260601195559781743_a5d6fb34", "type": "has_query"}
+{"kind": "edge", "source": "20260601195559709852_561a319e", "target": "20260601195853224236_cf96a0b7", "type": "searched_by"}
+{"kind": "edge", "source": "20260601195853224236_cf96a0b7", "target": "20260601195853238741_f0b3e1f4", "type": "found_source"}
+{"kind": "edge", "source": "20260601195853224236_cf96a0b7", "target": "20260601195853253022_81a87b77", "type": "found_source"}
+{"kind": "edge", "source": "20260601195853224236_cf96a0b7", "target": "20260601195853266902_08368cc4", "type": "found_source"}
+{"kind": "edge", "source": "20260601195853224236_cf96a0b7", "target": "20260601195853280917_a965e106", "type": "found_source"}
+{"kind": "edge", "source": "20260601195853224236_cf96a0b7", "target": "20260601195853294794_0b5d06e8", "type": "found_source"}
+{"kind": "edge", "source": "20260601195853224236_cf96a0b7", "target": "20260601195853310253_9065c613", "type": "found_source"}
+{"kind": "edge", "source": "20260601195853224236_cf96a0b7", "target": "20260601195853324685_f5afefe1", "type": "found_source"}
+{"kind": "edge", "source": "20260601195853224236_cf96a0b7", "target": "20260601195853339862_1d178a17", "type": "found_source"}
+{"kind": "edge", "source": "20260601195853224236_cf96a0b7", "target": "20260601195853354736_a33c53d1", "type": "found_source"}
+{"kind": "edge", "source": "20260601195853224236_cf96a0b7", "target": "20260601195853369963_693c0429", "type": "found_source"}
+{"kind": "edge", "source": "20260601195853238741_f0b3e1f4", "target": "20260601195853383173_6afd1488", "type": "has_document"}
+{"kind": "edge", "source": "20260601195853253022_81a87b77", "target": "20260601195853396504_d2cd2954", "type": "has_document"}
+{"kind": "edge", "source": "20260601195853266902_08368cc4", "target": "20260601195853410950_eb8b37fa", "type": "has_document"}
+{"kind": "edge", "source": "20260601195853280917_a965e106", "target": "20260601195853425294_a79aa21a", "type": "has_document"}
+{"kind": "edge", "source": "20260601195853294794_0b5d06e8", "target": "20260601195853438942_2a15a290", "type": "has_document"}
+{"kind": "edge", "source": "20260601195853310253_9065c613", "target": "20260601195853452721_0b8646a5", "type": "has_document"}
+{"kind": "edge", "source": "20260601195853324685_f5afefe1", "target": "20260601195853468488_1ae62337", "type": "has_document"}
+{"kind": "edge", "source": "20260601195853339862_1d178a17", "target": "20260601195853484818_e6108b43", "type": "has_document"}
+{"kind": "edge", "source": "20260601195853354736_a33c53d1", "target": "20260601195853499532_c95868da", "type": "has_document"}
+{"kind": "edge", "source": "20260601195853369963_693c0429", "target": "20260601195853514570_b3eb1bfc", "type": "has_document"}
+{"kind": "edge", "source": "20260601195853383173_6afd1488", "target": "20260601195853529904_21a4446c", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195853238741_f0b3e1f4", "target": "20260601195853529904_21a4446c", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195853396504_d2cd2954", "target": "20260601195853552020_d83e85f1", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195853253022_81a87b77", "target": "20260601195853552020_d83e85f1", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195853396504_d2cd2954", "target": "20260601195853573831_607a2de5", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195853253022_81a87b77", "target": "20260601195853573831_607a2de5", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195853410950_eb8b37fa", "target": "20260601195853596546_f275bdf5", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195853266902_08368cc4", "target": "20260601195853596546_f275bdf5", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195853425294_a79aa21a", "target": "20260601195853617562_69573963", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195853280917_a965e106", "target": "20260601195853617562_69573963", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195853438942_2a15a290", "target": "20260601195853638997_eae9d621", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195853294794_0b5d06e8", "target": "20260601195853638997_eae9d621", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195853452721_0b8646a5", "target": "20260601195853661405_9e686c35", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195853310253_9065c613", "target": "20260601195853661405_9e686c35", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195853468488_1ae62337", "target": "20260601195853683287_bb5e579b", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195853324685_f5afefe1", "target": "20260601195853683287_bb5e579b", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195853484818_e6108b43", "target": "20260601195853705242_50b3766a", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195853339862_1d178a17", "target": "20260601195853705242_50b3766a", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195853499532_c95868da", "target": "20260601195853726826_b10a31f2", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195853354736_a33c53d1", "target": "20260601195853726826_b10a31f2", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195853514570_b3eb1bfc", "target": "20260601195853749764_4fc8f01c", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195853369963_693c0429", "target": "20260601195853749764_4fc8f01c", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195853383173_6afd1488", "target": "20260601195853771109_f5c8c626", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195853238741_f0b3e1f4", "target": "20260601195853771109_f5c8c626", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195853396504_d2cd2954", "target": "20260601195853793863_f8aad3cc", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195853253022_81a87b77", "target": "20260601195853793863_f8aad3cc", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195853396504_d2cd2954", "target": "20260601195853816646_03b18f63", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195853253022_81a87b77", "target": "20260601195853816646_03b18f63", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195853410950_eb8b37fa", "target": "20260601195853843652_42fc79aa", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195853266902_08368cc4", "target": "20260601195853843652_42fc79aa", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195853425294_a79aa21a", "target": "20260601195853869577_03833caf", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195853280917_a965e106", "target": "20260601195853869577_03833caf", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195853438942_2a15a290", "target": "20260601195853894336_8dd45b0b", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195853294794_0b5d06e8", "target": "20260601195853894336_8dd45b0b", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195853452721_0b8646a5", "target": "20260601195853918069_4ef73ccd", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195853310253_9065c613", "target": "20260601195853918069_4ef73ccd", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195853468488_1ae62337", "target": "20260601195853941906_af2bd71a", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195853324685_f5afefe1", "target": "20260601195853941906_af2bd71a", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195853484818_e6108b43", "target": "20260601195853966387_94f632c1", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195853339862_1d178a17", "target": "20260601195853966387_94f632c1", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195853499532_c95868da", "target": "20260601195853988145_18532602", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195853354736_a33c53d1", "target": "20260601195853988145_18532602", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195853514570_b3eb1bfc", "target": "20260601195854010663_61e105bb", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195853369963_693c0429", "target": "20260601195854010663_61e105bb", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195559725540_75fcc27a", "target": "20260601195923818632_b5b3eb39", "type": "searched_by"}
+{"kind": "edge", "source": "20260601195923818632_b5b3eb39", "target": "20260601195923835205_08d0f48c", "type": "found_source"}
+{"kind": "edge", "source": "20260601195923818632_b5b3eb39", "target": "20260601195923853117_0e0ad399", "type": "found_source"}
+{"kind": "edge", "source": "20260601195923818632_b5b3eb39", "target": "20260601195923868957_cf0d3c57", "type": "found_source"}
+{"kind": "edge", "source": "20260601195923818632_b5b3eb39", "target": "20260601195923883858_8a4eddea", "type": "found_source"}
+{"kind": "edge", "source": "20260601195923818632_b5b3eb39", "target": "20260601195923898917_cbe22fef", "type": "found_source"}
+{"kind": "edge", "source": "20260601195923818632_b5b3eb39", "target": "20260601195923914308_78a41902", "type": "found_source"}
+{"kind": "edge", "source": "20260601195923818632_b5b3eb39", "target": "20260601195923928804_e5258370", "type": "found_source"}
+{"kind": "edge", "source": "20260601195923818632_b5b3eb39", "target": "20260601195923942382_814d95d0", "type": "found_source"}
+{"kind": "edge", "source": "20260601195923818632_b5b3eb39", "target": "20260601195923958499_9a410774", "type": "found_source"}
+{"kind": "edge", "source": "20260601195923818632_b5b3eb39", "target": "20260601195853280917_a965e106", "type": "found_source"}
+{"kind": "edge", "source": "20260601195923818632_b5b3eb39", "target": "20260601195923983374_08d15892", "type": "found_source"}
+{"kind": "edge", "source": "20260601195923818632_b5b3eb39", "target": "20260601195923998890_eae9ad1f", "type": "found_source"}
+{"kind": "edge", "source": "20260601195923835205_08d0f48c", "target": "20260601195924013230_880f02d5", "type": "has_document"}
+{"kind": "edge", "source": "20260601195923853117_0e0ad399", "target": "20260601195924028708_7a87c6b1", "type": "has_document"}
+{"kind": "edge", "source": "20260601195923868957_cf0d3c57", "target": "20260601195924043902_c3fd4fa6", "type": "has_document"}
+{"kind": "edge", "source": "20260601195923883858_8a4eddea", "target": "20260601195924060456_891e3440", "type": "has_document"}
+{"kind": "edge", "source": "20260601195923898917_cbe22fef", "target": "20260601195924076813_de79d76b", "type": "has_document"}
+{"kind": "edge", "source": "20260601195923914308_78a41902", "target": "20260601195924090522_45644764", "type": "has_document"}
+{"kind": "edge", "source": "20260601195923928804_e5258370", "target": "20260601195924104575_8a03a9bb", "type": "has_document"}
+{"kind": "edge", "source": "20260601195923942382_814d95d0", "target": "20260601195924119430_330ba194", "type": "has_document"}
+{"kind": "edge", "source": "20260601195923958499_9a410774", "target": "20260601195924132433_18a96965", "type": "has_document"}
+{"kind": "edge", "source": "20260601195853280917_a965e106", "target": "20260601195924146511_88dec854", "type": "has_document"}
+{"kind": "edge", "source": "20260601195923983374_08d15892", "target": "20260601195924159916_49a65652", "type": "has_document"}
+{"kind": "edge", "source": "20260601195923998890_eae9ad1f", "target": "20260601195924172659_154ba083", "type": "has_document"}
+{"kind": "edge", "source": "20260601195924013230_880f02d5", "target": "20260601195924187274_915fb605", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195923835205_08d0f48c", "target": "20260601195924187274_915fb605", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195924028708_7a87c6b1", "target": "20260601195924209720_70a3df90", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195923853117_0e0ad399", "target": "20260601195924209720_70a3df90", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195924060456_891e3440", "target": "20260601195924237724_037e5273", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195923883858_8a4eddea", "target": "20260601195924237724_037e5273", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195924076813_de79d76b", "target": "20260601195924258591_d82c4d06", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195923898917_cbe22fef", "target": "20260601195924258591_d82c4d06", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195924090522_45644764", "target": "20260601195924278291_3c7b1d5f", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195923914308_78a41902", "target": "20260601195924278291_3c7b1d5f", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195924104575_8a03a9bb", "target": "20260601195924301768_929a2f48", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195923928804_e5258370", "target": "20260601195924301768_929a2f48", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195924119430_330ba194", "target": "20260601195924327985_ddeb02b6", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195923942382_814d95d0", "target": "20260601195924327985_ddeb02b6", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195924146511_88dec854", "target": "20260601195924350259_e6bb12c2", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195853280917_a965e106", "target": "20260601195924350259_e6bb12c2", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195924159916_49a65652", "target": "20260601195924371554_01e5e566", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195923983374_08d15892", "target": "20260601195924371554_01e5e566", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195924172659_154ba083", "target": "20260601195924391849_00e63273", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195923998890_eae9ad1f", "target": "20260601195924391849_00e63273", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195924013230_880f02d5", "target": "20260601195924411591_7d48a5e9", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195923835205_08d0f48c", "target": "20260601195924411591_7d48a5e9", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195924028708_7a87c6b1", "target": "20260601195924432112_f15e5cfd", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195923853117_0e0ad399", "target": "20260601195924432112_f15e5cfd", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195924060456_891e3440", "target": "20260601195924452771_3b8d60b7", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195923883858_8a4eddea", "target": "20260601195924452771_3b8d60b7", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195924076813_de79d76b", "target": "20260601195924473141_9dddf82d", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195923898917_cbe22fef", "target": "20260601195924473141_9dddf82d", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195924090522_45644764", "target": "20260601195924496511_dbaad757", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195923914308_78a41902", "target": "20260601195924496511_dbaad757", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195924104575_8a03a9bb", "target": "20260601195924523466_6df9ba27", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195923928804_e5258370", "target": "20260601195924523466_6df9ba27", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195924119430_330ba194", "target": "20260601195924547404_b8452623", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195923942382_814d95d0", "target": "20260601195924547404_b8452623", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195924146511_88dec854", "target": "20260601195924571080_88e48f95", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195853280917_a965e106", "target": "20260601195924571080_88e48f95", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195924159916_49a65652", "target": "20260601195924593356_8b502bd8", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195923983374_08d15892", "target": "20260601195924593356_8b502bd8", "type": "supported_by"}
+{"kind": "edge", "source": "20260601195924172659_154ba083", "target": "20260601195924615034_ec137c44", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260601195923998890_eae9ad1f", "target": "20260601195924615034_ec137c44", "type": "supported_by"}
+{"kind": "node", "id": "20260601195559709852_561a319e", "type": "query", "text": "截至2026-06-01，全球具身智能（机器人+多模态大模型）有哪些主要技术路线/范式？按路线给出定义、关键技术要素（模型/数据/训练范式/控制方式/硬件形态）、代表性公司/机构与关键词。", "status": "needs_horizontal", "sufficiency_score": 0.28}
+{"kind": "node", "id": "20260601195559725540_75fcc27a", "type": "query", "text": "以“通用人形/通用移动操作机器人 + 端到端策略学习（模仿学习/强化学习/Transformer/行为克隆）+ 大规模机器人数据”为路线：识别全球代表性公司/机构，并分别检索其公开披露的技术栈、产品进度、落地案例与客户信息。", "status": "needs_horizontal", "sufficiency_score": 0.32}
+{"kind": "node", "id": "20260601195956440055_1d0a983d", "type": "analysis", "text": "受限于系统搜索预算（本次对话最大searcher轮次=2），仅完成了2个Query子图的证据收集：A) “全球技术路线/范式”侧重于VLA/端到端策略学习（RT-1/RT-2/OpenVLA）、自我改进通用操作（RoboCat）、扩散策略（Diffusion Policy）与NVIDIA Project GR00T；B) “通用人形/移动操作端到端学习路线”仅覆盖少量主体（Figure、Boston Dynamics/Atlas+LBM、Sanctuary、以及DeepMind/NVIDIA相关）。其余路线（工业/仓储垂直、家用/消费级、LLM工具调用/分层规划等）与公司融资/团队/商业化信息覆盖不足，需在报告中明确披露证据缺口，并避免对未证据化公司/融资数据作确定性陈述。"}
+{"kind": "node", "id": "20260601200217473763_2c45b27d", "type": "report_section", "title": "摘要", "content": "截至2026-06-01，具身智能（机器人+多模态大模型）在公开资料中呈现出几条相互交织的技术主线：其一是以视觉-语言-动作（VLA）模型为核心，把视觉与语言理解直接映射为机器人动作，用以提升跨任务泛化与“从网络知识到机器人控制”的迁移能力；代表性工作包括DeepMind/Google的RT-2与其与RT-1数据的连接，以及开源的OpenVLA等[1][2][3][4][5]。其二是围绕“端到端策略学习 + 大规模机器人/人类行为数据”的数据规模化路线：一方面通过真实机器人采集大规模示范（如RT-1在多机器人上采集并覆盖数百任务），另一方面探索以人类视频等更易规模化的数据形态缓解机器人数据稀缺，并宣称可向具体系统迁移（如Figure的Project Go-Big到Helix）[1][6][7]。其三是强调自我改进与跨机器人迁移的通用体学习路线（RoboCat被描述为可自我改进、可在不同机械臂间迁移的多任务体学习代理）[8][9]。其四是在策略表示上引入扩散模型，将动作序列/轨迹生成建模为条件去噪扩散过程（Diffusion Policy）[10]。其五是把仿真评测与sim-to-real工作流作为规模化研发“底座”：NVIDIA一方面提出面向通用策略的仿真评测套件Isaac Lab-Arena，另一方面在Isaac Lab 2.3中强化全身控制与遥操作工作流，并讨论从真实示范训练的成本与泛化挑战；同时在GR00T N1/N1.6叙事中将“人形foundation model + 仿真到现实工作流”作为通用人形能力构建路径[11][12][13][14][15]。在公司/机构层面，本报告基于证据覆盖，给出DeepMind/Google（RT-1/RT-2、RoboCat）、OpenVLA、NVIDIA（Project GR00T、Isaac Lab-Arena、Isaac Lab 2.3、GR00T N1.6工作流）、Figure（Figure 03、Project Go-Big/Helix叙事）、Boston Dynamics+Toyota Research Institute（Atlas与“大行为模型”方向）、Sanctuary AI（Phoenix与触觉/遥操作数据）等代表性主体的公开信息梳理[1][2][4][6][7][8][11][12][13][16][17]。\n\n需要强调：受限于可核验公开证据覆盖范围，本报告对“商业化（客户/收入）”“融资（轮次/金额/投资方）”“团队（核心成员背景）”等维度仅能在少数主体上给出定性或定位级信息；对于未被证据覆盖的细节（例如融资金额、量产时间表、具体客户名单、核心团队履历等）均不做推断，并在相应章节集中披露缺口。", "section_type": "abstract"}
+{"kind": "node", "id": "20260601200217490695_15cf393d", "type": "report_section", "title": "方法与范围 / 假设", "content": "本报告以截至2026-06-01前的公开材料为依据，研究对象限定为“具身智能：机器人系统在感知（视觉等）、语言/指令理解与动作控制之间形成端到端或近端到端闭环，并以多模态大模型、通用策略学习或可迁移技能为关键技术要素”的技术与产业主体。\n\n信息来源与可核验性：仅使用被明确标注为论文、官方/技术博客、新闻报道与公司官方页面的公开材料，并仅在材料明确表述处做事实陈述，所有事实性信息均以编号引用对应到参考文献。[1][2][3][4][5][6][7][8][9][10][11][12][13][14][15][16][17]\n\n范围假设与结构安排：\n1) 技术路线综述部分以“路线定义—关键要素—代表性工作/机构”的方式组织，优先覆盖证据中出现的路线：VLA；端到端策略学习+大规模机器人数据；自我改进/迁移；扩散策略；仿真评测与sim-to-real；以及以“人形foundation model”叙事驱动的平台化路线（以NVIDIA GR00T与Figure Helix相关公开表述为代表）。[3][4][5][7][10][11][14][15]\n2) 公司/机构部分仅覆盖证据明确涉及的主体：DeepMind/Google（RT-1、RT-2、RoboCat）、OpenVLA、NVIDIA（Project/Isaac GR00T、Isaac Lab-Arena、Isaac Lab 2.3、GR00T N1.6工作流）、Figure AI（Figure 03、Project Go-Big/Helix）、Boston Dynamics+Toyota Research Institute（Atlas与LBMs方向）、Sanctuary AI（Phoenix与触觉/遥操作数据）。[1][2][6][7][8][11][12][13][16][17]\n3) 对“产品进度/商业化/融资/团队”等维度：除非材料中明确给出，否则不补充、不推断；对证据缺失将集中在专门小节披露。", "section_type": "methods"}
+{"kind": "node", "id": "20260601200217499712_d78f516e", "type": "report_section", "title": "代表性公司 / 机构", "content": "### 1) DeepMind / Google：RT-1、RT-2（VLA）\n技术路径：RT-1被描述为基于大规模真实机器人数据训练的控制模型，公开材料披露其训练数据规模为130k episodes、覆盖700+任务，采集自13台机器人[1]。RT-2被描述为视觉-语言-动作（VLA）模型，目标是把视觉与语言直接转换为动作，并从web数据与机器人数据共同学习；其论文与项目主页均强调将互联网规模视觉-语言预训练能力迁移到端到端机器人控制以提升泛化。[2][4][5][6]\n产品/演示进度：在可用证据中，RT-1/RT-2以研究原型与方法发布为主；未见同一证据集合中对量产或商业落地案例的明确披露。[1][2][4][6]\n商业化/融资/团队：在可用证据中未出现与RT-1/RT-2直接相关的商业化客户、收入、融资轮次或核心团队履历等可核验信息（详见“信息现状与缺口”小节）。\n\n### 2) OpenVLA：开源VLA模型\n技术路径：OpenVLA论文将其描述为7B参数的开源VLA模型[18]。数据与训练：论文披露其训练数据包含约97万条真实世界机器人示范。[18]\n产品/商业化/融资/团队：在可用证据中，OpenVLA以研究/开源发布为主，未包含产品化、客户、融资或团队信息。\n\n### 3) DeepMind：RoboCat（自我改进/迁移）\n技术路径：RoboCat被描述为可自我改进的机器人代理，能够学习多任务并在不同机械臂之间迁移[8]；论文摘要进一步将其刻画为视觉目标条件的决策Transformer，并以带动作标注的视觉经验作为学习输入。[9]\n产品/商业化/融资/团队：在可用证据中，RoboCat同样以研究发布为主，未包含商业化与融资/团队细节。\n\n### 4) NVIDIA：Project GR00T / Isaac GR00T、Isaac Lab-Arena、Isaac Lab 2.3、GR00T N1.6工作流\n技术路径与定位：NVIDIA发布将Project GR00T定位为面向人形机器人的foundation model，并配套Isaac机器人平台更新[13]；后续发布将Isaac GR00T N1描述为开放的人形机器人foundation model，并强调仿真框架以加速开发。[14]\n仿真评测与工具链：Isaac Lab-Arena被提出用于在仿真中对通用型机器人策略进行可扩展评测[11]。Isaac Lab 2.3则强调全身控制与增强遥操作能力，并讨论从真实世界示范训练策略的成本及泛化/过拟合挑战。[12]\nsim-to-real叙事：GR00T N1.6相关技术博客将“sim-to-real workflow”与构建“generalist humanoid capabilities”的路径联系起来，作为通用人形能力开发的示例。[15]\n产品/商业化/融资/团队：在可用证据中，以上内容主要是平台与工具链/模型定位的公开发布；未见对具体下游客户、收入、融资轮次或核心团队履历的明确披露。[11][12][13][14][15]\n\n### 5) Figure AI：Figure 03、Project Go-Big与Helix叙事\n产品/平台定位：Figure官方页面将Figure 03描述为第三代人形机器人，并写明其“designed for Helix, the home, and the world at scale”等定位。[16]\n数据规模化叙事：Project Go-Big页面强调以人类视频采集构建互联网/行星规模的人形预训练数据，并宣称这些能力可直接迁移到其Helix系统。[7]\n商业化/融资/团队：在可用证据中，上述页面未提供可核验的融资金额/轮次、客户/收入或核心团队履历细节。\n\n### 6) Boston Dynamics + Toyota Research Institute（TRI）：Atlas与“大行为模型（LBMs）”方向\n合作与技术方向：Toyota新闻稿称TRI与Boston Dynamics合作，使Atlas实现使用AI的自主全身操作与运动行为，并将其表述为迈向通用人形机器人的关键一步。[17]\n在Boston Dynamics的博客表述中，Atlas相关工作被描述为推进“大行为模型（Large Behavior Models, LBMs）”方向，并指出与TRI合作相关。[6][19]\n产品/商业化/融资/团队：在可用证据中，以上材料聚焦技术方向与合作进展表述，未提供量产/客户/收入、融资或核心团队履历等细节。\n\n### 7) Sanctuary AI：Phoenix（触觉/遥操作数据）\n技术要点：新闻报道指出Sanctuary AI在Phoenix通用机器人上集成触觉传感器，并引述其观点称触觉将促进遥操作，并为训练具身AI模型提供更丰富数据。[20]\n产品/商业化/融资/团队：在可用证据中，除上述触觉与遥操作数据相关表述外，未包含Phoenix的量产/部署、客户、融资与团队细节。", "section_type": "companies"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195853529904_21a4446c", "type": "uses"}
+{"kind": "edge", "source": "20260601200217490695_15cf393d", "target": "20260601195853529904_21a4446c", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195853894336_8dd45b0b", "type": "uses"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195853843652_42fc79aa", "type": "uses"}
+{"kind": "edge", "source": "20260601200217490695_15cf393d", "target": "20260601195853771109_f5c8c626", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195853638997_eae9d621", "type": "uses"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195924571080_88e48f95", "type": "uses"}
+{"kind": "edge", "source": "20260601200217490695_15cf393d", "target": "20260601195924187274_915fb605", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195853596546_f275bdf5", "type": "uses"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195853894336_8dd45b0b", "type": "uses"}
+{"kind": "edge", "source": "20260601200217490695_15cf393d", "target": "20260601195924209720_70a3df90", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195853843652_42fc79aa", "type": "uses"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195853552020_d83e85f1", "type": "uses"}
+{"kind": "edge", "source": "20260601200217490695_15cf393d", "target": "20260601195853638997_eae9d621", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195853617562_69573963", "type": "uses"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195853573831_607a2de5", "type": "uses"}
+{"kind": "edge", "source": "20260601200217490695_15cf393d", "target": "20260601195853843652_42fc79aa", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195924571080_88e48f95", "type": "uses"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195924187274_915fb605", "type": "uses"}
+{"kind": "edge", "source": "20260601200217490695_15cf393d", "target": "20260601195924571080_88e48f95", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195853869577_03833caf", "type": "uses"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195924411591_7d48a5e9", "type": "uses"}
+{"kind": "edge", "source": "20260601200217490695_15cf393d", "target": "20260601195853941906_af2bd71a", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195924371554_01e5e566", "type": "uses"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195853941906_af2bd71a", "type": "uses"}
+{"kind": "edge", "source": "20260601200217490695_15cf393d", "target": "20260601195853918069_4ef73ccd", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195924593356_8b502bd8", "type": "uses"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195853661405_9e686c35", "type": "uses"}
+{"kind": "edge", "source": "20260601200217490695_15cf393d", "target": "20260601195853966387_94f632c1", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195853552020_d83e85f1", "type": "uses"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195853918069_4ef73ccd", "type": "uses"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195853966387_94f632c1", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195853793863_f8aad3cc", "type": "uses"}
+{"kind": "edge", "source": "20260601200217490695_15cf393d", "target": "20260601195924278291_3c7b1d5f", "type": "uses"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195924278291_3c7b1d5f", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195853573831_607a2de5", "type": "uses"}
+{"kind": "edge", "source": "20260601200217490695_15cf393d", "target": "20260601195924547404_b8452623", "type": "uses"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195924327985_ddeb02b6", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195853816646_03b18f63", "type": "uses"}
+{"kind": "edge", "source": "20260601200217490695_15cf393d", "target": "20260601195853726826_b10a31f2", "type": "uses"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195924547404_b8452623", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195853941906_af2bd71a", "type": "uses"}
+{"kind": "edge", "source": "20260601200217490695_15cf393d", "target": "20260601195924523466_6df9ba27", "type": "uses"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195853726826_b10a31f2", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195853918069_4ef73ccd", "type": "uses"}
+{"kind": "edge", "source": "20260601200217490695_15cf393d", "target": "20260601195924473141_9dddf82d", "type": "uses"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195853988145_18532602", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195853661405_9e686c35", "type": "uses"}
+{"kind": "edge", "source": "20260601200217490695_15cf393d", "target": "20260601195924452771_3b8d60b7", "type": "uses"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195854010663_61e105bb", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195854010663_61e105bb", "type": "uses"}
+{"kind": "edge", "source": "20260601200217490695_15cf393d", "target": "20260601195924391849_00e63273", "type": "uses"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195924523466_6df9ba27", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195853988145_18532602", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195853726826_b10a31f2", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195853749764_4fc8f01c", "type": "uses"}
+{"kind": "edge", "source": "20260601200217490695_15cf393d", "target": "20260601195559709852_561a319e", "type": "uses"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195924301768_929a2f48", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195924278291_3c7b1d5f", "type": "uses"}
+{"kind": "edge", "source": "20260601200217490695_15cf393d", "target": "20260601195559725540_75fcc27a", "type": "uses"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195924209720_70a3df90", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195924496511_dbaad757", "type": "uses"}
+{"kind": "edge", "source": "20260601200217490695_15cf393d", "target": "20260601195559738393_76e35b5a", "type": "uses"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195924432112_f15e5cfd", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195924327985_ddeb02b6", "type": "uses"}
+{"kind": "edge", "source": "20260601200217490695_15cf393d", "target": "20260601195559781743_a5d6fb34", "type": "uses"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195924473141_9dddf82d", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195924547404_b8452623", "type": "uses"}
+{"kind": "node", "id": "20260601200218003276_398ab4ec", "type": "report_section", "title": "技术路线综述", "content": "### 1) VLA（Vision-Language-Action）与“多模态模型直接出动作”\nVLA模型通常被界定为：输入视觉与语言信息，输出机器人动作，用于完成具身任务[3][4]。在该脉络下，RT-2被描述为视觉-语言-动作模型，其目标是把视觉与语言“翻译”为动作，并从网络（web）数据与机器人数据共同学习；其论文摘要强调将互联网规模视觉-语言预训练能力迁移到机器人控制以提升泛化[2][4][5]。开源路线中，OpenVLA被描述为7B参数的开源VLA模型，并在论文中披露其训练数据包含约97万条真实世界机器人示范[18]。\n\n### 2) 端到端策略学习 + 大规模机器人数据（真实示范规模化）\n与VLA相互耦合的另一条主线是“端到端策略学习依赖大规模、可覆盖多任务的机器人交互/示范数据”。RT-1的公开材料给出一个典型规模化案例：其训练基于大规模真实机器人数据集，数据包含130k episodes、覆盖700+任务，采集自13台机器人[1]。这类工作体现出以真实机器人数据提升通用控制能力的路线，但也带来数据采集成本与泛化风险等挑战（见后文仿真/遥操作与训练成本讨论）。[12]\n\n### 3) 自我改进/跨机器人迁移的通用体学习\nRoboCat被描述为“自我改进”的机器人代理，能够学习多任务并在不同机械臂之间迁移；论文摘要进一步将其刻画为一种以视觉目标条件为核心的决策Transformer（decision transformer），以带动作标注的视觉经验作为学习输入。[8][9]\n\n### 4) 扩散策略（Diffusion Policy）作为动作生成建模范式\nDiffusion Policy提出将机器人视觉-运动（visuomotor）策略表示为条件去噪扩散模型，通过扩散过程生成动作或轨迹序列，用于控制与模仿学习。[10]\n\n### 5) 仿真评测、遥操作与sim-to-real工作流：规模化研发底座\n当策略越来越“通用”，其评测与训练往往需要跨任务、跨环境的可扩展基准与工具链。Isaac Lab-Arena被提出用于在仿真中对通用型（generalist）机器人策略进行可扩展评测，并以“通用策略必须跨多样任务运行”为背景给出其动机。[11]\n\n在训练范式上，Isaac Lab 2.3的公开材料强调了与全身控制（whole-body control）与增强遥操作（teleoperation）相关的能力，同时明确讨论了从真实世界示范训练机器人策略的成本，以及泛化与过拟合等挑战。[12]\n\n### 6) “人形foundation model”叙事与平台化路线\n在产业侧，NVIDIA的公开发布将Project GR00T/Isaac GR00T N1定位为面向人形机器人的foundation model，并同时强调仿真框架/平台更新以加速机器人开发。[13][14] 在更具体的实践叙事中，GR00T N1.6相关技术博客将“sim-to-real workflow”与“generalist humanoid capabilities”的构建路径联系起来，作为通用人形能力开发的示例性工作流。[15]\n\n与之相邻的另一种数据规模化叙事来自Figure：其Project Go-Big页面强调以人类视频采集来构建大规模人形预训练数据，并宣称这些能力可直接迁移到其名为Helix的系统。[7]\n\n小结：从现有证据看，技术路线并非彼此排斥——VLA模型、端到端策略学习、数据规模化、自我改进/迁移与仿真-sim-to-real工作流常被组合为一套“通用体学习系统工程”。但在公开材料中，关于训练数据分布、评测体系与真实部署约束的可复现细节仍高度依赖少数论文与平台工具披露。", "section_type": "overview"}
+{"kind": "node", "id": "20260601200218011443_3e8ab23c", "type": "report_section", "title": "商业化 / 融资 / 团队信息：现状与缺口", "content": "在可核验证据覆盖下，“商业化、融资、团队”三类信息呈现出明显的不对称：\n\n1) 商业化（客户/收入/落地场景）\n现有材料以研究论文、技术博客、公司官方页面对技术定位与方法为主。比如RT-1/RT-2与RoboCat的材料主要描述模型范式、数据来源与能力目标；NVIDIA相关材料主要描述平台/工具链与仿真—训练—部署工作流；Figure材料集中在Figure 03平台定位与Project Go-Big的数据规模化叙事；TRI/Boston Dynamics材料强调合作与技术方向（AI自主全身操作、LBMs）；Sanctuary AI材料集中在触觉传感与遥操作数据价值表述。[1][2][8][11][12][15][16][17][20]\n因此：本报告无法在同一证据集合内，可靠给出这些主体的具体客户名称、合同/收入规模、生产/交付数量或明确落地案例细节。\n\n2) 融资（轮次/金额/投资方）\n在可用证据中，未出现关于Figure AI、Sanctuary AI等公司的融资轮次、金额、时间与投资方等结构化披露；同样也未出现对NVIDIA、Google/DeepMind等大公司在“具身智能项目层面”的独立融资信息（通常也不以项目融资形式披露）。因此：除非另有可核验公开来源，本报告不对融资金额与估值作任何补充或推断。\n\n3) 团队（核心成员/关键人才/背景）\n现有证据未覆盖上述主体在具身智能项目/产品线上的核心团队成员与履历细节。因此：本报告不陈述任何创始人/关键人才背景信息。\n\n4) 与“研发底座”相关的可写信息边界\n尽管商业化/融资/团队证据缺口较大，但在“技术路径与工程方法”层面仍有相对明确的可写信息：例如RT-1披露真实机器人数据规模；RT-2明确提出VLA并强调从web+机器人数据学习与迁移泛化；OpenVLA披露模型规模与示范数量；RoboCat披露自我改进与跨机械臂迁移；Isaac Lab-Arena/Isaac Lab 2.3披露仿真评测、全身控制、遥操作与训练成本/泛化挑战；TRI/Boston Dynamics披露Atlas的AI自主全身行为与LBMs方向；Sanctuary AI披露触觉对遥操作与数据丰富性的价值判断。[1][2][8][11][12][18][17][20]\n\n以上缺口并不等同于现实中不存在对应信息，而仅表示：在本次可核验证据覆盖范围内，无法对这些维度形成可引用的结论。", "section_type": "gaps"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195924452771_3b8d60b7", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195924523466_6df9ba27", "type": "uses"}
+{"kind": "edge", "source": "20260601200218003276_398ab4ec", "target": "20260601195853529904_21a4446c", "type": "uses"}
+{"kind": "edge", "source": "20260601200218011443_3e8ab23c", "target": "20260601195853638997_eae9d621", "type": "uses"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195924237724_037e5273", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195924301768_929a2f48", "type": "uses"}
+{"kind": "edge", "source": "20260601200218003276_398ab4ec", "target": "20260601195853771109_f5c8c626", "type": "uses"}
+{"kind": "edge", "source": "20260601200218011443_3e8ab23c", "target": "20260601195853894336_8dd45b0b", "type": "uses"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195924391849_00e63273", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195924209720_70a3df90", "type": "uses"}
+{"kind": "edge", "source": "20260601200218003276_398ab4ec", "target": "20260601195853843652_42fc79aa", "type": "uses"}
+{"kind": "edge", "source": "20260601200218011443_3e8ab23c", "target": "20260601195853843652_42fc79aa", "type": "uses"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195559709852_561a319e", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195924432112_f15e5cfd", "type": "uses"}
+{"kind": "edge", "source": "20260601200218003276_398ab4ec", "target": "20260601195924571080_88e48f95", "type": "uses"}
+{"kind": "edge", "source": "20260601200218011443_3e8ab23c", "target": "20260601195924571080_88e48f95", "type": "uses"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195559725540_75fcc27a", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195924187274_915fb605", "type": "uses"}
+{"kind": "edge", "source": "20260601200218003276_398ab4ec", "target": "20260601195924350259_e6bb12c2", "type": "uses"}
+{"kind": "edge", "source": "20260601200218011443_3e8ab23c", "target": "20260601195853941906_af2bd71a", "type": "uses"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195559738393_76e35b5a", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195924411591_7d48a5e9", "type": "uses"}
+{"kind": "edge", "source": "20260601200218003276_398ab4ec", "target": "20260601195853638997_eae9d621", "type": "uses"}
+{"kind": "edge", "source": "20260601200218011443_3e8ab23c", "target": "20260601195924278291_3c7b1d5f", "type": "uses"}
+{"kind": "edge", "source": "20260601200217473763_2c45b27d", "target": "20260601195559781743_a5d6fb34", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195924473141_9dddf82d", "type": "uses"}
+{"kind": "edge", "source": "20260601200218003276_398ab4ec", "target": "20260601195853894336_8dd45b0b", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195924258591_d82c4d06", "type": "uses"}
+{"kind": "edge", "source": "20260601200218003276_398ab4ec", "target": "20260601195853552020_d83e85f1", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195924452771_3b8d60b7", "type": "uses"}
+{"kind": "edge", "source": "20260601200218003276_398ab4ec", "target": "20260601195853573831_607a2de5", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195924237724_037e5273", "type": "uses"}
+{"kind": "edge", "source": "20260601200218003276_398ab4ec", "target": "20260601195853793863_f8aad3cc", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195924391849_00e63273", "type": "uses"}
+{"kind": "edge", "source": "20260601200218003276_398ab4ec", "target": "20260601195853816646_03b18f63", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195559725540_75fcc27a", "type": "uses"}
+{"kind": "edge", "source": "20260601200218003276_398ab4ec", "target": "20260601195853941906_af2bd71a", "type": "uses"}
+{"kind": "edge", "source": "20260601200217499712_d78f516e", "target": "20260601195559738393_76e35b5a", "type": "uses"}
+{"kind": "edge", "source": "20260601200218003276_398ab4ec", "target": "20260601195853918069_4ef73ccd", "type": "uses"}
+{"kind": "edge", "source": "20260601200218011443_3e8ab23c", "target": "20260601195924327985_ddeb02b6", "type": "uses"}
+{"kind": "edge", "source": "20260601200218003276_398ab4ec", "target": "20260601195853661405_9e686c35", "type": "uses"}
+{"kind": "edge", "source": "20260601200218011443_3e8ab23c", "target": "20260601195924547404_b8452623", "type": "uses"}
+{"kind": "edge", "source": "20260601200218003276_398ab4ec", "target": "20260601195853966387_94f632c1", "type": "uses"}
+{"kind": "edge", "source": "20260601200218011443_3e8ab23c", "target": "20260601195924523466_6df9ba27", "type": "uses"}
+{"kind": "edge", "source": "20260601200218003276_398ab4ec", "target": "20260601195924278291_3c7b1d5f", "type": "uses"}
+{"kind": "edge", "source": "20260601200218011443_3e8ab23c", "target": "20260601195924209720_70a3df90", "type": "uses"}
+{"kind": "edge", "source": "20260601200218003276_398ab4ec", "target": "20260601195924496511_dbaad757", "type": "uses"}
+{"kind": "edge", "source": "20260601200218011443_3e8ab23c", "target": "20260601195924432112_f15e5cfd", "type": "uses"}
+{"kind": "edge", "source": "20260601200218003276_398ab4ec", "target": "20260601195924327985_ddeb02b6", "type": "uses"}
+{"kind": "edge", "source": "20260601200218011443_3e8ab23c", "target": "20260601195924473141_9dddf82d", "type": "uses"}
+{"kind": "edge", "source": "20260601200218003276_398ab4ec", "target": "20260601195924547404_b8452623", "type": "uses"}
+{"kind": "edge", "source": "20260601200218011443_3e8ab23c", "target": "20260601195924258591_d82c4d06", "type": "uses"}
+{"kind": "edge", "source": "20260601200218003276_398ab4ec", "target": "20260601195853988145_18532602", "type": "uses"}
+{"kind": "edge", "source": "20260601200218011443_3e8ab23c", "target": "20260601195924452771_3b8d60b7", "type": "uses"}
+{"kind": "edge", "source": "20260601200218003276_398ab4ec", "target": "20260601195853726826_b10a31f2", "type": "uses"}
+{"kind": "edge", "source": "20260601200218011443_3e8ab23c", "target": "20260601195924391849_00e63273", "type": "uses"}
+{"kind": "edge", "source": "20260601200218003276_398ab4ec", "target": "20260601195854010663_61e105bb", "type": "uses"}
+{"kind": "edge", "source": "20260601200218011443_3e8ab23c", "target": "20260601195853552020_d83e85f1", "type": "uses"}
+{"kind": "edge", "source": "20260601200218003276_398ab4ec", "target": "20260601195924523466_6df9ba27", "type": "uses"}
+{"kind": "edge", "source": "20260601200218011443_3e8ab23c", "target": "20260601195853816646_03b18f63", "type": "uses"}
+{"kind": "edge", "source": "20260601200218003276_398ab4ec", "target": "20260601195924301768_929a2f48", "type": "uses"}
+{"kind": "edge", "source": "20260601200218011443_3e8ab23c", "target": "20260601195853918069_4ef73ccd", "type": "uses"}
+{"kind": "edge", "source": "20260601200218003276_398ab4ec", "target": "20260601195924187274_915fb605", "type": "uses"}
+{"kind": "edge", "source": "20260601200218011443_3e8ab23c", "target": "20260601195559781743_a5d6fb34", "type": "uses"}
+{"kind": "edge", "source": "20260601200218003276_398ab4ec", "target": "20260601195924411591_7d48a5e9", "type": "uses"}
+{"kind": "edge", "source": "20260601200218003276_398ab4ec", "target": "20260601195559709852_561a319e", "type": "uses"}
+{"kind": "edge", "source": "20260601200218003276_398ab4ec", "target": "20260601195559738393_76e35b5a", "type": "uses"}
+{"kind": "edge", "source": "20260601200218003276_398ab4ec", "target": "20260601195559725540_75fcc27a", "type": "uses"}
