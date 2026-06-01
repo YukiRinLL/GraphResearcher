@@ -1,10 +1,6 @@
 # src/memory/graph.py
 import asyncio
-import hashlib
-import json
-import logging
 import os
-import threading
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -12,9 +8,15 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Any, Optional
 
+try:
+    from neo4j import AsyncGraphDatabase, AsyncDriver, AsyncSession
+    NEO4J_AVAILABLE = True
+except ImportError:
+    NEO4J_AVAILABLE = False
+
 
 class NodeType(StrEnum):
-    USER_REQUEST = "user_request" # unique node representing the original user request and research goal
+    USER_REQUEST = "user_request"
     QUERY = "query"
     SEARCH_RUN = "search_run"
     SOURCE = "source"
@@ -90,332 +92,305 @@ class GraphEdge:
         )
 
 
+import logging
 logger = logging.getLogger(__name__)
 
-FILE_MARKER = {"type": "_graphresearcher", "source": "graph-researcher"}
 
-
-def get_default_graph_cache_dir() -> Path:
-    if os.environ.get("REPO_BASE_DIR"):
-        return Path(os.environ["REPO_BASE_DIR"]) / ".graphresearcher"
-    return Path.home() / ".graphresearcher"
-
-
-def get_graph_file_path(cache_dir: Path, context: Optional[str] = None) -> Path:
-    filename = "research_graph.jsonl" if context is None else f"research_graph-{context}.jsonl"
-    return cache_dir / filename
-
-
-def get_index_file_path(cache_dir: Path, context: Optional[str] = None) -> Path:
-    filename = "index.pkl" if context is None else f"index-{context}.pkl"
-    return cache_dir / filename
+NEO4J_URI = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
+NEO4J_USERNAME = os.environ.get("NEO4J_USERNAME", "neo4j")
+NEO4J_PASSWORD = os.environ.get("NEO4J_PASSWORD")
+NEO4J_DATABASE = os.environ.get("NEO4J_DATABASE", "neo4j")
 
 
 class GraphManager:
-    def __init__(self, cache_dir: Optional[str] = None, context: Optional[str] = None):
-        if cache_dir:
-            self._cache_dir = Path(cache_dir)
-        else:
-            self._cache_dir = get_default_graph_cache_dir()
-        self._cache_dir.mkdir(parents=True, exist_ok=True)
-        self._context = context
+    def __init__(self,
+                 uri: Optional[str] = None,
+                 username: Optional[str] = None,
+                 password: Optional[str] = None,
+                 database: Optional[str] = None,
+                 context: Optional[str] = None):
+        if not NEO4J_AVAILABLE:
+            raise ImportError("neo4j is not installed. Install with: pip install neo4j")
 
-        self._nodes: dict[str, GraphNode] = {}
-        self._edges: list[GraphEdge] = []
-        self._loaded = False
-        self._file_mtime: Optional[float] = None
+        self.uri = uri or NEO4J_URI
+        self.username = username or NEO4J_USERNAME
+        self.password = password or NEO4J_PASSWORD
+        self.database = database or NEO4J_DATABASE
+        self.context = context
+        self._driver: Optional[AsyncDriver] = None
+        self._lock = asyncio.Lock()
 
-        self._out_edges: dict[str, list[GraphEdge]] = {}
-        self._in_edges: dict[str, list[GraphEdge]] = {}
+    async def _get_driver(self) -> AsyncDriver:
+        async with self._lock:
+            if self._driver is None:
+                self._driver = AsyncGraphDatabase.driver(
+                    self.uri,
+                    auth=(self.username, self.password) if self.password else None
+                )
+            return self._driver
 
-        # Serializes load/append/rewrite so concurrent searchers sharing this
-        # instance cannot clobber each other's writes. RLock because some
-        # mutations nest (upsert_node -> add_node, and every mutation calls
-        # _ensure_loaded). Held only across synchronous file I/O.
-        self._lock = threading.RLock()
+    async def _get_session(self) -> AsyncSession:
+        driver = await self._get_driver()
+        return driver.session(database=self.database)
 
-    async def _ensure_loaded(self) -> None:
-        with self._lock:
-            if self._loaded:
-                file_path = get_graph_file_path(self._cache_dir, self._context)
-                try:
-                    current_mtime = os.path.getmtime(file_path) if file_path.exists() else 0.0
-                    if current_mtime != self._file_mtime:
-                        await self._load_from_file()
-                except OSError:
-                    await self._load_from_file()
-            else:
-                await self._load_from_file()
-
-    async def _load_from_file(self) -> None:
-        with self._lock:
-            file_path = get_graph_file_path(self._cache_dir, self._context)
-
-            self._nodes.clear()
-            self._edges.clear()
-            self._out_edges.clear()
-            self._in_edges.clear()
-
-            if not file_path.exists():
-                self._loaded = True
-                self._file_mtime = 0.0
-                return
-
-            try:
-                self._file_mtime = os.path.getmtime(file_path)
-
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    lines = [line.strip() for line in f if line.strip()]
-
-                if not lines:
-                    self._loaded = True
-                    return
-
-                first_line = json.loads(lines[0])
-                if first_line.get("type") != "_graphresearcher" or first_line.get("source") != "graph-researcher":
-                    raise ValueError(f"Invalid file marker in {file_path}")
-
-                # Append-mode persistence may repeat a node id across lines; the
-                # last line wins, matching dict assignment below.
-                for line in lines[1:]:
-                    try:
-                        item = json.loads(line)
-                        if item.get("kind") == "node":
-                            node = GraphNode.from_dict(item)
-                            self._nodes[node.id] = node
-                        elif item.get("kind") == "edge":
-                            edge = GraphEdge.from_dict(item)
-                            self._edges.append(edge)
-                            self._out_edges.setdefault(edge.source, []).append(edge)
-                            self._in_edges.setdefault(edge.target, []).append(edge)
-                    except (json.JSONDecodeError, KeyError, ValueError):
-                        # A malformed line should not silently drop data; under
-                        # append-mode this is at worst a not-yet-flushed tail.
-                        logger.warning("Skipping malformed graph line in %s: %.120r", file_path, line)
-                        continue
-
-                self._loaded = True
-
-            except FileNotFoundError:
-                self._loaded = True
-                self._file_mtime = 0.0
-
-    async def _save_to_file(self) -> None:
-        """Atomically rewrite the whole file (compaction / deletes only).
-
-        Hot-path writes go through :meth:`_append_lines`; this full rewrite is
-        reserved for low-frequency operations (``save``/``delete_node``). It
-        writes to a temp file and ``os.replace``s it in, so a concurrent reader
-        never observes a truncated file.
-        """
-        with self._lock:
-            file_path = get_graph_file_path(self._cache_dir, self._context)
-            file_path.parent.mkdir(parents=True, exist_ok=True)
-
-            lines = [json.dumps(FILE_MARKER, ensure_ascii=False)]
-
-            for node in self._nodes.values():
-                lines.append(json.dumps({"kind": "node", **node.to_dict()}, ensure_ascii=False))
-
-            for edge in self._edges:
-                lines.append(json.dumps({"kind": "edge", **edge.to_dict()}, ensure_ascii=False))
-
-            tmp_path = file_path.with_suffix(file_path.suffix + ".tmp")
-            with open(tmp_path, 'w', encoding='utf-8') as f:
-                for line in lines:
-                    f.write(line + '\n')
-                f.flush()
-                os.fsync(f.fileno())
-            os.replace(tmp_path, file_path)
-
-            try:
-                self._file_mtime = os.path.getmtime(file_path)
-            except OSError:
-                pass
-
-    async def _append_lines(self, lines: list[str]) -> None:
-        """Append one or more JSONL lines, creating the file+marker if needed.
-
-        This is the hot-path writer: it never truncates the file, so concurrent
-        readers can at worst miss a not-yet-flushed tail line rather than lose
-        already-persisted nodes/edges.
-        """
-        if not lines:
-            return
-        with self._lock:
-            file_path = get_graph_file_path(self._cache_dir, self._context)
-            file_path.parent.mkdir(parents=True, exist_ok=True)
-
-            mode = 'a' if file_path.exists() else 'w'
-            with open(file_path, mode, encoding='utf-8') as f:
-                if mode == 'w':
-                    f.write(json.dumps(FILE_MARKER, ensure_ascii=False) + '\n')
-                for line in lines:
-                    f.write(line + '\n')
-                f.flush()
-                os.fsync(f.fileno())
-
-            try:
-                self._file_mtime = os.path.getmtime(file_path)
-            except OSError:
-                pass
+    async def close(self) -> None:
+        async with self._lock:
+            if self._driver:
+                await self._driver.close()
+                self._driver = None
 
     def _generate_id(self) -> str:
         return f"{datetime.now().strftime('%Y%m%d%H%M%S%f')}_{uuid.uuid4().hex[:8]}"
 
     async def add_node(self, node_type: str, attributes: dict, node_id: Optional[str] = None) -> str:
-        await self._ensure_loaded()
+        if node_id is None:
+            node_id = self._generate_id()
 
-        with self._lock:
-            if node_id is None:
-                node_id = self._generate_id()
-
-            node = GraphNode(
+        session = await self._get_session()
+        async with session:
+            query = """
+            MERGE (n:Node {id: $id})
+            SET n.type = $type,
+                n.context = $context,
+                n += $properties
+            RETURN n.id
+            """
+            result = await session.run(
+                query,
                 id=node_id,
-                type=NodeType(node_type),
+                type=node_type,
+                context=self.context,
                 properties=attributes
             )
-            self._nodes[node_id] = node
-            await self._append_lines([json.dumps({"kind": "node", **node.to_dict()}, ensure_ascii=False)])
-            return node_id
+            record = await result.single()
+            return str(record["n.id"])
 
     async def upsert_node(self, node_type: str, attributes: dict, dedupe_key: Optional[str] = None) -> str:
-        await self._ensure_loaded()
+        if dedupe_key:
+            session = await self._get_session()
+            async with session:
+                query = """
+                MATCH (n:Node {id: $id})
+                SET n.type = $type,
+                    n.context = $context,
+                    n += $properties
+                RETURN n.id
+                """
+                result = await session.run(
+                    query,
+                    id=dedupe_key,
+                    type=node_type,
+                    context=self.context,
+                    properties=attributes
+                )
+                record = await result.single()
+                if record:
+                    return str(record["n.id"])
 
-        with self._lock:
-            if dedupe_key and dedupe_key in self._nodes:
-                node = self._nodes[dedupe_key]
-                node.properties.update(attributes)
-                # Append the updated node; last line wins on reload.
-                await self._append_lines([json.dumps({"kind": "node", **node.to_dict()}, ensure_ascii=False)])
-                return dedupe_key
-
-            return await self.add_node(node_type, attributes)
+        return await self.add_node(node_type, attributes, dedupe_key)
 
     async def add_edge(self, source_id: str, target_id: str, edge_type: str, attributes: Optional[dict] = None) -> str:
-        await self._ensure_loaded()
-
-        with self._lock:
-            edge = GraphEdge(
-                source=source_id,
-                target=target_id,
-                type=EdgeType(edge_type),
+        session = await self._get_session()
+        async with session:
+            query = """
+            MATCH (source:Node {id: $source_id})
+            MATCH (target:Node {id: $target_id})
+            MERGE (source)-[r:RELATIONSHIP {type: $type}]->(target)
+            SET r += $properties
+            RETURN source.id, target.id, r.type
+            """
+            result = await session.run(
+                query,
+                source_id=source_id,
+                target_id=target_id,
+                type=edge_type,
                 properties=attributes or {}
             )
-
-            self._edges.append(edge)
-            self._out_edges.setdefault(source_id, []).append(edge)
-            self._in_edges.setdefault(target_id, []).append(edge)
-
-            await self._append_lines([json.dumps({"kind": "edge", **edge.to_dict()}, ensure_ascii=False)])
-            return f"{source_id}_{edge_type}_{target_id}"
+            record = await result.single()
+            return f"{record['source.id']}_{record['r.type']}_{record['target.id']}"
 
     async def get_node(self, node_id: str) -> dict:
-        await self._ensure_loaded()
-
-        if node_id in self._nodes:
-            return self._nodes[node_id].to_dict()
-        return {}
+        session = await self._get_session()
+        async with session:
+            query = """
+            MATCH (n:Node {id: $id})
+            RETURN n
+            """
+            result = await session.run(query, id=node_id)
+            record = await result.single()
+            if not record:
+                return {}
+            node = record["n"]
+            properties = dict(node)
+            return {
+                "id": node.get("id"),
+                "type": node.get("type"),
+                **{k: v for k, v in properties.items() if k not in ("id", "type", "context")}
+            }
 
     async def search_node(self, node_type: str, filter: dict) -> list[dict]:
-        await self._ensure_loaded()
+        session = await self._get_session()
+        async with session:
+            where_clauses = ["n.type = $type"]
+            params = {"type": node_type, "context": self.context}
 
-        results = []
-        for node in self._nodes.values():
-            if node.type.value == node_type:
-                match = True
-                for key, value in filter.items():
-                    if key not in node.properties or node.properties[key] != value:
-                        match = False
-                        break
-                if match:
-                    results.append(node.to_dict())
-        return results
+            for i, (key, value) in enumerate(filter.items()):
+                where_clauses.append(f"n.{key} = $param{i}")
+                params[f"param{i}"] = value
+
+            query = f"""
+            MATCH (n:Node)
+            WHERE {" AND ".join(where_clauses)}
+            AND (n.context = $context OR n.context IS NULL)
+            RETURN n
+            """
+            result = await session.run(query, **params)
+            records = await result.list()
+            nodes = []
+            for record in records:
+                node = record["n"]
+                properties = dict(node)
+                nodes.append({
+                    "id": node.get("id"),
+                    "type": node.get("type"),
+                    **{k: v for k, v in properties.items() if k not in ("id", "type", "context")}
+                })
+            return nodes
 
     async def get_subgraph(self, node_id: str, depth: int = 2) -> dict:
-        await self._ensure_loaded()
+        session = await self._get_session()
+        async with session:
+            query = """
+            MATCH (start:Node {id: $id})
+            CALL apoc.path.subgraphAll(start, {
+                maxLevel: $depth
+            }) YIELD nodes, relationships
+            RETURN nodes, relationships
+            """
+            try:
+                result = await session.run(query, id=node_id, depth=depth)
+                record = await result.single()
+                if not record:
+                    return {"nodes": [], "edges": []}
+            except:
+                query = """
+                MATCH path = (start:Node {id: $id})-[:RELATIONSHIP*1..$depth]-(other:Node)
+                WITH collect(DISTINCT nodes(path)) AS all_node_lists, collect(DISTINCT relationships(path)) AS all_rel_lists
+                UNWIND all_node_lists AS node_list
+                UNWIND all_rel_lists AS rel_list
+                WITH collect(DISTINCT node_list) AS unique_node_lists, collect(DISTINCT rel_list) AS unique_rel_lists
+                RETURN [n IN unique_node_lists | n] AS nodes, [r IN unique_rel_lists | r] AS edges
+                """
+                result = await session.run(query, id=node_id, depth=depth)
+                record = await result.single()
 
-        if node_id not in self._nodes:
-            return {"nodes": [], "edges": []}
+            nodes = []
+            for node in record["nodes"]:
+                if hasattr(node, "get"):
+                    properties = dict(node)
+                    nodes.append({
+                        "id": node.get("id"),
+                        "type": node.get("type"),
+                        **{k: v for k, v in properties.items() if k not in ("id", "type", "context")}
+                    })
 
-        visited_nodes = set()
-        visited_edges = set()
-        nodes_to_visit = [(node_id, 0)]
+            edges = []
+            for rel in record["relationships"]:
+                if hasattr(rel, "start_node") and hasattr(rel, "end_node"):
+                    properties = dict(rel)
+                    edges.append({
+                        "source": rel.start_node.get("id"),
+                        "target": rel.end_node.get("id"),
+                        "type": rel.get("type"),
+                        **{k: v for k, v in properties.items() if k not in ("type")}
+                    })
 
-        while nodes_to_visit:
-            current_id, current_depth = nodes_to_visit.pop(0)
-            if current_id in visited_nodes or current_depth > depth:
-                continue
-
-            visited_nodes.add(current_id)
-
-            for edge in self._in_edges.get(current_id, []):
-                edge_key = (edge.source, edge.type.value, edge.target)
-                if edge_key not in visited_edges:
-                    visited_edges.add(edge_key)
-                    nodes_to_visit.append((edge.source, current_depth + 1))
-
-            for edge in self._out_edges.get(current_id, []):
-                edge_key = (edge.source, edge.type.value, edge.target)
-                if edge_key not in visited_edges:
-                    visited_edges.add(edge_key)
-                    nodes_to_visit.append((edge.target, current_depth + 1))
-
-        result_nodes = []
-        for nid in visited_nodes:
-            if nid in self._nodes:
-                result_nodes.append(self._nodes[nid].to_dict())
-
-        result_edges = []
-        for edge in self._edges:
-            edge_key = (edge.source, edge.type.value, edge.target)
-            if edge_key in visited_edges:
-                result_edges.append(edge.to_dict())
-
-        return {"nodes": result_nodes, "edges": result_edges}
+            return {"nodes": nodes, "edges": edges}
 
     async def save(self) -> None:
-        await self._ensure_loaded()
-        await self._save_to_file()
+        pass
 
     async def get_all_nodes(self) -> list[dict]:
-        await self._ensure_loaded()
-        return [node.to_dict() for node in self._nodes.values()]
+        session = await self._get_session()
+        async with session:
+            query = """
+            MATCH (n:Node)
+            WHERE (n.context = $context OR n.context IS NULL)
+            RETURN n
+            """
+            result = await session.run(query, context=self.context)
+            records = await result.list()
+            nodes = []
+            for record in records:
+                node = record["n"]
+                properties = dict(node)
+                nodes.append({
+                    "id": node.get("id"),
+                    "type": node.get("type"),
+                    **{k: v for k, v in properties.items() if k not in ("id", "type", "context")}
+                })
+            return nodes
 
     async def get_all_edges(self) -> list[dict]:
-        await self._ensure_loaded()
-        return [edge.to_dict() for edge in self._edges]
+        session = await self._get_session()
+        async with session:
+            query = """
+            MATCH (source:Node)-[r:RELATIONSHIP]->(target:Node)
+            WHERE (source.context = $context OR source.context IS NULL)
+            RETURN source, r, target
+            """
+            result = await session.run(query, context=self.context)
+            records = await result.list()
+            edges = []
+            for record in records:
+                rel = record["r"]
+                properties = dict(rel)
+                edges.append({
+                    "source": record["source"].get("id"),
+                    "target": record["target"].get("id"),
+                    "type": rel.get("type"),
+                    **{k: v for k, v in properties.items() if k not in ("type")}
+                })
+            return edges
 
     async def delete_node(self, node_id: str) -> None:
-        await self._ensure_loaded()
-
-        with self._lock:
-            if node_id not in self._nodes:
-                return
-
-            del self._nodes[node_id]
-
-            self._edges = [
-                e for e in self._edges
-                if e.source != node_id and e.target != node_id
-            ]
-
-            if node_id in self._out_edges:
-                del self._out_edges[node_id]
-            if node_id in self._in_edges:
-                del self._in_edges[node_id]
-
-            # Removal requires rewriting the file (atomic compaction).
-            await self._save_to_file()
+        session = await self._get_session()
+        async with session:
+            query = """
+            MATCH (n:Node {id: $id})
+            DETACH DELETE n
+            """
+            await session.run(query, id=node_id)
 
     async def get_node_edges(self, node_id: str, direction: str = "both") -> list[dict]:
-        await self._ensure_loaded()
+        session = await self._get_session()
+        async with session:
+            if direction == "out":
+                query = """
+                MATCH (source:Node {id: $id})-[r:RELATIONSHIP]->(target:Node)
+                RETURN source, r, target
+                """
+            elif direction == "in":
+                query = """
+                MATCH (source:Node)-[r:RELATIONSHIP]->(target:Node {id: $id})
+                RETURN source, r, target
+                """
+            else:
+                query = """
+                MATCH (source:Node)-[r:RELATIONSHIP]-(target:Node {id: $id})
+                RETURN source, r, target
+                """
 
-        edges = []
-        if direction in ("out", "both"):
-            for edge in self._out_edges.get(node_id, []):
-                edges.append(edge.to_dict())
-        if direction in ("in", "both"):
-            for edge in self._in_edges.get(node_id, []):
-                edges.append(edge.to_dict())
-        return edges
+            result = await session.run(query, id=node_id)
+            records = await result.list()
+            edges = []
+            for record in records:
+                rel = record["r"]
+                properties = dict(rel)
+                edges.append({
+                    "source": record["source"].get("id"),
+                    "target": record["target"].get("id"),
+                    "type": rel.get("type"),
+                    **{k: v for k, v in properties.items() if k not in ("type")}
+                })
+            return edges

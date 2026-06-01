@@ -22,6 +22,12 @@ PROMPTS_DIR = Path(__file__).parent / "prompts"
 # the GR_MODEL environment variable.
 DEFAULT_MODEL = os.environ.get("GR_MODEL", "gpt-5.1")
 
+# Neo4j config
+NEO4J_URI = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
+NEO4J_USERNAME = os.environ.get("NEO4J_USERNAME", "neo4j")
+NEO4J_PASSWORD = os.environ.get("NEO4J_PASSWORD")
+NEO4J_DATABASE = os.environ.get("NEO4J_DATABASE", "neo4j")
+
 
 def build_model(
     model_name: Optional[str] = None,
