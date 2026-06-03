@@ -16,33 +16,33 @@ except ImportError:
 
 
 class NodeType(StrEnum):
-    USER_REQUEST = "user_request"
-    QUERY = "query"
-    SEARCH_RUN = "search_run"
-    SOURCE = "source"
-    DOCUMENT = "document"
-    STATEMENT = "statement"
-    EVIDENCE = "evidence"
-    ENTITY = "entity"
-    CONFLICT = "conflict"
-    ANALYSIS = "analysis"
-    REPORT_SECTION = "report_section"
+    USER_REQUEST = "UserRequest"
+    QUERY = "Query"
+    SEARCH_RUN = "SearchRun"
+    SOURCE = "Source"
+    DOCUMENT = "Document"
+    STATEMENT = "Statement"
+    EVIDENCE = "Evidence"
+    ENTITY = "Entity"
+    CONFLICT = "Conflict"
+    ANALYSIS = "Analysis"
+    REPORT_SECTION = "ReportSection"
 
 
 class EdgeType(StrEnum):
-    HAS_QUERY = "has_query"
-    PARENT_OF = "parent_of"
-    SEARCHED_BY = "searched_by"
-    FOUND_SOURCE = "found_source"
-    HAS_DOCUMENT = "has_document"
-    EXTRACTED_STATEMENT = "extracted_statement"
-    SUPPORTED_BY = "supported_by"
-    CONTRADICTED_BY = "contradicted_by"
-    MENTIONS = "mentions"
-    RELATED_TO = "related_to"
-    HAS_CONFLICT = "has_conflict"
-    RESOLVES_GAP = "resolves_gap"
-    USES = "uses"
+    HAS_QUERY = "HAS_QUERY"
+    PARENT_OF = "PARENT_OF"
+    SEARCHED_BY = "SEARCHED_BY"
+    FOUND_SOURCE = "FOUND_SOURCE"
+    HAS_DOCUMENT = "HAS_DOCUMENT"
+    EXTRACTED_STATEMENT = "EXTRACTED_STATEMENT"
+    SUPPORTED_BY = "SUPPORTED_BY"
+    CONTRADICTED_BY = "CONTRADICTED_BY"
+    MENTIONS = "MENTIONS"
+    RELATED_TO = "RELATED_TO"
+    HAS_CONFLICT = "HAS_CONFLICT"
+    RESOLVES_GAP = "RESOLVES_GAP"
+    USES = "USES"
 
 
 @dataclass
@@ -149,17 +149,22 @@ class GraphManager:
 
         session = await self._get_session()
         async with session:
-            query = """
-            MERGE (n:Node {id: $id})
-            SET n.type = $type,
-                n.context = $context,
+            try:
+                label = NodeType(node_type).value
+            except ValueError:
+                try:
+                    label = NodeType[node_type.upper()].value
+                except KeyError:
+                    label = node_type
+            query = f"""
+            MERGE (n:{label} {{id: $id}})
+            SET n.context = $context,
                 n += $properties
             RETURN n.id
             """
             result = await session.run(
                 query,
                 id=node_id,
-                type=node_type,
                 context=self.context,
                 properties=attributes
             )
@@ -170,17 +175,22 @@ class GraphManager:
         if dedupe_key:
             session = await self._get_session()
             async with session:
-                query = """
-                MATCH (n:Node {id: $id})
-                SET n.type = $type,
-                    n.context = $context,
+                try:
+                    label = NodeType(node_type).value
+                except ValueError:
+                    try:
+                        label = NodeType[node_type.upper()].value
+                    except KeyError:
+                        label = node_type
+                query = f"""
+                MATCH (n:{label} {{id: $id}})
+                SET n.context = $context,
                     n += $properties
                 RETURN n.id
                 """
                 result = await session.run(
                     query,
                     id=dedupe_key,
-                    type=node_type,
                     context=self.context,
                     properties=attributes
                 )
@@ -193,82 +203,95 @@ class GraphManager:
     async def add_edge(self, source_id: str, target_id: str, edge_type: str, attributes: Optional[dict] = None) -> str:
         session = await self._get_session()
         async with session:
-            query = """
-            MATCH (source:Node {id: $source_id})
-            MATCH (target:Node {id: $target_id})
-            MERGE (source)-[r:RELATIONSHIP {type: $type}]->(target)
+            try:
+                rel_type = EdgeType(edge_type).value
+            except ValueError:
+                try:
+                    rel_type = EdgeType[edge_type.upper()].value
+                except KeyError:
+                    rel_type = edge_type
+            query = f"""
+            MATCH (source)
+            WHERE source.id = $source_id
+            MATCH (target)
+            WHERE target.id = $target_id
+            MERGE (source)-[r:{rel_type}]->(target)
             SET r += $properties
-            RETURN source.id, target.id, r.type
+            RETURN source.id, target.id, type(r)
             """
             result = await session.run(
                 query,
                 source_id=source_id,
                 target_id=target_id,
-                type=edge_type,
                 properties=attributes or {}
             )
             record = await result.single()
             if record is None:
-                # One (or both) endpoints do not exist, so the MATCH yielded no
-                # row and no edge was created. Skip rather than crash the run on
-                # a dangling id (e.g. a citation the Reporter could not resolve).
                 logger.warning(
                     "add_edge skipped: missing node(s) source=%s target=%s type=%s",
                     source_id, target_id, edge_type,
                 )
                 return ""
-            return f"{record['source.id']}_{record['r.type']}_{record['target.id']}"
+            return f"{record['source.id']}_{record['type(r)']}_{record['target.id']}"
 
     async def get_node(self, node_id: str) -> dict:
         session = await self._get_session()
         async with session:
             query = """
-            MATCH (n:Node {id: $id})
-            RETURN n
+            MATCH (n)
+            WHERE n.id = $id
+            RETURN n, labels(n) as labels
             """
             result = await session.run(query, id=node_id)
             record = await result.single()
             if not record:
                 return {}
             node = record["n"]
+            labels = record["labels"]
             properties = dict(node)
+            
+            node_type = next((label for label in labels if label != 'Node'), labels[0] if labels else 'Node')
             return {
                 "id": node.get("id"),
-                "type": node.get("type"),
-                **{k: v for k, v in properties.items() if k not in ("id", "type", "context")}
+                "type": node_type,
+                **{k: v for k, v in properties.items() if k not in ("id", "context")}
             }
 
     async def search_node(self, node_type: str, filter: dict) -> list[dict]:
         session = await self._get_session()
         async with session:
-            where_clauses = ["n.type = $type"]
-            params = {"type": node_type, "context": self.context}
+            try:
+                label = NodeType(node_type).value
+            except ValueError:
+                try:
+                    label = NodeType[node_type.upper()].value
+                except KeyError:
+                    label = node_type
+            where_clauses = []
+            params = {"context": self.context}
 
             for i, (key, value) in enumerate(filter.items()):
                 where_clauses.append(f"n.{key} = $param{i}")
                 params[f"param{i}"] = value
 
-            # Strict context isolation: a context-scoped run sees only its own
-            # nodes (never legacy/other-run nodes), and the default unscoped
-            # mode sees only the unscoped (NULL-context) nodes. The lenient
-            # "OR context IS NULL" form let earlier runs' data leak in and broke
-            # per-run query resolution.
             query = f"""
-            MATCH (n:Node)
-            WHERE {" AND ".join(where_clauses)}
+            MATCH (n:{label})
+            WHERE {" AND ".join(where_clauses) if where_clauses else "true"}
             AND (n.context = $context OR ($context IS NULL AND n.context IS NULL))
-            RETURN n
+            RETURN n, labels(n) as labels
             """
             result = await session.run(query, **params)
             records = [record async for record in result]
             nodes = []
             for record in records:
                 node = record["n"]
+                labels = record["labels"]
                 properties = dict(node)
+                node_type = next((label for label in labels if label != 'Node'), labels[0] if labels else 'Node')
                 nodes.append({
                     "id": node.get("id"),
-                    "type": node.get("type"),
-                    **{k: v for k, v in properties.items() if k not in ("id", "type", "context")}
+                    "type": node_type,
+                    **{k: v for k, v in properties.items() if k not in ("id", "context")}
                 })
             return nodes
 
@@ -276,7 +299,8 @@ class GraphManager:
         session = await self._get_session()
         async with session:
             query = """
-            MATCH (start:Node {id: $id})
+            MATCH (start)
+            WHERE start.id = $id
             CALL apoc.path.subgraphAll(start, {
                 maxLevel: $depth
             }) YIELD nodes, relationships
@@ -288,18 +312,14 @@ class GraphManager:
                 if not record:
                     return {"nodes": [], "edges": []}
             except Exception:
-                # Fallback when APOC is unavailable. Variable-length bounds
-                # cannot be parameterized, so the (validated) depth is inlined.
-                # Gather every node within `depth` hops, then the relationships
-                # between those nodes — returning `nodes`/`relationships` to
-                # match what the consumer below reads.
                 safe_depth = max(1, int(depth))
                 query = f"""
-                MATCH path = (start:Node {{id: $id}})-[:RELATIONSHIP*0..{safe_depth}]-(other:Node)
+                MATCH path = (start)-[*0..{safe_depth}]-(other)
+                WHERE start.id = $id
                 UNWIND nodes(path) AS node
                 WITH collect(DISTINCT node) AS allNodes
                 UNWIND allNodes AS n
-                OPTIONAL MATCH (n)-[r:RELATIONSHIP]->(m:Node)
+                OPTIONAL MATCH (n)-[r]->(m)
                 WHERE m IN allNodes
                 RETURN allNodes AS nodes, collect(DISTINCT r) AS relationships
                 """
@@ -312,10 +332,12 @@ class GraphManager:
             for node in record["nodes"]:
                 if hasattr(node, "get"):
                     properties = dict(node)
+                    labels = getattr(node, 'labels', [])
+                    node_type = next((label for label in labels if label != 'Node'), 'Node') if labels else 'Node'
                     nodes.append({
                         "id": node.get("id"),
-                        "type": node.get("type"),
-                        **{k: v for k, v in properties.items() if k not in ("id", "type", "context")}
+                        "type": node_type,
+                        **{k: v for k, v in properties.items() if k not in ("id", "context")}
                     })
 
             edges = []
@@ -325,8 +347,8 @@ class GraphManager:
                     edges.append({
                         "source": rel.start_node.get("id"),
                         "target": rel.end_node.get("id"),
-                        "type": rel.get("type"),
-                        **{k: v for k, v in properties.items() if k not in ("type")}
+                        "type": rel.type,
+                        **{k: v for k, v in properties.items()}
                     })
 
             return {"nodes": nodes, "edges": edges}
@@ -338,20 +360,22 @@ class GraphManager:
         session = await self._get_session()
         async with session:
             query = """
-            MATCH (n:Node)
+            MATCH (n)
             WHERE (n.context = $context OR ($context IS NULL AND n.context IS NULL))
-            RETURN n
+            RETURN n, labels(n) as labels
             """
             result = await session.run(query, context=self.context)
             records = [record async for record in result]
             nodes = []
             for record in records:
                 node = record["n"]
+                labels = record["labels"]
                 properties = dict(node)
+                node_type = next((label for label in labels if label != 'Node'), labels[0] if labels else 'Node')
                 nodes.append({
                     "id": node.get("id"),
-                    "type": node.get("type"),
-                    **{k: v for k, v in properties.items() if k not in ("id", "type", "context")}
+                    "type": node_type,
+                    **{k: v for k, v in properties.items() if k not in ("id", "context")}
                 })
             return nodes
 
@@ -359,7 +383,7 @@ class GraphManager:
         session = await self._get_session()
         async with session:
             query = """
-            MATCH (source:Node)-[r:RELATIONSHIP]->(target:Node)
+            MATCH (source)-[r]->(target)
             WHERE (source.context = $context OR ($context IS NULL AND source.context IS NULL))
             RETURN source, r, target
             """
@@ -372,8 +396,8 @@ class GraphManager:
                 edges.append({
                     "source": record["source"].get("id"),
                     "target": record["target"].get("id"),
-                    "type": rel.get("type"),
-                    **{k: v for k, v in properties.items() if k not in ("type")}
+                    "type": rel.type,
+                    **{k: v for k, v in properties.items()}
                 })
             return edges
 
@@ -381,7 +405,8 @@ class GraphManager:
         session = await self._get_session()
         async with session:
             query = """
-            MATCH (n:Node {id: $id})
+            MATCH (n)
+            WHERE n.id = $id
             DETACH DELETE n
             """
             await session.run(query, id=node_id)
@@ -391,17 +416,20 @@ class GraphManager:
         async with session:
             if direction == "out":
                 query = """
-                MATCH (source:Node {id: $id})-[r:RELATIONSHIP]->(target:Node)
+                MATCH (source)-[r]->(target)
+                WHERE source.id = $id
                 RETURN source, r, target
                 """
             elif direction == "in":
                 query = """
-                MATCH (source:Node)-[r:RELATIONSHIP]->(target:Node {id: $id})
+                MATCH (source)-[r]->(target)
+                WHERE target.id = $id
                 RETURN source, r, target
                 """
             else:
                 query = """
-                MATCH (source:Node)-[r:RELATIONSHIP]-(target:Node {id: $id})
+                MATCH (source)-[r]-(target)
+                WHERE target.id = $id
                 RETURN source, r, target
                 """
 
@@ -414,7 +442,7 @@ class GraphManager:
                 edges.append({
                     "source": record["source"].get("id"),
                     "target": record["target"].get("id"),
-                    "type": rel.get("type"),
-                    **{k: v for k, v in properties.items() if k not in ("type")}
+                    "type": rel.type,
+                    **{k: v for k, v in properties.items()}
                 })
             return edges

@@ -13,26 +13,28 @@ async def view_graph():
     driver = AsyncGraphDatabase.driver(URI, auth=(USERNAME, PASSWORD))
     
     async with driver.session() as session:
-        # Query 1: Get all nodes count by type
+        # Query 1: Get all nodes count by type (label)
         print("=" * 80)
-        print("节点统计 (按类型)")
+        print("节点统计 (按标签类型)")
         print("=" * 80)
         result = await session.run("""
-            MATCH (n:Node)
-            RETURN n.type AS type, count(n) AS count
+            MATCH (n)
+            UNWIND labels(n) as label
+            WITH label, count(DISTINCT n) AS count
             ORDER BY count DESC
+            RETURN label, count
         """)
         records = await result.data()
         for record in records:
-            print(f"{record['type']:20s}: {record['count']} 个节点")
+            print(f"{record['label']:20s}: {record['count']} 个节点")
         
         # Query 2: Get all relationships count by type
         print("\n" + "=" * 80)
         print("关系统计 (按类型)")
         print("=" * 80)
         result = await session.run("""
-            MATCH ()-[r:RELATIONSHIP]->()
-            RETURN r.type AS type, count(r) AS count
+            MATCH ()-[r]->()
+            RETURN type(r) AS type, count(r) AS count
             ORDER BY count DESC
         """)
         records = await result.data()
@@ -44,20 +46,22 @@ async def view_graph():
         print("节点示例 (每种类型前 3 个)")
         print("=" * 80)
         result = await session.run("""
-            MATCH (n:Node)
-            WITH n.type AS type, collect(n) AS nodes
+            MATCH (n)
+            UNWIND labels(n) as label
+            WITH label, collect(DISTINCT n) AS nodes
             UNWIND nodes[0..3] AS sample
-            RETURN type, sample.id AS id, sample.text AS text, sample.request AS request
-            ORDER BY type
+            RETURN label, sample.id AS id, 
+                   coalesce(sample.text, sample.request, sample.title, 'N/A') as content
+            ORDER BY label
         """)
         records = await result.data()
         current_type = None
         for record in records:
-            if record['type'] != current_type:
-                current_type = record['type']
+            if record['label'] != current_type:
+                current_type = record['label']
                 print(f"\n[{current_type}]:")
             
-            content = record['text'] or record['request'] or 'N/A'
+            content = record['content']
             if len(content) > 100:
                 content = content[:100] + "..."
             print(f"  - ID: {record['id']}")
@@ -68,12 +72,12 @@ async def view_graph():
         print("最新研究目标的图谱结构")
         print("=" * 80)
         result = await session.run("""
-            MATCH (goal:Node {type: 'user_request'})
+            MATCH (goal:UserRequest)
             WITH goal ORDER BY goal.id DESC LIMIT 1
             MATCH path = (goal)-[*1..3]-(related)
             RETURN 
                 goal.id AS goal_id,
-                goal.request AS goal_request,
+                coalesce(goal.request, '') AS goal_request,
                 count(DISTINCT related) AS related_nodes,
                 count(DISTINCT relationships(path)) AS relationships
         """)
@@ -93,13 +97,13 @@ async def view_graph():
         print("详细子图结构（最新目标）")
         print("=" * 80)
         result = await session.run("""
-            MATCH (goal:Node {type: 'user_request'})
+            MATCH (goal:UserRequest)
             WITH goal ORDER BY goal.id DESC LIMIT 1
-            OPTIONAL MATCH (goal)-[r1:RELATIONSHIP {type: 'has_query'}]->(query:Node {type: 'query'})
-            OPTIONAL MATCH (query)-[r2:RELATIONSHIP {type: 'searched_by'}]->(search_run:Node {type: 'search_run'})
-            OPTIONAL MATCH (search_run)-[r3:RELATIONSHIP {type: 'found_source'}]->(source:Node {type: 'source'})
-            OPTIONAL MATCH (source)-[r4:RELATIONSHIP {type: 'has_document'}]->(doc:Node {type: 'document'})
-            OPTIONAL MATCH (doc)-[r5:RELATIONSHIP {type: 'extracted_statement'}]->(evidence:Node {type: 'evidence'})
+            OPTIONAL MATCH (goal)-[:HAS_QUERY]->(query:Query)
+            OPTIONAL MATCH (query)-[:SEARCHED_BY]->(search_run:SearchRun)
+            OPTIONAL MATCH (search_run)-[:FOUND_SOURCE]->(source:Source)
+            OPTIONAL MATCH (source)-[:HAS_DOCUMENT]->(doc:Document)
+            OPTIONAL MATCH (doc)-[:EXTRACTED_STATEMENT]->(evidence:Evidence)
             RETURN 
                 goal.id AS goal_id,
                 collect(DISTINCT query.id) AS query_ids,
