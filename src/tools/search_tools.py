@@ -23,6 +23,9 @@ SERPER_ENDPOINTS = {
     "finance": "https://google.serper.dev/search",
 }
 
+# Timeout configuration (seconds)
+SEARCH_TIMEOUT = int(os.environ.get("SEARCH_TIMEOUT", "30"))
+
 
 def _client() -> TavilyClient:
     """Return the Tavily client, creating it on first use.
@@ -67,7 +70,7 @@ def serper_search(
             endpoint,
             headers={"X-API-KEY": os.environ["SERPER_API_KEY"], "Content-Type": "application/json"},
             json={"q": query, "num": max_results},
-            timeout=30,
+            timeout=SEARCH_TIMEOUT,
         )
         if response.status_code >= 400:
             # Surface Serper's own message (e.g. "Not enough credits") rather than a bare HTTP code.

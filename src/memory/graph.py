@@ -100,6 +100,7 @@ NEO4J_URI = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
 NEO4J_USERNAME = os.environ.get("NEO4J_USERNAME", "neo4j")
 NEO4J_PASSWORD = os.environ.get("NEO4J_PASSWORD")
 NEO4J_DATABASE = os.environ.get("NEO4J_DATABASE", "neo4j")
+NEO4J_TIMEOUT = int(os.environ.get("NEO4J_TIMEOUT", "30"))
 
 
 class GraphManager:

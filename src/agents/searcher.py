@@ -45,7 +45,7 @@ class SearcherState(TypedDict):
 
 # ── Helpers ──────────────────────────────────────────────────────────────
 
-_QID_RE = re.compile(r"(?:query_id|Query ID)[=:]\s*([a-f0-9_]+)", re.IGNORECASE)
+_QID_RE = re.compile(r"(?:query_id|Query ID|queryId|qid|id)[=:]\s*([a-f0-9_]+)", re.IGNORECASE)
 
 # Characters beyond this limit are dropped from the search output before it
 # is passed to the analyze node, to avoid context-window exhaustion.

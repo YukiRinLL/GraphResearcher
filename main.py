@@ -62,9 +62,30 @@ class _Tee:
         self._stream = stream
         self._log = log_file
 
+    def _safe_write(self, stream: object, data: str) -> int:
+        """Safely write data to stream, handling encoding errors on Windows."""
+        try:
+            stream.write(data)
+            return len(data)
+        except UnicodeEncodeError:
+            # Replace characters that can't be encoded with safe alternatives
+            safe_data = data.encode('utf-8', errors='replace').decode('utf-8')
+            try:
+                stream.write(safe_data)
+                return len(safe_data)
+            except Exception:
+                # If still failing, try writing directly as bytes if stream supports it
+                try:
+                    if hasattr(stream, 'buffer'):
+                        stream.buffer.write(safe_data.encode('utf-8', errors='replace'))
+                        return len(safe_data)
+                except Exception:
+                    pass
+                return 0
+
     def write(self, data: str) -> int:
         """Write to the terminal stream and an ANSI-stripped copy to the log."""
-        self._stream.write(data)
+        self._safe_write(self._stream, data)
         self._log.write(_ANSI_RE.sub("", data))
         self._log.flush()
         return len(data)
