@@ -229,9 +229,20 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
             # section→evidence bindings only, not the report itself.
             report_text = final_text or "(no report produced)"
             report_path.write_text(report_text, encoding="utf-8")
+
+            # Export the run's graph from neo4j to JSONL for graph_viewer.html.
+            graph_path = output_dir / "research_graph.jsonl"
+            try:
+                from tools import graph_tools
+
+                graph_tools.export_graph_jsonl(str(graph_path))
+            except Exception:
+                console.print("[yellow]Graph export to JSONL failed (captured in run.log):[/]")
+                console.print(traceback.format_exc(), markup=False, highlight=False)
+
             console.rule("[bold green]Final Report")
             console.print(Markdown(report_text))
-            console.print(f"\n[dim]Saved: {report_path}, {output_dir / 'research_graph.jsonl'}, {log_path}[/]")
+            console.print(f"\n[dim]Saved: {report_path}, {graph_path}, {log_path}[/]")
             sys.stdout, sys.stderr = orig_stdout, orig_stderr
 
 

@@ -1,40 +1,61 @@
 import asyncio
 import os
+import threading
 from typing import Any, Optional
-
-try:
-    import nest_asyncio
-    nest_asyncio.apply()
-    HAS_NEST_ASYNCIO = True
-except ImportError:
-    HAS_NEST_ASYNCIO = False
 
 from memory.graph import NodeType, EdgeType, GraphNode, GraphEdge
 
 
+# A single persistent background event loop runs every coroutine. The neo4j
+# AsyncDriver caches a connection pool bound to the loop it was created on, so
+# all graph access must share one loop — using a fresh ``asyncio.run`` per call
+# (as before) rebinds the driver to a dead loop and raises "Future attached to
+# a different loop" once LangGraph's ToolNode dispatches tools across threads.
+_loop: Optional[asyncio.AbstractEventLoop] = None
+_loop_lock = threading.Lock()
+
+
+def _get_loop() -> asyncio.AbstractEventLoop:
+    global _loop
+    with _loop_lock:
+        if _loop is None or _loop.is_closed():
+            _loop = asyncio.new_event_loop()
+            threading.Thread(target=_loop.run_forever, daemon=True).start()
+        return _loop
+
+
 def _run_async(coro):
-    try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        return asyncio.run(coro)
-
-    if HAS_NEST_ASYNCIO:
-        return asyncio.run(coro)
-
-    import concurrent.futures
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        future = executor.submit(asyncio.run, coro)
-        return future.result()
+    loop = _get_loop()
+    return asyncio.run_coroutine_threadsafe(coro, loop).result()
 
 
 _manager_cache = {}
+_context: Optional[str] = None
+
+
+def set_context(context: Optional[str]) -> None:
+    """Scope all graph access to a per-run ``context``.
+
+    neo4j is a single shared database, so without a context every run writes
+    into one global pool and text-based query resolution cross-matches nodes
+    from earlier runs. Tagging each run's nodes with a context (the run's
+    output directory) restores the per-run isolation the file-based store had.
+
+    Args:
+        context: A stable per-run identifier (the run's output directory), or
+            ``None`` for the default global scope.
+    """
+    global _context
+    if context != _context:
+        _context = context
+        _manager_cache.clear()
 
 
 def _get_manager():
     from memory.graph import GraphManager
-    cache_key = "default"
+    cache_key = _context or "default"
     if cache_key not in _manager_cache:
-        _manager_cache[cache_key] = GraphManager()
+        _manager_cache[cache_key] = GraphManager(context=_context)
     return _manager_cache[cache_key]
 
 
@@ -88,6 +109,35 @@ def get_subgraph(node_id: str, depth: int = 2) -> dict[str, Any]:
 def save_graph() -> None:
     manager = _get_manager()
     return _run_async(manager.save())
+
+
+def export_graph_jsonl(file_path: str) -> int:
+    """Dump the current context's graph to a JSONL file for the viewer.
+
+    Writes the marker line followed by one ``"kind": "node"`` / ``"kind":
+    "edge"`` object per line — the format ``graph_viewer.html`` loads. neo4j is
+    the source of truth now, so this is an export step (the old file-based store
+    saved on every mutation; the migration dropped that, leaving the promised
+    ``research_graph.jsonl`` unwritten).
+
+    Args:
+        file_path: Destination ``.jsonl`` path.
+
+    Returns:
+        The number of node + edge lines written.
+    """
+    import json
+
+    manager = _get_manager()
+    nodes = _run_async(manager.get_all_nodes())
+    edges = _run_async(manager.get_all_edges())
+    with open(file_path, "w", encoding="utf-8") as f:
+        f.write(json.dumps({"type": "_graphresearcher", "source": "graph-researcher"}, ensure_ascii=False) + "\n")
+        for node in nodes:
+            f.write(json.dumps({"kind": "node", **node}, ensure_ascii=False) + "\n")
+        for edge in edges:
+            f.write(json.dumps({"kind": "edge", **edge}, ensure_ascii=False) + "\n")
+    return len(nodes) + len(edges)
 
 
 def create_user_request(

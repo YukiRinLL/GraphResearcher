@@ -136,7 +136,6 @@ class MemoryManager:
             request=user_request,
             research_goal=parsed.get("research_goal"),
             language=parsed.get("language"),
-            cache_dir=self.cache_dir,
         )
 
         queries = []
@@ -144,7 +143,7 @@ class MemoryManager:
             if not text:
                 continue
             query_id = graph_tools.create_query(
-                text=text, status="pending", parent_id=goal_id, cache_dir=self.cache_dir
+                text=text, status="pending", parent_id=goal_id
             )
             queries.append({"id": query_id, "text": text})
 
@@ -169,7 +168,7 @@ class MemoryManager:
         """
         results: list[dict] = []
         for status in ("pending", "needs_horizontal", "needs_vertical"):
-            for node in graph_tools.search_nodes("query", {"status": status}, cache_dir=self.cache_dir):
+            for node in graph_tools.search_nodes("query", {"status": status}):
                 results.append({"id": node.get("id"), "text": node.get("text"), "status": status})
         return results[:limit]
 
@@ -183,8 +182,8 @@ class MemoryManager:
             dict with ``sufficiency_score``, ``covered``, ``gaps``,
             ``conflicts``, ``recommendation`` and ``reason``.
         """
-        node = graph_tools.get_node(query_id, cache_dir=self.cache_dir)
-        subgraph = graph_tools.get_query_subgraph(query_id, depth=4, cache_dir=self.cache_dir)
+        node = graph_tools.get_node(query_id)
+        subgraph = graph_tools.get_query_subgraph(query_id, depth=4)
         prompt = mm_prompts.summarize_subgraph.replace(
             "{query}", node.get("text", query_id)
         ).replace("{subgraph}", json.dumps(subgraph, ensure_ascii=False))
@@ -212,9 +211,8 @@ class MemoryManager:
                 "expansion_type": expansion_type,
                 "reason": reason,
             },
-            cache_dir=self.cache_dir,
         )
-        graph_tools.add_edge(parent_query_id, query_id, "parent_of", cache_dir=self.cache_dir)
+        graph_tools.add_edge(parent_query_id, query_id, "parent_of")
         return query_id
 
     def mark_query(self, query_id: str, status: str, **metrics: Any) -> dict:
@@ -229,7 +227,7 @@ class MemoryManager:
             The updated query node.
         """
         return graph_tools.upsert_node(
-            "query", {"status": status, **metrics}, dedupe_key=query_id, cache_dir=self.cache_dir
+            "query", {"status": status, **metrics}, dedupe_key=query_id
         )
 
     # -----------------------------
@@ -252,11 +250,11 @@ class MemoryManager:
         """
         if not query_id:
             return None
-        node = graph_tools.get_node(query_id, cache_dir=self.cache_dir)
+        node = graph_tools.get_node(query_id)
         if node and node.get("type") == "query":
             return query_id
 
-        queries = graph_tools.search_nodes("query", {}, cache_dir=self.cache_dir)
+        queries = graph_tools.search_nodes("query", {})
         for q in queries:
             qid = q.get("id", "")
             if qid.startswith(query_id) or query_id.startswith(qid):
@@ -278,9 +276,9 @@ class MemoryManager:
         """
         resolved = self._resolve_query_id(query_id) or query_id
         return {
-            "query": graph_tools.get_node(resolved, cache_dir=self.cache_dir),
+            "query": graph_tools.get_node(resolved),
             "existing_subgraph": graph_tools.get_query_subgraph(
-                resolved, depth=4, cache_dir=self.cache_dir
+                resolved, depth=4
             ),
         }
 
@@ -320,9 +318,9 @@ class MemoryManager:
             resolved_query_id = query_id
 
         run_id = graph_tools.add_node(
-            "search_run", {"query_id": resolved_query_id}, cache_dir=self.cache_dir
+            "search_run", {"query_id": resolved_query_id}
         )
-        graph_tools.add_edge(resolved_query_id, run_id, "searched_by", cache_dir=self.cache_dir)
+        graph_tools.add_edge(resolved_query_id, run_id, "searched_by")
 
         for source in evidence_package.get("sources", []) or []:
             # Reuse an existing source node when the same URL was already
@@ -331,17 +329,15 @@ class MemoryManager:
                 url=_first(source, "url") or "",
                 title=_first(source, "title"),
                 source_type=_first(source, "source_type", "type"),
-                cache_dir=self.cache_dir,
             )
             if source.get("local_ref"):
                 ref_map[source["local_ref"]] = source_id
-            graph_tools.add_edge(run_id, source_id, "found_source", cache_dir=self.cache_dir)
+            graph_tools.add_edge(run_id, source_id, "found_source")
 
         for document in evidence_package.get("documents", []) or []:
             doc_id = graph_tools.create_document(
                 text=_first(document, "document_summary", "summary_zh", "summary", "text", "content") or "",
                 source_id=resolve(_first(document, "source_ref", "source")),
-                cache_dir=self.cache_dir,
             )
             if document.get("local_ref"):
                 ref_map[document["local_ref"]] = doc_id
@@ -359,7 +355,6 @@ class MemoryManager:
                 claim=claim_text,
                 document_id=resolve(doc_ref),
                 source_id=resolve(_first(item, "source_ref", "source")),
-                cache_dir=self.cache_dir,
             )
             if item.get("local_ref"):
                 ref_map[item["local_ref"]] = evidence_id
@@ -370,10 +365,9 @@ class MemoryManager:
             graph_tools.create_conflict(
                 description=_first(conflict, "description", "description_zh") or "",
                 evidence_ids=evidence_ids,
-                cache_dir=self.cache_dir,
             )
 
-        graph_tools.save_graph(cache_dir=self.cache_dir)
+        graph_tools.save_graph()
         result = {
             "search_run_id": run_id,
             "query_id": resolved_query_id,
@@ -409,13 +403,13 @@ class MemoryManager:
             type (``queries``, ``evidence``, ``conflicts``, ``analysis``,
             ``sources``, ``report_sections``).
         """
-        goal = graph_tools.get_node(goal_id, cache_dir=self.cache_dir) if goal_id else {}
+        goal = graph_tools.get_node(goal_id) if goal_id else {}
         if not goal:
-            requests = graph_tools.search_nodes("user_request", {}, cache_dir=self.cache_dir)
+            requests = graph_tools.search_nodes("user_request", {})
             if requests:
                 goal = requests[0]
                 goal_id = goal["id"]
-        raw_subgraph = graph_tools.get_subgraph(goal_id, depth=8, cache_dir=self.cache_dir) if goal_id else {"nodes": [], "edges": []}
+        raw_subgraph = graph_tools.get_subgraph(goal_id, depth=8) if goal_id else {"nodes": [], "edges": []}
 
         # Strip internal scheduling fields from every node before they reach the
         # Reporter, so the writing context carries content only (not graph state).
@@ -466,13 +460,11 @@ class MemoryManager:
             title=section.get("title", ""),
             content=section.get("content", ""),
             section_type=section.get("section_type"),
-            cache_dir=self.cache_dir,
         )
         graph_tools.bind_evidence_to_section(
             section_id,
             evidence_ids=evidence_ids or [],
             claim_ids=claim_ids or [],
-            cache_dir=self.cache_dir,
         )
         return section_id
 
@@ -513,5 +505,5 @@ class MemoryManager:
         url = source.get("url")
         if not url:
             return None
-        matches = graph_tools.search_nodes("source", {"url": url}, cache_dir=self.cache_dir)
+        matches = graph_tools.search_nodes("source", {"url": url})
         return matches[0]["id"] if matches else None

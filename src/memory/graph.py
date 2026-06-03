@@ -207,6 +207,15 @@ class GraphManager:
                 properties=attributes or {}
             )
             record = await result.single()
+            if record is None:
+                # One (or both) endpoints do not exist, so the MATCH yielded no
+                # row and no edge was created. Skip rather than crash the run on
+                # a dangling id (e.g. a citation the Reporter could not resolve).
+                logger.warning(
+                    "add_edge skipped: missing node(s) source=%s target=%s type=%s",
+                    source_id, target_id, edge_type,
+                )
+                return ""
             return f"{record['source.id']}_{record['r.type']}_{record['target.id']}"
 
     async def get_node(self, node_id: str) -> dict:
@@ -238,14 +247,19 @@ class GraphManager:
                 where_clauses.append(f"n.{key} = $param{i}")
                 params[f"param{i}"] = value
 
+            # Strict context isolation: a context-scoped run sees only its own
+            # nodes (never legacy/other-run nodes), and the default unscoped
+            # mode sees only the unscoped (NULL-context) nodes. The lenient
+            # "OR context IS NULL" form let earlier runs' data leak in and broke
+            # per-run query resolution.
             query = f"""
             MATCH (n:Node)
             WHERE {" AND ".join(where_clauses)}
-            AND (n.context = $context OR n.context IS NULL)
+            AND (n.context = $context OR ($context IS NULL AND n.context IS NULL))
             RETURN n
             """
             result = await session.run(query, **params)
-            records = await result.list()
+            records = [record async for record in result]
             nodes = []
             for record in records:
                 node = record["n"]
@@ -272,17 +286,26 @@ class GraphManager:
                 record = await result.single()
                 if not record:
                     return {"nodes": [], "edges": []}
-            except:
-                query = """
-                MATCH path = (start:Node {id: $id})-[:RELATIONSHIP*1..$depth]-(other:Node)
-                WITH collect(DISTINCT nodes(path)) AS all_node_lists, collect(DISTINCT relationships(path)) AS all_rel_lists
-                UNWIND all_node_lists AS node_list
-                UNWIND all_rel_lists AS rel_list
-                WITH collect(DISTINCT node_list) AS unique_node_lists, collect(DISTINCT rel_list) AS unique_rel_lists
-                RETURN [n IN unique_node_lists | n] AS nodes, [r IN unique_rel_lists | r] AS edges
+            except Exception:
+                # Fallback when APOC is unavailable. Variable-length bounds
+                # cannot be parameterized, so the (validated) depth is inlined.
+                # Gather every node within `depth` hops, then the relationships
+                # between those nodes — returning `nodes`/`relationships` to
+                # match what the consumer below reads.
+                safe_depth = max(1, int(depth))
+                query = f"""
+                MATCH path = (start:Node {{id: $id}})-[:RELATIONSHIP*0..{safe_depth}]-(other:Node)
+                UNWIND nodes(path) AS node
+                WITH collect(DISTINCT node) AS allNodes
+                UNWIND allNodes AS n
+                OPTIONAL MATCH (n)-[r:RELATIONSHIP]->(m:Node)
+                WHERE m IN allNodes
+                RETURN allNodes AS nodes, collect(DISTINCT r) AS relationships
                 """
-                result = await session.run(query, id=node_id, depth=depth)
+                result = await session.run(query, id=node_id)
                 record = await result.single()
+                if not record:
+                    return {"nodes": [], "edges": []}
 
             nodes = []
             for node in record["nodes"]:
@@ -315,11 +338,11 @@ class GraphManager:
         async with session:
             query = """
             MATCH (n:Node)
-            WHERE (n.context = $context OR n.context IS NULL)
+            WHERE (n.context = $context OR ($context IS NULL AND n.context IS NULL))
             RETURN n
             """
             result = await session.run(query, context=self.context)
-            records = await result.list()
+            records = [record async for record in result]
             nodes = []
             for record in records:
                 node = record["n"]
@@ -336,11 +359,11 @@ class GraphManager:
         async with session:
             query = """
             MATCH (source:Node)-[r:RELATIONSHIP]->(target:Node)
-            WHERE (source.context = $context OR source.context IS NULL)
+            WHERE (source.context = $context OR ($context IS NULL AND source.context IS NULL))
             RETURN source, r, target
             """
             result = await session.run(query, context=self.context)
-            records = await result.list()
+            records = [record async for record in result]
             edges = []
             for record in records:
                 rel = record["r"]
@@ -382,7 +405,7 @@ class GraphManager:
                 """
 
             result = await session.run(query, id=node_id)
-            records = await result.list()
+            records = [record async for record in result]
             edges = []
             for record in records:
                 rel = record["r"]

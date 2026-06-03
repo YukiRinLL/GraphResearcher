@@ -31,6 +31,12 @@ def configure(output_dir: Optional[str] = None) -> None:
     _cache_dir = output_dir
     _manager = None
 
+    # Scope graph storage to this run so neo4j (a single shared DB) keeps each
+    # run's nodes isolated instead of cross-matching against earlier runs.
+    from tools import graph_tools
+
+    graph_tools.set_context(output_dir)
+
 
 def _mm() -> MemoryManager:
     """Return the shared MemoryManager, creating it on first use."""
@@ -134,7 +140,7 @@ def create_analysis(text: str, query_id: Optional[str] = None) -> str:
     """
     from tools import graph_tools
 
-    return graph_tools.create_analysis(text=text, query_id=query_id, cache_dir=_mm().cache_dir)
+    return graph_tools.create_analysis(text=text, query_id=query_id)
 
 
 @tool
@@ -150,7 +156,7 @@ def get_subgraph(node_id: str, depth: int = 2) -> dict:
     """
     from tools import graph_tools
 
-    return graph_tools.get_subgraph(node_id, depth=depth, cache_dir=_mm().cache_dir)
+    return graph_tools.get_subgraph(node_id, depth=depth)
 
 
 @tool
@@ -165,7 +171,7 @@ def get_node(node_id: str) -> dict:
     """
     from tools import graph_tools
 
-    return graph_tools.get_node(node_id, cache_dir=_mm().cache_dir)
+    return graph_tools.get_node(node_id)
 
 
 # -----------------------------
