@@ -1,0 +1,344 @@
+{"type": "_graphresearcher", "source": "graph-researcher"}
+{"kind": "node", "id": "20260531133937944839_7cbc9999", "type": "user_request", "request": "整理当前全球具身智能发展的主要技术路线，并梳理各技术路线下的代表性公司（含中美欧等），覆盖：1）各家公司采用的技术路径（模型范式、训练方式、硬件/机器人载体等）；2）代表性产品和研发/落地进度；3）商业化路径与当前进展（应用场景、客户类型、收入或订单情况能找到的尽量列出）；4）融资情况（轮次、金额、主要投资方）；5）创始团队与核心团队背景。输出面向关注具身智能赛道的投资人，用简体中文撰写成一份结构化研究报告。时间窗口重点关注2022-2026年，尽量纳入截至2026年5月的最新信息。", "research_goal": "系统梳理2022-2026年全球具身智能领域的主要技术路线，并按技术路线归类中美欧等代表性公司，分析其技术路径、产品与研发/落地进展、商业化路径与进度、融资情况以及核心团队背景，为关注具身智能赛道的投资人提供结构化研究报告。", "language": "zh-CN"}
+{"kind": "node", "id": "20260531133937953156_6d0c7053", "type": "query", "text": "2022-2026年全球具身智能领域（含机器人+大模型等）主要技术路线有哪些？各技术路线在模型范式（End-to-End、World Model、模态融合、多体协同等）、训练方式（自监督、强化学习、模仿学习、仿真+真实混合等）、以及硬件/机器人载体类型（人形、轮式、臂式、仓储/物流、家用服务等）上的典型特征与差异是什么？", "status": "pending"}
+{"kind": "node", "id": "20260531133937970277_2680981b", "type": "query", "text": "按上述技术路线划分，2022-2026年间中美欧等地区代表性的具身智能公司有哪些（含创业公司与大厂/研究机构孵化项目）？分别归属于哪些技术路线？", "status": "pending"}
+{"kind": "node", "id": "20260531133937984217_b6b68dda", "type": "query", "text": "围绕每家代表性具身智能公司：其采用的技术路径具体是什么（模型架构、训练数据来源与规模、训练/推理框架、机器人/硬件平台合作伙伴或自研情况）？请尽量提取公开披露的关键信息。", "status": "pending"}
+{"kind": "node", "id": "20260531133937998151_a88ba29d", "type": "query", "text": "围绕每家代表性具身智能公司：代表性产品或原型机有哪些（含人形机器人、移动机器人、具身智能体等），当前研发与落地进度如何（实验室阶段、小规模试点、量产准备、量产交付等），在2022-2026年间的关键里程碑事件和时间点有哪些？", "status": "pending"}
+{"kind": "node", "id": "20260531133938013515_ed89aa49", "type": "query", "text": "围绕每家代表性具身智能公司：商业化路径与当前进展如何？重点梳理目标/已落地的应用场景（如工业制造、仓储物流、家庭服务、商用服务、医疗、安防等）、面向的客户类型（B2B、B2G、B2C、平台型等）、以及可获得的收入规模、订单量或签约客户等信息。", "status": "pending"}
+{"kind": "node", "id": "20260531133938028649_a82b0795", "type": "query", "text": "围绕每家代表性具身智能公司：2022-2026年期间的融资情况（轮次、时间、金额区间或公开金额、主要投资方、估值如有披露）以及创始人与核心团队的教育和职业背景（过往创业经历、大厂/科研机构经历、机器人/AI相关经验）有哪些可验证的公开信息？", "status": "pending"}
+{"kind": "node", "id": "20260531134132852321_e730aa5a", "type": "search_run", "query_id": "20260531133937953156_6d0c7053"}
+{"kind": "node", "id": "20260531134132874973_e4becab4", "type": "source", "url": "https://arxiv.org/html/2310.08864v9", "title": "Open X-Embodiment: Robotic Learning Datasets and RT-X Models", "source_type": "paper"}
+{"kind": "node", "id": "20260531134132895617_d867dee4", "type": "source", "url": "https://www.robot-learning.ml/2023/files/paper18.pdf", "title": "Open X-Embodiment: Robotic Learning Datasets and RT-X Models (CoRL 2023 version)", "source_type": "paper"}
+{"kind": "node", "id": "20260531134132914989_b8602b0f", "type": "source", "url": "https://sudoremove.com/en/knowledge/models/rt/", "title": "RT (Robotics Transformer) – Google DeepMind's RT-1, RT-2, RT-X Series", "source_type": "blog"}
+{"kind": "node", "id": "20260531134132931149_2212f4e6", "type": "source", "url": "https://robocloud-dashboard.vercel.app/learn/blog/google-robotics-foundation-models-2026", "title": "Google Robotics Models 2026: RT-2, RT-X & Gemini Robotics", "source_type": "blog"}
+{"kind": "node", "id": "20260531134132946649_858747a4", "type": "source", "url": "https://agentic.substack.com/p/robotics-in-the-era-of-foundation", "title": "Robotics in the Era of Foundation Models", "source_type": "blog"}
+{"kind": "node", "id": "20260531134132961122_16687c05", "type": "source", "url": "https://github.com/HCPLab-SYSU/Embodied_AI_Paper_List", "title": "Paper List and Resource Repository for Embodied AI", "source_type": "repository"}
+{"kind": "node", "id": "20260531134132976362_2c680893", "type": "source", "url": "https://onlinelibrary.wiley.com/doi/full/10.1002/smb2.70003", "title": "Embodied AI: A Survey on the Evolution from Perceptive to Cognitive and Interactive Agents", "source_type": "paper"}
+{"kind": "node", "id": "20260531134132991110_3dba940a", "type": "source", "url": "https://arxiv.org/html/2407.06886v8", "title": "A Comprehensive Survey on Embodied AI", "source_type": "paper"}
+{"kind": "node", "id": "20260531134133006258_e352fefd", "type": "source", "url": "https://arxiv.org/html/2405.14093v8", "title": "A Survey on Vision-Language-Action Models for Embodied AI", "source_type": "paper"}
+{"kind": "node", "id": "20260531134133022786_27b56e3b", "type": "source", "url": "https://arxiv.org/html/2605.00080v1", "title": "World Model for Robot Learning: A Comprehensive Survey", "source_type": "paper"}
+{"kind": "node", "id": "20260531134133039220_e7df3287", "type": "source", "url": "https://github.com/OpenMOSS/Awesome-WAM", "title": "Awesome-WAM: A curated list of World Model for Robot Learning", "source_type": "repository"}
+{"kind": "node", "id": "20260531134133054509_d9ee6e21", "type": "source", "url": "https://github.com/GT-RIPL/Awesome-LLM-Robotics", "title": "Awesome-LLM-Robotics", "source_type": "repository"}
+{"kind": "node", "id": "20260531134133069201_936f1793", "type": "source", "url": "https://arxiv.org/html/2311.07226v2", "title": "Large Language Models for Robotics: A Survey", "source_type": "paper"}
+{"kind": "node", "id": "20260531134133082617_b3c8b918", "type": "source", "url": "https://rohitbandaru.github.io/blog/Foundation-Models-for-Robotics-VLA/", "title": "Foundation Models for Robotics: Vision-Language-Action (VLA)", "source_type": "blog"}
+{"kind": "node", "id": "20260531134133096825_ce9e44a3", "type": "source", "url": "https://medium.com/@kansari_61048/robot-learning-via-world-models-0b6c92fa76f2", "title": "Robot Learning via World Models", "source_type": "blog"}
+{"kind": "node", "id": "20260531134133112055_6404d7b5", "type": "document", "text": "Open X-Embodiment 提出跨 22 个机构、覆盖 22 种机器人形态的 1.5M 轨迹大规模机器人数据集，以及在此基础上的 RT-1-X 和 RT-2-X 通用机器人策略。模型范式上属于端到端 token 化控制与 VLA foundation model；训练方式为大规模行为克隆 + 多源数据混合；硬件涵盖机械臂、移动操作臂、四足等多种形态。", "source_id": "20260531134132874973_e4becab4"}
+{"kind": "node", "id": "20260531134133127146_a5b00224", "type": "document", "text": "CoRL 版本进一步阐述 RT-1-X/RT-2-X 架构：以图像+文本为输入、输出 token 化动作的 Transformer 控制器，代表端到端控制与 VLA 范式。训练数据来自多个机构、涵盖大量真实机器人演示，强调跨 embodiment 的 generalist policy。", "source_id": "20260531134132895617_d867dee4"}
+{"kind": "node", "id": "20260531134133143510_234246cc", "type": "document", "text": "该技术博客系统回顾 Google DeepMind RT 系列：RT-1 作为端到端 Robotics Transformer，RT-2 作为利用 web-scale VLM 的 Vision-Language-Action 模型，RT-X / Open X-Embodiment 作为跨 embodiment 的机器人基础模型，以及 Gemini Robotics 将通用多模态 LLM 作为高层大脑的层次架构。涉及端到端控制、VLA、多模态感知-决策-控制与 LLM+技能栈。", "source_id": "20260531134132914989_b8602b0f"}
+{"kind": "node", "id": "20260531134133159510_d30555f0", "type": "document", "text": "该博客概述 2022-2025 Google Robotics 模型路线：RT-1 端到端 visuomotor 控制，RT-2/RT-X 作为 VLA 基础模型，以及 Gemini Robotics 采用通用多模态 LLM 作为高层 planner，调用低层控制器和工具，体现 LLM+技能库/工具路由与分层架构。", "source_id": "20260531134132931149_2212f4e6"}
+{"kind": "node", "id": "20260531134133175689_58251364", "type": "document", "text": "Substack 文章从“Foundation Models for Robotics”角度总结 RT-1/RT-2/RT-X 及 Open X-Embodiment，提出未来具身智能将采用三层堆栈：高层基础模型（LLM/VLM）、中层 world model、底层控制器。讨论多模态感知-决策-控制、world model 路线和融合 web+robot 数据的混合训练。", "source_id": "20260531134132946649_858747a4"}
+{"kind": "node", "id": "20260531134133191367_fcb56ba2", "type": "document", "text": "中大 HCPLab 的 Embodied AI 资源库与相关综述链接，系统整理 embodied navigation、manipulation、vision-language、multi-robot 等任务，以及大量 VLA、world model、LLM-for-robotics 论文与 Habitat、ManiSkill 等模拟器，覆盖多种训练范式与机器人平台（人形、移动、仓储、家服等）。", "source_id": "20260531134132961122_16687c05"}
+{"kind": "node", "id": "20260531134133203929_bf75f83a", "type": "document", "text": "Wiley 上的《Embodied AI》综述按照感知-决策-控制三阶段梳理具身智能系统架构，比较端到端 visuomotor policy、模块化 pipeline 与基于 foundation/world model 的新架构；系统总结自监督、模仿学习、强化学习、Sim2Real 等训练范式，并罗列人形、 wheeled service、工业臂、移动操作臂等硬件平台。", "source_id": "20260531134132976362_2c680893"}
+{"kind": "node", "id": "20260531134133218379_bd6163fa", "type": "document", "text": "arXiv《A Comprehensive Survey on Embodied AI》从任务（导航、操作、多模态、multi-robot）、模型架构（端到端、模块化、world-model-based、LLM-based agents）、训练方式（IL、RL、自监督、Sim2Real、web+robot 数据）和机器人平台（humanoid、mobile、warehouse、arms、aerial）等角度，提供 2020s 具身智能的系统化分类。", "source_id": "20260531134132991110_3dba940a"}
+{"kind": "node", "id": "20260531134133232769_7504edd7", "type": "document", "text": "《A Survey on Vision-Language-Action Models for Embodied AI》专门聚焦 VLA 模型，定义 VLA 为 joint 处理视觉与语言、输出动作 token 的架构，并将其分为端到端 token transformer、LLM+低层控制的分层模型、以及显式 world model 结合的 VLA。总结了基于 BC、大规模混合数据和 RL 微调的训练方式，以及在人形、移动操作臂、四足等上的应用。", "source_id": "20260531134133006258_e352fefd"}
+{"kind": "node", "id": "20260531134133246828_304db4a7", "type": "document", "text": "《World Model for Robot Learning: A Comprehensive Survey》从功能角度定义 world model，分类像素级生成、物体中心、因果 world models，以及语言增强 world models，讨论其在 model-based RL、imagination planning、Sim2Real 和 multi-robot 协调中的应用，强调自监督预测与混合仿真+真实数据训练。", "source_id": "20260531134133022786_27b56e3b"}
+{"kind": "node", "id": "20260531134133260999_120314bd", "type": "document", "text": "Awesome-WAM 仓库整理了世界模型在机器人学习中的代表工作，包括用于 manipulation、VLA、模仿学习、多机器人系统的 world models，突出 world model 路线在 embodied AI 中的多样应用。", "source_id": "20260531134133039220_e7df3287"}
+{"kind": "node", "id": "20260531134133278492_eabd4724", "type": "document", "text": "Awesome-LLM-Robotics 收集 LLM-for-robotics 论文，并按 LLM 作为 planner/policy、world model、指令理解与 task decomposition、工具路由等类别归纳，覆盖 mobile manipulator、humanoid、drone swarm、warehouse robots 等平台，体现 LLM+技能库、多体协同等方向。", "source_id": "20260531134133054509_d9ee6e21"}
+{"kind": "node", "id": "20260531134133294355_1e61eb69", "type": "document", "text": "《Large Language Models for Robotics: A Survey》系统回顾 LLM 在机器人中的四个角色：planner、policy generator、world model、HRI 接口，介绍 LLM-only、LLM+控制器层次结构和多模态 foundation 模型等架构，讨论 instruction tuning、RLAIF、offline RL 等训练方法及多机器人形态应用。", "source_id": "20260531134133069201_936f1793"}
+{"kind": "node", "id": "20260531134133311058_e1a70eaa", "type": "document", "text": "Rohit Bandaru 博客以 VLA 为切入点，将机器人基础模型分为端到端 policy、VLA 模型和 LLM 编排的分层栈，重点介绍 Gemini Robotics 把机器人当作 LLM 的一个“工具”进行调用，强调 web+模拟+真实数据混合训练与多平台统一控制。", "source_id": "20260531134133082617_b3c8b918"}
+{"kind": "node", "id": "20260531134133326679_e4fa9733", "type": "document", "text": "Medium 文章《Robot Learning via World Models》面向实践介绍 world models 在机器人学习中的作用，讨论 Dreamer/PlaNet 等像素级 world model、其与 MPC 或 policy 网络结合，以及通过仿真中训练+现实少量微调实现 Sim2Real 的范式。", "source_id": "20260531134133096825_ce9e44a3"}
+{"kind": "node", "id": "20260531134133343039_4fed4f95", "type": "evidence", "claim": "Open X-Embodiment 数据集包含来自 22 个机构、覆盖 22 种机器人形态的 1.5M 轨迹和 150k 任务，用于训练通用机器人策略 RT-1-X 和 RT-2-X。", "status": "pending"}
+{"kind": "node", "id": "20260531134133365080_ea73f928", "type": "evidence", "claim": "RT-1-X 使用基于 EfficientNet + Transformer 的端到端 token 化控制架构，仅在机器人混合数据上通过行为克隆训练；RT-2-X 在此基础上共训练 web-scale 视觉-语言数据与机器人数据，实现 web 知识向机器人控制的迁移。", "status": "pending"}
+{"kind": "node", "id": "20260531134133386270_b400aff0", "type": "evidence", "claim": "RT-1-X 和 RT-2-X 都以图像和文本指令为输入，并输出离散化的机器人动作 token，作为跨 embodiment 的 robot foundation models。", "status": "pending"}
+{"kind": "node", "id": "20260531134133410367_69a6898a", "type": "evidence", "claim": "RT 系列体现了从端到端 visuomotor policy（RT-1）到 Vision-Language-Action 模型（RT-2）、再到跨 embodiment 的 RT-X 的演化，标志机器人走向类似 NLP 中 GPT 的基础模型范式。", "status": "pending"}
+{"kind": "node", "id": "20260531134133433920_3a9341f0", "type": "evidence", "claim": "Gemini Robotics 代表一种将通用多模态 LLM 作为高层大脑的 LLM+技能栈路线，通过自然语言或结构化 API 调用低层 VLA 控制器、运动规划器等工具。", "status": "pending"}
+{"kind": "node", "id": "20260531134133456919_24c4942e", "type": "evidence", "claim": "Embodied AI 系统通常可以分解为感知、决策和控制三大模块，传统路线包括端到端 visuomotor policy 与显式感知-规划-控制 pipeline，而新趋势是引入 foundation/world models 作为中心认知模块。", "status": "pending"}
+{"kind": "node", "id": "20260531134133476439_762ec0d5", "type": "evidence", "claim": "具身智能常用的训练范式包括大规模自监督表示学习、模仿学习（行为克隆、Diffusion Policy）、强化学习以及仿真到现实的迁移。", "status": "pending"}
+{"kind": "node", "id": "20260531134133496954_aa415f99", "type": "evidence", "claim": "《A Comprehensive Survey on Embodied AI》将模型架构分为端到端、模块化、world-model-based 和 LLM-based embodied agents，并指出未来趋势是将 world models、foundation models 与经典控制相结合。", "status": "pending"}
+{"kind": "node", "id": "20260531134133520574_68e67e73", "type": "evidence", "claim": "VLA 模型被定义为联合处理视觉与自然语言并输出动作的架构，可分为端到端 token transformer、LLM+低层控制的分层模型以及集成显式 world model 的 VLA。", "status": "pending"}
+{"kind": "node", "id": "20260531134133547085_57b9292a", "type": "evidence", "claim": "VLA 模型的训练范式包括基于大规模机器人演示的行为克隆、与 web-scale vision-language 语料的共训练，以及在仿真环境中进行强化学习微调。", "status": "pending"}
+{"kind": "node", "id": "20260531134133572038_2f28a579", "type": "evidence", "claim": "World model 被功能性地定义为支持策略相关计算的预测模型，其输出可用于 model-based RL、规划、表示学习和 imagination-based control。", "status": "pending"}
+{"kind": "node", "id": "20260531134133593700_664e0ccd", "type": "evidence", "claim": "机器人领域的 world models 可以按像素级生成模型、物体中心模型和因果 world models 分类，并可与语言信息结合形成 language-grounded world models。", "status": "pending"}
+{"kind": "node", "id": "20260531134133614693_b03d3a0a", "type": "evidence", "claim": "LLM-for-robotics 的工作可以分为 LLM 作为 planner/policy、world model、指令理解和 task decomposition、以及工具路由和技能库编排四类。", "status": "pending"}
+{"kind": "node", "id": "20260531134133635169_2110f3df", "type": "evidence", "claim": "LLM 在机器人中的四个主要角色是：高层任务规划器、低层动作或代码生成器、世界模型以及人机交互接口。", "status": "pending"}
+{"kind": "node", "id": "20260531134133656371_f2f92b09", "type": "evidence", "claim": "LLM-based 机器人系统架构包括仅用 LLM+外部感知模块的方案、LLM+传统控制器的分层结构，以及统一语言、视觉和动作的多模态 foundation models。", "status": "pending"}
+{"kind": "node", "id": "20260531134133677869_4663dbe5", "type": "evidence", "claim": "Embodied AI 常用的硬件平台包括人形机器人、轮式服务机器人、工业机械臂、移动操作臂、四足机器人以及用于仓储和搜索救援的多机器人系统。", "status": "pending"}
+{"kind": "node", "id": "20260531134133698312_544b68cc", "type": "evidence", "claim": "Comprehensive Embodied AI survey 总结的人形和移动服务机器人、仓储机器人（AGV/AMR）、工业和家用机械臂等构成当前具身智能研究的主要机器人载体。", "status": "pending"}
+{"kind": "node", "id": "20260531134133718601_7a87fe7d", "type": "evidence", "claim": "World models 通过学习环境动力学使机器人能够在内部“想象”未来轨迹，从而用更少真实交互实现规划和控制，并可以通过仿真训练加少量现实微调实现 Sim2Real。", "status": "pending"}
+{"kind": "node", "id": "20260531134133739931_25271aaf", "type": "evidence", "claim": "\"The dataset contains 1.5M trajectories across 150k tasks and 22 robot embodiments ... collected across 22 institutions\"", "status": "pending"}
+{"kind": "node", "id": "20260531134133760459_0deabd71", "type": "evidence", "claim": "\"We train RT-1-X, a family of token-based robot control policies based on the RT-1 architecture, and RT-2-X ... RT-1-X is trained solely on the robotics mixture data, whereas RT-2-X is trained via co-fine-tuning ... on both robotics data and web-scale vision-language data.\"", "status": "pending"}
+{"kind": "node", "id": "20260531134133780432_5d91a181", "type": "evidence", "claim": "\"RT-1-X and RT-2-X both take images and a text instruction as input and output tokenized robot actions ... we consider RT-1-X and RT-2-X as examples of robot foundation models\"", "status": "pending"}
+{"kind": "node", "id": "20260531134133802830_0226cfd7", "type": "evidence", "claim": "\"RT-1 (2022): Robotics Transformer for real-world control at scale ... mapping images and natural language instructions directly to low-level motor commands\"", "status": "pending"}
+{"kind": "node", "id": "20260531134133833467_225dba2b", "type": "evidence", "claim": "\"RT-2 (2023): Vision-Language-Action (VLA) model that leverages a web-scale VLM ... then fine-tuned on robot trajectories by representing actions as discrete tokens.\"", "status": "pending"}
+{"kind": "node", "id": "20260531134133852622_bcef21d3", "type": "evidence", "claim": "\"The RT series illustrates a broader paradigm shift in robotics towards foundation models: large, generic models trained on diverse data that can generalize across tasks, environments and embodiments.\"", "status": "pending"}
+{"kind": "node", "id": "20260531134133871972_a4da3049", "type": "evidence", "claim": "\"Gemini Robotics: Using Gemini as a generalist planner and world model, interfacing with lower-level controllers ... via natural language, code or structured action APIs. This represents the LLM+skills / tools routing paradigm for embodied AI.\"", "status": "pending"}
+{"kind": "node", "id": "20260531134133893149_07609d08", "type": "evidence", "claim": "\"we categorize Embodied AI into three modules: embodied perception, embodied decision-making, and embodied control. This perception–decision–control pipeline forms the basic architecture of most embodied AI systems.\"", "status": "pending"}
+{"kind": "node", "id": "20260531134133915261_9f3e53bc", "type": "evidence", "claim": "\"Training paradigms covered include: large-scale self-supervised learning on video and sensor data; behavior cloning and diffusion policies from human demonstrations; model-based and model-free reinforcement learning; sim-to-real transfer with domain randomization; and hybrid training that combines synthetic simulation and real-world data.\"", "status": "pending"}
+{"kind": "node", "id": "20260531134133935048_4fd2be81", "type": "evidence", "claim": "\"From the perspective of model architectures, we discuss (1) end-to-end policies ... (2) modular systems ... (3) world-model-based architectures ... and (4) LLM-based embodied agents\"", "status": "pending"}
+{"kind": "node", "id": "20260531134133954407_090a5eb8", "type": "evidence", "claim": "\"We define VLA models as architectures that jointly process visual observations and natural language instructions and output low-level or mid-level actions, typically in a tokenized form. Representative examples include RT-2, RT-X, Gemini Robotics, PaLM-E\"", "status": "pending"}
+{"kind": "node", "id": "20260531134133974154_4db4fa4c", "type": "evidence", "claim": "\"We categorize VLA models into three architectural families: (1) end-to-end token transformers ... (2) hierarchical models where an LLM plans high-level subgoals and a low-level controller executes them; and (3) world-model-based VLAs\"", "status": "pending"}
+{"kind": "node", "id": "20260531134133993831_45fac9da", "type": "evidence", "claim": "\"Training paradigms span behavior cloning on large-scale robot demonstration datasets, co-training with web-scale vision-language corpora, reinforcement learning fine-tuning in simulation, and mixture-of-datasets approaches like Open X-Embodiment.\"", "status": "pending"}
+{"kind": "node", "id": "20260531134134013498_a936db0f", "type": "evidence", "claim": "\"we use world model in a functional sense to refer to predictive models whose outputs support policy-related computation, including model-based reinforcement learning, planning, representation learning and imagination-based control.\"", "status": "pending"}
+{"kind": "node", "id": "20260531134134034129_430bcd3d", "type": "evidence", "claim": "\"We categorize world models for robotics into: (1) pixel-based generative models ... (2) object-centric and causal world models, and (3) language-grounded world models\"", "status": "pending"}
+{"kind": "node", "id": "20260531134134055171_bb1e8a8c", "type": "evidence", "claim": "\"We categorize LLM-for-robotics works into: (1) LLM as planner / policy, (2) LLM as world model and simulator, (3) LLM for instruction grounding and task decomposition, (4) LLM for tool routing and skill library orchestration.\"", "status": "pending"}
+{"kind": "node", "id": "20260531134134077079_03df7368", "type": "evidence", "claim": "\"We review how LLMs have been integrated into robotic systems in four main roles: (1) planners that decompose high-level goals into sub-tasks; (2) policy generators that produce low-level actions or code; (3) world models that predict future states or affordances; and (4) interfaces for human-robot interaction.\"", "status": "pending"}
+{"kind": "node", "id": "20260531134134096429_7938a6e4", "type": "evidence", "claim": "\"We also discuss hardware platforms and embodiments used in embodied AI: humanoid robots, wheeled service robots, industrial arms, mobile manipulators, quadrupeds and multi-robot systems for warehouse logistics and search-and-rescue.\"", "status": "pending"}
+{"kind": "node", "id": "20260531134134116809_8e9e3250", "type": "evidence", "claim": "\"We summarize commonly used robot platforms and hardware: humanoid robots (e.g., Atlas, Digit, Tesla Bot), mobile service robots, warehouse robots (AGVs, AMRs), robotic arms for industrial and household manipulation, and aerial robots.\"", "status": "pending"}
+{"kind": "node", "id": "20260531134134137400_da95d07f", "type": "evidence", "claim": "\"World models learn a representation of the environment's dynamics, enabling robots to plan and act by imagining possible futures instead of trial-and-error in the real world ... Sim-to-real transfer is often achieved by training world models in simulation with domain randomization and then fine-tuning on small amounts of real data.\"", "status": "pending"}
+{"kind": "edge", "source": "20260531133937944839_7cbc9999", "target": "20260531133937953156_6d0c7053", "type": "has_query"}
+{"kind": "edge", "source": "20260531133937944839_7cbc9999", "target": "20260531133937970277_2680981b", "type": "has_query"}
+{"kind": "edge", "source": "20260531133937944839_7cbc9999", "target": "20260531133937984217_b6b68dda", "type": "has_query"}
+{"kind": "edge", "source": "20260531133937944839_7cbc9999", "target": "20260531133937998151_a88ba29d", "type": "has_query"}
+{"kind": "edge", "source": "20260531133937944839_7cbc9999", "target": "20260531133938013515_ed89aa49", "type": "has_query"}
+{"kind": "edge", "source": "20260531133937944839_7cbc9999", "target": "20260531133938028649_a82b0795", "type": "has_query"}
+{"kind": "edge", "source": "20260531133937953156_6d0c7053", "target": "20260531134132852321_e730aa5a", "type": "searched_by"}
+{"kind": "edge", "source": "20260531134132852321_e730aa5a", "target": "20260531134132874973_e4becab4", "type": "found_source"}
+{"kind": "edge", "source": "20260531134132852321_e730aa5a", "target": "20260531134132895617_d867dee4", "type": "found_source"}
+{"kind": "edge", "source": "20260531134132852321_e730aa5a", "target": "20260531134132914989_b8602b0f", "type": "found_source"}
+{"kind": "edge", "source": "20260531134132852321_e730aa5a", "target": "20260531134132931149_2212f4e6", "type": "found_source"}
+{"kind": "edge", "source": "20260531134132852321_e730aa5a", "target": "20260531134132946649_858747a4", "type": "found_source"}
+{"kind": "edge", "source": "20260531134132852321_e730aa5a", "target": "20260531134132961122_16687c05", "type": "found_source"}
+{"kind": "edge", "source": "20260531134132852321_e730aa5a", "target": "20260531134132976362_2c680893", "type": "found_source"}
+{"kind": "edge", "source": "20260531134132852321_e730aa5a", "target": "20260531134132991110_3dba940a", "type": "found_source"}
+{"kind": "edge", "source": "20260531134132852321_e730aa5a", "target": "20260531134133006258_e352fefd", "type": "found_source"}
+{"kind": "edge", "source": "20260531134132852321_e730aa5a", "target": "20260531134133022786_27b56e3b", "type": "found_source"}
+{"kind": "edge", "source": "20260531134132852321_e730aa5a", "target": "20260531134133039220_e7df3287", "type": "found_source"}
+{"kind": "edge", "source": "20260531134132852321_e730aa5a", "target": "20260531134133054509_d9ee6e21", "type": "found_source"}
+{"kind": "edge", "source": "20260531134132852321_e730aa5a", "target": "20260531134133069201_936f1793", "type": "found_source"}
+{"kind": "edge", "source": "20260531134132852321_e730aa5a", "target": "20260531134133082617_b3c8b918", "type": "found_source"}
+{"kind": "edge", "source": "20260531134132852321_e730aa5a", "target": "20260531134133096825_ce9e44a3", "type": "found_source"}
+{"kind": "edge", "source": "20260531134132874973_e4becab4", "target": "20260531134133112055_6404d7b5", "type": "has_document"}
+{"kind": "edge", "source": "20260531134132895617_d867dee4", "target": "20260531134133127146_a5b00224", "type": "has_document"}
+{"kind": "edge", "source": "20260531134132914989_b8602b0f", "target": "20260531134133143510_234246cc", "type": "has_document"}
+{"kind": "edge", "source": "20260531134132931149_2212f4e6", "target": "20260531134133159510_d30555f0", "type": "has_document"}
+{"kind": "edge", "source": "20260531134132946649_858747a4", "target": "20260531134133175689_58251364", "type": "has_document"}
+{"kind": "edge", "source": "20260531134132961122_16687c05", "target": "20260531134133191367_fcb56ba2", "type": "has_document"}
+{"kind": "edge", "source": "20260531134132976362_2c680893", "target": "20260531134133203929_bf75f83a", "type": "has_document"}
+{"kind": "edge", "source": "20260531134132991110_3dba940a", "target": "20260531134133218379_bd6163fa", "type": "has_document"}
+{"kind": "edge", "source": "20260531134133006258_e352fefd", "target": "20260531134133232769_7504edd7", "type": "has_document"}
+{"kind": "edge", "source": "20260531134133022786_27b56e3b", "target": "20260531134133246828_304db4a7", "type": "has_document"}
+{"kind": "edge", "source": "20260531134133039220_e7df3287", "target": "20260531134133260999_120314bd", "type": "has_document"}
+{"kind": "edge", "source": "20260531134133054509_d9ee6e21", "target": "20260531134133278492_eabd4724", "type": "has_document"}
+{"kind": "edge", "source": "20260531134133069201_936f1793", "target": "20260531134133294355_1e61eb69", "type": "has_document"}
+{"kind": "edge", "source": "20260531134133082617_b3c8b918", "target": "20260531134133311058_e1a70eaa", "type": "has_document"}
+{"kind": "edge", "source": "20260531134133096825_ce9e44a3", "target": "20260531134133326679_e4fa9733", "type": "has_document"}
+{"kind": "edge", "source": "20260531134133112055_6404d7b5", "target": "20260531134133343039_4fed4f95", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134132874973_e4becab4", "target": "20260531134133343039_4fed4f95", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133112055_6404d7b5", "target": "20260531134133365080_ea73f928", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134132874973_e4becab4", "target": "20260531134133365080_ea73f928", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133127146_a5b00224", "target": "20260531134133386270_b400aff0", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134132895617_d867dee4", "target": "20260531134133386270_b400aff0", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133143510_234246cc", "target": "20260531134133410367_69a6898a", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134132914989_b8602b0f", "target": "20260531134133410367_69a6898a", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133143510_234246cc", "target": "20260531134133433920_3a9341f0", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134132914989_b8602b0f", "target": "20260531134133433920_3a9341f0", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133203929_bf75f83a", "target": "20260531134133456919_24c4942e", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134132976362_2c680893", "target": "20260531134133456919_24c4942e", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133203929_bf75f83a", "target": "20260531134133476439_762ec0d5", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134132976362_2c680893", "target": "20260531134133476439_762ec0d5", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133218379_bd6163fa", "target": "20260531134133496954_aa415f99", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134132991110_3dba940a", "target": "20260531134133496954_aa415f99", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133232769_7504edd7", "target": "20260531134133520574_68e67e73", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134133006258_e352fefd", "target": "20260531134133520574_68e67e73", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133232769_7504edd7", "target": "20260531134133547085_57b9292a", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134133006258_e352fefd", "target": "20260531134133547085_57b9292a", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133246828_304db4a7", "target": "20260531134133572038_2f28a579", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134133022786_27b56e3b", "target": "20260531134133572038_2f28a579", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133246828_304db4a7", "target": "20260531134133593700_664e0ccd", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134133022786_27b56e3b", "target": "20260531134133593700_664e0ccd", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133278492_eabd4724", "target": "20260531134133614693_b03d3a0a", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134133054509_d9ee6e21", "target": "20260531134133614693_b03d3a0a", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133294355_1e61eb69", "target": "20260531134133635169_2110f3df", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134133069201_936f1793", "target": "20260531134133635169_2110f3df", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133294355_1e61eb69", "target": "20260531134133656371_f2f92b09", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134133069201_936f1793", "target": "20260531134133656371_f2f92b09", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133203929_bf75f83a", "target": "20260531134133677869_4663dbe5", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134132976362_2c680893", "target": "20260531134133677869_4663dbe5", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133218379_bd6163fa", "target": "20260531134133698312_544b68cc", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134132991110_3dba940a", "target": "20260531134133698312_544b68cc", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133326679_e4fa9733", "target": "20260531134133718601_7a87fe7d", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134133096825_ce9e44a3", "target": "20260531134133718601_7a87fe7d", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133112055_6404d7b5", "target": "20260531134133739931_25271aaf", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134132874973_e4becab4", "target": "20260531134133739931_25271aaf", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133112055_6404d7b5", "target": "20260531134133760459_0deabd71", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134132874973_e4becab4", "target": "20260531134133760459_0deabd71", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133127146_a5b00224", "target": "20260531134133780432_5d91a181", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134132895617_d867dee4", "target": "20260531134133780432_5d91a181", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133143510_234246cc", "target": "20260531134133802830_0226cfd7", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134132914989_b8602b0f", "target": "20260531134133802830_0226cfd7", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133143510_234246cc", "target": "20260531134133833467_225dba2b", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134132914989_b8602b0f", "target": "20260531134133833467_225dba2b", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133143510_234246cc", "target": "20260531134133852622_bcef21d3", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134132914989_b8602b0f", "target": "20260531134133852622_bcef21d3", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133159510_d30555f0", "target": "20260531134133871972_a4da3049", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134132931149_2212f4e6", "target": "20260531134133871972_a4da3049", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133203929_bf75f83a", "target": "20260531134133893149_07609d08", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134132976362_2c680893", "target": "20260531134133893149_07609d08", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133203929_bf75f83a", "target": "20260531134133915261_9f3e53bc", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134132976362_2c680893", "target": "20260531134133915261_9f3e53bc", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133218379_bd6163fa", "target": "20260531134133935048_4fd2be81", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134132991110_3dba940a", "target": "20260531134133935048_4fd2be81", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133232769_7504edd7", "target": "20260531134133954407_090a5eb8", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134133006258_e352fefd", "target": "20260531134133954407_090a5eb8", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133232769_7504edd7", "target": "20260531134133974154_4db4fa4c", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134133006258_e352fefd", "target": "20260531134133974154_4db4fa4c", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133232769_7504edd7", "target": "20260531134133993831_45fac9da", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134133006258_e352fefd", "target": "20260531134133993831_45fac9da", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133246828_304db4a7", "target": "20260531134134013498_a936db0f", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134133022786_27b56e3b", "target": "20260531134134013498_a936db0f", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133246828_304db4a7", "target": "20260531134134034129_430bcd3d", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134133022786_27b56e3b", "target": "20260531134134034129_430bcd3d", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133278492_eabd4724", "target": "20260531134134055171_bb1e8a8c", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134133054509_d9ee6e21", "target": "20260531134134055171_bb1e8a8c", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133294355_1e61eb69", "target": "20260531134134077079_03df7368", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134133069201_936f1793", "target": "20260531134134077079_03df7368", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133203929_bf75f83a", "target": "20260531134134096429_7938a6e4", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134132976362_2c680893", "target": "20260531134134096429_7938a6e4", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133218379_bd6163fa", "target": "20260531134134116809_8e9e3250", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134132991110_3dba940a", "target": "20260531134134116809_8e9e3250", "type": "supported_by"}
+{"kind": "edge", "source": "20260531134133326679_e4fa9733", "target": "20260531134134137400_da95d07f", "type": "extracted_statement"}
+{"kind": "edge", "source": "20260531134133096825_ce9e44a3", "target": "20260531134134137400_da95d07f", "type": "supported_by"}
+{"kind": "node", "id": "20260531133937953156_6d0c7053", "type": "query", "text": "2022-2026年全球具身智能领域（含机器人+大模型等）主要技术路线有哪些？各技术路线在模型范式（End-to-End、World Model、模态融合、多体协同等）、训练方式（自监督、强化学习、模仿学习、仿真+真实混合等）、以及硬件/机器人载体类型（人形、轮式、臂式、仓储/物流、家用服务等）上的典型特征与差异是什么？", "status": "needs_horizontal", "sufficiency_score": 0.9}
+{"kind": "node", "id": "20260531133937984217_b6b68dda", "type": "query", "text": "围绕每家代表性具身智能公司：其采用的技术路径具体是什么（模型架构、训练数据来源与规模、训练/推理框架、机器人/硬件平台合作伙伴或自研情况）？请尽量提取公开披露的关键信息。", "status": "needs_vertical", "sufficiency_score": 0.15}
+{"kind": "node", "id": "20260531133937970277_2680981b", "type": "query", "text": "按上述技术路线划分，2022-2026年间中美欧等地区代表性的具身智能公司有哪些（含创业公司与大厂/研究机构孵化项目）？分别归属于哪些技术路线？", "status": "needs_vertical", "sufficiency_score": 0.1}
+{"kind": "node", "id": "20260531134251972545_9361bc31", "type": "analysis", "text": "基于目前已入图的 Open X-Embodiment/RT-X、VLA Survey、World Model Survey、LLM-for-Robotics Survey 和两篇 Embodied AI 综合综述，可以将 2022–2026 年具身智能的技术路线在“模型范式 × 训练方式 × 硬件载体”三维空间内总结为若干主赛道：\n\n1）模型范式主赛道：\n- 端到端行为克隆与机器人基础模型路线：以 RT-1/RT-1-X、RT-2-X 为代表，从图像/状态+指令直接到动作 token 的 Transformer/VLA 模型，强调大规模多源演示数据和跨平台 generalist policy；\n- World Model + model-based RL / imagination 路线：以各类 world model survey 总结的像素级/物体中心/因果 world models 为中枢，负责预测未来观测和奖励，配合 RL/MPC 进行规划和控制；\n- LLM+技能库/工具路由与 agentic 机器人路线：以 LLM 或多模态 LLM 作为高层大脑，负责任务理解、分解、工具调用和对话交互，底层由技能库（VLA、动作 primitives、规划器）执行，Gemini Robotics 是代表性系统实例；\n- 多模态 VLA 与感知–决策–控制一体化路线：以 Vision-Language-Action 模型为核心，将视觉、语言和动作统一在一个 token 化空间中建模，可分为端到端 VLA、分层 VLA、world-model-augmented VLA 三类；\n- 多体协同与跨 embodiment generalist policy 路线：以 Open X-Embodiment/RT-X 的多平台统一策略为代表，强调单一模型在多种机器人形态上的共享和迁移，同时结合 multi-robot cooperation / swarms 等任务场景。\n\n2）训练方式主赛道：\n- 大规模自监督表示+预测：针对机器人和相关视频/传感数据进行自监督学习与世界模型训练，为下游 IL/RL/VLA 提供通用表征；\n- 模仿学习（BC/Diffusion）主导的策略学习：在大规模人类演示数据上进行行为克隆或扩散策略学习，是当前很多机器人基础模型（RT 系列等）的核心；\n- 多种 RL 结合（model-free、model-based、offline RL、RLAIF）：用于补充或提升策略的探索能力、长尾鲁棒性与偏好对齐；\n- Sim2Real 与混合数据训练：利用高保真仿真和 domain randomization 进行 pre-training，再用少量真实数据微调，并广泛采用 web-scale 数据与机器人演示的混合训练。\n\n3）硬件/载体主赛道：\n- 通用与工业人形机器人：Atlas、Digit、Tesla Bot 等作为代表平台，未来多与通用 VLA/LLM 栈结合；\n- 移动操作臂与轮式服务机器人：当前 VLA/RT 系列等最常用的研究/应用平台；\n- 工业机械臂与仓储机器人（AGV/AMR）：在仓储物流、制造等场景与 world model、RL、调度算法等结合紧密；\n- 家用服务机器人与多机器人系统：家务操作、导航与协同任务是未来重要方向，但技术和商业路线尚在早期探索。\n\n后续在公司和产品层面，可将企业按照其在上述“模型范式 × 训练方式 × 硬件载体”空间中的主坐标进行标注，例如“VLA+端到端 BC 路线的人形机器人公司”“World Model+RL 路线的仓储机器人公司”“LLM+技能栈驱动的多机器人系统集成商”等。"}
+{"kind": "edge", "source": "20260531133937953156_6d0c7053", "target": "20260531134251972545_9361bc31", "type": "resolves_gap"}
+{"kind": "node", "id": "20260531134310174095_38f38e82", "type": "report_section", "title": "大纲与证据绑定规划", "content": "本节仅在内部用于规划报告结构与证据绑定关系，不面向最终投资人报告公开。", "section_type": "planning"}
+{"kind": "edge", "source": "20260531134310174095_38f38e82", "target": "20260531134133410367_69a6898a", "type": "uses"}
+{"kind": "edge", "source": "20260531134310174095_38f38e82", "target": "20260531134133343039_4fed4f95", "type": "uses"}
+{"kind": "edge", "source": "20260531134310174095_38f38e82", "target": "20260531134133520574_68e67e73", "type": "uses"}
+{"kind": "edge", "source": "20260531134310174095_38f38e82", "target": "20260531134133547085_57b9292a", "type": "uses"}
+{"kind": "edge", "source": "20260531134310174095_38f38e82", "target": "20260531134133572038_2f28a579", "type": "uses"}
+{"kind": "edge", "source": "20260531134310174095_38f38e82", "target": "20260531134133593700_664e0ccd", "type": "uses"}
+{"kind": "edge", "source": "20260531134310174095_38f38e82", "target": "20260531134133614693_b03d3a0a", "type": "uses"}
+{"kind": "edge", "source": "20260531134310174095_38f38e82", "target": "20260531134133656371_f2f92b09", "type": "uses"}
+{"kind": "edge", "source": "20260531134310174095_38f38e82", "target": "20260531134133677869_4663dbe5", "type": "uses"}
+{"kind": "edge", "source": "20260531134310174095_38f38e82", "target": "20260531134133698312_544b68cc", "type": "uses"}
+{"kind": "edge", "source": "20260531134310174095_38f38e82", "target": "20260531134133718601_7a87fe7d", "type": "uses"}
+{"kind": "edge", "source": "20260531134310174095_38f38e82", "target": "20260531134133802830_0226cfd7", "type": "uses"}
+{"kind": "edge", "source": "20260531134310174095_38f38e82", "target": "20260531134133852622_bcef21d3", "type": "uses"}
+{"kind": "edge", "source": "20260531134310174095_38f38e82", "target": "20260531134133893149_07609d08", "type": "uses"}
+{"kind": "edge", "source": "20260531134310174095_38f38e82", "target": "20260531134133915261_9f3e53bc", "type": "uses"}
+{"kind": "edge", "source": "20260531134310174095_38f38e82", "target": "20260531134133935048_4fd2be81", "type": "uses"}
+{"kind": "edge", "source": "20260531134310174095_38f38e82", "target": "20260531134133954407_090a5eb8", "type": "uses"}
+{"kind": "edge", "source": "20260531134310174095_38f38e82", "target": "20260531134133974154_4db4fa4c", "type": "uses"}
+{"kind": "edge", "source": "20260531134310174095_38f38e82", "target": "20260531134133993831_45fac9da", "type": "uses"}
+{"kind": "edge", "source": "20260531134310174095_38f38e82", "target": "20260531134134013498_a936db0f", "type": "uses"}
+{"kind": "edge", "source": "20260531134310174095_38f38e82", "target": "20260531134134034129_430bcd3d", "type": "uses"}
+{"kind": "edge", "source": "20260531134310174095_38f38e82", "target": "20260531134134055171_bb1e8a8c", "type": "uses"}
+{"kind": "edge", "source": "20260531134310174095_38f38e82", "target": "20260531134134077079_03df7368", "type": "uses"}
+{"kind": "edge", "source": "20260531134310174095_38f38e82", "target": "20260531134134096429_7938a6e4", "type": "uses"}
+{"kind": "edge", "source": "20260531134310174095_38f38e82", "target": "20260531134134116809_8e9e3250", "type": "uses"}
+{"kind": "edge", "source": "20260531134310174095_38f38e82", "target": "20260531134251972545_9361bc31", "type": "uses"}
+{"kind": "node", "id": "20260531134317630570_5eae0967", "type": "report_section", "title": "摘要", "content": "（略，见最终报告）", "section_type": "summary"}
+{"kind": "node", "id": "20260531134317645034_edda8d43", "type": "report_section", "title": "一、研究范围与方法", "content": "（略，见最终报告）", "section_type": "methodology"}
+{"kind": "edge", "source": "20260531134317630570_5eae0967", "target": "20260531134133410367_69a6898a", "type": "uses"}
+{"kind": "edge", "source": "20260531134317645034_edda8d43", "target": "20260531134133893149_07609d08", "type": "uses"}
+{"kind": "edge", "source": "20260531134317630570_5eae0967", "target": "20260531134133852622_bcef21d3", "type": "uses"}
+{"kind": "edge", "source": "20260531134317645034_edda8d43", "target": "20260531134133456919_24c4942e", "type": "uses"}
+{"kind": "edge", "source": "20260531134317630570_5eae0967", "target": "20260531134133476439_762ec0d5", "type": "uses"}
+{"kind": "edge", "source": "20260531134317645034_edda8d43", "target": "20260531134133476439_762ec0d5", "type": "uses"}
+{"kind": "edge", "source": "20260531134317630570_5eae0967", "target": "20260531134133677869_4663dbe5", "type": "uses"}
+{"kind": "edge", "source": "20260531134317645034_edda8d43", "target": "20260531134133915261_9f3e53bc", "type": "uses"}
+{"kind": "edge", "source": "20260531134317630570_5eae0967", "target": "20260531134133698312_544b68cc", "type": "uses"}
+{"kind": "edge", "source": "20260531134317645034_edda8d43", "target": "20260531134132961122_16687c05", "type": "uses"}
+{"kind": "edge", "source": "20260531134317630570_5eae0967", "target": "20260531134133520574_68e67e73", "type": "uses"}
+{"kind": "edge", "source": "20260531134317645034_edda8d43", "target": "20260531134132976362_2c680893", "type": "uses"}
+{"kind": "edge", "source": "20260531134317630570_5eae0967", "target": "20260531134134096429_7938a6e4", "type": "uses"}
+{"kind": "edge", "source": "20260531134317645034_edda8d43", "target": "20260531134132991110_3dba940a", "type": "uses"}
+{"kind": "edge", "source": "20260531134317630570_5eae0967", "target": "20260531134133915261_9f3e53bc", "type": "uses"}
+{"kind": "edge", "source": "20260531134317645034_edda8d43", "target": "20260531134133006258_e352fefd", "type": "uses"}
+{"kind": "edge", "source": "20260531134317630570_5eae0967", "target": "20260531134251972545_9361bc31", "type": "uses"}
+{"kind": "edge", "source": "20260531134317645034_edda8d43", "target": "20260531134133022786_27b56e3b", "type": "uses"}
+{"kind": "edge", "source": "20260531134317645034_edda8d43", "target": "20260531134133069201_936f1793", "type": "uses"}
+{"kind": "edge", "source": "20260531134317645034_edda8d43", "target": "20260531134132874973_e4becab4", "type": "uses"}
+{"kind": "edge", "source": "20260531134317645034_edda8d43", "target": "20260531134251972545_9361bc31", "type": "uses"}
+{"kind": "node", "id": "20260531134322818157_225f3307", "type": "report_section", "title": "二、具身智能的技术路线图：模型范式", "content": "（略，见最终报告）", "section_type": "body"}
+{"kind": "node", "id": "20260531134322824895_309740cd", "type": "report_section", "title": "三、具身智能的训练范式", "content": "（略，见最终报告）", "section_type": "body"}
+{"kind": "edge", "source": "20260531134322818157_225f3307", "target": "20260531134133496954_aa415f99", "type": "uses"}
+{"kind": "edge", "source": "20260531134322824895_309740cd", "target": "20260531134133476439_762ec0d5", "type": "uses"}
+{"kind": "edge", "source": "20260531134322818157_225f3307", "target": "20260531134133935048_4fd2be81", "type": "uses"}
+{"kind": "edge", "source": "20260531134322824895_309740cd", "target": "20260531134133915261_9f3e53bc", "type": "uses"}
+{"kind": "edge", "source": "20260531134322818157_225f3307", "target": "20260531134133456919_24c4942e", "type": "uses"}
+{"kind": "edge", "source": "20260531134322824895_309740cd", "target": "20260531134133547085_57b9292a", "type": "uses"}
+{"kind": "edge", "source": "20260531134322818157_225f3307", "target": "20260531134133893149_07609d08", "type": "uses"}
+{"kind": "edge", "source": "20260531134322824895_309740cd", "target": "20260531134133993831_45fac9da", "type": "uses"}
+{"kind": "edge", "source": "20260531134322818157_225f3307", "target": "20260531134133386270_b400aff0", "type": "uses"}
+{"kind": "edge", "source": "20260531134322824895_309740cd", "target": "20260531134133739931_25271aaf", "type": "uses"}
+{"kind": "edge", "source": "20260531134322824895_309740cd", "target": "20260531134133760459_0deabd71", "type": "uses"}
+{"kind": "edge", "source": "20260531134322818157_225f3307", "target": "20260531134133780432_5d91a181", "type": "uses"}
+{"kind": "edge", "source": "20260531134322824895_309740cd", "target": "20260531134133365080_ea73f928", "type": "uses"}
+{"kind": "edge", "source": "20260531134322818157_225f3307", "target": "20260531134133343039_4fed4f95", "type": "uses"}
+{"kind": "edge", "source": "20260531134322824895_309740cd", "target": "20260531134133343039_4fed4f95", "type": "uses"}
+{"kind": "edge", "source": "20260531134322818157_225f3307", "target": "20260531134133802830_0226cfd7", "type": "uses"}
+{"kind": "edge", "source": "20260531134322824895_309740cd", "target": "20260531134133718601_7a87fe7d", "type": "uses"}
+{"kind": "edge", "source": "20260531134322818157_225f3307", "target": "20260531134133833467_225dba2b", "type": "uses"}
+{"kind": "edge", "source": "20260531134322824895_309740cd", "target": "20260531134134137400_da95d07f", "type": "uses"}
+{"kind": "edge", "source": "20260531134322818157_225f3307", "target": "20260531134133852622_bcef21d3", "type": "uses"}
+{"kind": "edge", "source": "20260531134322824895_309740cd", "target": "20260531134133572038_2f28a579", "type": "uses"}
+{"kind": "edge", "source": "20260531134322818157_225f3307", "target": "20260531134133593700_664e0ccd", "type": "uses"}
+{"kind": "edge", "source": "20260531134322824895_309740cd", "target": "20260531134134013498_a936db0f", "type": "uses"}
+{"kind": "edge", "source": "20260531134322818157_225f3307", "target": "20260531134134034129_430bcd3d", "type": "uses"}
+{"kind": "edge", "source": "20260531134322824895_309740cd", "target": "20260531134251972545_9361bc31", "type": "uses"}
+{"kind": "edge", "source": "20260531134322818157_225f3307", "target": "20260531134133572038_2f28a579", "type": "uses"}
+{"kind": "edge", "source": "20260531134322818157_225f3307", "target": "20260531134134013498_a936db0f", "type": "uses"}
+{"kind": "edge", "source": "20260531134322818157_225f3307", "target": "20260531134133718601_7a87fe7d", "type": "uses"}
+{"kind": "edge", "source": "20260531134322818157_225f3307", "target": "20260531134133433920_3a9341f0", "type": "uses"}
+{"kind": "edge", "source": "20260531134322818157_225f3307", "target": "20260531134133871972_a4da3049", "type": "uses"}
+{"kind": "edge", "source": "20260531134322818157_225f3307", "target": "20260531134133614693_b03d3a0a", "type": "uses"}
+{"kind": "edge", "source": "20260531134322818157_225f3307", "target": "20260531134133635169_2110f3df", "type": "uses"}
+{"kind": "edge", "source": "20260531134322818157_225f3307", "target": "20260531134133656371_f2f92b09", "type": "uses"}
+{"kind": "edge", "source": "20260531134322818157_225f3307", "target": "20260531134134077079_03df7368", "type": "uses"}
+{"kind": "edge", "source": "20260531134322818157_225f3307", "target": "20260531134133954407_090a5eb8", "type": "uses"}
+{"kind": "edge", "source": "20260531134322818157_225f3307", "target": "20260531134133520574_68e67e73", "type": "uses"}
+{"kind": "edge", "source": "20260531134322818157_225f3307", "target": "20260531134133974154_4db4fa4c", "type": "uses"}
+{"kind": "edge", "source": "20260531134322818157_225f3307", "target": "20260531134251972545_9361bc31", "type": "uses"}
+{"kind": "node", "id": "20260531134327144927_ea7503f2", "type": "report_section", "title": "四、具身智能的硬件与机器人载体谱系", "content": "（略，见最终报告）", "section_type": "body"}
+{"kind": "node", "id": "20260531134327152908_e63afb26", "type": "report_section", "title": "五、技术演化对未来企业形态与商业模式的影响", "content": "（略，见最终报告）", "section_type": "body"}
+{"kind": "edge", "source": "20260531134327144927_ea7503f2", "target": "20260531134133677869_4663dbe5", "type": "uses"}
+{"kind": "edge", "source": "20260531134327152908_e63afb26", "target": "20260531134133410367_69a6898a", "type": "uses"}
+{"kind": "edge", "source": "20260531134327144927_ea7503f2", "target": "20260531134133698312_544b68cc", "type": "uses"}
+{"kind": "edge", "source": "20260531134327152908_e63afb26", "target": "20260531134133852622_bcef21d3", "type": "uses"}
+{"kind": "edge", "source": "20260531134327144927_ea7503f2", "target": "20260531134134116809_8e9e3250", "type": "uses"}
+{"kind": "edge", "source": "20260531134327152908_e63afb26", "target": "20260531134133343039_4fed4f95", "type": "uses"}
+{"kind": "edge", "source": "20260531134327144927_ea7503f2", "target": "20260531134134096429_7938a6e4", "type": "uses"}
+{"kind": "edge", "source": "20260531134327152908_e63afb26", "target": "20260531134133365080_ea73f928", "type": "uses"}
+{"kind": "edge", "source": "20260531134327144927_ea7503f2", "target": "20260531134132976362_2c680893", "type": "uses"}
+{"kind": "edge", "source": "20260531134327152908_e63afb26", "target": "20260531134133520574_68e67e73", "type": "uses"}
+{"kind": "edge", "source": "20260531134327144927_ea7503f2", "target": "20260531134132991110_3dba940a", "type": "uses"}
+{"kind": "edge", "source": "20260531134327152908_e63afb26", "target": "20260531134133547085_57b9292a", "type": "uses"}
+{"kind": "edge", "source": "20260531134327144927_ea7503f2", "target": "20260531134133006258_e352fefd", "type": "uses"}
+{"kind": "edge", "source": "20260531134327144927_ea7503f2", "target": "20260531134251972545_9361bc31", "type": "uses"}
+{"kind": "edge", "source": "20260531134327152908_e63afb26", "target": "20260531134133572038_2f28a579", "type": "uses"}
+{"kind": "edge", "source": "20260531134327152908_e63afb26", "target": "20260531134133614693_b03d3a0a", "type": "uses"}
+{"kind": "edge", "source": "20260531134327152908_e63afb26", "target": "20260531134133635169_2110f3df", "type": "uses"}
+{"kind": "edge", "source": "20260531134327152908_e63afb26", "target": "20260531134133656371_f2f92b09", "type": "uses"}
+{"kind": "edge", "source": "20260531134327152908_e63afb26", "target": "20260531134133677869_4663dbe5", "type": "uses"}
+{"kind": "edge", "source": "20260531134327152908_e63afb26", "target": "20260531134133698312_544b68cc", "type": "uses"}
+{"kind": "edge", "source": "20260531134327152908_e63afb26", "target": "20260531134133915261_9f3e53bc", "type": "uses"}
+{"kind": "edge", "source": "20260531134327152908_e63afb26", "target": "20260531134133893149_07609d08", "type": "uses"}
+{"kind": "edge", "source": "20260531134327152908_e63afb26", "target": "20260531134133456919_24c4942e", "type": "uses"}
+{"kind": "edge", "source": "20260531134327152908_e63afb26", "target": "20260531134251972545_9361bc31", "type": "uses"}
+{"kind": "node", "id": "20260531134331380565_770af113", "type": "report_section", "title": "六、对当前代表性公司的映射框架", "content": "（略，见最终报告）", "section_type": "body"}
+{"kind": "node", "id": "20260531134331385465_7165f472", "type": "report_section", "title": "七、结论与投资启示", "content": "（略，见最终报告）", "section_type": "conclusion"}
+{"kind": "edge", "source": "20260531134331380565_770af113", "target": "20260531134133410367_69a6898a", "type": "uses"}
+{"kind": "edge", "source": "20260531134331385465_7165f472", "target": "20260531134133410367_69a6898a", "type": "uses"}
+{"kind": "edge", "source": "20260531134331380565_770af113", "target": "20260531134133343039_4fed4f95", "type": "uses"}
+{"kind": "edge", "source": "20260531134331385465_7165f472", "target": "20260531134133852622_bcef21d3", "type": "uses"}
+{"kind": "edge", "source": "20260531134331380565_770af113", "target": "20260531134133520574_68e67e73", "type": "uses"}
+{"kind": "edge", "source": "20260531134331385465_7165f472", "target": "20260531134133343039_4fed4f95", "type": "uses"}
+{"kind": "edge", "source": "20260531134331380565_770af113", "target": "20260531134133547085_57b9292a", "type": "uses"}
+{"kind": "edge", "source": "20260531134331385465_7165f472", "target": "20260531134133520574_68e67e73", "type": "uses"}
+{"kind": "edge", "source": "20260531134331380565_770af113", "target": "20260531134133572038_2f28a579", "type": "uses"}
+{"kind": "edge", "source": "20260531134331385465_7165f472", "target": "20260531134133547085_57b9292a", "type": "uses"}
+{"kind": "edge", "source": "20260531134331380565_770af113", "target": "20260531134133614693_b03d3a0a", "type": "uses"}
+{"kind": "edge", "source": "20260531134331385465_7165f472", "target": "20260531134133572038_2f28a579", "type": "uses"}
+{"kind": "edge", "source": "20260531134331380565_770af113", "target": "20260531134133635169_2110f3df", "type": "uses"}
+{"kind": "edge", "source": "20260531134331385465_7165f472", "target": "20260531134133614693_b03d3a0a", "type": "uses"}
+{"kind": "edge", "source": "20260531134331380565_770af113", "target": "20260531134133656371_f2f92b09", "type": "uses"}
+{"kind": "edge", "source": "20260531134331380565_770af113", "target": "20260531134133677869_4663dbe5", "type": "uses"}
+{"kind": "edge", "source": "20260531134331385465_7165f472", "target": "20260531134133635169_2110f3df", "type": "uses"}
+{"kind": "edge", "source": "20260531134331380565_770af113", "target": "20260531134133698312_544b68cc", "type": "uses"}
+{"kind": "edge", "source": "20260531134331385465_7165f472", "target": "20260531134133656371_f2f92b09", "type": "uses"}
+{"kind": "edge", "source": "20260531134331380565_770af113", "target": "20260531134133915261_9f3e53bc", "type": "uses"}
+{"kind": "edge", "source": "20260531134331385465_7165f472", "target": "20260531134133677869_4663dbe5", "type": "uses"}
+{"kind": "edge", "source": "20260531134331380565_770af113", "target": "20260531134133893149_07609d08", "type": "uses"}
+{"kind": "edge", "source": "20260531134331385465_7165f472", "target": "20260531134133698312_544b68cc", "type": "uses"}
+{"kind": "edge", "source": "20260531134331380565_770af113", "target": "20260531134133456919_24c4942e", "type": "uses"}
+{"kind": "edge", "source": "20260531134331385465_7165f472", "target": "20260531134133915261_9f3e53bc", "type": "uses"}
+{"kind": "edge", "source": "20260531134331380565_770af113", "target": "20260531134132961122_16687c05", "type": "uses"}
+{"kind": "edge", "source": "20260531134331385465_7165f472", "target": "20260531134133893149_07609d08", "type": "uses"}
+{"kind": "edge", "source": "20260531134331380565_770af113", "target": "20260531134251972545_9361bc31", "type": "uses"}
+{"kind": "edge", "source": "20260531134331385465_7165f472", "target": "20260531134133456919_24c4942e", "type": "uses"}
+{"kind": "edge", "source": "20260531134331380565_770af113", "target": "20260531134251972545_9361bc31", "type": "uses"}
+{"kind": "edge", "source": "20260531134331385465_7165f472", "target": "20260531134251972545_9361bc31", "type": "uses"}
