@@ -3,7 +3,7 @@
 
 Holds agent-level middleware (deepagents / LangChain `AgentMiddleware`). Today
 it caps how many times the Orchestrator may dispatch the Searcher in a single
-run via `SearchRoundLimitMiddleware`.
+run via `SearchRoundLimitMiddleware`. It also checks for graph-based convergence.
 """
 
 import json
@@ -34,15 +34,46 @@ def configure(max_search_rounds: int) -> None:
     _search_dispatch_count = 0
 
 
+def _check_graph_convergence() -> bool:
+    """Check if the research graph has converged based on query statuses.
+
+    Returns:
+        True if all queries are in a resolved state (sufficient or blocked),
+        False otherwise.
+    """
+    try:
+        from tools import graph_tools
+        
+        # Get queries from the current context only
+        queries = graph_tools.search_nodes("query", {})
+        if not queries:
+            return False
+        
+        resolved_statuses = {"sufficient", "blocked"}
+        all_resolved = all(
+            q.get("status") in resolved_statuses 
+            for q in queries 
+            if q.get("status") is not None
+        )
+        
+        if all_resolved:
+            logger.info("Graph has converged: all queries are sufficient or blocked")
+        
+        return all_resolved
+    except Exception as e:
+        logger.warning(f"Error checking graph convergence: {e}")
+        return False
+
+
 class SearchRoundLimitMiddleware(AgentMiddleware):
     """Caps the number of Searcher dispatches the Orchestrator may make.
 
     A "search round" is one `task(subagent_type="searcher")` call. Once the
-    configured budget is reached, further dispatches are blocked and the
-    Orchestrator is told to write the report from the evidence already
-    collected. The budget is read from the module-level configuration so the
-    Orchestrator graph can be built at import time and the limit injected per
-    run via `configure`.
+    configured budget is reached OR the graph has converged, further dispatches 
+    are blocked and the Orchestrator is told to write the report from the 
+    evidence already collected. The budget is read from the module-level 
+    configuration so the Orchestrator graph can be built at import time and 
+    the limit injected per run via `configure`.
     """
 
     def __init__(self, subagent_name: str = "searcher"):
@@ -54,7 +85,11 @@ class SearchRoundLimitMiddleware(AgentMiddleware):
         self.subagent_name = subagent_name
 
     def _intercept(self, tool_call: dict):
-        """Return a blocking ToolMessage if the search budget is exhausted, else None.
+        """Return a blocking ToolMessage if the search should be blocked, else None.
+
+        Search is blocked if:
+        1. The search budget is exhausted, OR
+        2. The graph has converged (all queries are sufficient or blocked)
 
         Args:
             tool_call: The tool call dict (``name``/``args``/``id``).
@@ -64,11 +99,26 @@ class SearchRoundLimitMiddleware(AgentMiddleware):
             allow it.
         """
         global _search_dispatch_count
-        if _MAX_SEARCH_ROUNDS <= 0:
-            return None
+        
+        # Only intercept searcher task calls
         if tool_call.get("name") != "task" or tool_call.get("args", {}).get("subagent_type") != self.subagent_name:
             return None
-        if _search_dispatch_count >= _MAX_SEARCH_ROUNDS:
+        
+        # Check for graph convergence first
+        if _check_graph_convergence():
+            logger.info("Graph has converged; blocking further searcher dispatches.")
+            return ToolMessage(
+                content=(
+                    "研究图谱已收敛：所有查询均已标记为充分(sufficient)或阻塞(blocked)状态。"
+                    "请停止派发 searcher，立即基于已收集的证据调用 reporter 生成最终报告。"
+                ),
+                tool_call_id=tool_call["id"],
+                name="task",
+                status="error",
+            )
+        
+        # Check search round limit
+        if _MAX_SEARCH_ROUNDS > 0 and _search_dispatch_count >= _MAX_SEARCH_ROUNDS:
             logger.info("Search budget exhausted (%d rounds); blocking searcher dispatch.", _MAX_SEARCH_ROUNDS)
             return ToolMessage(
                 content=(
@@ -79,11 +129,12 @@ class SearchRoundLimitMiddleware(AgentMiddleware):
                 name="task",
                 status="error",
             )
+        
         _search_dispatch_count += 1
         return None
 
     def wrap_tool_call(self, request, handler):
-        """Enforce the search-round budget before dispatching the Searcher."""
+        """Enforce the search-round budget and graph convergence before dispatching the Searcher."""
         blocked = self._intercept(request.tool_call)
         return blocked if blocked is not None else handler(request)
 
