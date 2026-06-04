@@ -14,11 +14,14 @@ Notes:
 """
 
 import json
+import logging
 from typing import Any, Optional
 
 import config
 import prompts.memory_manager_prompts as mm_prompts
 from tools import graph_tools
+
+logger = logging.getLogger(__name__)
 
 
 def _parse_json(text: str) -> dict:
@@ -486,6 +489,22 @@ class MemoryManager:
         Returns:
             The created report-section node ID.
         """
+        # Validate evidence IDs exist in the graph
+        valid_evidence_ids = []
+        for eid in evidence_ids or []:
+            if graph_tools.get_node(eid):
+                valid_evidence_ids.append(eid)
+            else:
+                logger.warning(f"Evidence ID {eid} not found in graph, skipping")
+        
+        # Validate claim IDs exist in the graph
+        valid_claim_ids = []
+        for cid in claim_ids or []:
+            if graph_tools.get_node(cid):
+                valid_claim_ids.append(cid)
+            else:
+                logger.warning(f"Claim ID {cid} not found in graph, skipping")
+        
         section_id = graph_tools.create_report_section(
             title=section.get("title", ""),
             content=section.get("content", ""),
@@ -493,9 +512,18 @@ class MemoryManager:
         )
         graph_tools.bind_evidence_to_section(
             section_id,
-            evidence_ids=evidence_ids or [],
-            claim_ids=claim_ids or [],
+            evidence_ids=valid_evidence_ids,
+            claim_ids=valid_claim_ids,
         )
+        
+        # Log binding statistics
+        if evidence_ids or claim_ids:
+            logger.info(
+                f"Bound report section {section_id}: "
+                f"{len(valid_evidence_ids)}/{len(evidence_ids or [])} evidence IDs, "
+                f"{len(valid_claim_ids)}/{len(claim_ids or [])} claim IDs validated"
+            )
+        
         return section_id
 
     # -----------------------------
