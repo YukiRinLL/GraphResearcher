@@ -96,19 +96,51 @@ def analyze_subgraph(query_id: str) -> dict:
 
 
 @tool
-def add_followup_query(parent_query_id: str, query_text: str, expansion_type: str, reason: str) -> str:
-    """Add a follow-up query as a child of an existing query.
+def analyze_coverage(parent_id: str) -> dict:
+    """Check whether the parallel sub-dimensions under a parent are complete.
+
+    Drives HORIZONTAL expansion, which is the exception (vertical is the
+    default). Call this only reactively to confirm a genuine missing parallel
+    dimension — not as a routine sweep, and not to re-slice already-covered
+    content by region/application/comparison. Reads only the parent and its
+    direct child queries — not their evidence.
 
     Args:
-        parent_query_id: The parent query node ID.
-        query_text: The new query text.
-        expansion_type: ``horizontal`` or ``vertical``.
-        reason: Why this follow-up is needed.
+        parent_id: The parent node ID (research goal or a query).
 
     Returns:
-        The new query node ID.
+        dict with ``covered_dimensions``, ``missing_dimensions``,
+        ``recommendation`` (``complete``/``needs_horizontal``) and ``reason``.
     """
-    return _mm().add_followup_query(parent_query_id, query_text, expansion_type, reason)
+    return _mm().analyze_coverage(parent_id)
+
+
+@tool
+def expand_query(anchor_query_id: str, direction: str, reason: str = "", gaps: Optional[list] = None) -> dict:
+    """Author and attach self-contained follow-up query node(s); return them.
+
+    The Query Planner writes the query text — you only choose the anchor,
+    direction, reason, and the gaps/missing dimensions to cover. You never write
+    query text yourself.
+
+    Args:
+        anchor_query_id: The query to expand from.
+        direction: ``vertical`` (deepen the anchor — a child under it) or
+            ``horizontal`` (add missing parallel dimension(s) under the anchor's
+            parent; works at goal level too).
+        reason: Why this expansion is needed.
+        gaps: Gaps (vertical, from ``analyze_subgraph``) or missing dimensions
+            (horizontal, from ``analyze_coverage``) to cover.
+
+    Returns:
+        dict with ``attach_point``, ``edge_type``, ``direction`` and ``created``
+        (each ``{id, text}``).
+    """
+    if direction == "horizontal":
+        max_new = min(max(len(gaps or []), 1), 3)
+    else:
+        max_new = 1
+    return _mm().expand_query(anchor_query_id, direction, reason=reason, gaps=gaps, max_new=max_new)
 
 
 @tool
@@ -244,7 +276,8 @@ ORCHESTRATOR_TOOLS: list[Any] = [
     init_research,
     get_next_queries,
     analyze_subgraph,
-    add_followup_query,
+    analyze_coverage,
+    expand_query,
     mark_query,
     create_analysis,
     get_subgraph,

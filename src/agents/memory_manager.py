@@ -18,6 +18,7 @@ from typing import Any, Optional
 
 import config
 import prompts.memory_manager_prompts as mm_prompts
+from memory.graph import EdgeType, NodeType
 from tools import graph_tools
 
 
@@ -53,6 +54,11 @@ def _parse_json(text: str) -> dict:
 # research loop but that must never leak into the Reporter's writing context —
 # otherwise the model narrates graph state (e.g. "this query is blocked").
 _INTERNAL_NODE_FIELDS = ("kind", "status", "sufficiency_score")
+
+# Cross-reference tokens that break a query's self-containment: a follow-up
+# query containing any of these depends on another query's output and is not
+# independently searchable. Authored follow-ups containing them are dropped.
+_CROSS_REF_TOKENS = ("上述", "前述", "该区域", "这些公司", "上文", "前文")
 
 
 def _strip_internal_fields(node: dict) -> dict:
@@ -129,8 +135,7 @@ class MemoryManager:
             dict with ``goal_id``, ``research_goal``, ``language`` and the list
             of created ``queries`` (each ``{id, text}``).
         """
-        prompt = mm_prompts.init_research.replace("{user_request}", user_request)
-        parsed = self._invoke_json(prompt)
+        parsed = self._plan_initial_queries(user_request)
 
         goal_id = graph_tools.create_user_request(
             request=user_request,
@@ -189,31 +194,137 @@ class MemoryManager:
         ).replace("{subgraph}", json.dumps(subgraph, ensure_ascii=False))
         return self._invoke_json(prompt)
 
-    def add_followup_query(
-        self, parent_query_id: str, query_text: str, expansion_type: str, reason: str
-    ) -> str:
-        """Create a follow-up query as a child of an existing query.
+    def analyze_coverage(self, parent_id: str) -> dict:
+        """Judge whether the parallel sub-dimensions under a parent are complete.
+
+        Reads the parent's text and the text+status of its IMMEDIATE child
+        queries only (not their evidence or grandchildren), then asks the LLM
+        whether any parallel dimension under the parent is still missing — the
+        signal that drives horizontal expansion. Deliberately uses
+        ``get_query_children`` (one level) rather than the undirected, deep
+        ``get_query_subgraph`` so the prompt stays scoped to breadth.
 
         Args:
-            parent_query_id: The parent query node ID.
-            query_text: The new query text.
-            expansion_type: ``horizontal`` or ``vertical``.
-            reason: Why this follow-up is needed (stored on the node).
+            parent_id: The parent node ID (the research-goal ``user_request`` or
+                an intermediate ``query``).
 
         Returns:
-            The new query node ID.
+            dict with ``covered_dimensions``, ``missing_dimensions``,
+            ``recommendation`` (``complete``/``needs_horizontal``) and ``reason``.
         """
-        query_id = graph_tools.add_node(
-            "query",
-            {
-                "text": query_text,
-                "status": "pending",
-                "expansion_type": expansion_type,
-                "reason": reason,
-            },
+        parent = graph_tools.get_node(parent_id)
+        parent_text = (
+            parent.get("text")
+            or parent.get("research_goal")
+            or parent.get("request")
+            or parent_id
         )
-        graph_tools.add_edge(parent_query_id, query_id, "parent_of")
-        return query_id
+        children = []
+        for child_id in graph_tools.get_query_children(parent_id):
+            child = graph_tools.get_node(child_id)
+            if child:
+                children.append({"text": child.get("text"), "status": child.get("status")})
+        prompt = mm_prompts.analyze_coverage.replace("{parent}", parent_text).replace(
+            "{children}", json.dumps(children, ensure_ascii=False)
+        )
+        return self._invoke_json(prompt)
+
+    def expand_query(
+        self,
+        anchor_query_id: str,
+        direction: str,
+        reason: str = "",
+        gaps: Any = None,
+        max_new: int = 1,
+    ) -> dict:
+        """Author and attach self-contained follow-up query node(s).
+
+        The Query Planner authors the text; the Orchestrator only chooses the
+        anchor, direction, reason and gaps — it never writes query text.
+
+        ``direction``:
+          - ``vertical``: attach the new query UNDER ``anchor_query_id`` (deepen it).
+          - ``horizontal``: attach under the anchor's PARENT (a parallel sibling).
+            Works at goal level too — a sibling added under the ``user_request``
+            goal gets a ``HAS_QUERY`` edge, like an initial query.
+
+        Args:
+            anchor_query_id: Query to expand from (truncated/label IDs tolerated).
+            direction: ``vertical`` or ``horizontal``.
+            reason: Why this expansion is needed (stored on each new node).
+            gaps: Gaps (vertical) or missing dimensions (horizontal) to cover.
+            max_new: Maximum number of queries to author.
+
+        Returns:
+            dict with ``attach_point``, ``edge_type``, ``direction``, ``created``
+            (each ``{id, text}``) and an optional ``warning``.
+        """
+        warning = None
+        anchor_id = self._resolve_query_id(anchor_query_id) or anchor_query_id
+
+        if direction == "horizontal":
+            attach_point = graph_tools.get_query_parent(anchor_id)
+            if not attach_point:
+                attach_point = anchor_id
+                warning = f"anchor {anchor_id!r} 无父节点，横向兄弟改挂在 anchor 自身下。"
+        else:
+            attach_point = anchor_id
+
+        # Edge type follows the attach point: a goal (user_request) uses
+        # HAS_QUERY, a query uses PARENT_OF — matching the existing hierarchy.
+        attach_node = graph_tools.get_node(attach_point)
+        edge_type = (
+            EdgeType.HAS_QUERY
+            if attach_node.get("type") == NodeType.USER_REQUEST.value
+            else EdgeType.PARENT_OF
+        )
+        parent_text = (
+            attach_node.get("text")
+            or attach_node.get("research_goal")
+            or attach_node.get("request")
+            or ""
+        )
+
+        research_goal = ""
+        requests = graph_tools.search_nodes("user_request", {})
+        if requests:
+            research_goal = requests[0].get("research_goal") or requests[0].get("request") or ""
+
+        sibling_texts = []
+        for sibling_id in graph_tools.get_query_children(attach_point):
+            sibling = graph_tools.get_node(sibling_id)
+            if sibling and sibling.get("text"):
+                sibling_texts.append(sibling["text"])
+
+        texts = self._plan_followup_queries(
+            direction=direction,
+            research_goal=research_goal,
+            parent_text=parent_text,
+            sibling_texts=sibling_texts,
+            gaps=gaps if gaps is not None else [],
+            reason=reason,
+            max_new=max_new,
+        )
+
+        created = []
+        for text in texts:
+            new_id = graph_tools.add_node(
+                "query",
+                {"text": text, "status": "pending", "expansion_type": direction, "reason": reason},
+            )
+            graph_tools.add_edge(attach_point, new_id, edge_type)
+            created.append({"id": new_id, "text": text})
+
+        graph_tools.save_graph()
+        result = {
+            "attach_point": attach_point,
+            "edge_type": edge_type.value,
+            "direction": direction,
+            "created": created,
+        }
+        if warning:
+            result["warning"] = warning
+        return result
 
     def mark_query(self, query_id: str, status: str, **metrics: Any) -> dict:
         """Update a query's status and optional metrics.
@@ -432,6 +543,11 @@ class MemoryManager:
             if node_type in grouped:
                 grouped[node_type].append(node)
 
+        # Local import avoids any import cycle (report_tools never imports this
+        # module). The registry pre-numbers sources so the Reporter cites stable
+        # [n] that finalize_report can rebuild deterministically.
+        from tools import report_tools
+
         return {
             "goal": goal,
             "subgraph": subgraph,
@@ -441,6 +557,7 @@ class MemoryManager:
             "analysis": grouped["analysis"],
             "sources": grouped["source"],
             "report_sections": grouped["report_section"],
+            "reference_registry": report_tools.build_reference_registry(),
         }
 
     def bind_report_section(
@@ -471,6 +588,72 @@ class MemoryManager:
     # -----------------------------
     # Internal LLM helpers
     # -----------------------------
+    def _plan_initial_queries(self, user_request: str) -> dict:
+        """Author the initial query set from the user request via the planner.
+
+        Args:
+            user_request: The original research request.
+
+        Returns:
+            dict with ``research_goal``, ``language`` and ``initial_queries``
+            (a list of self-contained search-phrase strings).
+        """
+        prompt = mm_prompts.init_research.replace("{user_request}", user_request)
+        return self._invoke_json(prompt)
+
+    def _plan_followup_queries(
+        self,
+        direction: str,
+        research_goal: str,
+        parent_text: str,
+        sibling_texts: list,
+        gaps: Any,
+        reason: str,
+        max_new: int = 1,
+    ) -> list:
+        """Author self-contained follow-up query strings via the planner.
+
+        Drops any authored query that references another query (a
+        self-containment violation) and retries once before giving up.
+
+        Args:
+            direction: ``vertical`` (deepen the parent) or ``horizontal`` (add
+                parallel sibling dimensions).
+            research_goal: The overall research goal, for context.
+            parent_text: The parent query/goal text whose subject is inlined.
+            sibling_texts: Existing sibling query texts (for dedup).
+            gaps: Gaps (vertical) or missing dimensions (horizontal) to cover.
+            reason: Why this expansion is needed.
+            max_new: Maximum number of queries to author.
+
+        Returns:
+            A list of self-contained query strings (cross-referencing ones dropped).
+        """
+        gaps_text = gaps if isinstance(gaps, str) else json.dumps(gaps or [], ensure_ascii=False)
+
+        def author(extra: str = "") -> list:
+            prompt = (
+                mm_prompts.plan_followup_query
+                .replace("{direction}", direction)
+                .replace("{research_goal}", research_goal or "")
+                .replace("{parent_text}", parent_text or "")
+                .replace("{sibling_texts}", json.dumps(sibling_texts or [], ensure_ascii=False))
+                .replace("{gaps}", gaps_text)
+                .replace("{reason}", reason or "")
+                .replace("{max_new}", str(max_new))
+            )
+            parsed = self._invoke_json(prompt + extra)
+            return [q for q in (parsed.get("queries") or []) if q]
+
+        def self_contained(query: str) -> bool:
+            return not any(token in query for token in _CROSS_REF_TOKENS)
+
+        queries = [q for q in author() if self_contained(q)]
+        if not queries:
+            retry = "\n\n注意：每条 query 必须自包含，把具体对象写进查询本身，禁止出现对其他 query 的指代。"
+            queries = [q for q in author(retry) if self_contained(q)]
+        return queries[:max_new]
+
     def extract_content(self, content: str) -> dict:
         """Extract keywords, statements and a summary from document text.
 

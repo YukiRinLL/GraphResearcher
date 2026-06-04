@@ -249,6 +249,18 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
             # the Reporter's draft and revises it). The graph holds evidence and
             # section→evidence bindings only, not the report itself.
             report_text = final_text or "(no report produced)"
+            # Deterministically rebuild citations/references from the graph's
+            # Source nodes (dedup, drop fabricated refs) and create the
+            # ReportSection→Source bindings the Reporter may have skipped. Runs
+            # before write_text + export so report.md and the JSONL both reflect
+            # it; on any failure the raw report is written unchanged.
+            try:
+                from tools import report_tools
+
+                report_text = report_tools.finalize_report(report_text)
+            except Exception:
+                console.print("[yellow]Report finalize failed (captured in run.log); writing raw report.[/]")
+                console.print(traceback.format_exc(), markup=False, highlight=False)
             report_path.write_text(report_text, encoding="utf-8")
 
             # Export the run's graph from neo4j to JSONL for graph_viewer.html.
@@ -275,8 +287,9 @@ def main() -> None:
         "-r",
         "--max-rounds",
         type=int,
-        default=6,
-        help="Maximum number of Searcher dispatches (search rounds); 0 means no limit. Default: 6.",
+        default=12,
+        help="Maximum number of Searcher dispatches (search rounds); 0 means no limit. "
+        "Default: 12 — fewer coarse initial queries leave budget for vertical/horizontal expansion.",
     )
     parser.add_argument(
         "-o",

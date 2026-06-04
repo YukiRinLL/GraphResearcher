@@ -1,0 +1,96 @@
+[
+  {
+    "n": {
+      "identity": 258,
+      "labels": [
+        "Query"
+      ],
+      "properties": {
+        "sufficiency_score": 0.6,
+        "context": "outputs/rag_run7",
+        "id": "20260603161849407123_7c994770",
+        "text": "2022-2026 年北美在具身智能（Embodied AI、机器人智能体）领域的主要技术路线有哪些？各路线的核心技术路径（模型范式、训练/控制架构、软硬件协同方式）是什么？对应的代表性公司/机构分别是谁？",
+        "status": "needs_vertical"
+      },
+      "elementId": "4:a4fc97da-2dd5-42c6-9b6e-0242dfed689f:258"
+    }
+  },
+  {
+    "n": {
+      "identity": 259,
+      "labels": [
+        "Query"
+      ],
+      "properties": {
+        "sufficiency_score": 0.72,
+        "context": "outputs/rag_run7",
+        "id": "20260603161849482828_b265b3a6",
+        "text": "2022-2026 年中国在具身智能（Embodied AI、机器人智能体）领域的主要技术路线有哪些？各路线的核心技术路径（模型范式、训练/控制架构、软硬件协同方式）是什么？对应的代表性公司/机构分别是谁？",
+        "status": "needs_vertical"
+      },
+      "elementId": "4:a4fc97da-2dd5-42c6-9b6e-0242dfed689f:259"
+    }
+  },
+  {
+    "n": {
+      "identity": 260,
+      "labels": [
+        "Query"
+      ],
+      "properties": {
+        "sufficiency_score": 0.0,
+        "context": "outputs/rag_run7",
+        "id": "20260603161849491600_8ca6643d",
+        "text": "2022-2026 年欧洲在具身智能（Embodied AI、机器人智能体）领域的主要技术路线有哪些？各路线的核心技术路径（模型范式、训练/控制架构、软硬件协同方式）是什么？对应的代表性公司/机构分别是谁？",
+        "status": "blocked"
+      },
+      "elementId": "4:a4fc97da-2dd5-42c6-9b6e-0242dfed689f:260"
+    }
+  },
+  {
+    "n": {
+      "identity": 261,
+      "labels": [
+        "Query"
+      ],
+      "properties": {
+        "sufficiency_score": 0.35,
+        "context": "outputs/rag_run7",
+        "id": "20260603161849501072_c6ae34ce",
+        "text": "针对上述区域中具有代表性的具身智能公司/机构，分别梳理其产品形态（如人形机器人、物流机器人、家用服务机器人等）、研发与量产进度（原型、试点、小批量量产、大规模量产），以及已经公开的典型应用场景与商业化落地进展。",
+        "status": "needs_vertical"
+      },
+      "elementId": "4:a4fc97da-2dd5-42c6-9b6e-0242dfed689f:261"
+    }
+  },
+  {
+    "n": {
+      "identity": 262,
+      "labels": [
+        "Query"
+      ],
+      "properties": {
+        "context": "outputs/rag_run7",
+        "id": "20260603161849509416_806926c4",
+        "text": "针对上述代表性具身智能公司/机构，搜集 2022-2026 年期间公开可查的融资信息（轮次、金额区间或具体金额、主要投资方），并整理其核心团队背景，特别是技术负责人或创始团队的教育与工作履历。",
+        "status": "pending"
+      },
+      "elementId": "4:a4fc97da-2dd5-42c6-9b6e-0242dfed689f:262"
+    }
+  },
+  {
+    "n": {
+      "identity": 263,
+      "labels": [
+        "Query"
+      ],
+      "properties": {
+        "context": "outputs/rag_run7",
+        "id": "20260603161849519032_6ce1208f",
+        "text": "从跨路线与跨区域的视角，对比不同具身智能技术路线在模型范式（如端到端大模型控制、模块化感知-规划-控制、模仿学习与强化学习等）、软硬件协同思路以及商业化路径上的异同，并总结主要趋势和潜在机会。",
+        "status": "pending"
+      },
+      "elementId": "4:a4fc97da-2dd5-42c6-9b6e-0242dfed689f:263"
+    }
+  }
+]

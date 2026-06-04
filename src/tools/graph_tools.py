@@ -265,6 +265,56 @@ def get_query_subgraph(query_id: str, depth: int = 2) -> dict[str, Any]:
     return _run_async(manager.get_subgraph(query_id, depth))
 
 
+# The query hierarchy uses two edge types: HAS_QUERY (user_request -> initial
+# query) and PARENT_OF (query -> follow-up query). Traversal must accept both;
+# compared lower-cased so a stored "parent_of"/"PARENT_OF" both match.
+_PARENT_EDGE_TYPES = {"has_query", "parent_of"}
+
+
+def get_query_parent(query_id: str) -> Optional[str]:
+    """Return the structural parent node ID of a query, or ``None``.
+
+    Reached via an inbound ``HAS_QUERY`` edge (from the ``user_request`` goal,
+    for initial queries) or an inbound ``PARENT_OF`` edge (from another query,
+    for follow-ups). Uses an explicit ``"in"`` direction because
+    ``get_node_edges`` ``"both"`` mode only matches incoming edges.
+
+    Args:
+        query_id: The query node ID.
+
+    Returns:
+        The parent node ID, or ``None`` if the query has no structural parent.
+    """
+    manager = _get_manager()
+    edges = _run_async(manager.get_node_edges(query_id, direction="in"))
+    for edge in edges:
+        if str(edge.get("type", "")).lower() in _PARENT_EDGE_TYPES:
+            return edge.get("source")
+    return None
+
+
+def get_query_children(query_id: str) -> list[str]:
+    """Return the child query node IDs of a goal or query.
+
+    Follows outbound ``HAS_QUERY`` / ``PARENT_OF`` edges, so it works for both
+    a ``user_request`` goal (its initial queries) and a ``query`` (its
+    follow-ups).
+
+    Args:
+        query_id: The parent node ID (a ``user_request`` or ``query``).
+
+    Returns:
+        A list of child query node IDs (empty if none).
+    """
+    manager = _get_manager()
+    edges = _run_async(manager.get_node_edges(query_id, direction="out"))
+    return [
+        edge.get("target")
+        for edge in edges
+        if str(edge.get("type", "")).lower() in _PARENT_EDGE_TYPES
+    ]
+
+
 def mark_query_status(query_id: str, status: str) -> dict[str, Any]:
     manager = _get_manager()
     return _run_async(manager.upsert_node(NodeType.QUERY, {"status": status}, dedupe_key=query_id))

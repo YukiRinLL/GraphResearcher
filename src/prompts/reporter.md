@@ -12,7 +12,7 @@
 
 # 工作流
 ## Stage 1：读取图谱上下文
-1. 调用 `export_report_context` 获取研究目标、query 树、claim-evidence 映射、冲突列表与 analysis 笔记。
+1. 调用 `export_report_context` 获取研究目标、query 树、claim-evidence 映射、冲突列表、analysis 笔记，以及 `reference_registry`（已编号去重的可引用来源表 `[{n, title, url}]`）。
 2. 必要时调用 `get_subgraph` / `get_node` 读取某个 query 或 evidence 的细节，确认证据可用且可引用。
 3. 梳理可用证据的覆盖范围，识别证据薄弱或存在冲突的部分。
 
@@ -28,8 +28,8 @@
 
 ## Stage 4：汇总与引用
 1. 汇总所有章节为完整报告。
-2. 正文仅使用编号引用 `[1]`、`[2]`……（可并列如 `[1][3]`）；编号必须唯一且与参考文献一致。
-3. 报告末尾必须包含 `## References`（英文报告）或 `## 参考文献`（中文报告），按编号列出对应 source 的标题与 URL。
+2. 正文引用**只能使用 `reference_registry` 中的编号 `[n]`**（可并列如 `[1][3]`），每个 `n` 对应一个真实 source 节点；**不得自造编号**，不得引用 registry 之外的来源。
+3. 报告末尾给出 `## 参考文献`（中文）或 `## References`（英文），逐条列出你引用到的 source 的标题与 URL；**每条都必须有真实 URL**，**严禁写“同上”“见 [x]”、无 URL 的条目，或把图示/章节/某文档的子节当作独立来源**。
 4. 禁止把长标题链接（如 `[标题](URL)`）写回正文。
 
 # 质量约束
