@@ -194,10 +194,25 @@ def create_document(
     return doc_id
 
 
+def create_claim(
+    statement: str,
+    document_id: Optional[str] = None,
+    source_id: Optional[str] = None
+) -> dict[str, Any]:
+    manager = _get_manager()
+    claim_id = _run_async(manager.add_node(NodeType.CLAIM, {"statement": statement, "status": "pending"}))
+    if document_id:
+        _run_async(manager.add_edge(document_id, claim_id, EdgeType.CLAIMED_BY))
+    if source_id:
+        _run_async(manager.add_edge(source_id, claim_id, EdgeType.SUPPORTED_BY))
+    return claim_id
+
+
 def create_evidence(
     claim: str,
     document_id: Optional[str] = None,
-    source_id: Optional[str] = None
+    source_id: Optional[str] = None,
+    supports_claim_id: Optional[str] = None
 ) -> dict[str, Any]:
     manager = _get_manager()
     evidence_id = _run_async(manager.add_node(NodeType.EVIDENCE, {"claim": claim, "status": "pending"}))
@@ -205,15 +220,23 @@ def create_evidence(
         _run_async(manager.add_edge(document_id, evidence_id, EdgeType.EXTRACTED_STATEMENT))
     if source_id:
         _run_async(manager.add_edge(source_id, evidence_id, EdgeType.SUPPORTED_BY))
+    if supports_claim_id:
+        _run_async(manager.add_edge(evidence_id, supports_claim_id, EdgeType.SUPPORTED_BY))
     return evidence_id
 
 
 def create_conflict(
     description: str,
-    evidence_ids: list[str]
+    evidence_ids: list[str],
+    conflict_type: str = "factual",
+    resolution_status: str = "unresolved"
 ) -> dict[str, Any]:
     manager = _get_manager()
-    conflict_id = _run_async(manager.add_node(NodeType.CONFLICT, {"description": description}))
+    conflict_id = _run_async(manager.add_node(NodeType.CONFLICT, {
+        "description": description,
+        "conflict_type": conflict_type,
+        "resolution_status": resolution_status
+    }))
     for evidence_id in evidence_ids:
         _run_async(manager.add_edge(conflict_id, evidence_id, EdgeType.HAS_CONFLICT))
     return conflict_id
