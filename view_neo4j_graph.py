@@ -1,13 +1,18 @@
 """
 Simple script to query and display the graph structure from Neo4j
 """
+import os
 import asyncio
+from dotenv import load_dotenv
 from neo4j import AsyncGraphDatabase
 
-# Neo4j connection config
-URI = "bolt://localhost:7687"
-USERNAME = "neo4j"
-PASSWORD = "LUOCANYU"
+# Load environment variables
+load_dotenv()
+
+# Neo4j connection config from environment variables
+URI = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
+USERNAME = os.environ.get("NEO4J_USERNAME", "neo4j")
+PASSWORD = os.environ.get("NEO4J_PASSWORD")
 
 async def view_graph():
     driver = AsyncGraphDatabase.driver(URI, auth=(USERNAME, PASSWORD))

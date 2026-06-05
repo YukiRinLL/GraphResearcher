@@ -1,5 +1,8 @@
 import os
-os.environ["SERPER_API_KEY"] = "a2c5c546ad962e1d0ab7d03435da4b3f806a6c30"
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 from langchain_community.utilities import GoogleSerperAPIWrapper
 
