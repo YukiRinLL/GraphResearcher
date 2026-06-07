@@ -453,29 +453,59 @@ class MemoryManager:
             if document.get("local_ref"):
                 ref_map[document["local_ref"]] = doc_id
 
-        # Claims and evidence both become evidence nodes carrying the assertion.
-        for item in (evidence_package.get("claims", []) or []) + (evidence_package.get("evidence", []) or []):
-            claim_text = _first(item, "statement", "evidence_text", "text_zh", "text")
+        # Process claims first - these are the higher-level assertions
+        for claim_item in evidence_package.get("claims", []) or []:
+            claim_text = _first(claim_item, "statement", "text_zh", "text")
             if not claim_text:
                 continue
-            doc_ref = _first(item, "document_ref", "document")
-            sources_ref = item.get("sources") or item.get("document_refs")
+            doc_ref = _first(claim_item, "document_ref", "document")
+            claim_id = graph_tools.create_claim(
+                statement=claim_text,
+                document_id=resolve(doc_ref),
+                source_id=resolve(_first(claim_item, "source_ref", "source")),
+            )
+            if claim_item.get("local_ref"):
+                ref_map[claim_item["local_ref"]] = claim_id
+
+        # Process evidence - these support or contradict claims
+        for evidence_item in evidence_package.get("evidence", []) or []:
+            evidence_text = _first(evidence_item, "statement", "evidence_text", "text_zh", "text")
+            if not evidence_text:
+                continue
+            doc_ref = _first(evidence_item, "document_ref", "document")
+            sources_ref = evidence_item.get("sources") or evidence_item.get("document_refs")
             if not doc_ref and isinstance(sources_ref, list) and sources_ref:
                 doc_ref = sources_ref[0]
+            
+            # Check if this evidence supports a specific claim
+            supports_ref = _first(evidence_item, "supports_or_contradicts", "supports_claim")
+            supports_claim_id = resolve(supports_ref) if supports_ref else None
+            
             evidence_id = graph_tools.create_evidence(
-                claim=claim_text,
+                claim=evidence_text,
                 document_id=resolve(doc_ref),
-                source_id=resolve(_first(item, "source_ref", "source")),
+                source_id=resolve(_first(evidence_item, "source_ref", "source")),
+                supports_claim_id=supports_claim_id,
             )
-            if item.get("local_ref"):
-                ref_map[item["local_ref"]] = evidence_id
+            if evidence_item.get("local_ref"):
+                ref_map[evidence_item["local_ref"]] = evidence_id
 
         for conflict in evidence_package.get("conflicts", []) or []:
             refs = conflict.get("evidence_refs") or conflict.get("related_claims") or []
             evidence_ids = [resolve(r) for r in refs if resolve(r)]
+            
+            # Extract conflict type if provided
+            conflict_type = conflict.get("conflict_type", conflict.get("type", "factual"))
+            # Validate and normalize conflict type
+            valid_types = ["factual", "temporal", "methodological", "opinion"]
+            if conflict_type not in valid_types:
+                conflict_type = "factual"
+            
             graph_tools.create_conflict(
                 description=_first(conflict, "description", "description_zh") or "",
                 evidence_ids=evidence_ids,
+                conflict_type=conflict_type,
+                resolution_status="unresolved"
             )
 
         graph_tools.save_graph()
