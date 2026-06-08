@@ -6,9 +6,11 @@ not by the model's interpretation of a prompt:
 
     init → web_search (LLM agent) → analyze (LLM extraction) → submit (function)
 
-The Orchestrator dispatches it via ``task(subagent_type="searcher")``; the
-``CompiledSubAgent`` protocol is satisfied because the state schema includes
-a ``messages`` key reduced with ``add_messages``.
+The Orchestrator dispatches it via the structured ``dispatch_searcher`` tool,
+which injects ``query_id``/``query_text`` directly into the state (so the query
+node ID never round-trips through free text) and invokes this compiled graph.
+The state schema keeps a ``messages`` key reduced with ``add_messages`` so the
+caller can read the final report message.
 """
 
 import json
@@ -57,11 +59,18 @@ _EMPTY_PACKAGE: dict = {"sources": [], "documents": [], "claims": [], "evidence"
 
 
 def init_node(state: SearcherState) -> dict:
-    """Parse ``query_id`` and ``query_text`` from the Orchestrator's task message.
+    """Resolve ``query_id`` and ``query_text`` for the run.
 
-    The Orchestrator includes the query ID in its ``task(description=…)``, e.g.:
-    ``围绕 query_id=20260531172839168193_6431079a 的问题检索：系统梳理…``.
+    The Orchestrator dispatches via ``dispatch_searcher(query_id, instructions)``,
+    which injects both fields into the state directly — use them as-is so the
+    query node ID never round-trips through free text. Only when they are absent
+    (e.g. a raw-text dispatch) fall back to parsing them from the last message.
     """
+    qid = state.get("query_id")
+    qtext = state.get("query_text")
+    if qid and qid != "unknown" and qtext:
+        return {"query_id": qid, "query_text": qtext}
+
     last = state["messages"][-1]
     content: str = last.content if hasattr(last, "content") else str(last)
 

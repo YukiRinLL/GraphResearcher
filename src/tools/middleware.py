@@ -56,21 +56,21 @@ def _observe_convergence() -> dict:
 class SearchRoundLimitMiddleware(AgentMiddleware):
     """Caps the number of Searcher dispatches the Orchestrator may make.
 
-    A "search round" is one `task(subagent_type="searcher")` call. Once the
-    configured budget is reached OR the graph has converged, further dispatches 
-    are blocked and the Orchestrator is told to write the report from the 
-    evidence already collected. The budget is read from the module-level 
-    configuration so the Orchestrator graph can be built at import time and 
+    A "search round" is one `dispatch_searcher(...)` call. Once the
+    configured budget is reached OR the graph has converged, further dispatches
+    are blocked and the Orchestrator is told to write the report from the
+    evidence already collected. The budget is read from the module-level
+    configuration so the Orchestrator graph can be built at import time and
     the limit injected per run via `configure`.
     """
 
-    def __init__(self, subagent_name: str = "searcher"):
+    def __init__(self, tool_name: str = "dispatch_searcher"):
         """Initialize the middleware.
 
         Args:
-            subagent_name: The subagent whose dispatches count as search rounds.
+            tool_name: The Orchestrator tool whose calls count as search rounds.
         """
-        self.subagent_name = subagent_name
+        self.tool_name = tool_name
 
     def _intercept(self, tool_call: dict):
         """Return a blocking ToolMessage if the search should be blocked, else None.
@@ -90,8 +90,8 @@ class SearchRoundLimitMiddleware(AgentMiddleware):
         """
         global _search_dispatch_count
 
-        # Only intercept searcher task calls
-        if tool_call.get("name") != "task" or tool_call.get("args", {}).get("subagent_type") != self.subagent_name:
+        # Only intercept Searcher dispatches.
+        if tool_call.get("name") != self.tool_name:
             return None
 
         # One round boundary: advance novelty and read the deterministic signals.
@@ -115,7 +115,7 @@ class SearchRoundLimitMiddleware(AgentMiddleware):
                     "recommendation=continue 且预算允许时，对其点名的冲突/缺口调用 expand_query 纵向补齐后再行裁决。"
                 ),
                 tool_call_id=tool_call["id"],
-                name="task",
+                name=self.tool_name,
                 status="error",
             )
 
@@ -128,7 +128,7 @@ class SearchRoundLimitMiddleware(AgentMiddleware):
                     "请停止派发 searcher，立即基于已收集的证据调用 reporter 生成最终报告。"
                 ),
                 tool_call_id=tool_call["id"],
-                name="task",
+                name=self.tool_name,
                 status="error",
             )
         
