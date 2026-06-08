@@ -32,47 +32,27 @@
    - 出现阶段性结论、分析框架、取舍或冲突处理方案时，调用 `create_analysis(text, query_id)` 写入 Analysis 节点，供 Reporter 复用。
 
 ## Stage 3：图谱绑定的报告生成与验收
-1. 调用 `export_report_context(goal_id)` 导出报告上下文（query 树、claim-evidence 映射、冲突、analysis 笔记、已有 sources）。
-2. 调用 `task(subagent_type="reporter", ...)` 委派 Reporter 基于图谱写作：逐章绑定对应 query/claim/evidence，并为每个 `report_section` 建立 `USES` 边。Reporter 仅依据图谱、不得编造。
-3. **验收（只校验、不重写）**：核对事实-证据一致性、章节逻辑、冲突是否如实披露。发现问题时做**最小必要修正**（删口语化措辞、补必要过渡），**禁止整篇重写**，禁止丢失 Reporter 报告中的引用关系。正文 `[n]` 与文末参考文献会在交付后由系统确定性归一，你不必手工核对、重排或重写编号。
-4. **交付**：最终交付物必须是**完整报告正文本身**，含 `##` 章节标题、正文编号引用 `[1]`、文末 `## 参考文献`/`## References`。直接给出报告，**不得加对话式前言**（如“下面是…必须先说明…”），**不得以提议/反问收尾**（如“如果你愿意，我可以…/需要我继续吗/是否要我深挖”）。图谱中的 `report_section` 节点是报告的事实源，你的终端输出须与之一致。
+1. 调用 `assess_convergence(goal_id)` 取全局收敛裁决；`continue` 且预算允许时回 Stage 2 补齐其点名的缺口/冲突，`stop` 时继续本阶段。
+2. 调用 `export_report_context(goal_id)` 导出报告上下文（query 树、claim-evidence 映射、冲突、analysis 笔记、已有 sources）。
+3. 调用 `task(subagent_type="reporter", ...)` 委派 Reporter 基于图谱写作：逐章绑定对应 query/claim/evidence，并为每个 `report_section` 建立 `USES` 边。Reporter 仅依据图谱、不得编造。
+4. **验收（只校验、不重写）**：核对事实-证据一致性、章节逻辑、冲突是否如实披露。发现问题时做**最小必要修正**（删口语化措辞、补必要过渡），**禁止整篇重写**，禁止丢失 Reporter 报告中的引用关系。正文 `[n]` 与文末参考文献会在交付后由系统确定性归一，你不必手工核对、重排或重写编号。
+5. **交付**：最终交付物必须是**完整报告正文本身**，含 `##` 章节标题、正文编号引用 `[1]`、文末 `## 参考文献`/`## References`。直接给出报告，**不得加对话式前言**（如“下面是…必须先说明…”），**不得以提议/反问收尾**（如“如果你愿意，我可以…/需要我继续吗/是否要我深挖”）。图谱中的 `report_section` 节点是报告的事实源，你的终端输出须与之一致。
 
 # 停止条件与收敛判断
 满足任一即进入 Stage 3：
 1. 搜索预算用尽（达到最大搜索轮次；届时系统会阻止继续派发 Searcher）。
-2. 图谱状态收敛：所有高优先级 query 均已 `mark_query` 为 `sufficient` 或 `blocked` 且无致命未解冲突；低优先级 query 的剩余缺口不影响核心结论；新一轮检索 novelty 很低、继续收益不足（如实记录并在报告中披露）。
-注意：收敛判断依赖 Stage 2 步骤4写入的状态/分数——若你跳过评分标记，图谱收敛条件将永远无法成立，只能靠预算用尽兜底，属于错误执行。
+2. `assess_convergence(goal_id)` 返回 `recommendation=stop`。
+注意：裁决依赖 Stage 2 步骤4写入的 status/score——跳过评分标记会使高优先级 query 停留在未决状态，只能靠预算用尽兜底，属于错误执行。
 
-## 收敛判据详细说明
-在判断是否收敛时，需综合评估以下维度：
+## 收敛裁决
+query 的优先级（high/low）由 Query Planner 在创建时按「核心主题 / 边缘补充」给出、并结合其树位置加权得出；你只负责推进与评分，不手填优先级。每当在办 query 都已完成 `analyze_subgraph`+`mark_query`、或准备进入报告前，调用 `assess_convergence(goal_id)` 取裁决。它据下列条件给出 `recommendation`（`stop`/`continue`）、致命未解冲突与动摇核心结论的关键缺口：
+- 所有**高优先级** query 已 `sufficient` 且分数达阈值（或确无可靠证据而 `blocked`），且无致命未解冲突；
+- **低优先级** query 的剩余缺口不动摇核心结论；
+- 新一轮检索新颖度很低、继续收益不足。
 
-### 1. Query 充分性评分
-- 每个 query 的 sufficiency_score >= 0.7 可视为充分
-- 所有高优先级 query 必须达到 sufficient 或 blocked 状态
-- 低优先级 query 可接受较低分数，但需评估其对核心结论的影响
-
-### 2. 冲突解决状态
-- 检查图谱中所有 Conflict 节点的 resolution_status
-- 致命冲突（如核心数据矛盾）必须解决或在报告中明确披露
-- 非致命冲突（如统计口径差异）需标注类型并解释
-
-### 3. 证据新颖度评估
-- 对比本轮新增证据与历史证据的重复率
-- 若连续两轮新增证据的新颖度低于 20%，视为收益递减
-- 新颖度 = (本轮新增独特证据数) / (本轮新增证据总数)
-
-### 4. 知识缺口分析
-- 检查是否存在无法填补的关键知识缺口
-- 评估缺口对最终报告结论的影响程度
-- 若缺口不影响核心结论，可标记为 acceptable_gap
-
-### 5. 来源多样性检查
-- 确保核心结论有多个独立来源交叉验证
-- 单一来源的关键结论需谨慎处理，标记为待验证
-
-### 6. 时间窗口验证
-- 检查所有证据的时间戳是否在用户指定的时间窗口内
-- 过期数据需标注并评估其适用性
+处置：
+- `stop`：进入 Stage 3 生成报告；其列出的未解冲突与已知缺口（含 `blocked` 的高优先级项）在报告中如实披露。
+- `continue` 且预算允许：回 Stage 2，对其点名的缺口/冲突调用 `expand_query` 纵向派生新 query 去补（不要对同一 query 空转重派），再行裁决。
 
 # 流程约束
 - Stage 2 单轮顺序固定为「选 query → 派 Searcher → 核验入图 → 评分+标记 → 扩展/记录」；**严禁在上一轮 query 未完成 `analyze_subgraph`+`mark_query` 前发起新一轮 `task(searcher)`**。
@@ -87,6 +67,7 @@
 - `analyze_subgraph(query_id)`：每个被检索过的 query 必调，取充分性评分（只读、不落库）。
 - `mark_query(query_id, status, sufficiency_score)`：紧跟 `analyze_subgraph`，把状态/分数写回图谱。
 - `analyze_coverage(parent_id)`：**仅在某 query 已被 `analyze_subgraph` 标为 `needs_horizontal` 时反应式调用**（不要例行扫描，尤其不要对 goal 反复扫描）；复核父节点是否真缺并列维度，返回 missing_dimensions 与建议（只读）。
+- `assess_convergence(goal_id)`：取收敛裁决——据「高优先级 query 是否达标、是否有致命未解冲突、低优先级缺口是否动摇核心结论、新颖度是否走低」给出 `recommendation`（`stop`/`continue`）及致命冲突、关键缺口（只读）。Stage 3 前及每次准备收尾时调用。
 - `expand_query(anchor_query_id, direction, reason, gaps)`：横向/纵向扩展。由内部 Query Planner 撰写自包含 query 文本并入图；`vertical` 挂在 anchor 下，`horizontal` 挂在 anchor 的父节点下。**你只给方向与缺口，不写 query 文本。**
 - `create_analysis(text, query_id)`：沉淀阶段性结论/框架/冲突处理。
 - `get_subgraph(node_id, depth)` / `get_node(node_id)`：按需读图核验细节。

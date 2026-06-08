@@ -101,6 +101,24 @@ def _first(d: dict, *keys: str) -> Optional[Any]:
     return None
 
 
+def _query_text_importance(item: Any) -> tuple:
+    """Return ``(text, importance)`` from a planner-authored query item.
+
+    Accepts the structured ``{"text", "importance"}`` form or a bare string
+    (lenient parsing). A missing importance is left as ``None`` so the priority
+    model applies its own default.
+
+    Args:
+        item: One element of a planner's query list.
+
+    Returns:
+        A ``(text, importance)`` tuple.
+    """
+    if isinstance(item, dict):
+        return item.get("text"), item.get("importance")
+    return item, None
+
+
 class MemoryManager:
     """LLM-powered manager of the Research Graph."""
 
@@ -146,14 +164,23 @@ class MemoryManager:
             language=parsed.get("language"),
         )
 
+        from tools import convergence
+
         queries = []
-        for text in parsed.get("initial_queries", []) or []:
+        for item in parsed.get("initial_queries", []) or []:
+            text, importance = _query_text_importance(item)
             if not text:
                 continue
+            score, tier, sem = convergence.compute_priority(importance, goal_id)
             query_id = graph_tools.create_query(
-                text=text, status="pending", parent_id=goal_id
+                text=text,
+                status="pending",
+                parent_id=goal_id,
+                priority=score,
+                priority_tier=tier,
+                sem=sem,
             )
-            queries.append({"id": query_id, "text": text})
+            queries.append({"id": query_id, "text": text, "priority_tier": tier})
 
         return {
             "goal_id": goal_id,
@@ -172,12 +199,20 @@ class MemoryManager:
             limit: Maximum number of queries to return.
 
         Returns:
-            A list of ``{id, text, status}`` dicts.
+            A list of ``{id, text, status, priority_tier, priority}`` dicts,
+            highest priority first.
         """
         results: list[dict] = []
         for status in ("pending", "needs_horizontal", "needs_vertical"):
             for node in graph_tools.search_nodes("query", {"status": status}):
-                results.append({"id": node.get("id"), "text": node.get("text"), "status": status})
+                results.append({
+                    "id": node.get("id"),
+                    "text": node.get("text"),
+                    "status": status,
+                    "priority_tier": node.get("priority_tier"),
+                    "priority": node.get("priority"),
+                })
+        results.sort(key=lambda q: q.get("priority") or 0.0, reverse=True)
         return results[:limit]
 
     def analyze_subgraph(self, query_id: str) -> dict:
@@ -299,7 +334,7 @@ class MemoryManager:
             if sibling and sibling.get("text"):
                 sibling_texts.append(sibling["text"])
 
-        texts = self._plan_followup_queries(
+        followups = self._plan_followup_queries(
             direction=direction,
             research_goal=research_goal,
             parent_text=parent_text,
@@ -309,11 +344,23 @@ class MemoryManager:
             max_new=max_new,
         )
 
+        from tools import convergence
+
         created = []
-        for text in texts:
+        for followup in followups:
+            text = followup["text"]
+            score, tier, sem = convergence.compute_priority(followup.get("importance"), attach_point)
             new_id = graph_tools.add_node(
                 "query",
-                {"text": text, "status": "pending", "expansion_type": direction, "reason": reason},
+                {
+                    "text": text,
+                    "status": "pending",
+                    "expansion_type": direction,
+                    "reason": reason,
+                    "priority": score,
+                    "priority_tier": tier,
+                    "sem": sem,
+                },
             )
             graph_tools.add_edge(attach_point, new_id, edge_type)
             created.append({"id": new_id, "text": text})
@@ -343,6 +390,91 @@ class MemoryManager:
         return graph_tools.upsert_node(
             "query", {"status": status, **metrics}, dedupe_key=query_id
         )
+
+    def assess_convergence(self, goal_id: Optional[str] = None) -> dict:
+        """Decide whether the research can stop, blending code and a thin LLM call.
+
+        The deterministic parts — high-priority coverage at the score threshold
+        and novelty diminishing returns — come from ``tools.convergence``. The
+        LLM supplies only the two judgments it is suited for: which unresolved
+        conflicts are fatal, and which open gaps would undermine the core
+        conclusions. The ``recommendation`` is then composed in code.
+
+        Args:
+            goal_id: The research-goal node ID; accepted for signature parity
+                with the rest of the Orchestrator toolkit and not required.
+
+        Returns:
+            dict with ``converged``, ``fatal_unresolved_conflicts``,
+            ``core_threatening_gaps``, ``recommendation``, ``reason`` and a
+            ``metrics_summary``.
+        """
+        from tools import convergence
+
+        all_queries = graph_tools.search_nodes("query", {})
+        core_queries = [
+            {
+                "text": q.get("text"),
+                "status": q.get("status"),
+                "sufficiency_score": q.get("sufficiency_score"),
+            }
+            for q in all_queries
+            if q.get("priority_tier") == "high"
+        ]
+        open_queries = [
+            {
+                "text": q.get("text"),
+                "status": q.get("status"),
+                "priority_tier": q.get("priority_tier"),
+            }
+            for q in all_queries
+            if q.get("status") not in ("sufficient", "blocked")
+        ]
+        conflicts = [
+            {
+                "description": c.get("description"),
+                "conflict_type": c.get("conflict_type"),
+            }
+            for c in graph_tools.search_nodes("conflict", {})
+            if c.get("resolution_status") != "resolved"
+        ]
+        prompt = (
+            mm_prompts.assess_convergence
+            .replace("{core_queries}", json.dumps(core_queries, ensure_ascii=False))
+            .replace("{open_queries}", json.dumps(open_queries, ensure_ascii=False))
+            .replace("{conflicts}", json.dumps(conflicts, ensure_ascii=False))
+        )
+        verdict = self._invoke_json(prompt)
+        fatal = verdict.get("fatal_unresolved_conflicts") or []
+        core_gaps = verdict.get("core_threatening_gaps") or []
+
+        metrics = convergence.compute_metrics(advance_novelty=False)
+        priority = metrics.get("priority", {})
+        diminishing = bool(metrics.get("novelty", {}).get("diminishing"))
+        structurally = bool(priority.get("structurally_converged"))
+        pending_high = bool(priority.get("pending_high_priority"))
+
+        # Diminishing returns only justify stopping once no high-priority query
+        # is still pending (unsearched); otherwise there is obvious work left.
+        if structurally and not fatal and not core_gaps:
+            recommendation = "stop"
+        elif diminishing and not pending_high:
+            recommendation = "stop"
+        else:
+            recommendation = "continue"
+
+        return {
+            "converged": recommendation == "stop",
+            "fatal_unresolved_conflicts": fatal,
+            "core_threatening_gaps": core_gaps,
+            "recommendation": recommendation,
+            "reason": verdict.get("reason", ""),
+            "metrics_summary": {
+                "structurally_converged": structurally,
+                "diminishing_novelty": diminishing,
+                "high_priority_queries": metrics.get("priority", {}).get("tier_counts", {}).get("high", 0),
+            },
+        }
 
     # -----------------------------
     # Searcher-facing
@@ -654,7 +786,7 @@ class MemoryManager:
 
         Returns:
             dict with ``research_goal``, ``language`` and ``initial_queries``
-            (a list of self-contained search-phrase strings).
+            (each ``{text, importance}``).
         """
         prompt = mm_prompts.init_research.replace("{user_request}", user_request)
         return self._invoke_json(prompt)
@@ -685,7 +817,7 @@ class MemoryManager:
             max_new: Maximum number of queries to author.
 
         Returns:
-            A list of self-contained query strings (cross-referencing ones dropped).
+            A list of ``{text, importance}`` dicts (cross-referencing ones dropped).
         """
         gaps_text = gaps if isinstance(gaps, str) else json.dumps(gaps or [], ensure_ascii=False)
 
@@ -701,10 +833,15 @@ class MemoryManager:
                 .replace("{max_new}", str(max_new))
             )
             parsed = self._invoke_json(prompt + extra)
-            return [q for q in (parsed.get("queries") or []) if q]
+            items = []
+            for raw in parsed.get("queries") or []:
+                text, importance = _query_text_importance(raw)
+                if text:
+                    items.append({"text": text, "importance": importance})
+            return items
 
-        def self_contained(query: str) -> bool:
-            return not any(token in query for token in _CROSS_REF_TOKENS)
+        def self_contained(item: dict) -> bool:
+            return not any(token in item["text"] for token in _CROSS_REF_TOKENS)
 
         queries = [q for q in author() if self_contained(q)]
         if not queries:

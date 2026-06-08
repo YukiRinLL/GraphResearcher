@@ -33,9 +33,10 @@ def configure(output_dir: Optional[str] = None) -> None:
 
     # Scope graph storage to this run so neo4j (a single shared DB) keeps each
     # run's nodes isolated instead of cross-matching against earlier runs.
-    from tools import graph_tools
+    from tools import convergence, graph_tools
 
     graph_tools.set_context(output_dir)
+    convergence.reset()
 
 
 def _mm() -> MemoryManager:
@@ -113,6 +114,27 @@ def analyze_coverage(parent_id: str) -> dict:
         ``recommendation`` (``complete``/``needs_horizontal``) and ``reason``.
     """
     return _mm().analyze_coverage(parent_id)
+
+
+@tool
+def assess_convergence(goal_id: Optional[str] = None) -> dict:
+    """Judge whether the whole research effort has converged enough to report.
+
+    A global stop/continue verdict across all queries: it weighs each query's
+    status and sufficiency score, every conflict's type and resolution status,
+    and the system-computed evidence novelty and source diversity. Call it
+    before writing the report and whenever the loop looks ready to wrap up.
+
+    Args:
+        goal_id: The research-goal node ID; optional, the run-scoped graph is
+            used regardless.
+
+    Returns:
+        dict with ``converged``, ``fatal_unresolved_conflicts``,
+        ``core_threatening_gaps``, ``recommendation`` (``stop``/``continue``)
+        and ``reason``.
+    """
+    return _mm().assess_convergence(goal_id)
 
 
 @tool
@@ -277,6 +299,7 @@ ORCHESTRATOR_TOOLS: list[Any] = [
     get_next_queries,
     analyze_subgraph,
     analyze_coverage,
+    assess_convergence,
     expand_query,
     mark_query,
     create_analysis,

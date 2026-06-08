@@ -34,35 +34,23 @@ def configure(max_search_rounds: int) -> None:
     _search_dispatch_count = 0
 
 
-def _check_graph_convergence() -> bool:
-    """Check if the research graph has converged based on query statuses.
+def _observe_convergence() -> dict:
+    """Advance per-round novelty and return the deterministic convergence signals.
+
+    Called once per Searcher dispatch (the round boundary). Failures degrade to
+    an empty dict so the caller falls back to the budget gate alone.
 
     Returns:
-        True if all queries are in a resolved state (sufficient or blocked),
-        False otherwise.
+        The convergence metrics dict from ``convergence.observe_round``, or an
+        empty dict if the graph is unavailable.
     """
     try:
-        from tools import graph_tools
-        
-        # Get queries from the current context only
-        queries = graph_tools.search_nodes("query", {})
-        if not queries:
-            return False
-        
-        resolved_statuses = {"sufficient", "blocked"}
-        all_resolved = all(
-            q.get("status") in resolved_statuses 
-            for q in queries 
-            if q.get("status") is not None
-        )
-        
-        if all_resolved:
-            logger.info("Graph has converged: all queries are sufficient or blocked")
-        
-        return all_resolved
+        from tools import convergence
+
+        return convergence.observe_round()
     except Exception as e:
-        logger.warning(f"Error checking graph convergence: {e}")
-        return False
+        logger.warning(f"Error computing convergence signals: {e}")
+        return {}
 
 
 class SearchRoundLimitMiddleware(AgentMiddleware):
@@ -87,9 +75,11 @@ class SearchRoundLimitMiddleware(AgentMiddleware):
     def _intercept(self, tool_call: dict):
         """Return a blocking ToolMessage if the search should be blocked, else None.
 
-        Search is blocked if:
-        1. The search budget is exhausted, OR
-        2. The graph has converged (all queries are sufficient or blocked)
+        Search is blocked when:
+        1. The graph shows a convergence signal — every high-priority query is
+           answered at threshold, OR new evidence has stopped arriving — in
+           which case the dispatch is routed through ``assess_convergence``; OR
+        2. The search budget is exhausted.
 
         Args:
             tool_call: The tool call dict (``name``/``args``/``id``).
@@ -99,24 +89,36 @@ class SearchRoundLimitMiddleware(AgentMiddleware):
             allow it.
         """
         global _search_dispatch_count
-        
+
         # Only intercept searcher task calls
         if tool_call.get("name") != "task" or tool_call.get("args", {}).get("subagent_type") != self.subagent_name:
             return None
-        
-        # Check for graph convergence first
-        if _check_graph_convergence():
-            logger.info("Graph has converged; blocking further searcher dispatches.")
+
+        # One round boundary: advance novelty and read the deterministic signals.
+        metrics = _observe_convergence()
+        priority = metrics.get("priority", {})
+        structurally = bool(priority.get("structurally_converged"))
+        # Diminishing returns only stop the loop once no high-priority query is
+        # still pending (unsearched) — otherwise there is obvious work left, and
+        # blocking here would deadlock against assess_convergence's "continue".
+        diminishing = bool(metrics.get("novelty", {}).get("diminishing")) and not bool(
+            priority.get("pending_high_priority")
+        )
+
+        if structurally or diminishing:
+            reason = "高优先级查询均已达标" if structurally else "新一轮检索新颖度持续走低"
+            logger.info("Graph convergence signal (%s); routing to assess_convergence.", reason)
             return ToolMessage(
                 content=(
-                    "研究图谱已收敛：所有查询均已标记为充分(sufficient)或阻塞(blocked)状态。"
-                    "请停止派发 searcher，立即基于已收集的证据调用 reporter 生成最终报告。"
+                    f"图谱已出现收敛信号（{reason}）。请停止派发 searcher，调用 assess_convergence 取裁决："
+                    "recommendation=stop 则基于已收集的证据调用 reporter 生成最终报告；"
+                    "recommendation=continue 且预算允许时，对其点名的冲突/缺口调用 expand_query 纵向补齐后再行裁决。"
                 ),
                 tool_call_id=tool_call["id"],
                 name="task",
                 status="error",
             )
-        
+
         # Check search round limit
         if _MAX_SEARCH_ROUNDS > 0 and _search_dispatch_count >= _MAX_SEARCH_ROUNDS:
             logger.info("Search budget exhausted (%d rounds); blocking searcher dispatch.", _MAX_SEARCH_ROUNDS)

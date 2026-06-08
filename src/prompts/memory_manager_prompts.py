@@ -16,6 +16,11 @@ Query text format:
 - Do NOT write an instruction to an agent (no "调研/梳理/整理/针对…" imperative phrasing).
 - Author the query text in the language of the user request.
 
+Per-query importance (one of "core" / "supporting" / "peripheral"):
+- "core": directly carries a central conclusion of the research goal; the report cannot stand without it.
+- "supporting": contributes to the answer but is not load-bearing for the core conclusions.
+- "peripheral": background or detail; useful but its absence would not change the core conclusions.
+
 Rules:
 - Return only valid JSON. Do not wrap it in Markdown.
 - Do not invent specific facts, sources, citations, or conclusions.
@@ -26,8 +31,8 @@ Return this JSON shape:
   "research_goal": "research goal statement derived from the user request",
   "language": "expected report language, or null if not specified",
   "initial_queries": [
-    "tight self-contained search phrase 1",
-    "tight self-contained search phrase 2"
+    {"text": "tight self-contained search phrase 1", "importance": "core"},
+    {"text": "tight self-contained search phrase 2", "importance": "supporting"}
   ]
 }
 
@@ -107,9 +112,10 @@ Requirements:
 - Each query must be SELF-CONTAINED and a TIGHT natural-language search phrase: key entities + time window, no filler, not a verbose question, not bare keywords, not an instruction to an agent.
 - Cover only the given gaps / missing dimensions; do not repeat what the existing siblings already cover.
 - Author the query text in the language of the research goal.
+- Tag each query with an importance ("core" / "supporting" / "peripheral") relative to the research goal's core conclusions, judged the same way as the parent's own role.
 
 Return only valid JSON, no Markdown, at most {max_new} queries:
-{"queries": ["...", "..."]}
+{"queries": [{"text": "...", "importance": "core|supporting|peripheral"}]}
 """
 
 analyze_coverage = """You are the Graph Manager for GraphResearcher. Judge whether the PARALLEL sub-dimensions under a parent are complete (a horizontal-coverage check). Default to "complete" — only flag a missing dimension when one is clearly, genuinely absent.
@@ -137,4 +143,33 @@ Parent topic:
 
 Existing child queries:
 {children}
+"""
+
+assess_convergence = """You are the Graph Manager for GraphResearcher. Judge two things that decide whether the research can stop. The deterministic parts (priority coverage, novelty, budget) are handled in code; you supply only the judgments below.
+
+1. FATAL conflicts: among the unresolved conflicts, which are FATAL — a core data/claim contradiction that would mislead the report — versus non-fatal (methodological or scope differences that can simply be disclosed and explained).
+2. CORE-threatening gaps: among the still-open queries (not yet sufficiently answered), which leave a gap that would undermine the research goal's CORE conclusions — versus peripheral gaps the report can disclose as a limitation.
+
+You are given the high-priority queries that carry the core conclusions, the still-open queries, and the unresolved conflicts.
+
+Rules:
+- Return only valid JSON. Do not wrap it in Markdown.
+- Base the judgment only on the provided data; do not invent facts.
+- List only the conflicts/gaps that genuinely qualify; keep each concrete. Empty lists are expected when nothing qualifies.
+
+Return this JSON shape:
+{
+  "fatal_unresolved_conflicts": ["conflicts that must be resolved or disclosed as core issues"],
+  "core_threatening_gaps": ["open gaps that would undermine the core conclusions"],
+  "reason": "short justification"
+}
+
+High-priority (core) queries (text / status / sufficiency_score):
+{core_queries}
+
+Still-open queries (text / status / priority_tier):
+{open_queries}
+
+Unresolved conflicts (description / type):
+{conflicts}
 """

@@ -157,10 +157,20 @@ def create_user_request(
 def create_query(
     text: str,
     status: str = "pending",
-    parent_id: Optional[str] = None
+    parent_id: Optional[str] = None,
+    priority: Optional[float] = None,
+    priority_tier: Optional[str] = None,
+    sem: Optional[float] = None
 ) -> dict[str, Any]:
     manager = _get_manager()
-    query_id = _run_async(manager.add_node(NodeType.QUERY, {"text": text, "status": status}))
+    attributes: dict[str, Any] = {"text": text, "status": status}
+    if priority is not None:
+        attributes["priority"] = priority
+    if priority_tier is not None:
+        attributes["priority_tier"] = priority_tier
+    if sem is not None:
+        attributes["sem"] = sem
+    query_id = _run_async(manager.add_node(NodeType.QUERY, attributes))
     if parent_id:
         _run_async(manager.add_edge(parent_id, query_id, EdgeType.HAS_QUERY))
     return query_id
