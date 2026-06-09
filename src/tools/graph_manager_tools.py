@@ -61,7 +61,8 @@ def init_research(user_request: str) -> dict:
 
     Returns:
         dict with ``goal_id``, ``research_goal``, ``language`` and the created
-        ``queries`` (each ``{id, text}``).
+        ``queries`` (each ``{handle, id, text}``; reference queries by ``handle``,
+        e.g. ``q1``).
     """
     return _mm().init_research(user_request)
 
@@ -77,7 +78,8 @@ def get_next_queries(limit: int = 4) -> list:
         limit: Maximum number of queries to return.
 
     Returns:
-        A list of ``{id, text, status}`` dicts.
+        A list of ``{handle, id, text, status}`` dicts; reference a query by its
+        ``handle`` (e.g. ``q3.1``).
     """
     return _mm().get_next_queries(limit)
 
@@ -87,7 +89,7 @@ def analyze_subgraph(query_id: str) -> dict:
     """Score whether a query's collected evidence is sufficient.
 
     Args:
-        query_id: The query node ID to evaluate.
+        query_id: The query's handle (e.g. ``q3.1``) or node ID.
 
     Returns:
         dict with ``sufficiency_score``, ``covered``, ``gaps``, ``conflicts``,
@@ -146,7 +148,8 @@ def expand_query(anchor_query_id: str, direction: str, reason: str = "", gaps: O
     query text yourself.
 
     Args:
-        anchor_query_id: The query to expand from.
+        anchor_query_id: The query to expand from (its handle, e.g. ``q3``, or
+            node ID).
         direction: ``vertical`` (deepen the anchor — a child under it) or
             ``horizontal`` (add missing parallel dimension(s) under the anchor's
             parent; works at goal level too).
@@ -156,7 +159,7 @@ def expand_query(anchor_query_id: str, direction: str, reason: str = "", gaps: O
 
     Returns:
         dict with ``attach_point``, ``edge_type``, ``direction`` and ``created``
-        (each ``{id, text}``).
+        (each ``{handle, id, text}``; reference new queries by ``handle``).
     """
     if direction == "horizontal":
         max_new = min(max(len(gaps or []), 1), 3)
@@ -170,12 +173,13 @@ def mark_query(query_id: str, status: str, sufficiency_score: Optional[float] = 
     """Update a query's status (and optional sufficiency score).
 
     Args:
-        query_id: The query node ID.
+        query_id: The query's handle (e.g. ``q3.1``) or node ID.
         status: New status, e.g. ``sufficient``, ``blocked``, ``needs_vertical``.
         sufficiency_score: Optional score in [0, 1] to store on the node.
 
     Returns:
-        The updated query node.
+        The updated query node, or ``{"error": ...}`` if the reference resolves
+        to no query (retry with a handle).
     """
     metrics = {} if sufficiency_score is None else {"sufficiency_score": sufficiency_score}
     return _mm().mark_query(query_id, status, **metrics)

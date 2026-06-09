@@ -26,14 +26,15 @@ from tools.middleware import (
 
 @tool
 def dispatch_searcher(query_id: str, instructions: str) -> str:
-    """Dispatch the Searcher to collect evidence for one query node into the graph.
+    """Dispatch the Searcher to collect evidence for one query into the graph.
 
     ``query_id`` is injected into the Searcher's state directly (not parsed from
-    free text), so the query node ID can never be lost in transit.
+    free text), so the reference can never be lost in transit.
 
     Args:
-        query_id: The **exact** query node ID returned by ``init_research`` /
-            ``get_next_queries`` / ``expand_query``; never truncate or rewrite it.
+        query_id: The query's short handle (e.g. ``q3.1``) returned by
+            ``init_research`` / ``get_next_queries`` / ``expand_query``; the
+            exact node ID is also accepted.
         instructions: The search task — key points, acceptance criteria, time
             window and source preferences.
 

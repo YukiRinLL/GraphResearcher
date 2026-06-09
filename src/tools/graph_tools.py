@@ -160,7 +160,8 @@ def create_query(
     parent_id: Optional[str] = None,
     priority: Optional[float] = None,
     priority_tier: Optional[str] = None,
-    sem: Optional[float] = None
+    sem: Optional[float] = None,
+    handle: Optional[str] = None
 ) -> dict[str, Any]:
     manager = _get_manager()
     attributes: dict[str, Any] = {"text": text, "status": status}
@@ -170,6 +171,8 @@ def create_query(
         attributes["priority_tier"] = priority_tier
     if sem is not None:
         attributes["sem"] = sem
+    if handle is not None:
+        attributes["handle"] = handle
     query_id = _run_async(manager.add_node(NodeType.QUERY, attributes))
     if parent_id:
         _run_async(manager.add_edge(parent_id, query_id, EdgeType.HAS_QUERY))

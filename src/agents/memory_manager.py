@@ -172,6 +172,7 @@ class MemoryManager:
             if not text:
                 continue
             score, tier, sem = convergence.compute_priority(importance, goal_id)
+            handle = self._assign_handle(goal_id)
             query_id = graph_tools.create_query(
                 text=text,
                 status="pending",
@@ -179,8 +180,9 @@ class MemoryManager:
                 priority=score,
                 priority_tier=tier,
                 sem=sem,
+                handle=handle,
             )
-            queries.append({"id": query_id, "text": text, "priority_tier": tier})
+            queries.append({"handle": handle, "id": query_id, "text": text, "priority_tier": tier})
 
         return {
             "goal_id": goal_id,
@@ -206,6 +208,7 @@ class MemoryManager:
         for status in ("pending", "needs_horizontal", "needs_vertical"):
             for node in graph_tools.search_nodes("query", {"status": status}):
                 results.append({
+                    "handle": node.get("handle"),
                     "id": node.get("id"),
                     "text": node.get("text"),
                     "status": status,
@@ -225,10 +228,11 @@ class MemoryManager:
             dict with ``sufficiency_score``, ``covered``, ``gaps``,
             ``conflicts``, ``recommendation`` and ``reason``.
         """
-        node = graph_tools.get_node(query_id)
-        subgraph = graph_tools.get_query_subgraph(query_id, depth=4)
+        resolved = self._resolve_query_id(query_id) or query_id
+        node = graph_tools.get_node(resolved) or {}
+        subgraph = graph_tools.get_query_subgraph(resolved, depth=4)
         prompt = mm_prompts.summarize_subgraph.replace(
-            "{query}", node.get("text", query_id)
+            "{query}", node.get("text") or resolved
         ).replace("{subgraph}", json.dumps(subgraph, ensure_ascii=False))
         return self._invoke_json(prompt)
 
@@ -350,6 +354,7 @@ class MemoryManager:
         for followup in followups:
             text = followup["text"]
             score, tier, sem = convergence.compute_priority(followup.get("importance"), attach_point)
+            handle = self._assign_handle(attach_point)
             new_id = graph_tools.add_node(
                 "query",
                 {
@@ -360,10 +365,11 @@ class MemoryManager:
                     "priority": score,
                     "priority_tier": tier,
                     "sem": sem,
+                    "handle": handle,
                 },
             )
             graph_tools.add_edge(attach_point, new_id, edge_type)
-            created.append({"id": new_id, "text": text})
+            created.append({"handle": handle, "id": new_id, "text": text})
 
         graph_tools.save_graph()
         result = {
@@ -387,8 +393,16 @@ class MemoryManager:
         Returns:
             The updated query node.
         """
+        resolved = self._resolve_query_id(query_id)
+        if resolved is None:
+            return {
+                "error": (
+                    f"query_id {query_id!r} 未匹配到任何 query 节点；请用 init_research/"
+                    "get_next_queries/expand_query 返回的句柄（如 q3.1）或精确 ID 重试。"
+                )
+            }
         return graph_tools.upsert_node(
-            "query", {"status": status, **metrics}, dedupe_key=query_id
+            "query", {"status": status, **metrics}, dedupe_key=resolved
         )
 
     def assess_convergence(self, goal_id: Optional[str] = None) -> dict:
@@ -479,17 +493,40 @@ class MemoryManager:
     # -----------------------------
     # Searcher-facing
     # -----------------------------
-    def _resolve_query_id(self, query_id: str) -> Optional[str]:
-        """Map a possibly-mangled query reference to a real ``query`` node ID.
+    def _assign_handle(self, attach_point: str) -> str:
+        """Generate a short, stable handle (e.g. ``q1``, ``q3.1``) for a new query.
 
-        The Orchestrator sometimes passes a truncated ID (the ``_<uuid8>``
-        suffix dropped) or a human label instead of the exact node ID, which
-        would orphan the search run from the goal. This recovers the real ID by,
-        in order: an exact node hit, a prefix match against existing query node
-        IDs, and an exact/contained text match.
+        The handle is what the Orchestrator references in later tool calls — a
+        copy-safe alternative to the 20-digit node ID it transcribes unreliably.
+        It is derived from the attach point: a child of the research goal gets a
+        top-level ``q<n>``; a child of query ``q3`` gets ``q3.<k>``.
 
         Args:
-            query_id: The (possibly mangled) query reference from the caller.
+            attach_point: The node the new query is being attached under (the
+                research goal or an existing query).
+
+        Returns:
+            A handle string for the next child under ``attach_point``.
+        """
+        node = graph_tools.get_node(attach_point) or {}
+        existing = len(graph_tools.get_query_children(attach_point))
+        parent_handle = node.get("handle")
+        if parent_handle:
+            return f"{parent_handle}.{existing + 1}"
+        # attach_point is the research goal (no handle) -> top-level handle.
+        return f"q{existing + 1}"
+
+    def _resolve_query_id(self, query_id: str) -> Optional[str]:
+        """Map a query reference (handle, exact, truncated or corrupted ID) to a real node ID.
+
+        The Orchestrator references queries by their short ``handle`` (``q3.1``)
+        or, as a fallback, the node ID — which it sometimes truncates (drops the
+        ``_<uuid8>`` suffix) or corrupts in the timestamp prefix. This recovers
+        the real ID by, in order: exact node hit, handle match, prefix match
+        (truncation), ``_<uuid8>`` suffix match (corrupted prefix), and text.
+
+        Args:
+            query_id: The query reference from the caller.
 
         Returns:
             The matching ``query`` node ID, or ``None`` if nothing matches.
@@ -501,10 +538,22 @@ class MemoryManager:
             return query_id
 
         queries = graph_tools.search_nodes("query", {})
+        # Short stable handle (e.g. ``q3.1``) — the preferred, copy-safe ref.
+        for q in queries:
+            if q.get("handle") and q.get("handle") == query_id:
+                return q.get("id")
+        # Truncated ID (the ``_<uuid8>`` suffix dropped).
         for q in queries:
             qid = q.get("id", "")
             if qid.startswith(query_id) or query_id.startswith(qid):
                 return qid
+        # Corrupted timestamp prefix but intact ``_<uuid8>`` suffix — the uuid8
+        # is the unique discriminator, so match on it.
+        ref_suffix = query_id.rsplit("_", 1)[-1]
+        if ref_suffix and ref_suffix != query_id:
+            for q in queries:
+                if q.get("id", "").rsplit("_", 1)[-1] == ref_suffix:
+                    return q.get("id")
         for q in queries:
             text = q.get("text") or ""
             if text and (text == query_id or query_id in text or text in query_id):
@@ -552,16 +601,22 @@ class MemoryManager:
                 return None
             return ref_map.get(ref, ref)
 
-        # Recover the real query node ID; the Orchestrator may pass a truncated
-        # ID or a label, which would otherwise orphan this run from the goal.
+        # Recover the real query node ID (handle / truncated / corrupted-prefix).
         resolved_query_id = self._resolve_query_id(query_id)
-        warning = None
         if resolved_query_id is None:
-            warning = (
-                f"query_id {query_id!r} 未能匹配到任何 query 节点，本次搜索结果可能与研究目标失联；"
-                "请用 init_research 返回的精确 query 节点 ID 重新派发。"
-            )
-            resolved_query_id = query_id
+            # Do not write an orphan search_run under an unresolved ID — that
+            # silently detaches the evidence from the query tree. Report a zero
+            # write so the Orchestrator's "未入图→重派" gate re-dispatches.
+            return {
+                "search_run_id": None,
+                "query_id": query_id,
+                "ref_map": {},
+                "written": {"sources": 0, "documents": 0, "claims": 0, "evidence": 0, "conflicts": 0},
+                "error": (
+                    f"query_id {query_id!r} 未匹配到任何 query 节点，未写入图谱；"
+                    "请用句柄（如 q3.1）或精确 query 节点 ID 重新派发。"
+                ),
+            }
 
         run_id = graph_tools.add_node(
             "search_run", {"query_id": resolved_query_id}
@@ -656,8 +711,6 @@ class MemoryManager:
                 "conflicts": len(evidence_package.get("conflicts", []) or []),
             },
         }
-        if warning:
-            result["warning"] = warning
         return result
 
     # -----------------------------
