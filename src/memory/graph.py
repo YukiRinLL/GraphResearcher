@@ -297,26 +297,34 @@ class GraphManager:
                 })
             return nodes
 
-    async def get_subgraph(self, node_id: str, depth: int = 2) -> dict:
+    async def get_subgraph(self, node_id: str, depth: int = 2, direction: str = "both") -> dict:
         session = await self._get_session()
+        # ``direction="out"`` confines the walk to outbound edges so a query's
+        # ego sub-graph (its own evidence subtree) is returned without leaking
+        # up to the user_request and back down into sibling branches. ``both``
+        # (the default) preserves the original undirected behaviour used by the
+        # goal-level report export.
+        rel_filter = ">" if direction == "out" else None
+        path_arrow = "->" if direction == "out" else "-"
         async with session:
+            apoc_config = {"maxLevel": depth}
+            if rel_filter is not None:
+                apoc_config["relationshipFilter"] = rel_filter
             query = """
             MATCH (start)
             WHERE start.id = $id
-            CALL apoc.path.subgraphAll(start, {
-                maxLevel: $depth
-            }) YIELD nodes, relationships
+            CALL apoc.path.subgraphAll(start, $config) YIELD nodes, relationships
             RETURN nodes, relationships
             """
             try:
-                result = await session.run(query, id=node_id, depth=depth)
+                result = await session.run(query, id=node_id, config=apoc_config)
                 record = await result.single()
                 if not record:
                     return {"nodes": [], "edges": []}
             except Exception:
                 safe_depth = max(1, int(depth))
                 query = f"""
-                MATCH path = (start)-[*0..{safe_depth}]-(other)
+                MATCH path = (start)-[*0..{safe_depth}]{path_arrow}(other)
                 WHERE start.id = $id
                 UNWIND nodes(path) AS node
                 WITH collect(DISTINCT node) AS allNodes

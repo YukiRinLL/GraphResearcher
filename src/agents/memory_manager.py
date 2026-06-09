@@ -215,7 +215,15 @@ class MemoryManager:
                     "priority_tier": node.get("priority_tier"),
                     "priority": node.get("priority"),
                 })
-        results.sort(key=lambda q: q.get("priority") or 0.0, reverse=True)
+        # Leaf-first: unexpanded leaves (no children) outrank already-expanded
+        # parents, so the loop deepens the tree rather than re-running broad
+        # searches on a parent. Within each group, higher priority first.
+        results.sort(
+            key=lambda q: (
+                bool(graph_tools.get_query_children(q.get("id") or "")),
+                -(q.get("priority") or 0.0),
+            )
+        )
         return results[:limit]
 
     def analyze_subgraph(self, query_id: str) -> dict:
@@ -230,7 +238,9 @@ class MemoryManager:
         """
         resolved = self._resolve_query_id(query_id) or query_id
         node = graph_tools.get_node(resolved) or {}
-        subgraph = graph_tools.get_query_subgraph(resolved, depth=4)
+        # Directed (outbound) so scoring sees only THIS query's evidence subtree,
+        # not sibling branches reached by walking up to the user_request goal.
+        subgraph = graph_tools.get_query_subgraph(resolved, depth=4, direction="out")
         prompt = mm_prompts.summarize_subgraph.replace(
             "{query}", node.get("text") or resolved
         ).replace("{subgraph}", json.dumps(subgraph, ensure_ascii=False))
@@ -311,6 +321,9 @@ class MemoryManager:
                 warning = f"anchor {anchor_id!r} 无父节点，横向兄弟改挂在 anchor 自身下。"
         else:
             attach_point = anchor_id
+            capped = self._cap_vertical_depth(anchor_id, direction)
+            if capped is not None:
+                return capped
 
         # Edge type follows the attach point: a goal (user_request) uses
         # HAS_QUERY, a query uses PARENT_OF — matching the existing hierarchy.
@@ -371,6 +384,13 @@ class MemoryManager:
             graph_tools.add_edge(attach_point, new_id, edge_type)
             created.append({"handle": handle, "id": new_id, "text": text})
 
+        # A vertically-expanded anchor is now delegated to its children: it drops
+        # out of the work queue and only re-resolves once they roll up (see
+        # _rollup_parents). Horizontal expansion adds siblings, so the anchor is
+        # left untouched.
+        if direction == "vertical" and created:
+            graph_tools.upsert_node("query", {"status": "delegated"}, dedupe_key=attach_point)
+
         graph_tools.save_graph()
         result = {
             "attach_point": attach_point,
@@ -401,9 +421,14 @@ class MemoryManager:
                     "get_next_queries/expand_query 返回的句柄（如 q3.1）或精确 ID 重试。"
                 )
             }
-        return graph_tools.upsert_node(
+        result = graph_tools.upsert_node(
             "query", {"status": status, **metrics}, dedupe_key=resolved
         )
+        # Resolving a leaf may complete its delegated parent's children set,
+        # rolling that parent (and further ancestors) up to sufficient.
+        if status in ("sufficient", "blocked"):
+            self._rollup_parents(resolved)
+        return result
 
     def assess_convergence(self, goal_id: Optional[str] = None) -> dict:
         """Decide whether the research can stop, blending code and a thin LLM call.
@@ -442,7 +467,7 @@ class MemoryManager:
                 "priority_tier": q.get("priority_tier"),
             }
             for q in all_queries
-            if q.get("status") not in ("sufficient", "blocked")
+            if q.get("status") not in ("sufficient", "blocked", "delegated")
         ]
         conflicts = [
             {
@@ -560,6 +585,90 @@ class MemoryManager:
                 return q.get("id")
         return None
 
+    @staticmethod
+    def _query_depth(node: dict) -> int:
+        """Return a query's tree depth from its handle (``q3`` = 1, ``q3.1`` = 2)."""
+        handle = (node or {}).get("handle") or ""
+        return handle.count(".") + 1 if handle else 1
+
+    def _rollup_parents(self, query_id: str) -> None:
+        """Roll a resolved query up its ancestry toward the root.
+
+        A ``delegated`` parent (one that was vertically expanded) whose query
+        children are ALL resolved (``sufficient``/``blocked``) becomes
+        ``sufficient`` itself — with a passing score so it clears the
+        convergence gate — and the roll-up continues upward. Stops at the
+        ``user_request`` goal or the first parent that is not yet complete.
+
+        Args:
+            query_id: The just-resolved query whose ancestry to re-check.
+        """
+        from tools import convergence
+
+        resolved_statuses = {"sufficient", "blocked"}
+        current = query_id
+        seen: set[str] = set()
+        while True:
+            parent_id = graph_tools.get_query_parent(current)
+            if not parent_id or parent_id in seen:
+                break
+            seen.add(parent_id)
+            parent = graph_tools.get_node(parent_id) or {}
+            if parent.get("type") != "query" or parent.get("status") != "delegated":
+                break
+            children = graph_tools.get_query_children(parent_id)
+            if not children or not all(
+                (graph_tools.get_node(c) or {}).get("status") in resolved_statuses
+                for c in children
+            ):
+                break
+            graph_tools.upsert_node(
+                "query",
+                {"status": "sufficient", "sufficiency_score": convergence.SCORE_THRESHOLD},
+                dedupe_key=parent_id,
+            )
+            current = parent_id
+
+    def _cap_vertical_depth(self, anchor_id: str, direction: str) -> Optional[dict]:
+        """Resolve a too-deep vertical anchor in place; return a result or None.
+
+        When the anchor already sits at ``MAX_QUERY_DEPTH`` it cannot be
+        deepened further, so it is marked terminally (``sufficient`` when its
+        own score clears the threshold, else ``blocked``) and rolled up,
+        guaranteeing the tree terminates. Returns ``None`` when expansion may
+        proceed.
+
+        Args:
+            anchor_id: The resolved anchor query node ID.
+            direction: The expansion direction (echoed into the result).
+
+        Returns:
+            A result dict mirroring :meth:`expand_query` when capped, else None.
+        """
+        from tools import convergence
+
+        anchor = graph_tools.get_node(anchor_id) or {}
+        if self._query_depth(anchor) < convergence.MAX_QUERY_DEPTH:
+            return None
+        score = anchor.get("sufficiency_score")
+        terminal = (
+            "sufficient"
+            if isinstance(score, (int, float)) and float(score) >= convergence.SCORE_THRESHOLD
+            else "blocked"
+        )
+        graph_tools.upsert_node("query", {"status": terminal}, dedupe_key=anchor_id)
+        self._rollup_parents(anchor_id)
+        return {
+            "attach_point": anchor_id,
+            "edge_type": "",
+            "direction": direction,
+            "created": [],
+            "warning": (
+                f"anchor {anchor_id!r} 已达最大深度 {convergence.MAX_QUERY_DEPTH}，"
+                f"停止纵向扩展并就地标记为 {terminal}。"
+            ),
+        }
+
     def get_query_context(self, query_id: str) -> dict:
         """Return existing context for a query to avoid duplicate searching.
 
@@ -573,7 +682,7 @@ class MemoryManager:
         return {
             "query": graph_tools.get_node(resolved),
             "existing_subgraph": graph_tools.get_query_subgraph(
-                resolved, depth=4
+                resolved, depth=4, direction="out"
             ),
         }
 

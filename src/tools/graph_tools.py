@@ -296,9 +296,9 @@ def get_pending_queries() -> list[dict[str, Any]]:
     return _run_async(manager.search_node(NodeType.QUERY, {"status": "pending"}))
 
 
-def get_query_subgraph(query_id: str, depth: int = 2) -> dict[str, Any]:
+def get_query_subgraph(query_id: str, depth: int = 2, direction: str = "out") -> dict[str, Any]:
     manager = _get_manager()
-    return _run_async(manager.get_subgraph(query_id, depth))
+    return _run_async(manager.get_subgraph(query_id, depth, direction=direction))
 
 
 # The query hierarchy uses two edge types: HAS_QUERY (user_request -> initial

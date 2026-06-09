@@ -161,10 +161,15 @@ def expand_query(anchor_query_id: str, direction: str, reason: str = "", gaps: O
         dict with ``attach_point``, ``edge_type``, ``direction`` and ``created``
         (each ``{handle, id, text}``; reference new queries by ``handle``).
     """
+    from tools import convergence
+
     if direction == "horizontal":
         max_new = min(max(len(gaps or []), 1), 3)
     else:
-        max_new = 1
+        # Vertical: author one focused child per named gap (capped) so deepening
+        # splits the parent into narrow sub-queries instead of merging every gap
+        # into one ever-wider query.
+        max_new = min(max(len(gaps or []), 1), convergence.VERTICAL_FANOUT_CAP)
     return _mm().expand_query(anchor_query_id, direction, reason=reason, gaps=gaps, max_new=max_new)
 
 

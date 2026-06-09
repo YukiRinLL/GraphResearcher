@@ -72,9 +72,9 @@ Rules:
 - Base your judgment only on the provided sub-graph; do not invent facts.
 - `sufficiency_score` is a float in [0, 1].
 - `recommendation` must be one of: "sufficient", "needs_horizontal", "needs_vertical", "blocked".
-  - "sufficient": evidence adequately answers the query with no fatal conflict.
-  - "needs_vertical" (the DEFAULT when more work is needed): evidence exists but key mechanisms, causes, data scope, entities, or conflicts remain unresolved — drill deeper on this query. Prefer this for any within-topic gap.
-  - "needs_horizontal" (RARE): use ONLY when a DISTINCT parallel sibling dimension that the parent clearly requires is entirely absent — NOT for missing depth, and NOT for re-slicing covered content by region/application/comparison. When in doubt, choose needs_vertical or sufficient.
+  - "sufficient": the evidence already supports a representative, writable answer to THIS query. Judge the query on its OWN scope only — do not withhold sufficiency because adjacent topics or the broader research goal are not fully covered, and do not demand exhaustive coverage of every entity/figure; representative coverage of the query's own subject is enough.
+  - "needs_vertical": choose ONLY when a concrete mechanism, data-scope, entity, or conflict WITHIN this query's own subject is specifically unresolved and a deeper, narrower search would resolve it. Name the gap concretely. Do not pick this merely because more could always be found.
+  - "needs_horizontal" (RARE): use ONLY when a DISTINCT parallel sibling dimension that the parent clearly requires is entirely absent — NOT for missing depth, and NOT for re-slicing covered content by region/application/comparison.
   - "blocked": no reliable evidence could be obtained.
 
 Return this JSON shape:
@@ -98,7 +98,7 @@ plan_followup_query = """You are the Query Planner for GraphResearcher.
 Author follow-up search queries that extend an existing query in the Research Graph.
 
 Expansion direction = {direction}
-- "vertical": drill DEEPER into the same subject — author more specific queries that target the named gaps of the parent. Default 1 query.
+- "vertical": drill DEEPER into the same subject. Author ONE narrow query PER named gap — each new query targets a SINGLE gap and nothing else. NEVER merge several gaps into one broad query, and never re-state the parent more widely; a vertical child must be strictly narrower than its parent.
 - "horizontal": add PARALLEL sibling dimensions at the SAME granularity as the existing siblings — fill only the missing dimensions.
 
 Research goal: {research_goal}

@@ -33,6 +33,15 @@ GAMMA = 0.85         # per-depth decay of inherited parent priority
 TAU_HIGH = 0.65      # priority >= TAU_HIGH -> "high" tier
 SCORE_THRESHOLD = 0.7  # sufficiency_score a high-priority query must reach
 
+# --- Query-tree growth bounds --------------------------------------------
+# Vertical expansion authors one focused child per named gap, capped here so a
+# gap-heavy analysis cannot fan out without bound. Tree depth is capped so the
+# loop is guaranteed to terminate (a branch at MAX_QUERY_DEPTH is resolved in
+# place rather than deepened), which is what makes structural convergence
+# reachable. Depth is counted from the query handle: ``q3`` = 1, ``q3.1`` = 2.
+VERTICAL_FANOUT_CAP = 4
+MAX_QUERY_DEPTH = 4
+
 # Per-run novelty state, cleared by ``reset`` at the start of each run.
 _accounted_evidence_ids: set[str] = set()
 _seen_evidence_keys: set[str] = set()
