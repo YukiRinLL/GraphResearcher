@@ -31,6 +31,7 @@ def _fake_get_node(node_id):
 
 graph_tools.search_nodes = _fake_search_nodes
 graph_tools.get_node = _fake_get_node
+graph_tools.get_query_parent = lambda query_id: "goal" if query_id != "goal" else None
 
 
 def _set(queries=None, sources=None, evidence=None, conflicts=None):
@@ -38,6 +39,8 @@ def _set(queries=None, sources=None, evidence=None, conflicts=None):
     _FAKE["source"] = sources or []
     _FAKE["evidence"] = evidence or []
     _FAKE["conflict"] = conflicts or []
+    for query in _FAKE["query"]:
+        _NODES[query["id"]] = query
 
 
 def ev(node_id, claim):
@@ -49,7 +52,7 @@ def src(node_id, url):
 
 
 def q(node_id, status, score=None, tier=None, priority=None):
-    n = {"id": node_id, "type": "query", "status": status}
+    n = {"id": node_id, "type": "query", "status": status, "required_for_parent": True}
     if score is not None:
         n["sufficiency_score"] = score
     if tier is not None:
@@ -100,20 +103,21 @@ def test_compute_priority():
 
 def test_structurally_converged():
     _NODES.clear()
-    # One high not yet answered -> not converged; low queries never gate.
+    _NODES["goal"] = {"id": "goal", "type": "UserRequest"}
+    # Every required branch gates convergence regardless of scheduling tier.
     _set(queries=[
         q("h1", "sufficient", 0.8, tier="high"),
-        q("h2", "needs_vertical", 0.6, tier="high"),
-        q("l1", "needs_vertical", 0.3, tier="low"),
+        q("h2", "needs_expansion", 0.6, tier="high"),
+        q("l1", "needs_expansion", 0.3, tier="low"),
     ])
     assert convergence.structurally_converged() is False
     # High below the score threshold -> not converged.
     _set(queries=[q("h1", "sufficient", 0.65, tier="high")])
     assert convergence.structurally_converged() is False
-    # All high sufficient & >= threshold (low still open) -> converged.
+    # A non-required low-priority detail never gates.
     _set(queries=[
         q("h1", "sufficient", 0.8, tier="high"),
-        q("l1", "needs_vertical", 0.2, tier="low"),
+        {**q("l1", "pending", 0.2, tier="low"), "required_for_parent": False},
     ])
     assert convergence.structurally_converged() is True
     # A blocked high counts as best-effort (termination guarantee).
@@ -150,62 +154,12 @@ def test_novelty_advance_vs_snapshot():
     print("novelty advance/snapshot OK")
 
 
-def test_assess_recommendation():
-    from agents.memory_manager import MemoryManager
-
-    saved = convergence.compute_metrics
-    try:
-        # Structurally converged, no fatal/core -> stop.
-        _set(queries=[q("h1", "sufficient", 0.8, tier="high")], conflicts=[])
-        convergence.compute_metrics = lambda advance_novelty=False: {
-            "priority": {"structurally_converged": True, "tier_counts": {"high": 1}},
-            "novelty": {"diminishing": False},
-        }
-        mm = MemoryManager(
-            model=FakeModel({"fatal_unresolved_conflicts": [], "core_threatening_gaps": [], "reason": "ok"})
-        )
-        out = mm.assess_convergence()
-        assert out["recommendation"] == "stop" and out["converged"] is True, out
-
-        # Structurally converged but a fatal conflict -> continue.
-        mm = MemoryManager(
-            model=FakeModel({"fatal_unresolved_conflicts": ["X vs Y"], "core_threatening_gaps": [], "reason": "c"})
-        )
-        out = mm.assess_convergence()
-        assert out["recommendation"] == "continue" and out["fatal_unresolved_conflicts"] == ["X vs Y"], out
-
-        # Diminishing but a high-priority query still pending -> keep going
-        # (no premature stop / deadlock while obvious work remains).
-        convergence.compute_metrics = lambda advance_novelty=False: {
-            "priority": {"structurally_converged": False, "tier_counts": {"high": 2}, "pending_high_priority": True},
-            "novelty": {"diminishing": True},
-        }
-        mm = MemoryManager(
-            model=FakeModel({"fatal_unresolved_conflicts": [], "core_threatening_gaps": ["gap"], "reason": "d"})
-        )
-        out = mm.assess_convergence()
-        assert out["recommendation"] == "continue", out
-
-        # Diminishing with no pending high-priority work -> stop and disclose.
-        convergence.compute_metrics = lambda advance_novelty=False: {
-            "priority": {"structurally_converged": False, "tier_counts": {"high": 2}, "pending_high_priority": False},
-            "novelty": {"diminishing": True},
-        }
-        mm = MemoryManager(
-            model=FakeModel({"fatal_unresolved_conflicts": [], "core_threatening_gaps": ["gap"], "reason": "d"})
-        )
-        out = mm.assess_convergence()
-        assert out["recommendation"] == "stop", out
-    finally:
-        convergence.compute_metrics = saved
-    print("assess_convergence recommendation OK")
-
-
 def test_assembly():
     from tools.graph_manager_tools import ORCHESTRATOR_TOOLS
 
     names = {t.name for t in ORCHESTRATOR_TOOLS}
-    assert "assess_convergence" in names, names
+    assert {"assess_convergence", "assess_query", "expand_gaps", "get_next_actions"} <= names, names
+    assert not {"mark_query", "analyze_subgraph", "expand_query", "export_report_context"} & names, names
     print("assembly OK")
 
 
@@ -213,7 +167,6 @@ def main():
     test_compute_priority()
     test_structurally_converged()
     test_novelty_advance_vs_snapshot()
-    test_assess_recommendation()
     test_assembly()
     print("\nALL CONVERGENCE CHECKS PASSED")
 

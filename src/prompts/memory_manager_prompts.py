@@ -4,11 +4,12 @@ Parse the user's research request and produce a compact JSON object that seeds t
 Extract:
 1. The user's research goal (one sentence, derived from the request).
 2. The expected output/report language.
-3. A set of 4-5 INITIAL queries.
+3. The requested or reasonably inferred time window, region scope, and source preferences.
+4. A focused set of INITIAL queries, one per necessary top-level dimension.
 
 How to decompose (critical):
 - Split along the request's OWN thematic structure, NOT by geography/region. If the request enumerates dimensions (e.g. technology routes -> representative companies -> {tech path, product progress, commercialization, financing, team}), the top-level split follows that thematic spine. A scope word like "global" is only a qualifier, never a decomposition axis — do not split into North America / China / Europe.
-- Produce 4-5 COARSE queries: each opens up one broad theme that a single search pass can begin to answer. They are starting points to be deepened later, NOT leaf-level facts.
+- Produce one COARSE query per necessary top-level dimension. Do not target a fixed count. Each query opens one broad theme that a single search pass can begin to answer. They are starting points to be deepened later, NOT leaf-level facts.
 - Make every query SELF-CONTAINED: each stands on its own with no reference to any other query. Never use "上述/前述/该区域/这些公司/the above/aforementioned" or anything pointing at another query's output. Restate the topic, time window, and region (if any) inside each query.
 
 Query text format:
@@ -30,9 +31,12 @@ Return this JSON shape:
 {
   "research_goal": "research goal statement derived from the user request",
   "language": "expected report language, or null if not specified",
+  "time_window": "requested or inferred time window, or null",
+  "region_scope": "requested region scope, or null",
+  "source_preferences": ["preferred source category or domain, if specified"],
   "initial_queries": [
-    {"text": "tight self-contained search phrase 1", "importance": "core"},
-    {"text": "tight self-contained search phrase 2", "importance": "supporting"}
+    {"text": "tight self-contained search phrase 1", "importance": "core", "acceptance_criteria": ["specific evidence required"]},
+    {"text": "tight self-contained search phrase 2", "importance": "supporting", "acceptance_criteria": ["specific evidence required"]}
   ]
 }
 
@@ -63,86 +67,57 @@ Format the response as a JSON object:
 Content for analysis:
 """
 
-summarize_subgraph = """You are the Graph Manager for GraphResearcher. Analyze the evidence sub-graph collected for a single research query and judge whether the evidence is sufficient to answer it.
-
-You are given the query and its ego sub-graph (nodes and edges: sources, documents, evidence/statements, conflicts). Assess coverage, evidence quality, consistency, specificity, and freshness.
+assess_query = """You are the Graph Manager for GraphResearcher. Assess exactly one Query from its OWN evidence and direct-child summaries. Do not infer evidence from parent or sibling branches.
 
 Rules:
-- Return only valid JSON. Do not wrap it in Markdown.
-- Base your judgment only on the provided sub-graph; do not invent facts.
-- `sufficiency_score` is a float in [0, 1].
-- `recommendation` must be one of: "sufficient", "needs_horizontal", "needs_vertical", "blocked".
-  - "sufficient": evidence adequately answers the query with no fatal conflict.
-  - "needs_vertical" (the DEFAULT when more work is needed): evidence exists but key mechanisms, causes, data scope, entities, or conflicts remain unresolved — drill deeper on this query. Prefer this for any within-topic gap.
-  - "needs_horizontal" (RARE): use ONLY when a DISTINCT parallel sibling dimension that the parent clearly requires is entirely absent — NOT for missing depth, and NOT for re-slicing covered content by region/application/comparison. When in doubt, choose needs_vertical or sufficient.
-  - "blocked": no reliable evidence could be obtained.
+- Return only valid JSON.
+- `sufficiency_score` is in [0, 1].
+- Return `recommendation="sufficient"` only when the Query's acceptance criteria are met with reliable evidence.
+- If more research is required, split the missing work into ATOMIC, independently searchable gaps. Never combine unrelated missing entities, metrics, mechanisms, or conflicts into one gap.
+- Each gap needs an importance and concrete acceptance criteria.
+- Return `blocked` only when reliable evidence cannot reasonably be obtained.
 
-Return this JSON shape:
+Return:
 {
   "sufficiency_score": 0.0,
-  "covered": ["aspects already supported by evidence"],
-  "gaps": ["important aspects still missing"],
-  "conflicts": ["unresolved conflicts, if any"],
-  "recommendation": "sufficient|needs_horizontal|needs_vertical|blocked",
+  "covered": ["supported aspects"],
+  "gaps": [
+    {
+      "description": "one atomic missing fact or analysis",
+      "importance": "core|supporting|peripheral",
+      "acceptance_criteria": ["what evidence closes this gap"]
+    }
+  ],
+  "recommendation": "sufficient|needs_expansion|blocked",
   "reason": "short justification"
 }
 
 Query:
 {query}
 
-Evidence sub-graph:
-{subgraph}
+Owned evaluation subgraph:
+{evaluation_subgraph}
 """
 
 plan_followup_query = """You are the Query Planner for GraphResearcher.
-Author follow-up search queries that extend an existing query in the Research Graph.
-
-Expansion direction = {direction}
-- "vertical": drill DEEPER into the same subject — author more specific queries that target the named gaps of the parent. Default 1 query.
-- "horizontal": add PARALLEL sibling dimensions at the SAME granularity as the existing siblings — fill only the missing dimensions.
+Author one self-contained child search query for each assigned atomic gap.
 
 Research goal: {research_goal}
 Parent topic (the subject to deepen, or the parent whose dimensions to complete): {parent_text}
 Existing sibling queries under the attach point (do NOT duplicate their coverage): {sibling_texts}
-Gaps / missing dimensions to cover: {gaps}
+Atomic gaps to cover: {gaps}
 Reason: {reason}
 
 Requirements:
 - Inline the parent's concrete subject BY VALUE into every new query (e.g. write "Figure AI 人形机器人 量产进度 2025", never "该公司的量产进度"). Never reference another query: no "上述/前述/该/这些/the above".
 - Each query must be SELF-CONTAINED and a TIGHT natural-language search phrase: key entities + time window, no filler, not a verbose question, not bare keywords, not an instruction to an agent.
-- Cover only the given gaps / missing dimensions; do not repeat what the existing siblings already cover.
+- Cover only the assigned atomic gap; do not repeat what the existing siblings already cover.
 - Author the query text in the language of the research goal.
 - Tag each query with an importance ("core" / "supporting" / "peripheral") relative to the research goal's core conclusions, judged the same way as the parent's own role.
+- Include concrete acceptance_criteria copied or refined from the assigned atomic gap.
 
 Return only valid JSON, no Markdown, at most {max_new} queries:
-{"queries": [{"text": "...", "importance": "core|supporting|peripheral"}]}
-"""
-
-analyze_coverage = """You are the Graph Manager for GraphResearcher. Judge whether the PARALLEL sub-dimensions under a parent are complete (a horizontal-coverage check). Default to "complete" — only flag a missing dimension when one is clearly, genuinely absent.
-
-You are given a parent topic and its existing direct child queries. The initial query set is assumed to already partition the parent's problem space; your job is NOT to invent clever new ways to slice it.
-
-Hard rules:
-- A "missing dimension" must be a DISTINCT sub-topic that the parent (or the original request) clearly calls for AND that NO existing child covers even partially. If in doubt, it is NOT missing.
-- RE-SLICING ALREADY-COVERED CONTENT ALONG A NEW AXIS IS NOT A MISSING DIMENSION. Do NOT propose: by-region / by-country re-cuts (e.g. North America / China / Europe), by-application-domain re-cuts, by-correlation or comparative re-analysis, or any "compare / contrast / cross-cut" of material the existing children already gather. Those are report-writer reorganizations, not new research.
-- Judge ONLY breadth, never depth: do NOT assess whether any single child has enough evidence. Missing evidence inside an already-covered dimension is NOT a missing dimension.
-- Base your judgment only on the given information; do not invent facts.
-- STRONGLY prefer returning "complete" with an empty missing_dimensions. Return "needs_horizontal" only with at least one concrete, non-overlapping, genuinely-absent dimension.
-- "recommendation" must be one of: "complete", "needs_horizontal".
-
-Return this JSON shape:
-{
-  "covered_dimensions": ["dimensions already represented by a child query"],
-  "missing_dimensions": ["genuinely-absent parallel dimensions, or empty"],
-  "recommendation": "complete|needs_horizontal",
-  "reason": "short justification"
-}
-
-Parent topic:
-{parent}
-
-Existing child queries:
-{children}
+{"queries": [{"text": "...", "importance": "core|supporting|peripheral", "acceptance_criteria": ["..."]}]}
 """
 
 assess_convergence = """You are the Graph Manager for GraphResearcher. Judge two things that decide whether the research can stop. The deterministic parts (priority coverage, novelty, budget) are handled in code; you supply only the judgments below.

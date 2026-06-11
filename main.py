@@ -18,6 +18,7 @@ Usage:
 """
 
 import argparse
+import json
 import logging
 import re
 import sys
@@ -244,24 +245,49 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
         except Exception:
             console.print("[red]Run failed with an exception (captured in run.log):[/]")
             console.print(traceback.format_exc(), markup=False, highlight=False)
+            try:
+                from tools import research_state
+
+                if research_state.get_goal():
+                    research_state.update_goal({
+                        "research_state": research_state.FAILED,
+                        "last_error": traceback.format_exc(),
+                    })
+            except Exception:
+                pass
         finally:
             # The report is the Orchestrator's final reviewed message (it aggregates
             # the Reporter's draft and revises it). The graph holds evidence and
             # section→evidence bindings only, not the report itself.
+            from tools import research_state
+
+            try:
+                status_summary = research_state.get_status()
+            except Exception as exc:
+                status_summary = {"research_state": None, "status_error": str(exc)}
+            state_before_write = status_summary.get("research_state")
             report_text = final_text or "(no report produced)"
             # Deterministically rebuild citations/references from the graph's
             # Source nodes (dedup, drop fabricated refs) and create the
             # ReportSection→Source bindings the Reporter may have skipped. Runs
             # before write_text + export so report.md and the JSONL both reflect
             # it; on any failure the raw report is written unchanged.
-            try:
-                from tools import report_tools
+            if state_before_write == research_state.REPORTING and final_text:
+                try:
+                    from tools import report_tools
 
-                report_text = report_tools.finalize_report(report_text)
-            except Exception:
-                console.print("[yellow]Report finalize failed (captured in run.log); writing raw report.[/]")
-                console.print(traceback.format_exc(), markup=False, highlight=False)
-            report_path.write_text(report_text, encoding="utf-8")
+                    report_text = report_tools.finalize_report(report_text)
+                except Exception:
+                    console.print("[yellow]Report finalize failed (captured in run.log); writing raw report.[/]")
+                    console.print(traceback.format_exc(), markup=False, highlight=False)
+                report_path.write_text(report_text, encoding="utf-8")
+                research_state.update_goal({"research_state": research_state.COMPLETED})
+                status_summary = research_state.get_status()
+            else:
+                report_text = (
+                    "Research did not reach an authorized reporting state. "
+                    f"Current state: {state_before_write or 'uninitialized'}."
+                )
 
             # Export the run's graph from neo4j to JSONL for graph_viewer.html.
             graph_path = output_dir / "research_graph.jsonl"
@@ -273,9 +299,11 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
                 console.print("[yellow]Graph export to JSONL failed (captured in run.log):[/]")
                 console.print(traceback.format_exc(), markup=False, highlight=False)
 
-            console.rule("[bold green]Final Report")
+            console.rule("[bold green]Final Report" if state_before_write == research_state.REPORTING else "[bold yellow]Research Status")
             console.print(Markdown(report_text))
-            console.print(f"\n[dim]Saved: {report_path}, {graph_path}, {log_path}[/]")
+            console.print(f"\n[dim]State summary: {json.dumps(status_summary, ensure_ascii=False)}[/]")
+            saved = f"{report_path}, {graph_path}, {log_path}" if state_before_write == research_state.REPORTING else f"{graph_path}, {log_path}"
+            console.print(f"\n[dim]Saved: {saved}[/]")
             sys.stdout, sys.stderr = orig_stdout, orig_stderr
 
 

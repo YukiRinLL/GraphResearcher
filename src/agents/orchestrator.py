@@ -15,17 +15,17 @@ from langchain_core.tools import tool
 import config
 from agents.reporter import reporter
 from agents.searcher import searcher
-from tools.graph_manager_tools import ORCHESTRATOR_TOOLS
+from tools.graph_manager_tools import ORCHESTRATOR_TOOLS, fail_search, prepare_search
 from tools.middleware import (
     EmptyResponseRetryMiddleware,
     ReportValidationMiddleware,
-    SearchRoundLimitMiddleware,
+    ResearchStateMiddleware,
     SensitiveWordsRetryMiddleware,
 )
 
 
 @tool
-def dispatch_searcher(query_id: str, instructions: str) -> str:
+def dispatch_searcher(query_id: str, source_preferences: list[str] | None = None) -> dict:
     """Dispatch the Searcher to collect evidence for one query into the graph.
 
     ``query_id`` is injected into the Searcher's state directly (not parsed from
@@ -33,26 +33,35 @@ def dispatch_searcher(query_id: str, instructions: str) -> str:
 
     Args:
         query_id: The query's short handle (e.g. ``q3.1``) returned by
-            ``init_research`` / ``get_next_queries`` / ``expand_query``; the
+            ``init_research`` / ``get_next_actions`` / ``expand_gaps``; the
             exact node ID is also accepted.
-        instructions: The search task — key points, acceptance criteria, time
-            window and source preferences.
+        source_preferences: Optional preferred source categories or domains.
 
     Returns:
         The Searcher's final report text, including the ``submit_search_result``
         write counts (sources/documents/evidence) and ``search_run_id`` so the
         Orchestrator can verify the evidence actually landed in the graph.
     """
-    result = searcher.invoke({
-        "query_id": query_id,
-        "query_text": instructions,
-        "messages": [HumanMessage(content=instructions)],
-    })
-    for message in reversed(result.get("messages", [])):
-        content = getattr(message, "content", None)
-        if content:
-            return content if isinstance(content, str) else str(content)
-    return ""
+    prepared = prepare_search(query_id, source_preferences)
+    if prepared.get("error"):
+        return prepared
+    try:
+        result = searcher.invoke({
+            "search_run_id": prepared["search_run_id"],
+            "query_id": prepared["query_id"],
+            "query_text": prepared["query_text"],
+            "messages": [HumanMessage(content=prepared["query_text"])],
+        })
+    except Exception as exc:
+        return fail_search(prepared["search_run_id"], prepared["query_id"], str(exc))
+    submit_result = result.get("submit_result")
+    if isinstance(submit_result, dict):
+        return submit_result
+    return fail_search(
+        prepared["search_run_id"],
+        prepared["query_id"],
+        "Searcher returned no submit result",
+    )
 
 
 orchestrator = create_deep_agent(
@@ -61,7 +70,7 @@ orchestrator = create_deep_agent(
     tools=[*ORCHESTRATOR_TOOLS, dispatch_searcher],
     subagents=[reporter],
     middleware=[
-        SearchRoundLimitMiddleware(),
+        ResearchStateMiddleware(),
         ReportValidationMiddleware(),
         EmptyResponseRetryMiddleware(),
         SensitiveWordsRetryMiddleware(),

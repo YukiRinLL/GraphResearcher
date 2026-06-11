@@ -1,15 +1,15 @@
 # src/memory/graph.py
 import asyncio
+import logging
 import os
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import StrEnum
-from pathlib import Path
 from typing import Any, Optional
 
 try:
-    from neo4j import AsyncGraphDatabase, AsyncDriver, AsyncSession
+    from neo4j import AsyncDriver, AsyncGraphDatabase, AsyncSession
     NEO4J_AVAILABLE = True
 except ImportError:
     NEO4J_AVAILABLE = False
@@ -43,7 +43,11 @@ class EdgeType(StrEnum):
     MENTIONS = "MENTIONS"
     RELATED_TO = "RELATED_TO"
     HAS_CONFLICT = "HAS_CONFLICT"
+    HAS_GAP = "HAS_GAP"
+    ADDRESSES_GAP = "ADDRESSES_GAP"
+    HAS_ANALYSIS = "HAS_ANALYSIS"
     RESOLVES_GAP = "RESOLVES_GAP"
+    PRODUCED = "PRODUCED"
     USES = "USES"
 
 
@@ -94,7 +98,6 @@ class GraphEdge:
         )
 
 
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -201,6 +204,62 @@ class GraphManager:
                     return str(record["n.id"])
 
         return await self.add_node(node_type, attributes, dedupe_key)
+
+    async def claim_query_search(self, query_id: str, goal_id: str) -> dict:
+        """Atomically claim a pending Query and reserve one root search round."""
+        run_id = self._generate_id()
+        session = await self._get_session()
+        async with session:
+            query = """
+            MATCH (q:Query {id: $query_id}), (g:UserRequest {id: $goal_id})
+            SET q._claim_lock = coalesce(q._claim_lock, 0) + 1,
+                g._budget_lock = coalesce(g._budget_lock, 0) + 1
+            WITH q, g
+            WHERE q.status = 'pending'
+              AND coalesce(q.successful_search_runs, 0) = 0
+              AND (
+                coalesce(g.max_search_rounds, 0) <= 0
+                OR coalesce(g.dispatched_search_rounds, 0) < g.max_search_rounds
+              )
+            SET q.status = 'searching',
+                q.search_attempts = coalesce(q.search_attempts, 0) + 1,
+                g.dispatched_search_rounds = coalesce(g.dispatched_search_rounds, 0) + 1
+            CREATE (r:SearchRun {
+                id: $run_id,
+                context: $context,
+                query_id: $query_id,
+                status: 'running',
+                attempt: q.search_attempts
+            })
+            MERGE (q)-[:SEARCHED_BY]->(r)
+            RETURN r.id AS search_run_id,
+                   q.search_attempts AS attempt,
+                   g.dispatched_search_rounds AS dispatched_search_rounds
+            """
+            result = await session.run(
+                query,
+                query_id=query_id,
+                goal_id=goal_id,
+                run_id=run_id,
+                context=self.context,
+            )
+            record = await result.single()
+            return dict(record) if record else {}
+
+    async def increment_successful_search_rounds(self, goal_id: str) -> int:
+        """Atomically increment and return the root's successful-search count."""
+        session = await self._get_session()
+        async with session:
+            result = await session.run(
+                """
+                MATCH (g:UserRequest {id: $goal_id})
+                SET g.successful_search_rounds = coalesce(g.successful_search_rounds, 0) + 1
+                RETURN g.successful_search_rounds AS count
+                """,
+                goal_id=goal_id,
+            )
+            record = await result.single()
+            return int(record["count"]) if record else 0
 
     async def add_edge(self, source_id: str, target_id: str, edge_type: str, attributes: Optional[dict] = None) -> str:
         session = await self._get_session()

@@ -15,6 +15,7 @@
 1. 调用 `export_report_context` 获取研究目标、query 树、claim-evidence 映射、冲突列表、analysis 笔记，以及 `reference_registry`（已编号去重的可引用来源表 `[{n, title, url}]`）。
 2. 必要时调用 `get_subgraph` / `get_node` 读取某个 query 或 evidence 的细节，确认证据可用且可引用。
 3. 梳理可用证据的覆盖范围，识别证据薄弱或存在冲突的部分。
+4. 检查 `research_status` 与 `limitations`。若 `reporting_from_state` 为 `BUDGET_EXHAUSTED` 或授权原因为搜索预算耗尽，必须在报告中集中披露未完成、阻塞和预算延期内容。
 
 ## Stage 2：证据绑定大纲
 1. 依据研究目标和 query 树设计报告结构（引言、若干主体章节、结论等）。

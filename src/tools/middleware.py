@@ -1,10 +1,5 @@
 # 参考 /mnt/h/DeepResearch/aiq/src/aiq_agent/agents/deep_researcher/custom_middleware.py 关于中间件的设计和实现
-"""System guardrail middleware for GraphResearcher.
-
-Holds agent-level middleware (deepagents / LangChain `AgentMiddleware`). Today
-it caps how many times the Orchestrator may dispatch the Searcher in a single
-run via `SearchRoundLimitMiddleware`. It also checks for graph-based convergence.
-"""
+"""System guardrail middleware for GraphResearcher."""
 
 import json
 import logging
@@ -18,7 +13,6 @@ logger = logging.getLogger(__name__)
 
 # Maximum number of Searcher dispatches per run; 0 (or less) means no limit.
 _MAX_SEARCH_ROUNDS = 0
-_search_dispatch_count = 0
 
 
 def configure(max_search_rounds: int) -> None:
@@ -29,121 +23,100 @@ def configure(max_search_rounds: int) -> None:
             limit. Resets the dispatch counter so the same process can run
             multiple times.
     """
-    global _MAX_SEARCH_ROUNDS, _search_dispatch_count
+    global _MAX_SEARCH_ROUNDS
     _MAX_SEARCH_ROUNDS = max_search_rounds
-    _search_dispatch_count = 0
 
 
-def _observe_convergence() -> dict:
-    """Advance per-round novelty and return the deterministic convergence signals.
-
-    Called once per Searcher dispatch (the round boundary). Failures degrade to
-    an empty dict so the caller falls back to the budget gate alone.
-
-    Returns:
-        The convergence metrics dict from ``convergence.observe_round``, or an
-        empty dict if the graph is unavailable.
-    """
-    try:
-        from tools import convergence
-
-        return convergence.observe_round()
-    except Exception as e:
-        logger.warning(f"Error computing convergence signals: {e}")
-        return {}
+def get_max_search_rounds() -> int:
+    """Return the configured persistent search budget for a new run."""
+    return _MAX_SEARCH_ROUNDS
 
 
-class SearchRoundLimitMiddleware(AgentMiddleware):
-    """Caps the number of Searcher dispatches the Orchestrator may make.
+class ResearchStateMiddleware(AgentMiddleware):
+    """Enforce the persistent research-state gate around Reporter and terminal text."""
 
-    A "search round" is one `dispatch_searcher(...)` call. Once the
-    configured budget is reached OR the graph has converged, further dispatches
-    are blocked and the Orchestrator is told to write the report from the
-    evidence already collected. The budget is read from the module-level
-    configuration so the Orchestrator graph can be built at import time and
-    the limit injected per run via `configure`.
-    """
+    _RESEARCH_NUDGE = (
+        "研究状态仍为 RESEARCHING，禁止生成最终报告或结束流程。"
+        "请调用 get_next_actions，并严格执行返回的 assess_query、expand_gaps 或 dispatch_searcher；"
+        "完成动作后调用 assess_convergence。"
+    )
 
-    def __init__(self, tool_name: str = "dispatch_searcher"):
-        """Initialize the middleware.
+    @staticmethod
+    def _reporter_call(tool_call: dict) -> bool:
+        return tool_call.get("name") == "task" and tool_call.get("args", {}).get("subagent_type") == "reporter"
 
-        Args:
-            tool_name: The Orchestrator tool whose calls count as search rounds.
-        """
-        self.tool_name = tool_name
-
-    def _intercept(self, tool_call: dict):
-        """Return a blocking ToolMessage if the search should be blocked, else None.
-
-        Search is blocked when:
-        1. The graph shows a convergence signal — every high-priority query is
-           answered at threshold, OR new evidence has stopped arriving — in
-           which case the dispatch is routed through ``assess_convergence``; OR
-        2. The search budget is exhausted.
-
-        Args:
-            tool_call: The tool call dict (``name``/``args``/``id``).
-
-        Returns:
-            A ``ToolMessage`` to short-circuit the dispatch, or ``None`` to
-            allow it.
-        """
-        global _search_dispatch_count
-
-        # Only intercept Searcher dispatches.
-        if tool_call.get("name") != self.tool_name:
+    def _gate_reporter(self, tool_call: dict):
+        if not self._reporter_call(tool_call):
             return None
+        from tools import research_state
 
-        # One round boundary: advance novelty and read the deterministic signals.
-        metrics = _observe_convergence()
-        priority = metrics.get("priority", {})
-        structurally = bool(priority.get("structurally_converged"))
-        # Diminishing returns only stop the loop once no high-priority query is
-        # still pending (unsearched) — otherwise there is obvious work left, and
-        # blocking here would deadlock against assess_convergence's "continue".
-        diminishing = bool(metrics.get("novelty", {}).get("diminishing")) and not bool(
-            priority.get("pending_high_priority")
-        )
-
-        if structurally or diminishing:
-            reason = "高优先级查询均已达标" if structurally else "新一轮检索新颖度持续走低"
-            logger.info("Graph convergence signal (%s); routing to assess_convergence.", reason)
+        status = research_state.get_status()
+        state = status.get("research_state")
+        if state not in {research_state.REPORT_READY, research_state.BUDGET_EXHAUSTED}:
             return ToolMessage(
-                content=(
-                    f"图谱已出现收敛信号（{reason}）。请停止派发 searcher，调用 assess_convergence 取裁决："
-                    "recommendation=stop 则基于已收集的证据调用 reporter 生成最终报告；"
-                    "recommendation=continue 且预算允许时，对其点名的冲突/缺口调用 expand_query 纵向补齐后再行裁决。"
-                ),
+                content=json.dumps({
+                    "error": "Reporter is not authorized while research is incomplete",
+                    **status,
+                }, ensure_ascii=False),
                 tool_call_id=tool_call["id"],
-                name=self.tool_name,
+                name="task",
                 status="error",
             )
+        from tools import graph_tools
 
-        # Check search round limit
-        if _MAX_SEARCH_ROUNDS > 0 and _search_dispatch_count >= _MAX_SEARCH_ROUNDS:
-            logger.info("Search budget exhausted (%d rounds); blocking searcher dispatch.", _MAX_SEARCH_ROUNDS)
+        tree = graph_tools.validate_query_tree()
+        if not tree.get("valid"):
+            research_state.update_goal({
+                "research_state": research_state.FAILED,
+                "last_error": "Query tree validation failed before Reporter authorization",
+            })
             return ToolMessage(
-                content=(
-                    f"搜索预算已用尽（已达最大搜索轮次 {_MAX_SEARCH_ROUNDS}）。"
-                    "请停止派发 searcher，立即基于已收集的证据调用 reporter 生成最终报告。"
-                ),
+                content=json.dumps({
+                    "error": "Reporter authorization rejected because the Query tree is invalid",
+                    "tree_validation": tree,
+                }, ensure_ascii=False),
                 tool_call_id=tool_call["id"],
-                name=self.tool_name,
+                name="task",
                 status="error",
             )
-        
-        _search_dispatch_count += 1
+        research_state.update_goal({
+            "research_state": research_state.REPORTING,
+            "reporting_from_state": state,
+        })
         return None
 
     def wrap_tool_call(self, request, handler):
-        """Enforce the search-round budget and graph convergence before dispatching the Searcher."""
-        blocked = self._intercept(request.tool_call)
+        """Gate Reporter tool calls using the persistent research state."""
+        blocked = self._gate_reporter(request.tool_call)
         return blocked if blocked is not None else handler(request)
 
     async def awrap_tool_call(self, request, handler):
-        """Async counterpart of :meth:`wrap_tool_call`."""
-        blocked = self._intercept(request.tool_call)
+        """Gate Reporter tool calls asynchronously."""
+        blocked = self._gate_reporter(request.tool_call)
         return blocked if blocked is not None else await handler(request)
+
+    @staticmethod
+    def _researching_terminal(response) -> bool:
+        last = _last_ai_message(response)
+        if last is None or last.tool_calls:
+            return False
+        from tools import research_state
+
+        return research_state.get_status().get("research_state") == research_state.RESEARCHING
+
+    def wrap_model_call(self, request, handler):
+        """Prevent terminal Orchestrator text while research remains active."""
+        response = handler(request)
+        if self._researching_terminal(response):
+            response = handler(request.override(messages=[*request.messages, HumanMessage(content=self._RESEARCH_NUDGE)]))
+        return response
+
+    async def awrap_model_call(self, request, handler):
+        """Prevent terminal Orchestrator text asynchronously while researching."""
+        response = await handler(request)
+        if self._researching_terminal(response):
+            response = await handler(request.override(messages=[*request.messages, HumanMessage(content=self._RESEARCH_NUDGE)]))
+        return response
 
 
 def _message_text(message: object) -> str:
@@ -417,6 +390,10 @@ class ReportValidationMiddleware(AgentMiddleware):
         self.max_retries = max_retries
 
     def _is_incomplete(self, response) -> bool:
+        from tools import research_state
+
+        if research_state.get_status().get("research_state") != research_state.REPORTING:
+            return False
         last = _last_ai_message(response)
         if last is None or last.tool_calls:
             return False  # not a terminal text response

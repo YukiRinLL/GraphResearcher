@@ -1,10 +1,23 @@
+"""Synchronous typed helpers over the Research Graph."""
+
 import asyncio
 import os
+import re
 import threading
 from typing import Any, Optional
 
-from memory.graph import NodeType, EdgeType, GraphNode, GraphEdge
+from memory.graph import EdgeType, NodeType
 
+_QUERY_TRANSITIONS = {
+    "pending": {"searching"},
+    "searching": {"assessing", "pending", "blocked", "failed"},
+    "assessing": {"sufficient", "needs_expansion", "blocked"},
+    "needs_expansion": {"waiting_children", "blocked"},
+    "waiting_children": {"assessing"},
+    "sufficient": set(),
+    "blocked": set(),
+    "failed": set(),
+}
 
 # A single persistent background event loop runs every coroutine. The neo4j
 # AsyncDriver caches a connection pool bound to the loop it was created on, so
@@ -68,6 +81,8 @@ def add_node(
     attributes: dict[str, Any],
     node_id: Optional[str] = None
 ) -> dict[str, Any]:
+    if str(node_type).replace("_", "").lower() == "query":
+        raise ValueError("Query nodes must be created through create_query_child")
     manager = _get_manager()
     return _run_async(manager.add_node(node_type, attributes, node_id))
 
@@ -104,6 +119,31 @@ def search_nodes(node_type: str, filter: dict[str, Any]) -> list[dict[str, Any]]
 def get_subgraph(node_id: str, depth: int = 2) -> dict[str, Any]:
     manager = _get_manager()
     return _run_async(manager.get_subgraph(node_id, depth))
+
+
+def get_all_nodes() -> list[dict[str, Any]]:
+    """Return every node in the current run context."""
+    return _run_async(_get_manager().get_all_nodes())
+
+
+def get_all_edges() -> list[dict[str, Any]]:
+    """Return every edge in the current run context."""
+    return _run_async(_get_manager().get_all_edges())
+
+
+def get_node_edges(node_id: str, direction: str = "both") -> list[dict[str, Any]]:
+    """Return edges touching a node in the requested direction."""
+    return _run_async(_get_manager().get_node_edges(node_id, direction))
+
+
+def claim_query_search(query_id: str, goal_id: str) -> dict[str, Any]:
+    """Atomically claim a Query and reserve one root search round."""
+    return _run_async(_get_manager().claim_query_search(query_id, goal_id))
+
+
+def increment_successful_search_rounds(goal_id: str) -> int:
+    """Atomically increment the root's successful SearchRun count."""
+    return _run_async(_get_manager().increment_successful_search_rounds(goal_id))
 
 
 def save_graph() -> None:
@@ -143,10 +183,11 @@ def export_graph_jsonl(file_path: str) -> int:
 def create_user_request(
     request: str,
     research_goal: Optional[str] = None,
-    language: Optional[str] = None
+    language: Optional[str] = None,
+    **attributes: Any,
 ) -> dict[str, Any]:
     manager = _get_manager()
-    attributes = {"request": request}
+    attributes = {"request": request, **attributes}
     if research_goal:
         attributes["research_goal"] = research_goal
     if language:
@@ -154,17 +195,18 @@ def create_user_request(
     return _run_async(manager.add_node(NodeType.USER_REQUEST, attributes))
 
 
-def create_query(
+def _create_query(
     text: str,
     status: str = "pending",
     parent_id: Optional[str] = None,
     priority: Optional[float] = None,
     priority_tier: Optional[str] = None,
     sem: Optional[float] = None,
-    handle: Optional[str] = None
+    handle: Optional[str] = None,
+    **extra: Any,
 ) -> dict[str, Any]:
     manager = _get_manager()
-    attributes: dict[str, Any] = {"text": text, "status": status}
+    attributes: dict[str, Any] = {"text": text, "status": status, **extra}
     if priority is not None:
         attributes["priority"] = priority
     if priority_tier is not None:
@@ -175,8 +217,81 @@ def create_query(
         attributes["handle"] = handle
     query_id = _run_async(manager.add_node(NodeType.QUERY, attributes))
     if parent_id:
-        _run_async(manager.add_edge(parent_id, query_id, EdgeType.HAS_QUERY))
+        parent = get_node(parent_id)
+        edge_type = EdgeType.HAS_QUERY if parent.get("type") == NodeType.USER_REQUEST.value else EdgeType.PARENT_OF
+        _run_async(manager.add_edge(parent_id, query_id, edge_type))
     return query_id
+
+
+def create_query_child(
+    parent_id: str,
+    text: str,
+    importance: str,
+    acceptance_criteria: Optional[list[str]] = None,
+    gap_ids: Optional[list[str]] = None,
+    **attributes: Any,
+) -> str:
+    """Create one structurally valid Query child and bind its assigned gaps."""
+    if not isinstance(text, str) or not text.strip():
+        raise ValueError("Query text must be a non-empty string")
+    if importance not in {"core", "supporting", "peripheral"}:
+        importance = "supporting"
+    if acceptance_criteria is not None and not isinstance(acceptance_criteria, list):
+        raise ValueError("acceptance_criteria must be a list")
+    if gap_ids is not None and not isinstance(gap_ids, list):
+        raise ValueError("gap_ids must be a list")
+    parent = get_node(parent_id)
+    if parent.get("type") not in {NodeType.USER_REQUEST.value, NodeType.QUERY.value}:
+        raise ValueError(f"Query parent must be UserRequest or Query: {parent_id!r}")
+    if parent.get("type") == NodeType.QUERY.value and not gap_ids:
+        raise ValueError("Non-root Query children must address at least one gap")
+    validated_gaps = []
+    for gap_id in gap_ids or []:
+        gap = get_node(gap_id)
+        if gap.get("type") != NodeType.ANALYSIS.value or gap.get("analysis_type") != "gap":
+            raise ValueError(f"Assigned gap is not an Analysis(gap): {gap_id!r}")
+        validated_gaps.append(gap)
+
+    from tools import convergence
+
+    children = get_query_children(parent_id)
+    parent_handle = parent.get("handle")
+    handle = f"{parent_handle}.{len(children) + 1}" if parent_handle else f"q{len(children) + 1}"
+    depth = int(parent.get("depth") or 0) + 1
+    priority, tier, sem = convergence.compute_priority(importance, parent_id)
+    required = importance != "peripheral" or any(gap.get("required_for_parent", True) for gap in validated_gaps)
+    query_id = _create_query(
+        text=text,
+        status="pending",
+        parent_id=parent_id,
+        priority=priority,
+        priority_tier=tier,
+        sem=sem,
+        handle=handle,
+        depth=depth,
+        importance=importance,
+        required_for_parent=required,
+        acceptance_criteria=acceptance_criteria or [],
+        search_attempts=0,
+        successful_search_runs=0,
+        **attributes,
+    )
+    for gap in validated_gaps:
+        gap_id = gap["id"]
+        add_edge(query_id, gap_id, EdgeType.ADDRESSES_GAP)
+        upsert_node(NodeType.ANALYSIS, {"status": "assigned"}, gap_id)
+    return query_id
+
+
+def transition_query(query_id: str, status: str, **attributes: Any) -> str:
+    """Validate and apply one legal Query state transition."""
+    query = get_node(query_id)
+    if query.get("type") != NodeType.QUERY.value:
+        raise ValueError(f"Query transition target must be a Query: {query_id!r}")
+    current = query.get("status")
+    if status not in _QUERY_TRANSITIONS.get(current, set()):
+        raise ValueError(f"Invalid Query state transition: {current} -> {status}")
+    return upsert_node(NodeType.QUERY, {"status": status, **attributes}, query_id)
 
 
 def create_source(
@@ -197,6 +312,8 @@ def create_document(
     text: str,
     source_id: Optional[str] = None
 ) -> dict[str, Any]:
+    if source_id and get_node(source_id).get("type") != NodeType.SOURCE.value:
+        raise ValueError(f"Document source must be Source: {source_id!r}")
     manager = _get_manager()
     attributes = {"text": text}
     if source_id:
@@ -212,6 +329,10 @@ def create_claim(
     document_id: Optional[str] = None,
     source_id: Optional[str] = None
 ) -> dict[str, Any]:
+    if document_id and get_node(document_id).get("type") != NodeType.DOCUMENT.value:
+        raise ValueError(f"Claim document must be Document: {document_id!r}")
+    if source_id and get_node(source_id).get("type") != NodeType.SOURCE.value:
+        raise ValueError(f"Claim source must be Source: {source_id!r}")
     manager = _get_manager()
     claim_id = _run_async(manager.add_node(NodeType.CLAIM, {"statement": statement, "status": "pending"}))
     if document_id:
@@ -227,6 +348,12 @@ def create_evidence(
     source_id: Optional[str] = None,
     supports_claim_id: Optional[str] = None
 ) -> dict[str, Any]:
+    if document_id and get_node(document_id).get("type") != NodeType.DOCUMENT.value:
+        raise ValueError(f"Evidence document must be Document: {document_id!r}")
+    if source_id and get_node(source_id).get("type") != NodeType.SOURCE.value:
+        raise ValueError(f"Evidence source must be Source: {source_id!r}")
+    if supports_claim_id and get_node(supports_claim_id).get("type") != NodeType.CLAIM.value:
+        raise ValueError(f"Evidence claim target must be Claim: {supports_claim_id!r}")
     manager = _get_manager()
     evidence_id = _run_async(manager.add_node(NodeType.EVIDENCE, {"claim": claim, "status": "pending"}))
     if document_id:
@@ -244,6 +371,10 @@ def create_conflict(
     conflict_type: str = "factual",
     resolution_status: str = "unresolved"
 ) -> dict[str, Any]:
+    if resolution_status not in {"unresolved", "investigating", "resolved", "disclosed"}:
+        raise ValueError(f"Invalid conflict status: {resolution_status!r}")
+    if any(get_node(eid).get("type") != NodeType.EVIDENCE.value for eid in evidence_ids):
+        raise ValueError("Conflict evidence_refs must all reference Evidence nodes")
     manager = _get_manager()
     conflict_id = _run_async(manager.add_node(NodeType.CONFLICT, {
         "description": description,
@@ -257,12 +388,27 @@ def create_conflict(
 
 def create_analysis(
     text: str,
-    query_id: Optional[str] = None
+    query_id: Optional[str] = None,
+    analysis_type: str = "insight",
+    **attributes: Any,
 ) -> dict[str, Any]:
-    manager = _get_manager()
-    analysis_id = _run_async(manager.add_node(NodeType.ANALYSIS, {"text": text}))
+    if analysis_type not in {"gap", "insight"}:
+        raise ValueError(f"Invalid analysis_type: {analysis_type!r}")
     if query_id:
-        _run_async(manager.add_edge(query_id, analysis_id, EdgeType.RESOLVES_GAP))
+        parent_type = get_node(query_id).get("type")
+        allowed = {NodeType.QUERY.value}
+        if analysis_type == "gap":
+            allowed.add(NodeType.USER_REQUEST.value)
+        if parent_type not in allowed:
+            raise ValueError(f"Invalid Analysis parent type for {query_id!r}")
+    manager = _get_manager()
+    analysis_id = _run_async(manager.add_node(
+        NodeType.ANALYSIS,
+        {"text": text, "analysis_type": analysis_type, **attributes},
+    ))
+    if query_id:
+        edge_type = EdgeType.HAS_GAP if analysis_type == "gap" else EdgeType.HAS_ANALYSIS
+        _run_async(manager.add_edge(query_id, analysis_id, edge_type))
     return analysis_id
 
 
@@ -283,6 +429,12 @@ def bind_evidence_to_section(
     evidence_ids: list[str],
     claim_ids: Optional[list[str]] = None
 ) -> None:
+    if get_node(section_id).get("type") != NodeType.REPORT_SECTION.value:
+        raise ValueError(f"USES source must be a ReportSection: {section_id!r}")
+    if any(get_node(eid).get("type") != NodeType.EVIDENCE.value for eid in evidence_ids):
+        raise ValueError("USES evidence targets must all be Evidence nodes")
+    if any(get_node(cid).get("type") != NodeType.CLAIM.value for cid in claim_ids or []):
+        raise ValueError("USES claim targets must all be Claim nodes")
     manager = _get_manager()
     for evidence_id in evidence_ids:
         _run_async(manager.add_edge(section_id, evidence_id, EdgeType.USES))
@@ -351,9 +503,116 @@ def get_query_children(query_id: str) -> list[str]:
     ]
 
 
-def mark_query_status(query_id: str, status: str) -> dict[str, Any]:
-    manager = _get_manager()
-    return _run_async(manager.upsert_node(NodeType.QUERY, {"status": status}, dedupe_key=query_id))
+def validate_query_tree() -> dict[str, Any]:
+    """Validate the current run's Query hierarchy as a strict rooted tree."""
+    nodes = {n["id"]: n for n in get_all_nodes()}
+    queries = {nid: n for nid, n in nodes.items() if n.get("type") == NodeType.QUERY.value}
+    parent_edges: dict[str, list[str]] = {qid: [] for qid in queries}
+    invalid_parent_edges: list[dict[str, str]] = []
+    for edge in get_all_edges():
+        edge_type = str(edge.get("type", "")).lower()
+        if edge_type not in _PARENT_EDGE_TYPES:
+            continue
+        target = edge.get("target")
+        source = edge.get("source")
+        if target in queries:
+            source_type = nodes.get(source, {}).get("type")
+            expected_type = NodeType.USER_REQUEST.value if edge_type == "has_query" else NodeType.QUERY.value
+            if source_type != expected_type:
+                invalid_parent_edges.append({
+                    "source": source,
+                    "target": target,
+                    "type": str(edge.get("type")),
+                })
+                continue
+            parent_edges[target].append(source)
+
+    orphans = [qid for qid, parents in parent_edges.items() if not parents]
+    multi_parent = [qid for qid, parents in parent_edges.items() if len(parents) > 1]
+    cycles: list[str] = []
+    for qid in queries:
+        seen: set[str] = set()
+        current = qid
+        while parent_edges.get(current):
+            current = parent_edges[current][0]
+            if current in seen:
+                cycles.append(qid)
+                break
+            seen.add(current)
+    invalid_handles = [
+        qid for qid, node in queries.items()
+        if not re.fullmatch(r"q\d+(?:\.\d+)*", str(node.get("handle") or ""))
+    ]
+    return {
+        "valid": not (orphans or multi_parent or cycles or invalid_handles or invalid_parent_edges),
+        "orphans": orphans,
+        "multi_parent_queries": multi_parent,
+        "cycles": sorted(set(cycles)),
+        "invalid_handles": invalid_handles,
+        "invalid_parent_edges": invalid_parent_edges,
+    }
+
+
+def get_query_evaluation_subgraph(query_id: str) -> dict[str, Any]:
+    """Return only evidence owned by a Query plus direct-child summaries."""
+    query = get_node(query_id)
+    if query.get("type") != NodeType.QUERY.value:
+        return {"query": query, "nodes": [], "edges": [], "children": []}
+
+    nodes = {n["id"]: n for n in get_all_nodes()}
+    edges = get_all_edges()
+    selected_ids = {query_id}
+    selected_edges: list[dict[str, Any]] = []
+
+    run_ids = {
+        e["target"] for e in edges
+        if e.get("source") == query_id and str(e.get("type", "")).lower() == "searched_by"
+        and nodes.get(e["target"], {}).get("status") == "succeeded"
+    }
+    selected_ids.update(run_ids)
+    for edge in edges:
+        etype = str(edge.get("type", "")).lower()
+        run_owned = edge.get("source") in run_ids and etype in {"found_source", "produced"}
+        query_owned = edge.get("source") == query_id and etype in {
+            "searched_by",
+            "has_gap",
+            "has_analysis",
+        }
+        if run_owned or query_owned:
+            selected_ids.add(edge["target"])
+            selected_edges.append(edge)
+
+    produced_ids = set(selected_ids)
+    for edge in edges:
+        etype = str(edge.get("type", "")).lower()
+        if etype == "has_conflict" and edge.get("target") in produced_ids:
+            selected_ids.add(edge["source"])
+            selected_edges.append(edge)
+        elif edge.get("source") in selected_ids and edge.get("target") in selected_ids:
+            selected_edges.append(edge)
+
+    children = []
+    for child_id in get_query_children(query_id):
+        child = nodes.get(child_id, {})
+        gap_ids = [
+            e["target"] for e in edges
+            if e.get("source") == child_id and str(e.get("type", "")).lower() == "addresses_gap"
+        ]
+        children.append({
+            "id": child_id,
+            "handle": child.get("handle"),
+            "text": child.get("text"),
+            "status": child.get("status"),
+            "sufficiency_score": child.get("sufficiency_score"),
+            "required_for_parent": child.get("required_for_parent"),
+            "gap_ids": gap_ids,
+        })
+    return {
+        "query": query,
+        "nodes": [nodes[nid] for nid in selected_ids if nid in nodes],
+        "edges": selected_edges,
+        "children": children,
+    }
 
 
 def list_graph_databases() -> dict[str, Any]:

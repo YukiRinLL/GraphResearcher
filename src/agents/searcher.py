@@ -39,6 +39,7 @@ class SearcherState(TypedDict):
 
     messages: Annotated[list, add_messages]
     query_id: str
+    search_run_id: str
     query_text: str
     search_output: str
     evidence_package: Optional[dict]
@@ -222,6 +223,7 @@ def submit_node(state: SearcherState) -> dict:
         ep = dict(_EMPTY_PACKAGE)
 
     result = submit_search_result.invoke({
+        "search_run_id": state["search_run_id"],
         "query_id": state["query_id"],
         "evidence_package": ep,
     })

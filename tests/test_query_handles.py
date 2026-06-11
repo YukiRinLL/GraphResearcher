@@ -23,25 +23,23 @@ Q31 = {"id": "20260608180955461049_e9241aa9", "type": "query", "handle": "q3.1",
 NODES = {n["id"]: n for n in (GOAL, Q1, Q2, Q31)}
 QUERIES = [Q1, Q2, Q31]
 
-_calls = {"upsert": 0, "add_node": 0}
+_calls = {"create_analysis": 0, "add_node": 0}
 
 
-def _install_fakes(children_for=None):
-    children_for = children_for or {}
+def _install_fakes():
     graph_tools.get_node = lambda nid: NODES.get(nid)
     graph_tools.search_nodes = lambda kind, filt=None: list(QUERIES) if kind == "query" else []
-    graph_tools.get_query_children = lambda pid: list(children_for.get(pid, []))
-
-    def _upsert(kind, attrs, dedupe_key=None):
-        _calls["upsert"] += 1
-        return {"id": dedupe_key, **attrs}
 
     def _add_node(kind, attrs):
         _calls["add_node"] += 1
         return "new_node_id"
 
-    graph_tools.upsert_node = _upsert
+    def _create_analysis(text, query_id=None, analysis_type="insight", **attrs):
+        _calls["create_analysis"] += 1
+        return f"analysis-for-{query_id}"
+
     graph_tools.add_node = _add_node
+    graph_tools.create_analysis = _create_analysis
 
 
 def _check(label, cond):
@@ -68,31 +66,19 @@ def main():
     _check("pure garbage -> None", mm._resolve_query_id("totally-bogus") is None)
     _check("empty -> None", mm._resolve_query_id("") is None)
 
-    # --- _assign_handle ----------------------------------------------------
-    _install_fakes(children_for={GOAL["id"]: []})
-    _check("root, 0 children -> q1", mm._assign_handle(GOAL["id"]) == "q1")
-    _install_fakes(children_for={GOAL["id"]: [Q1["id"], Q2["id"]]})
-    _check("root, 2 children -> q3", mm._assign_handle(GOAL["id"]) == "q3")
-    _install_fakes(children_for={Q31["id"]: []})
-    _check("under q3.1, 0 children -> q3.1.1", mm._assign_handle(Q31["id"]) == "q3.1.1")
-    # A plain query 'q2' with one existing child -> q2.2.
-    _install_fakes(children_for={Q2["id"]: ["x"]})
-    _check("under q2, 1 child -> q2.2", mm._assign_handle(Q2["id"]) == "q2.2")
-
-    # --- mark_query hard-fail (no phantom node) ----------------------------
+    # --- insight binding resolves handles and rejects unknown refs ----------
     _install_fakes()
-    _calls["upsert"] = 0
-    r = mm.mark_query("totally-bogus", "blocked")
-    _check("mark_query(bogus) returns error", isinstance(r, dict) and "error" in r)
-    _check("mark_query(bogus) did NOT upsert a node", _calls["upsert"] == 0)
-    # A valid handle resolves and upserts under the real id.
-    r2 = mm.mark_query("q3.1", "needs_vertical", sufficiency_score=0.6)
-    _check("mark_query('q3.1') upserts real id", _calls["upsert"] == 1 and r2.get("id") == Q31["id"])
+    _calls["create_analysis"] = 0
+    r = mm.create_insight("note", "totally-bogus")
+    _check("create_insight(bogus) returns error", isinstance(r, dict) and "error" in r)
+    _check("create_insight(bogus) wrote nothing", _calls["create_analysis"] == 0)
+    r2 = mm.create_insight("note", "q3.1")
+    _check("create_insight('q3.1') resolves real id", r2.get("query_id") == Q31["id"])
 
     # --- submit_search_result hard-fail (no orphan run) --------------------
     _install_fakes()
     _calls["add_node"] = 0
-    out = mm.submit_search_result("totally-bogus", {})
+    out = mm.submit_search_result("missing-run", "totally-bogus", {})
     _check("submit(bogus) written all zero", out.get("written", {}).get("evidence") == 0)
     _check("submit(bogus) has error + no search_run", out.get("error") and out.get("search_run_id") is None)
     _check("submit(bogus) wrote NO node", _calls["add_node"] == 0)

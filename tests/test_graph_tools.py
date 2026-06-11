@@ -12,7 +12,7 @@ sys.path.insert(0, str(src_dir))
 
 from tools.graph_tools import (
     create_user_request,
-    create_query,
+    create_query_child,
     create_source,
     create_document,
     create_evidence,
@@ -22,7 +22,6 @@ from tools.graph_tools import (
     bind_evidence_to_section,
     get_pending_queries,
     get_query_subgraph,
-    mark_query_status,
     get_node,
     list_graph_databases,
     save_graph,
@@ -44,15 +43,17 @@ def test_basic_operations():
     print(f"✓ 创建用户请求: {user_request}")
     
     # 2. 创建查询
-    query1 = create_query(
+    query1 = create_query_child(
+        parent_id=user_request,
         text="AI发展历程 2014-2024",
-        parent_id=user_request
+        importance="core",
     )
     print(f"✓ 创建查询1: {query1}")
     
-    query2 = create_query(
+    query2 = create_query_child(
+        parent_id=user_request,
         text="AI未来发展趋势预测",
-        parent_id=user_request
+        importance="core",
     )
     print(f"✓ 创建查询2: {query2}")
     
@@ -163,15 +164,11 @@ def test_basic_operations():
     for q in pending_queries:
         print(f"  - {q}")
     
-    # 12. 标记查询为已完成
-    updated_query1 = mark_query_status(query1, "completed")
-    print(f"✓ 更新查询状态: {updated_query1}")
-    
-    # 13. 获取查询的子图
+    # 12. 获取查询的子图
     query_subgraph = get_query_subgraph(query1)
     print(f"✓ 查询子图: {len(query_subgraph['nodes'])} 个节点, {len(query_subgraph['edges'])} 条边")
     
-    # 14. 获取节点详情
+    # 13. 获取节点详情
     node_details = get_node(evidence1)
     print(f"✓ 获取证据节点详情: {node_details}")
     
@@ -184,7 +181,7 @@ def test_basic_operations():
     print(f"✓ 图谱存储位置: {databases['location']}")
     print(f"✓ 可用数据库: {databases['databases']}")
     
-    # 15. 保存图谱
+    # 14. 保存图谱
     save_graph()
     print("✓ 图谱已保存到磁盘")
     

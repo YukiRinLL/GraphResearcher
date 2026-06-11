@@ -85,6 +85,11 @@ def compute_priority(sem_label: Optional[str], parent_id: Optional[str]) -> tupl
     parent_priority = (parent or {}).get("priority")
     struct = 1.0 if parent_priority is None else GAMMA * float(parent_priority)
     score = W_SEM * sem_value + W_STRUCT * struct
+    # Scheduling priority is strictly depth-decayed. Whether a child is
+    # required for convergence is represented separately by
+    # ``required_for_parent`` and must not be encoded by raising its score.
+    if parent_priority is not None:
+        score = min(score, struct)
     score = max(0.0, min(1.0, score))
     tier = "high" if score >= TAU_HIGH else "low"
     return score, tier, sem_value
@@ -104,11 +109,11 @@ def structurally_converged() -> bool:
         True when the deterministic, priority-weighted part of convergence is
         met; False otherwise.
     """
-    from tools import graph_tools
+    from tools import graph_tools, research_state
 
     queries = graph_tools.search_nodes("query", {})
-    highs = [q for q in queries if q.get("priority_tier") == "high"]
-    if not highs:
+    required = [q for q in queries if research_state.is_required_path(q["id"])]
+    if not required:
         return bool(queries)
     return all(
         q.get("status") == "blocked"
@@ -116,7 +121,7 @@ def structurally_converged() -> bool:
             q.get("status") == "sufficient"
             and float(q.get("sufficiency_score") or 0.0) >= SCORE_THRESHOLD
         )
-        for q in highs
+        for q in required
     )
 
 

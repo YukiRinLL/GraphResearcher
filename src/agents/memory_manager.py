@@ -13,8 +13,10 @@ Notes:
   with ``str.replace`` rather than ``str.format``.
 """
 
+import hashlib
 import json
 import logging
+import threading
 from typing import Any, Optional
 
 import config
@@ -56,7 +58,7 @@ def _parse_json(text: str) -> dict:
 # Internal scheduling/bookkeeping fields that the Orchestrator uses to drive the
 # research loop but that must never leak into the Reporter's writing context —
 # otherwise the model narrates graph state (e.g. "this query is blocked").
-_INTERNAL_NODE_FIELDS = ("kind", "status", "sufficiency_score")
+_INTERNAL_NODE_FIELDS = ("kind", "status", "sufficiency_score", "_claim_lock", "_budget_lock")
 
 # Cross-reference tokens that break a query's self-containment: a follow-up
 # query containing any of these depends on another query's output and is not
@@ -101,8 +103,8 @@ def _first(d: dict, *keys: str) -> Optional[Any]:
     return None
 
 
-def _query_text_importance(item: Any) -> tuple:
-    """Return ``(text, importance)`` from a planner-authored query item.
+def _query_spec(item: Any) -> tuple:
+    """Return ``(text, importance, acceptance_criteria)`` from a query item.
 
     Accepts the structured ``{"text", "importance"}`` form or a bare string
     (lenient parsing). A missing importance is left as ``None`` so the priority
@@ -115,8 +117,15 @@ def _query_text_importance(item: Any) -> tuple:
         A ``(text, importance)`` tuple.
     """
     if isinstance(item, dict):
-        return item.get("text"), item.get("importance")
-    return item, None
+        criteria = item.get("acceptance_criteria")
+        return item.get("text"), item.get("importance"), criteria if isinstance(criteria, list) else []
+    return item, None, []
+
+
+def _gap_key(description: str) -> str:
+    """Return a stable normalized fingerprint for one atomic knowledge gap."""
+    normalized = " ".join((description or "").lower().split())
+    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()[:20]
 
 
 class MemoryManager:
@@ -131,6 +140,7 @@ class MemoryManager:
         """
         self.cache_dir = cache_dir
         self.model = model if model is not None else config.build_model()
+        self._state_lock = threading.RLock()
 
     def _invoke_json(self, prompt: str) -> dict:
         """Invoke the model and parse a JSON object from its response."""
@@ -158,31 +168,68 @@ class MemoryManager:
         """
         parsed = self._plan_initial_queries(user_request)
 
+        from tools import middleware, research_state
+
         goal_id = graph_tools.create_user_request(
             request=user_request,
             research_goal=parsed.get("research_goal"),
             language=parsed.get("language"),
+            time_window=parsed.get("time_window"),
+            region_scope=parsed.get("region_scope"),
+            source_preferences=parsed.get("source_preferences") or [],
+            research_state="INITIALIZING",
+            max_search_rounds=middleware.get_max_search_rounds(),
+            dispatched_search_rounds=0,
+            successful_search_rounds=0,
+            last_convergence_recommendation="continue",
         )
 
-        from tools import convergence
-
         queries = []
-        for item in parsed.get("initial_queries", []) or []:
-            text, importance = _query_text_importance(item)
-            if not text:
+        initial_queries = parsed.get("initial_queries")
+        if not isinstance(initial_queries, list) or not initial_queries:
+            initial_queries = [
+            {
+                "text": user_request,
+                "importance": "core",
+                "acceptance_criteria": ["Directly answer the user's research request with reliable evidence"],
+            }
+            ]
+        for item in initial_queries:
+            text, importance, criteria = _query_spec(item)
+            if not isinstance(text, str) or not text.strip():
                 continue
-            score, tier, sem = convergence.compute_priority(importance, goal_id)
-            handle = self._assign_handle(goal_id)
-            query_id = graph_tools.create_query(
-                text=text,
-                status="pending",
+            importance = importance or "supporting"
+            query_id = graph_tools.create_query_child(
                 parent_id=goal_id,
-                priority=score,
-                priority_tier=tier,
-                sem=sem,
-                handle=handle,
+                text=text,
+                importance=importance,
+                acceptance_criteria=criteria,
             )
-            queries.append({"handle": handle, "id": query_id, "text": text, "priority_tier": tier})
+            query = graph_tools.get_node(query_id)
+            queries.append({
+                "handle": query.get("handle"),
+                "id": query_id,
+                "text": text,
+                "priority_tier": query.get("priority_tier"),
+                "acceptance_criteria": criteria,
+            })
+        if not queries:
+            query_id = graph_tools.create_query_child(
+                parent_id=goal_id,
+                text=user_request,
+                importance="core",
+                acceptance_criteria=["Directly answer the user's research request with reliable evidence"],
+            )
+            query = graph_tools.get_node(query_id)
+            queries.append({
+                "handle": query.get("handle"),
+                "id": query_id,
+                "text": user_request,
+                "priority_tier": query.get("priority_tier"),
+                "acceptance_criteria": query.get("acceptance_criteria") or [],
+            })
+
+        research_state.update_goal({"research_state": research_state.RESEARCHING}, goal_id)
 
         return {
             "goal_id": goal_id,
@@ -191,11 +238,10 @@ class MemoryManager:
             "queries": queries,
         }
 
-    def get_next_queries(self, limit: int = 4) -> list[dict]:
-        """Return high-priority queries awaiting work.
+    def get_next_actions(self, limit: int = 4) -> list[dict]:
+        """Return the highest-priority deterministic workflow actions.
 
-        Collects queries whose status is ``pending``, ``needs_horizontal`` or
-        ``needs_vertical``.
+        Advances existing work before dispatching new searches.
 
         Args:
             limit: Maximum number of queries to return.
@@ -204,317 +250,617 @@ class MemoryManager:
             A list of ``{id, text, status, priority_tier, priority}`` dicts,
             highest priority first.
         """
-        results: list[dict] = []
-        for status in ("pending", "needs_horizontal", "needs_vertical"):
-            for node in graph_tools.search_nodes("query", {"status": status}):
-                results.append({
-                    "handle": node.get("handle"),
-                    "id": node.get("id"),
-                    "text": node.get("text"),
-                    "status": status,
-                    "priority_tier": node.get("priority_tier"),
-                    "priority": node.get("priority"),
-                })
-        results.sort(key=lambda q: q.get("priority") or 0.0, reverse=True)
-        return results[:limit]
+        from tools import research_state
 
-    def analyze_subgraph(self, query_id: str) -> dict:
-        """Score the sufficiency of a query's evidence sub-graph via the LLM.
+        status = research_state.get_status()
+        if status.get("research_state") != research_state.RESEARCHING:
+            return []
 
-        Args:
-            query_id: The query node ID to evaluate.
-
-        Returns:
-            dict with ``sufficiency_score``, ``covered``, ``gaps``,
-            ``conflicts``, ``recommendation`` and ``reason``.
-        """
-        resolved = self._resolve_query_id(query_id) or query_id
-        node = graph_tools.get_node(resolved) or {}
-        subgraph = graph_tools.get_query_subgraph(resolved, depth=4)
-        prompt = mm_prompts.summarize_subgraph.replace(
-            "{query}", node.get("text") or resolved
-        ).replace("{subgraph}", json.dumps(subgraph, ensure_ascii=False))
-        return self._invoke_json(prompt)
-
-    def analyze_coverage(self, parent_id: str) -> dict:
-        """Judge whether the parallel sub-dimensions under a parent are complete.
-
-        Reads the parent's text and the text+status of its IMMEDIATE child
-        queries only (not their evidence or grandchildren), then asks the LLM
-        whether any parallel dimension under the parent is still missing — the
-        signal that drives horizontal expansion. Deliberately uses
-        ``get_query_children`` (one level) rather than the undirected, deep
-        ``get_query_subgraph`` so the prompt stays scoped to breadth.
-
-        Args:
-            parent_id: The parent node ID (the research-goal ``user_request`` or
-                an intermediate ``query``).
-
-        Returns:
-            dict with ``covered_dimensions``, ``missing_dimensions``,
-            ``recommendation`` (``complete``/``needs_horizontal``) and ``reason``.
-        """
-        parent = graph_tools.get_node(parent_id)
-        parent_text = (
-            parent.get("text")
-            or parent.get("research_goal")
-            or parent.get("request")
-            or parent_id
-        )
-        children = []
-        for child_id in graph_tools.get_query_children(parent_id):
-            child = graph_tools.get_node(child_id)
-            if child:
-                children.append({"text": child.get("text"), "status": child.get("status")})
-        prompt = mm_prompts.analyze_coverage.replace("{parent}", parent_text).replace(
-            "{children}", json.dumps(children, ensure_ascii=False)
-        )
-        return self._invoke_json(prompt)
-
-    def expand_query(
-        self,
-        anchor_query_id: str,
-        direction: str,
-        reason: str = "",
-        gaps: Any = None,
-        max_new: int = 1,
-    ) -> dict:
-        """Author and attach self-contained follow-up query node(s).
-
-        The Query Planner authors the text; the Orchestrator only chooses the
-        anchor, direction, reason and gaps — it never writes query text.
-
-        ``direction``:
-          - ``vertical``: attach the new query UNDER ``anchor_query_id`` (deepen it).
-          - ``horizontal``: attach under the anchor's PARENT (a parallel sibling).
-            Works at goal level too — a sibling added under the ``user_request``
-            goal gets a ``HAS_QUERY`` edge, like an initial query.
-
-        Args:
-            anchor_query_id: Query to expand from (truncated/label IDs tolerated).
-            direction: ``vertical`` or ``horizontal``.
-            reason: Why this expansion is needed (stored on each new node).
-            gaps: Gaps (vertical) or missing dimensions (horizontal) to cover.
-            max_new: Maximum number of queries to author.
-
-        Returns:
-            dict with ``attach_point``, ``edge_type``, ``direction``, ``created``
-            (each ``{id, text}``) and an optional ``warning``.
-        """
-        warning = None
-        anchor_id = self._resolve_query_id(anchor_query_id) or anchor_query_id
-
-        if direction == "horizontal":
-            attach_point = graph_tools.get_query_parent(anchor_id)
-            if not attach_point:
-                attach_point = anchor_id
-                warning = f"anchor {anchor_id!r} 无父节点，横向兄弟改挂在 anchor 自身下。"
-        else:
-            attach_point = anchor_id
-
-        # Edge type follows the attach point: a goal (user_request) uses
-        # HAS_QUERY, a query uses PARENT_OF — matching the existing hierarchy.
-        attach_node = graph_tools.get_node(attach_point)
-        edge_type = (
-            EdgeType.HAS_QUERY
-            if attach_node.get("type") == NodeType.USER_REQUEST.value
-            else EdgeType.PARENT_OF
-        )
-        parent_text = (
-            attach_node.get("text")
-            or attach_node.get("research_goal")
-            or attach_node.get("request")
-            or ""
-        )
-
-        research_goal = ""
-        requests = graph_tools.search_nodes("user_request", {})
-        if requests:
-            research_goal = requests[0].get("research_goal") or requests[0].get("request") or ""
-
-        sibling_texts = []
-        for sibling_id in graph_tools.get_query_children(attach_point):
-            sibling = graph_tools.get_node(sibling_id)
-            if sibling and sibling.get("text"):
-                sibling_texts.append(sibling["text"])
-
-        followups = self._plan_followup_queries(
-            direction=direction,
-            research_goal=research_goal,
-            parent_text=parent_text,
-            sibling_texts=sibling_texts,
-            gaps=gaps if gaps is not None else [],
-            reason=reason,
-            max_new=max_new,
-        )
-
-        from tools import convergence
-
-        created = []
-        for followup in followups:
-            text = followup["text"]
-            score, tier, sem = convergence.compute_priority(followup.get("importance"), attach_point)
-            handle = self._assign_handle(attach_point)
-            new_id = graph_tools.add_node(
-                "query",
-                {
-                    "text": text,
-                    "status": "pending",
-                    "expansion_type": direction,
+        queries = graph_tools.search_nodes("query", {})
+        actions: list[dict] = []
+        terminal = research_state.TERMINAL_QUERY_STATUSES
+        for node in queries:
+            query_status = node.get("status")
+            action = None
+            reason = ""
+            gap_ids: list[str] = []
+            if query_status == "assessing":
+                action, reason = "assess_query", "successful search completed"
+            elif query_status == "needs_expansion":
+                gap_ids = self._query_gap_ids(node["id"], statuses={"open"})
+                action, reason = "expand_gaps", "atomic gaps await child queries"
+            elif query_status == "waiting_children":
+                required_children = [
+                    graph_tools.get_node(cid) for cid in graph_tools.get_query_children(node["id"])
+                    if graph_tools.get_node(cid).get("required_for_parent", True)
+                ]
+                if required_children and all(c.get("status") in terminal for c in required_children):
+                    action, reason = "assess_query", "all required child queries completed"
+            elif query_status == "pending":
+                action, reason = "dispatch_searcher", "query awaits its first successful search"
+            if action:
+                actions.append({
+                    "action": action,
+                    "query_id": node.get("handle") or node["id"],
+                    "exact_query_id": node["id"],
+                    "priority": node.get("priority", 0.0),
+                    "required_for_parent": node.get("required_for_parent", True),
+                    "required_path": research_state.is_required_path(node["id"]),
+                    "semantic_importance": node.get("sem", 0.0),
+                    "gap_ids": gap_ids,
                     "reason": reason,
-                    "priority": score,
-                    "priority_tier": tier,
-                    "sem": sem,
-                    "handle": handle,
-                },
-            )
-            graph_tools.add_edge(attach_point, new_id, edge_type)
-            created.append({"handle": handle, "id": new_id, "text": text})
+                })
 
-        graph_tools.save_graph()
-        result = {
-            "attach_point": attach_point,
-            "edge_type": edge_type.value,
-            "direction": direction,
-            "created": created,
-        }
-        if warning:
-            result["warning"] = warning
+        action_rank = {"assess_query": 0, "expand_gaps": 1, "dispatch_searcher": 2}
+        actions.sort(key=lambda a: (
+            action_rank[a["action"]],
+            -int(bool(a["required_path"])),
+            -float(a["semantic_importance"] or 0.0),
+            -float(a["priority"] or 0.0),
+            a["exact_query_id"],
+        ))
+        remaining = research_state.remaining_budget()
+        if remaining == 0 and any(a["action"] == "dispatch_searcher" for a in actions):
+            research_state.mark_budget_exhausted()
+            return []
+        return actions[:limit]
+
+    def _query_gap_ids(self, query_id: str, statuses: Optional[set[str]] = None) -> list[str]:
+        """Return gap nodes owned by a Query, optionally filtered by status."""
+        result = []
+        for edge in graph_tools.get_node_edges(query_id, direction="out"):
+            if str(edge.get("type", "")).lower() != "has_gap":
+                continue
+            gap = graph_tools.get_node(edge["target"])
+            if gap.get("analysis_type") != "gap":
+                continue
+            if statuses is None or gap.get("status") in statuses:
+                result.append(gap["id"])
         return result
 
-    def mark_query(self, query_id: str, status: str, **metrics: Any) -> dict:
-        """Update a query's status and optional metrics.
+    def _addressed_gap_ids(self, query_id: str) -> list[str]:
+        """Return gap nodes assigned to a child Query."""
+        return [
+            edge["target"]
+            for edge in graph_tools.get_node_edges(query_id, direction="out")
+            if str(edge.get("type", "")).lower() == "addresses_gap"
+        ]
 
-        Args:
-            query_id: The query node ID.
-            status: New status (e.g. ``sufficient``, ``blocked``).
-            **metrics: Additional attributes to store (e.g. scores).
+    def assess_query(self, query_id: str) -> dict:
+        """Assess one Query's owned evidence and automatically advance its state."""
+        from tools import research_state
 
-        Returns:
-            The updated query node.
-        """
+        if research_state.get_status().get("research_state") != research_state.RESEARCHING:
+            return {"error": "Query assessment is only allowed while research_state is RESEARCHING"}
         resolved = self._resolve_query_id(query_id)
         if resolved is None:
+            return {"error": f"Unknown query reference: {query_id!r}"}
+        query = graph_tools.get_node(resolved)
+        if query.get("status") not in {"assessing", "waiting_children"}:
+            return {"error": f"Query {query.get('handle') or resolved} is not ready for assessment"}
+        if query.get("status") == "waiting_children":
+            required_children = [
+                graph_tools.get_node(cid)
+                for cid in graph_tools.get_query_children(resolved)
+                if graph_tools.get_node(cid).get("required_for_parent", True)
+            ]
+            if any(c.get("status") not in {"sufficient", "blocked", "failed"} for c in required_children):
+                return {"error": f"Query {query.get('handle') or resolved} still has unfinished required children"}
+
+        evaluation = graph_tools.get_query_evaluation_subgraph(resolved)
+        prompt = mm_prompts.assess_query.replace(
+            "{query}", json.dumps({
+                "text": query.get("text"),
+                "acceptance_criteria": query.get("acceptance_criteria") or [],
+            }, ensure_ascii=False)
+        ).replace("{evaluation_subgraph}", json.dumps(evaluation, ensure_ascii=False))
+        verdict = self._invoke_json(prompt)
+        try:
+            score = max(0.0, min(1.0, float(verdict.get("sufficiency_score", 0.0))))
+        except (TypeError, ValueError):
+            score = 0.0
+
+        if int(query.get("low_novelty_streak") or 0) >= 2 and not (
+            verdict.get("recommendation") == "sufficient" and score >= 0.7
+        ):
+            for gap_id in self._query_gap_ids(resolved, {"open", "assigned"}):
+                graph_tools.upsert_node(NodeType.ANALYSIS, {
+                    "status": "blocked",
+                    "resolution_reason": "two consecutive low-novelty searches on this gap path",
+                }, gap_id)
+            graph_tools.transition_query(
+                resolved,
+                "blocked",
+                sufficiency_score=score,
+                covered=verdict.get("covered") or [],
+                assessment_reason="branch stopped after two consecutive low-novelty searches",
+            )
+            self._propagate_child_completion(resolved, "blocked")
             return {
-                "error": (
-                    f"query_id {query_id!r} 未匹配到任何 query 节点；请用 init_research/"
-                    "get_next_queries/expand_query 返回的句柄（如 q3.1）或精确 ID 重试。"
-                )
+                "query_id": query.get("handle") or resolved,
+                "exact_query_id": resolved,
+                "sufficiency_score": score,
+                "status": "blocked",
+                "created_gaps": [],
+                "next_action": "get_next_actions",
             }
-        return graph_tools.upsert_node(
-            "query", {"status": status, **metrics}, dedupe_key=resolved
+
+        created_gaps: list[str] = []
+        existing = {
+            graph_tools.get_node(gid).get("gap_key"): gid
+            for gid in self._query_gap_ids(resolved)
+        }
+        raw_gaps = verdict.get("gaps") or []
+        if not isinstance(raw_gaps, list):
+            raw_gaps = []
+        for raw in raw_gaps:
+            if isinstance(raw, str):
+                spec = {"description": raw, "importance": "supporting"}
+            elif isinstance(raw, dict):
+                spec = raw
+            else:
+                continue
+            description = str(spec.get("description") or "").strip()
+            if not description:
+                continue
+            key = _gap_key(description)
+            if key in existing or self._gap_key_in_ancestors(resolved, key):
+                continue
+            importance = spec.get("importance")
+            if importance not in {"core", "supporting", "peripheral"}:
+                importance = "supporting"
+            gap_id = graph_tools.create_analysis(
+                text=description,
+                query_id=resolved,
+                analysis_type="gap",
+                description=description,
+                gap_key=key,
+                importance=importance,
+                required_for_parent=importance != "peripheral",
+                status="open",
+                acceptance_criteria=(
+                    spec.get("acceptance_criteria")
+                    if isinstance(spec.get("acceptance_criteria"), list)
+                    else []
+                ),
+            )
+            existing[key] = gap_id
+            created_gaps.append(gap_id)
+
+        recommendation = verdict.get("recommendation")
+        if recommendation == "blocked":
+            new_status = "blocked"
+        elif recommendation == "sufficient" and score >= 0.7 and not created_gaps:
+            new_status = "sufficient"
+        elif created_gaps or self._query_gap_ids(resolved, {"open"}):
+            new_status = "needs_expansion"
+        else:
+            # An insufficient assessment must always leave an actionable,
+            # atomic gap rather than sending the same Query back to search.
+            description = str(verdict.get("reason") or "Evidence remains insufficient for the query").strip()
+            key = _gap_key(description)
+            if key in existing or self._gap_key_in_ancestors(resolved, key):
+                new_status = "blocked"
+            else:
+                gap_id = graph_tools.create_analysis(
+                    text=description,
+                    query_id=resolved,
+                    analysis_type="gap",
+                    description=description,
+                    gap_key=key,
+                    importance="supporting",
+                    required_for_parent=True,
+                    status="open",
+                    acceptance_criteria=[],
+                )
+                created_gaps.append(gap_id)
+                new_status = "needs_expansion"
+
+        graph_tools.transition_query(
+            resolved,
+            new_status,
+            sufficiency_score=score,
+            covered=verdict.get("covered") or [],
+            assessment_reason=verdict.get("reason") or "",
         )
+        if new_status in {"sufficient", "blocked"}:
+            self._propagate_child_completion(resolved, new_status)
+        return {
+            "query_id": query.get("handle") or resolved,
+            "exact_query_id": resolved,
+            "sufficiency_score": score,
+            "status": new_status,
+            "created_gaps": created_gaps,
+            "next_action": "expand_gaps" if new_status == "needs_expansion" else "get_next_actions",
+        }
+
+    def _gap_key_in_ancestors(self, query_id: str, gap_key: str) -> bool:
+        """Return whether a gap fingerprint already exists on the ancestor path."""
+        current = graph_tools.get_query_parent(query_id)
+        while current:
+            node = graph_tools.get_node(current)
+            if node.get("type") != NodeType.QUERY.value:
+                break
+            for gap_id in self._query_gap_ids(current):
+                if graph_tools.get_node(gap_id).get("gap_key") == gap_key:
+                    return True
+            current = graph_tools.get_query_parent(current)
+        return False
+
+    def _propagate_child_completion(self, query_id: str, child_status: str) -> None:
+        """Resolve assigned gaps and make a completed child's parent assessable."""
+        gap_status = "resolved" if child_status == "sufficient" else "blocked"
+        for gap_id in self._addressed_gap_ids(query_id):
+            gap = graph_tools.get_node(gap_id)
+            graph_tools.upsert_node(NodeType.ANALYSIS, {
+                "status": gap_status,
+                "resolution_reason": f"child query finished as {child_status}",
+            }, gap_id)
+            conflict_id = gap.get("conflict_id")
+            if conflict_id:
+                graph_tools.upsert_node(NodeType.CONFLICT, {
+                    "resolution_status": "resolved" if child_status == "sufficient" else "disclosed",
+                }, conflict_id)
+        parent_id = graph_tools.get_query_parent(query_id)
+        parent = graph_tools.get_node(parent_id) if parent_id else {}
+        if parent.get("type") != NodeType.QUERY.value or parent.get("status") != "waiting_children":
+            return
+        required_children = [
+            graph_tools.get_node(cid) for cid in graph_tools.get_query_children(parent_id)
+            if graph_tools.get_node(cid).get("required_for_parent", True)
+        ]
+        if required_children and all(c.get("status") in {"sufficient", "blocked", "failed"} for c in required_children):
+            graph_tools.transition_query(parent_id, "assessing")
+
+    def expand_gaps(self, parent_id: str, gap_ids: Optional[list[str]] = None) -> dict:
+        """Create one self-contained child Query per open atomic gap."""
+        from tools import research_state
+
+        if research_state.get_status().get("research_state") != research_state.RESEARCHING:
+            return {"error": "Gap expansion is only allowed while research_state is RESEARCHING"}
+        resolved = self._resolve_query_id(parent_id)
+        if resolved is None:
+            return {"error": f"Unknown query reference: {parent_id!r}"}
+        parent = graph_tools.get_node(resolved)
+        if parent.get("status") != "needs_expansion":
+            return {"error": f"Query {parent.get('handle') or resolved} is not awaiting expansion"}
+        if int(parent.get("low_novelty_streak") or 0) >= 2:
+            for gap_id in self._query_gap_ids(resolved, {"open"}):
+                graph_tools.upsert_node(NodeType.ANALYSIS, {
+                    "status": "blocked",
+                    "resolution_reason": "two consecutive low-novelty searches on this branch",
+                }, gap_id)
+            graph_tools.transition_query(resolved, "blocked")
+            self._propagate_child_completion(resolved, "blocked")
+            return {
+                "parent_id": parent.get("handle") or resolved,
+                "created": [],
+                "blocked_for_low_novelty": True,
+                "next_action": "get_next_actions",
+            }
+        owned_open_gap_ids = set(self._query_gap_ids(resolved, {"open"}))
+        candidates = gap_ids or list(owned_open_gap_ids)
+        gaps = [
+            graph_tools.get_node(gid) for gid in candidates
+            if gid in owned_open_gap_ids
+            and graph_tools.get_node(gid).get("analysis_type") == "gap"
+            and graph_tools.get_node(gid).get("status") == "open"
+        ]
+        remaining = research_state.remaining_budget()
+        deferred = []
+        if remaining is not None:
+            deferred = gaps[remaining:]
+            gaps = gaps[:remaining]
+            for gap in deferred:
+                graph_tools.upsert_node(NodeType.ANALYSIS, {
+                    "status": "deferred_budget",
+                    "resolution_reason": "insufficient remaining search budget",
+                }, gap["id"])
+
+        created = []
+        goal = research_state.get_goal()
+        sibling_texts = [
+            graph_tools.get_node(cid).get("text")
+            for cid in graph_tools.get_query_children(resolved)
+        ]
+        for gap in gaps:
+            gap_key = gap.get("gap_key")
+            if gap_key and self._gap_key_in_ancestors(resolved, gap_key):
+                graph_tools.upsert_node(NodeType.ANALYSIS, {
+                    "status": "blocked",
+                    "resolution_reason": "duplicate gap_key already exists on the ancestor path",
+                }, gap["id"])
+                continue
+            followups = self._plan_followup_queries(
+                research_goal=goal.get("research_goal") or goal.get("request") or "",
+                parent_text=parent.get("text") or "",
+                sibling_texts=sibling_texts,
+                gaps=[{
+                    "id": gap["id"],
+                    "description": gap.get("description") or gap.get("text"),
+                    "acceptance_criteria": gap.get("acceptance_criteria") or [],
+                }],
+                reason=gap.get("description") or gap.get("text") or "",
+                max_new=1,
+            )
+            if not followups:
+                graph_tools.upsert_node(NodeType.ANALYSIS, {
+                    "status": "blocked",
+                    "resolution_reason": "query planner could not author a self-contained child query",
+                }, gap["id"])
+                continue
+            spec = followups[0]
+            importance = spec.get("importance") or gap.get("importance") or "supporting"
+            child_id = graph_tools.create_query_child(
+                parent_id=resolved,
+                text=spec["text"],
+                importance=importance,
+                acceptance_criteria=spec.get("acceptance_criteria") or gap.get("acceptance_criteria") or [],
+                gap_ids=[gap["id"]],
+            )
+            child = graph_tools.get_node(child_id)
+            created.append({"id": child_id, "handle": child.get("handle"), "text": child.get("text"), "gap_id": gap["id"]})
+            sibling_texts.append(child.get("text"))
+
+        next_status = "waiting_children" if created else "blocked"
+        graph_tools.transition_query(resolved, next_status)
+        if next_status == "blocked":
+            self._propagate_child_completion(resolved, "blocked")
+        return {
+            "parent_id": parent.get("handle") or resolved,
+            "created": created,
+            "deferred_gap_ids": [g["id"] for g in deferred],
+            "next_action": "get_next_actions",
+        }
 
     def assess_convergence(self, goal_id: Optional[str] = None) -> dict:
-        """Decide whether the research can stop, blending code and a thin LLM call.
+        """Authorize reporting only when required tree branches have terminated."""
+        from tools import research_state
 
-        The deterministic parts — high-priority coverage at the score threshold
-        and novelty diminishing returns — come from ``tools.convergence``. The
-        LLM supplies only the two judgments it is suited for: which unresolved
-        conflicts are fatal, and which open gaps would undermine the core
-        conclusions. The ``recommendation`` is then composed in code.
-
-        Args:
-            goal_id: The research-goal node ID; accepted for signature parity
-                with the rest of the Orchestrator toolkit and not required.
-
-        Returns:
-            dict with ``converged``, ``fatal_unresolved_conflicts``,
-            ``core_threatening_gaps``, ``recommendation``, ``reason`` and a
-            ``metrics_summary``.
-        """
-        from tools import convergence
-
+        current_state = research_state.get_status(goal_id).get("research_state")
+        if current_state != research_state.RESEARCHING:
+            return {
+                "converged": current_state in {research_state.REPORT_READY, research_state.BUDGET_EXHAUSTED},
+                "recommendation": "stop" if current_state in research_state.REPORT_ALLOWED else "failed",
+                "research_state": current_state,
+                "next_actions": [],
+            }
+        tree = graph_tools.validate_query_tree()
         all_queries = graph_tools.search_nodes("query", {})
-        core_queries = [
-            {
-                "text": q.get("text"),
-                "status": q.get("status"),
-                "sufficiency_score": q.get("sufficiency_score"),
+        if not tree.get("valid") or not all_queries:
+            reason = "invalid Query tree" if not tree.get("valid") else "research has no Query nodes"
+            research_state.update_goal({
+                "research_state": research_state.FAILED,
+                "last_convergence_recommendation": "continue",
+                "last_error": reason,
+            }, goal_id)
+            return {
+                "converged": False,
+                "fatal_unresolved_conflicts": [],
+                "open_required_gaps": [],
+                "open_required_queries": [],
+                "recommendation": "failed",
+                "reason": reason,
+                "research_state": research_state.FAILED,
+                "tree_validation": tree,
+                "next_actions": [],
             }
-            for q in all_queries
-            if q.get("priority_tier") == "high"
+        open_required = [
+            q for q in all_queries
+            if research_state.is_required_path(q["id"])
+            and q.get("status") not in research_state.TERMINAL_QUERY_STATUSES
         ]
-        open_queries = [
-            {
-                "text": q.get("text"),
-                "status": q.get("status"),
-                "priority_tier": q.get("priority_tier"),
-            }
-            for q in all_queries
-            if q.get("status") not in ("sufficient", "blocked")
+        open_gaps = [
+            gap for gap in graph_tools.search_nodes("analysis", {"analysis_type": "gap"})
+            if research_state.gap_is_required_path(gap["id"])
+            and gap.get("status") in research_state.OPEN_GAP_STATUSES
         ]
         conflicts = [
             {
+                "id": c.get("id"),
                 "description": c.get("description"),
                 "conflict_type": c.get("conflict_type"),
             }
             for c in graph_tools.search_nodes("conflict", {})
-            if c.get("resolution_status") != "resolved"
+            if c.get("resolution_status") not in {"resolved", "disclosed"}
         ]
         prompt = (
             mm_prompts.assess_convergence
-            .replace("{core_queries}", json.dumps(core_queries, ensure_ascii=False))
-            .replace("{open_queries}", json.dumps(open_queries, ensure_ascii=False))
+            .replace("{core_queries}", json.dumps(all_queries, ensure_ascii=False))
+            .replace("{open_queries}", json.dumps(open_required, ensure_ascii=False))
             .replace("{conflicts}", json.dumps(conflicts, ensure_ascii=False))
         )
         verdict = self._invoke_json(prompt)
         fatal = verdict.get("fatal_unresolved_conflicts") or []
-        core_gaps = verdict.get("core_threatening_gaps") or []
-
-        metrics = convergence.compute_metrics(advance_novelty=False)
-        priority = metrics.get("priority", {})
-        diminishing = bool(metrics.get("novelty", {}).get("diminishing"))
-        structurally = bool(priority.get("structurally_converged"))
-        pending_high = bool(priority.get("pending_high_priority"))
-
-        # Diminishing returns only justify stopping once no high-priority query
-        # is still pending (unsearched); otherwise there is obvious work left.
-        if structurally and not fatal and not core_gaps:
+        goal = research_state.get_goal(goal_id)
+        for fatal_description in fatal:
+            conflict = next(
+                (c for c in graph_tools.search_nodes("conflict", {})
+                 if c.get("description") == fatal_description),
+                None,
+            )
+            if not conflict:
+                continue
+            owner_id = self._conflict_owner_query(conflict["id"])
+            if not owner_id:
+                continue
+            key = _gap_key(f"Resolve conflict: {fatal_description}")
+            owner = graph_tools.get_node(owner_id)
+            gap_parent_id = (
+                goal["id"]
+                if owner.get("status") in research_state.TERMINAL_QUERY_STATUSES
+                else owner_id
+            )
+            if key not in {
+                graph_tools.get_node(gid).get("gap_key") for gid in self._query_gap_ids(gap_parent_id)
+            }:
+                gap_id = graph_tools.create_analysis(
+                    text=f"Resolve conflict: {fatal_description}",
+                    query_id=gap_parent_id,
+                    analysis_type="gap",
+                    description=f"Resolve conflict: {fatal_description}",
+                    gap_key=key,
+                    importance="core",
+                    required_for_parent=True,
+                    status="open",
+                    conflict_id=conflict["id"],
+                    acceptance_criteria=["Find independent evidence that resolves or clearly scopes the conflict"],
+                )
+                open_gaps.append(graph_tools.get_node(gap_id))
+                if gap_parent_id == goal["id"]:
+                    child_id = graph_tools.create_query_child(
+                        parent_id=goal["id"],
+                        text=fatal_description,
+                        importance="core",
+                        acceptance_criteria=[
+                            "Find independent evidence that resolves or clearly scopes the conflict"
+                        ],
+                        gap_ids=[gap_id],
+                    )
+                    open_required.append(graph_tools.get_node(child_id))
+                elif owner.get("status") == "assessing":
+                    graph_tools.transition_query(owner_id, "needs_expansion")
+        remaining = research_state.remaining_budget(goal_id)
+        if remaining == 0 and (open_required or open_gaps):
+            research_state.mark_budget_exhausted(goal_id)
             recommendation = "stop"
-        elif diminishing and not pending_high:
+            state = research_state.BUDGET_EXHAUSTED
+        elif tree["valid"] and not open_required and not open_gaps and not fatal:
+            research_state.update_goal({
+                "research_state": research_state.REPORT_READY,
+                "last_convergence_recommendation": "stop",
+                "report_authorized_reason": "all required query branches converged",
+            }, goal_id)
             recommendation = "stop"
+            state = research_state.REPORT_READY
         else:
+            research_state.update_goal({
+                "research_state": research_state.RESEARCHING,
+                "last_convergence_recommendation": "continue",
+                "report_authorized_reason": None,
+            }, goal_id)
             recommendation = "continue"
+            state = research_state.RESEARCHING
 
         return {
             "converged": recommendation == "stop",
             "fatal_unresolved_conflicts": fatal,
-            "core_threatening_gaps": core_gaps,
+            "open_required_gaps": [
+                {"id": g["id"], "description": g.get("description") or g.get("text")}
+                for g in open_gaps
+            ],
+            "open_required_queries": [
+                {"id": q["id"], "handle": q.get("handle"), "status": q.get("status")}
+                for q in open_required
+            ],
             "recommendation": recommendation,
             "reason": verdict.get("reason", ""),
-            "metrics_summary": {
-                "structurally_converged": structurally,
-                "diminishing_novelty": diminishing,
-                "high_priority_queries": metrics.get("priority", {}).get("tier_counts", {}).get("high", 0),
-            },
+            "research_state": state,
+            "tree_validation": tree,
+            "next_actions": self.get_next_actions() if recommendation == "continue" else [],
         }
+
+    def _conflict_owner_query(self, conflict_id: str) -> Optional[str]:
+        """Return the Query whose SearchRun produced a conflict."""
+        for edge in graph_tools.get_node_edges(conflict_id, direction="in"):
+            if str(edge.get("type", "")).lower() != "produced":
+                continue
+            run_id = edge.get("source")
+            for parent_edge in graph_tools.get_node_edges(run_id, direction="in"):
+                if str(parent_edge.get("type", "")).lower() == "searched_by":
+                    return parent_edge.get("source")
+        return None
 
     # -----------------------------
     # Searcher-facing
     # -----------------------------
-    def _assign_handle(self, attach_point: str) -> str:
-        """Generate a short, stable handle (e.g. ``q1``, ``q3.1``) for a new query.
+    def prepare_search(self, query_id: str, source_preferences: Optional[list[str]] = None) -> dict:
+        """Atomically claim a pending Query, reserve budget and create a SearchRun."""
+        from tools import research_state
 
-        The handle is what the Orchestrator references in later tool calls — a
-        copy-safe alternative to the 20-digit node ID it transcribes unreliably.
-        It is derived from the attach point: a child of the research goal gets a
-        top-level ``q<n>``; a child of query ``q3`` gets ``q3.<k>``.
+        with self._state_lock:
+            goal = research_state.get_goal()
+            if goal.get("research_state") != research_state.RESEARCHING:
+                return {
+                    "error": "Search dispatch is only allowed while research_state is RESEARCHING",
+                    "research_state": goal.get("research_state"),
+                }
+            resolved = self._resolve_query_id(query_id)
+            if resolved is None:
+                return {"error": f"Unknown query reference: {query_id!r}"}
+            query = graph_tools.get_node(resolved)
+            if query.get("status") != "pending":
+                return {"error": f"Query {query.get('handle') or resolved} is not pending", "status": query.get("status")}
+            if int(query.get("successful_search_runs") or 0) > 0:
+                return {"error": "A Query with a successful SearchRun cannot be searched again; expand its gaps instead"}
+            remaining = research_state.remaining_budget()
+            if remaining == 0:
+                goal = research_state.mark_budget_exhausted()
+                return {"error": "Search budget exhausted", "research_state": goal.get("research_state")}
 
-        Args:
-            attach_point: The node the new query is being attached under (the
-                research goal or an existing query).
+            claim = graph_tools.claim_query_search(resolved, goal["id"])
+            if not claim:
+                refreshed = graph_tools.get_node(resolved)
+                if research_state.remaining_budget(goal["id"]) == 0:
+                    goal = research_state.mark_budget_exhausted(goal["id"])
+                    return {"error": "Search budget exhausted", "research_state": goal.get("research_state")}
+                return {
+                    "error": "Query could not be atomically claimed for search",
+                    "status": refreshed.get("status"),
+                }
+            run_id = claim["search_run_id"]
 
-        Returns:
-            A handle string for the next child under ``attach_point``.
-        """
-        node = graph_tools.get_node(attach_point) or {}
-        existing = len(graph_tools.get_query_children(attach_point))
-        parent_handle = node.get("handle")
-        if parent_handle:
-            return f"{parent_handle}.{existing + 1}"
-        # attach_point is the research goal (no handle) -> top-level handle.
-        return f"q{existing + 1}"
+            gaps = [graph_tools.get_node(gid) for gid in self._addressed_gap_ids(resolved)]
+            parent = graph_tools.get_node(graph_tools.get_query_parent(resolved) or "")
+            task = {
+                "query": query.get("text"),
+                "acceptance_criteria": query.get("acceptance_criteria") or [],
+                "assigned_gaps": [
+                    {
+                        "description": g.get("description") or g.get("text"),
+                        "acceptance_criteria": g.get("acceptance_criteria") or [],
+                    }
+                    for g in gaps
+                ],
+                "research_goal": goal.get("research_goal") or goal.get("request"),
+                "time_window": goal.get("time_window"),
+                "region_scope": goal.get("region_scope"),
+                "source_preferences": source_preferences or goal.get("source_preferences") or [],
+                "parent_covered": parent.get("covered") or [],
+                "requirement": "Collect evidence for this Query only. Do not broaden into sibling topics.",
+            }
+            return {
+                "search_run_id": run_id,
+                "query_id": resolved,
+                "query_handle": query.get("handle"),
+                "query_text": json.dumps(task, ensure_ascii=False),
+            }
+
+    def fail_search(self, search_run_id: str, query_id: str, error: str) -> dict:
+        """Record a Searcher execution failure and make the Query retryable."""
+        with self._state_lock:
+            resolved = self._resolve_query_id(query_id)
+            query = graph_tools.get_node(resolved) if resolved else {}
+            run = graph_tools.get_node(search_run_id)
+            if (
+                not resolved
+                or query.get("status") != "searching"
+                or run.get("type") != NodeType.SEARCH_RUN.value
+                or run.get("status") != "running"
+                or run.get("query_id") != resolved
+            ):
+                return {
+                    "search_run_id": search_run_id,
+                    "query_id": resolved,
+                    "error": "SearchRun is not running or does not belong to the Query",
+                }
+            attempts = int(query.get("search_attempts") or 0)
+            next_status = "failed" if attempts >= 3 else "pending"
+            graph_tools.upsert_node(NodeType.SEARCH_RUN, {"status": "failed", "error": error}, search_run_id)
+            graph_tools.transition_query(resolved, next_status, last_error=error)
+            if next_status == "failed":
+                self._propagate_child_completion(resolved, "failed")
+            return {"search_run_id": search_run_id, "query_id": resolved, "status": next_status, "error": error}
 
     def _resolve_query_id(self, query_id: str) -> Optional[str]:
         """Map a query reference (handle, exact, truncated or corrupted ID) to a real node ID.
@@ -534,7 +880,7 @@ class MemoryManager:
         if not query_id:
             return None
         node = graph_tools.get_node(query_id)
-        if node and node.get("type") == "query":
+        if node and str(node.get("type", "")).lower() == "query":
             return query_id
 
         queries = graph_tools.search_nodes("query", {})
@@ -572,12 +918,67 @@ class MemoryManager:
         resolved = self._resolve_query_id(query_id) or query_id
         return {
             "query": graph_tools.get_node(resolved),
-            "existing_subgraph": graph_tools.get_query_subgraph(
-                resolved, depth=4
-            ),
+            "existing_subgraph": graph_tools.get_query_evaluation_subgraph(resolved),
         }
 
-    def submit_search_result(self, query_id: str, evidence_package: dict) -> dict:
+    def create_insight(self, text: str, query_id: Optional[str] = None) -> dict:
+        """Create a typed insight and safely bind an optional Query handle."""
+        resolved = self._resolve_query_id(query_id) if query_id else None
+        if query_id and resolved is None:
+            return {"error": f"Unknown query reference: {query_id!r}"}
+        insight_id = graph_tools.create_analysis(text=text, query_id=resolved, analysis_type="insight")
+        return {"analysis_id": insight_id, "query_id": resolved}
+
+    def submit_search_result(self, search_run_id: str, query_id: str, evidence_package: dict) -> dict:
+        """Write one Searcher's result exactly once and advance its Query."""
+        with self._state_lock:
+            return self._submit_search_result_unlocked(search_run_id, query_id, evidence_package)
+
+    def _validate_evidence_package_refs(self, evidence_package: dict) -> Optional[str]:
+        """Return a reference-validation error before any evidence nodes are written."""
+        local_types: dict[str, str] = {}
+        sections = {
+            "sources": ("Source", lambda item: bool(_first(item, "url"))),
+            "documents": ("Document", lambda item: bool(_first(item, "document_summary", "summary_zh", "summary", "text", "content"))),
+            "claims": ("Claim", lambda item: bool(_first(item, "statement", "text_zh", "text"))),
+            "evidence": ("Evidence", lambda item: bool(_first(item, "statement", "evidence_text", "text_zh", "text"))),
+        }
+        for section, (node_type, valid) in sections.items():
+            for item in evidence_package.get(section, []) or []:
+                ref = item.get("local_ref")
+                if ref and valid(item):
+                    local_types[ref] = node_type
+
+        def valid_ref(ref: Optional[str], expected: str) -> bool:
+            if not ref:
+                return False
+            if ref in local_types:
+                return local_types[ref] == expected
+            return graph_tools.get_node(ref).get("type") == expected
+
+        for document in evidence_package.get("documents", []) or []:
+            if not valid_ref(_first(document, "source_ref", "source"), NodeType.SOURCE.value):
+                return "Document source_ref must reference a valid Source"
+        for claim in evidence_package.get("claims", []) or []:
+            if not valid_ref(_first(claim, "document_ref", "document"), NodeType.DOCUMENT.value):
+                return "Claim document_ref must reference a valid Document"
+            if not valid_ref(_first(claim, "source_ref", "source"), NodeType.SOURCE.value):
+                return "Claim source_ref must reference a valid Source"
+        for evidence in evidence_package.get("evidence", []) or []:
+            if not valid_ref(_first(evidence, "document_ref", "document"), NodeType.DOCUMENT.value):
+                return "Evidence document_ref must reference a valid Document"
+            if not valid_ref(_first(evidence, "source_ref", "source"), NodeType.SOURCE.value):
+                return "Evidence source_ref must reference a valid Source"
+            supports = _first(evidence, "supports_or_contradicts", "supports_claim")
+            if supports and not valid_ref(supports, NodeType.CLAIM.value):
+                return "Evidence supports_or_contradicts must reference a valid Claim"
+        for conflict in evidence_package.get("conflicts", []) or []:
+            refs = conflict.get("evidence_refs") or conflict.get("related_claims") or []
+            if any(not valid_ref(ref, NodeType.EVIDENCE.value) for ref in refs):
+                return "Conflict evidence_refs must all reference valid Evidence"
+        return None
+
+    def _submit_search_result_unlocked(self, search_run_id: str, query_id: str, evidence_package: dict) -> dict:
         """Write a structured evidence package into the Research Graph.
 
         Accepts the evidence package produced by the Searcher (sources,
@@ -595,6 +996,11 @@ class MemoryManager:
             ``search_run`` ID and counts.
         """
         ref_map: dict[str, str] = {}
+        source_ids: list[str] = []
+        document_ids: list[str] = []
+        claim_ids: list[str] = []
+        evidence_ids: list[str] = []
+        conflict_ids: list[str] = []
 
         def resolve(ref: Optional[str]) -> Optional[str]:
             if ref is None:
@@ -618,19 +1024,38 @@ class MemoryManager:
                 ),
             }
 
-        run_id = graph_tools.add_node(
-            "search_run", {"query_id": resolved_query_id}
-        )
-        graph_tools.add_edge(resolved_query_id, run_id, "searched_by")
+        run = graph_tools.get_node(search_run_id)
+        query = graph_tools.get_node(resolved_query_id)
+        if (
+            run.get("type") != NodeType.SEARCH_RUN.value
+            or run.get("query_id") != resolved_query_id
+            or run.get("status") != "running"
+            or query.get("status") != "searching"
+        ):
+            return {
+                "search_run_id": search_run_id,
+                "query_id": resolved_query_id,
+                "written": {"sources": 0, "documents": 0, "claims": 0, "evidence": 0, "conflicts": 0},
+                "error": "SearchRun is not running or does not belong to the Query",
+            }
+        validation_error = self._validate_evidence_package_refs(evidence_package)
+        if validation_error:
+            return self.fail_search(search_run_id, resolved_query_id, validation_error)
+        run_id = search_run_id
+        produced_ids: list[str] = []
 
         for source in evidence_package.get("sources", []) or []:
             # Reuse an existing source node when the same URL was already
             # written; deduplication is the Graph Manager's job at write time.
+            url = _first(source, "url")
+            if not url:
+                continue
             source_id = self.deduplicate_source(source) or graph_tools.create_source(
-                url=_first(source, "url") or "",
+                url=url,
                 title=_first(source, "title"),
                 source_type=_first(source, "source_type", "type"),
             )
+            source_ids.append(source_id)
             if source.get("local_ref"):
                 ref_map[source["local_ref"]] = source_id
             graph_tools.add_edge(run_id, source_id, "found_source")
@@ -642,6 +1067,8 @@ class MemoryManager:
             )
             if document.get("local_ref"):
                 ref_map[document["local_ref"]] = doc_id
+            document_ids.append(doc_id)
+            produced_ids.append(doc_id)
 
         # Process claims first - these are the higher-level assertions
         for claim_item in evidence_package.get("claims", []) or []:
@@ -656,6 +1083,8 @@ class MemoryManager:
             )
             if claim_item.get("local_ref"):
                 ref_map[claim_item["local_ref"]] = claim_id
+            claim_ids.append(claim_id)
+            produced_ids.append(claim_id)
 
         # Process evidence - these support or contradict claims
         for evidence_item in evidence_package.get("evidence", []) or []:
@@ -679,10 +1108,12 @@ class MemoryManager:
             )
             if evidence_item.get("local_ref"):
                 ref_map[evidence_item["local_ref"]] = evidence_id
+            evidence_ids.append(evidence_id)
+            produced_ids.append(evidence_id)
 
         for conflict in evidence_package.get("conflicts", []) or []:
             refs = conflict.get("evidence_refs") or conflict.get("related_claims") or []
-            evidence_ids = [resolve(r) for r in refs if resolve(r)]
+            conflict_evidence_ids = [resolve(r) for r in refs if resolve(r)]
             
             # Extract conflict type if provided
             conflict_type = conflict.get("conflict_type", conflict.get("type", "factual"))
@@ -691,12 +1122,60 @@ class MemoryManager:
             if conflict_type not in valid_types:
                 conflict_type = "factual"
             
-            graph_tools.create_conflict(
+            conflict_id = graph_tools.create_conflict(
                 description=_first(conflict, "description", "description_zh") or "",
-                evidence_ids=evidence_ids,
+                evidence_ids=conflict_evidence_ids,
                 conflict_type=conflict_type,
                 resolution_status="unresolved"
             )
+            conflict_ids.append(conflict_id)
+            produced_ids.append(conflict_id)
+
+        for node_id in produced_ids:
+            graph_tools.add_edge(run_id, node_id, EdgeType.PRODUCED)
+
+        source_count = len(source_ids)
+        evidence_count = len(evidence_ids)
+        succeeded = source_count > 0 and evidence_count > 0
+        evidence_keys = {
+            _gap_key(_first(item, "statement", "evidence_text", "text_zh", "text") or "")
+            for item in evidence_package.get("evidence", []) or []
+            if _first(item, "statement", "evidence_text", "text_zh", "text")
+        }
+        ancestor_keys = self._ancestor_evidence_keys(resolved_query_id)
+        novelty = len(evidence_keys - ancestor_keys) / len(evidence_ids) if evidence_ids else None
+        parent = graph_tools.get_node(graph_tools.get_query_parent(resolved_query_id) or "")
+        parent_streak = int(parent.get("low_novelty_streak") or 0)
+        low_streak = parent_streak + 1 if novelty is not None and novelty < 0.2 else 0
+
+        run_status = "succeeded" if succeeded else "empty"
+        graph_tools.upsert_node(NodeType.SEARCH_RUN, {
+            "status": run_status,
+            "novelty_score": novelty,
+            "evidence_fingerprints": sorted(evidence_keys),
+        }, run_id)
+        if succeeded:
+            from tools import research_state
+
+            goal = research_state.get_goal()
+            graph_tools.transition_query(
+                resolved_query_id,
+                "assessing",
+                successful_search_runs=1,
+                low_novelty_streak=low_streak,
+            )
+            graph_tools.increment_successful_search_rounds(goal["id"])
+        else:
+            attempts = int(query.get("search_attempts") or 0)
+            next_status = "blocked" if attempts >= 3 else "pending"
+            transition_attributes = (
+                {"block_reason": "three SearchRuns completed without valid Source and Evidence"}
+                if next_status == "blocked"
+                else {}
+            )
+            graph_tools.transition_query(resolved_query_id, next_status, **transition_attributes)
+            if next_status == "blocked":
+                self._propagate_child_completion(resolved_query_id, "blocked")
 
         graph_tools.save_graph()
         result = {
@@ -704,14 +1183,32 @@ class MemoryManager:
             "query_id": resolved_query_id,
             "ref_map": ref_map,
             "written": {
-                "sources": len(evidence_package.get("sources", []) or []),
-                "documents": len(evidence_package.get("documents", []) or []),
-                "claims": len(evidence_package.get("claims", []) or []),
-                "evidence": len(evidence_package.get("evidence", []) or []),
-                "conflicts": len(evidence_package.get("conflicts", []) or []),
+                "sources": len(source_ids),
+                "documents": len(document_ids),
+                "claims": len(claim_ids),
+                "evidence": len(evidence_ids),
+                "conflicts": len(conflict_ids),
             },
+            "status": run_status,
+            "query_status": "assessing" if succeeded else ("blocked" if int(query.get("search_attempts") or 0) >= 3 else "pending"),
+            "novelty_score": novelty,
         }
         return result
+
+    def _ancestor_evidence_keys(self, query_id: str) -> set[str]:
+        """Collect evidence fingerprints produced on the Query's ancestor path."""
+        keys: set[str] = set()
+        current = graph_tools.get_query_parent(query_id)
+        while current:
+            node = graph_tools.get_node(current)
+            if node.get("type") != NodeType.QUERY.value:
+                break
+            evaluation = graph_tools.get_query_evaluation_subgraph(current)
+            for item in evaluation.get("nodes", []):
+                if item.get("type") == NodeType.EVIDENCE.value:
+                    keys.add(_gap_key(item.get("claim") or ""))
+            current = graph_tools.get_query_parent(current)
+        return keys
 
     # -----------------------------
     # Reporter-facing
@@ -738,7 +1235,26 @@ class MemoryManager:
             if requests:
                 goal = requests[0]
                 goal_id = goal["id"]
-        raw_subgraph = graph_tools.get_subgraph(goal_id, depth=8) if goal_id else {"nodes": [], "edges": []}
+        raw_subgraph = {
+            "nodes": graph_tools.get_all_nodes(),
+            "edges": graph_tools.get_all_edges(),
+        } if goal_id else {"nodes": [], "edges": []}
+        raw_limitations = [
+            node for node in raw_subgraph["nodes"]
+            if str(node.get("type") or "").lower() == "analysis"
+            and node.get("analysis_type") == "gap"
+            and node.get("status") in {"blocked", "deferred_budget", "open", "assigned"}
+        ]
+        raw_limitations.extend(
+            node for node in raw_subgraph["nodes"]
+            if str(node.get("type") or "").lower() == "query"
+            and node.get("status") != "sufficient"
+        )
+        raw_limitations.extend(
+            node for node in raw_subgraph["nodes"]
+            if str(node.get("type") or "").lower() == "conflict"
+            and node.get("resolution_status") in {"unresolved", "investigating", "disclosed"}
+        )
 
         # Strip internal scheduling fields from every node before they reach the
         # Reporter, so the writing context carries content only (not graph state).
@@ -749,22 +1265,18 @@ class MemoryManager:
         }
 
         grouped: dict[str, list[dict]] = {
-            "query": [],
-            "evidence": [],
-            "conflict": [],
-            "analysis": [],
-            "source": [],
-            "report_section": [],
+            "query": [], "evidence": [], "conflict": [], "analysis": [],
+            "source": [], "reportsection": [],
         }
         for node in subgraph["nodes"]:
-            node_type = node.get("type")
+            node_type = str(node.get("type") or "").lower()
             if node_type in grouped:
                 grouped[node_type].append(node)
 
         # Local import avoids any import cycle (report_tools never imports this
         # module). The registry pre-numbers sources so the Reporter cites stable
         # [n] that finalize_report can rebuild deterministically.
-        from tools import report_tools
+        from tools import report_tools, research_state
 
         return {
             "goal": goal,
@@ -774,7 +1286,9 @@ class MemoryManager:
             "conflicts": grouped["conflict"],
             "analysis": grouped["analysis"],
             "sources": grouped["source"],
-            "report_sections": grouped["report_section"],
+            "report_sections": grouped["reportsection"],
+            "research_status": research_state.get_status(goal_id),
+            "limitations": raw_limitations,
             "reference_registry": report_tools.build_reference_registry(),
         }
 
@@ -791,21 +1305,20 @@ class MemoryManager:
         Returns:
             The created report-section node ID.
         """
-        # Validate evidence IDs exist in the graph
         valid_evidence_ids = []
         for eid in evidence_ids or []:
-            if graph_tools.get_node(eid):
+            if graph_tools.get_node(eid).get("type") == NodeType.EVIDENCE.value:
                 valid_evidence_ids.append(eid)
             else:
-                logger.warning(f"Evidence ID {eid} not found in graph, skipping")
+                raise ValueError(f"ReportSection evidence binding requires Evidence: {eid!r}")
         
         # Validate claim IDs exist in the graph
         valid_claim_ids = []
         for cid in claim_ids or []:
-            if graph_tools.get_node(cid):
+            if graph_tools.get_node(cid).get("type") == NodeType.CLAIM.value:
                 valid_claim_ids.append(cid)
             else:
-                logger.warning(f"Claim ID {cid} not found in graph, skipping")
+                raise ValueError(f"ReportSection claim binding requires Claim: {cid!r}")
         
         section_id = graph_tools.create_report_section(
             title=section.get("title", ""),
@@ -846,7 +1359,6 @@ class MemoryManager:
 
     def _plan_followup_queries(
         self,
-        direction: str,
         research_goal: str,
         parent_text: str,
         sibling_texts: list,
@@ -860,8 +1372,6 @@ class MemoryManager:
         self-containment violation) and retries once before giving up.
 
         Args:
-            direction: ``vertical`` (deepen the parent) or ``horizontal`` (add
-                parallel sibling dimensions).
             research_goal: The overall research goal, for context.
             parent_text: The parent query/goal text whose subject is inlined.
             sibling_texts: Existing sibling query texts (for dedup).
@@ -877,7 +1387,6 @@ class MemoryManager:
         def author(extra: str = "") -> list:
             prompt = (
                 mm_prompts.plan_followup_query
-                .replace("{direction}", direction)
                 .replace("{research_goal}", research_goal or "")
                 .replace("{parent_text}", parent_text or "")
                 .replace("{sibling_texts}", json.dumps(sibling_texts or [], ensure_ascii=False))
@@ -887,10 +1396,13 @@ class MemoryManager:
             )
             parsed = self._invoke_json(prompt + extra)
             items = []
-            for raw in parsed.get("queries") or []:
-                text, importance = _query_text_importance(raw)
-                if text:
-                    items.append({"text": text, "importance": importance})
+            raw_queries = parsed.get("queries") or []
+            if not isinstance(raw_queries, list):
+                raw_queries = []
+            for raw in raw_queries:
+                text, importance, criteria = _query_spec(raw)
+                if isinstance(text, str) and text.strip():
+                    items.append({"text": text, "importance": importance, "acceptance_criteria": criteria})
             return items
 
         def self_contained(item: dict) -> bool:
@@ -912,17 +1424,6 @@ class MemoryManager:
             dict with ``keywords``, ``statement`` and ``summary``.
         """
         return self._invoke_json(mm_prompts.extract_content + content)
-
-    def summarize_subgraph(self, node_id: str) -> dict:
-        """Summarize the sub-graph around a node (alias of sufficiency analysis).
-
-        Args:
-            node_id: The node ID to summarize.
-
-        Returns:
-            The sufficiency-analysis dict (see :meth:`analyze_subgraph`).
-        """
-        return self.analyze_subgraph(node_id)
 
     def deduplicate_source(self, source: dict) -> Optional[str]:
         """Return the ID of an existing matching source, if any.
