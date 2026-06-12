@@ -5,7 +5,7 @@ from typing import Any, Optional
 
 from langchain_core.tools import tool
 
-from agents.memory_manager import MemoryManager
+from agents.memory_manager import AmbiguousQueryReference, MemoryManager
 
 _manager: Optional[MemoryManager] = None
 _cache_dir: Optional[str] = None
@@ -55,7 +55,7 @@ def init_research(user_request: str) -> dict:
 
 @tool
 def get_research_status(goal_id: Optional[str] = None) -> dict:
-    """Return persistent system state, budget and unfinished required branches."""
+    """Return persistent state, Objective coverage, selected work and budget."""
     from tools import research_state
 
     next_actions = _mm().get_next_actions()
@@ -63,6 +63,12 @@ def get_research_status(goal_id: Optional[str] = None) -> dict:
     status["tree_validation"] = _mm_validate_tree()
     status["next_actions"] = next_actions
     return status
+
+
+@tool
+def get_research_objectives(goal_id: Optional[str] = None) -> list:
+    """Return the report-level research objectives and their current coverage."""
+    return _mm().get_research_objectives(goal_id)
 
 
 def _mm_validate_tree() -> dict:
@@ -90,14 +96,20 @@ def assess_query(query_id: str) -> dict:
 
 
 @tool
+def evaluate_research_portfolio(goal_id: Optional[str] = None) -> dict:
+    """Select globally valuable candidate gaps and defer low-value work."""
+    return _mm().evaluate_research_portfolio(goal_id)
+
+
+@tool
 def expand_gaps(parent_id: str, gap_ids: Optional[list[str]] = None) -> dict:
-    """Create one self-contained child Query for each selected atomic gap."""
+    """Group selected atomic gaps by search subject and create child Queries."""
     return _mm().expand_gaps(parent_id, gap_ids)
 
 
 @tool
 def assess_convergence(goal_id: Optional[str] = None) -> dict:
-    """Authorize reporting only after required tree branches converge or budget expires."""
+    """Authorize reporting after Objective convergence or budget exhaustion."""
     return _mm().assess_convergence(goal_id)
 
 
@@ -110,7 +122,10 @@ def create_analysis(text: str, query_id: Optional[str] = None) -> dict:
 @tool
 def get_query_evaluation_subgraph(query_id: str) -> dict:
     """Read the evidence owned by one Query, excluding parent and sibling evidence."""
-    resolved = _mm()._resolve_query_id(query_id)  # central resolver; read-only tool
+    try:
+        resolved = _mm()._resolve_query_id(query_id)  # central resolver; read-only tool
+    except AmbiguousQueryReference as exc:
+        return {"error": str(exc)}
     if resolved is None:
         return {"error": f"Unknown query reference: {query_id!r}"}
     from tools import graph_tools
@@ -152,19 +167,27 @@ def bind_report_section(
     content: str,
     evidence_ids: Optional[list] = None,
     claim_ids: Optional[list] = None,
+    source_ids: Optional[list] = None,
     section_type: Optional[str] = None,
 ) -> str:
     """Create a report section and type-safe evidence/claim bindings."""
     section = {"title": title, "content": content, "section_type": section_type}
-    return _mm().bind_report_section(section, claim_ids=claim_ids, evidence_ids=evidence_ids)
+    return _mm().bind_report_section(
+        section,
+        claim_ids=claim_ids,
+        evidence_ids=evidence_ids,
+        source_ids=source_ids,
+    )
 
 
 ORCHESTRATOR_TOOLS: list[Any] = [
     init_research,
     get_research_status,
+    get_research_objectives,
     validate_query_tree,
     get_next_actions,
     assess_query,
+    evaluate_research_portfolio,
     expand_gaps,
     assess_convergence,
     create_analysis,

@@ -33,6 +33,7 @@ def build_model(
     model_name: Optional[str] = None,
     temperature: float = 0.7,
     max_retries: int = 3,
+    timeout: Optional[float] = None,
 ) -> ChatOpenAI:
     """Build a chat model bound to the configured OpenAI-compatible endpoint.
 
@@ -43,6 +44,8 @@ def build_model(
         model_name: Model identifier; defaults to ``GR_MODEL`` / ``DEFAULT_MODEL``.
         temperature: Sampling temperature.
         max_retries: Number of automatic retries on transient API errors.
+        timeout: Per-request timeout in seconds; defaults to ``GR_MODEL_TIMEOUT``
+            or 180 seconds.
 
     Returns:
         A configured ``ChatOpenAI`` instance.
@@ -51,6 +54,7 @@ def build_model(
         "model": model_name or DEFAULT_MODEL,
         "temperature": temperature,
         "max_retries": max_retries,
+        "timeout": timeout if timeout is not None else float(os.environ.get("GR_MODEL_TIMEOUT", "180")),
     }
     base_url = os.environ.get("OPENAI_BASE_URL")
     if base_url:

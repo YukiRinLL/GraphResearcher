@@ -273,15 +273,25 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
             # before write_text + export so report.md and the JSONL both reflect
             # it; on any failure the raw report is written unchanged.
             if state_before_write == research_state.REPORTING and final_text:
+                validation_issues = []
                 try:
                     from tools import report_tools
 
                     report_text = report_tools.finalize_report(report_text)
+                    validation_issues = report_tools.validate_final_report(report_text)
                 except Exception:
-                    console.print("[yellow]Report finalize failed (captured in run.log); writing raw report.[/]")
+                    console.print("[yellow]Report finalize failed (captured in run.log).[/]")
                     console.print(traceback.format_exc(), markup=False, highlight=False)
-                report_path.write_text(report_text, encoding="utf-8")
-                research_state.update_goal({"research_state": research_state.COMPLETED})
+                    validation_issues = ["report finalization failed"]
+                if validation_issues:
+                    research_state.update_goal({
+                        "research_state": research_state.FAILED,
+                        "last_error": f"Final report validation failed: {validation_issues}",
+                    })
+                    report_text = f"Final report validation failed: {validation_issues}"
+                else:
+                    report_path.write_text(report_text, encoding="utf-8")
+                    research_state.update_goal({"research_state": research_state.COMPLETED})
                 status_summary = research_state.get_status()
             else:
                 report_text = (
@@ -299,10 +309,12 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
                 console.print("[yellow]Graph export to JSONL failed (captured in run.log):[/]")
                 console.print(traceback.format_exc(), markup=False, highlight=False)
 
-            console.rule("[bold green]Final Report" if state_before_write == research_state.REPORTING else "[bold yellow]Research Status")
+            final_state = status_summary.get("research_state")
+            report_saved = final_state == research_state.COMPLETED
+            console.rule("[bold green]Final Report" if report_saved else "[bold yellow]Research Status")
             console.print(Markdown(report_text))
             console.print(f"\n[dim]State summary: {json.dumps(status_summary, ensure_ascii=False)}[/]")
-            saved = f"{report_path}, {graph_path}, {log_path}" if state_before_write == research_state.REPORTING else f"{graph_path}, {log_path}"
+            saved = f"{report_path}, {graph_path}, {log_path}" if report_saved else f"{graph_path}, {log_path}"
             console.print(f"\n[dim]Saved: {saved}[/]")
             sys.stdout, sys.stderr = orig_stdout, orig_stderr
 

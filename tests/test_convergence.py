@@ -17,7 +17,7 @@ sys.path.insert(0, str(src_dir))
 from tools import convergence, graph_tools  # noqa: E402
 
 # Mutable fake graph the tests drive round by round.
-_FAKE = {"query": [], "source": [], "evidence": [], "conflict": []}
+_FAKE = {"query": [], "source": [], "evidence": [], "conflict": [], "analysis": []}
 _NODES: dict = {}
 
 
@@ -34,11 +34,12 @@ graph_tools.get_node = _fake_get_node
 graph_tools.get_query_parent = lambda query_id: "goal" if query_id != "goal" else None
 
 
-def _set(queries=None, sources=None, evidence=None, conflicts=None):
+def _set(queries=None, sources=None, evidence=None, conflicts=None, objectives=None):
     _FAKE["query"] = queries or []
     _FAKE["source"] = sources or []
     _FAKE["evidence"] = evidence or []
     _FAKE["conflict"] = conflicts or []
+    _FAKE["analysis"] = objectives or []
     for query in _FAKE["query"]:
         _NODES[query["id"]] = query
 
@@ -123,6 +124,18 @@ def test_structurally_converged():
     # A blocked high counts as best-effort (termination guarantee).
     _set(queries=[q("h1", "blocked", tier="high"), q("h2", "sufficient", 0.9, tier="high")])
     assert convergence.structurally_converged() is True
+    # New graphs converge on must Objectives, independent of required-path flags.
+    _set(
+        queries=[q("h1", "pending", tier="high")],
+        objectives=[{
+            "id": "o1",
+            "type": "analysis",
+            "analysis_type": "objective",
+            "requirement": "must",
+            "status": "satisfied",
+        }],
+    )
+    assert convergence.structurally_converged() is True
     print("structurally_converged OK")
 
 
@@ -158,7 +171,14 @@ def test_assembly():
     from tools.graph_manager_tools import ORCHESTRATOR_TOOLS
 
     names = {t.name for t in ORCHESTRATOR_TOOLS}
-    assert {"assess_convergence", "assess_query", "expand_gaps", "get_next_actions"} <= names, names
+    assert {
+        "assess_convergence",
+        "assess_query",
+        "evaluate_research_portfolio",
+        "expand_gaps",
+        "get_next_actions",
+        "get_research_objectives",
+    } <= names, names
     assert not {"mark_query", "analyze_subgraph", "expand_query", "export_report_context"} & names, names
     print("assembly OK")
 

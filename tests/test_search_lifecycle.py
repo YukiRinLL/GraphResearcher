@@ -144,8 +144,8 @@ def install_fakes():
         "successful_search_rounds": NODES[goal_id].get("successful_search_rounds", 0) + 1,
     })
     graph_tools.save_graph = lambda: None
-    graph_tools.create_source = lambda url, title=None, source_type=None: add_typed(
-        "Source", {"url": url, "title": title, "source_type": source_type}
+    graph_tools.create_source = lambda url, title=None, source_type=None, **attrs: add_typed(
+        "Source", {"url": url, "title": title, "source_type": source_type, **attrs}
     )
     graph_tools.create_document = lambda text, source_id=None: add_typed(
         "Document", {"text": text, "source_id": source_id}
@@ -240,8 +240,8 @@ def main():
         "id": "gap",
         "type": "Analysis",
         "analysis_type": "gap",
-        "status": "open",
-        "required_for_parent": True,
+        "status": "candidate",
+        "required_for_parent": False,
     }
     NODES["conflict"] = {
         "id": "conflict",

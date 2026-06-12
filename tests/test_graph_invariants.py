@@ -25,8 +25,8 @@ def main():
             "id": "gap",
             "type": "Analysis",
             "analysis_type": "gap",
-            "required_for_parent": True,
-            "status": "open",
+            "required_for_parent": False,
+            "status": "candidate",
         },
         "source": {"id": "source", "type": "Source"},
     }
@@ -68,7 +68,7 @@ def main():
         raise AssertionError("generic add_node must not create Query nodes")
 
     child_id = graph_tools.create_query_child("q1", "valid child", "peripheral", gap_ids=["gap"])
-    assert child_id == "new-query" and created[0]["required_for_parent"] is True
+    assert child_id == "new-query" and created[0]["required_for_parent"] is False
     assert edges[0]["type"] == "PARENT_OF" and edges[1]["type"] == "ADDRESSES_GAP"
 
     graph_tools.get_all_nodes = lambda: [
@@ -83,6 +83,19 @@ def main():
     validation = graph_tools.validate_query_tree()
     assert not validation["valid"] and validation["invalid_parent_edges"], validation
 
+    graph_tools.get_all_nodes = lambda: [
+        {"id": "goal", "type": "UserRequest"},
+        {"id": "goal2", "type": "UserRequest"},
+        {"id": "q1", "type": "Query", "handle": "q1"},
+        {"id": "q2", "type": "Query", "handle": "q1"},
+    ]
+    graph_tools.get_all_edges = lambda: [
+        {"source": "goal", "target": "q1", "type": "HAS_QUERY"},
+        {"source": "goal2", "target": "q2", "type": "HAS_QUERY"},
+    ]
+    validation = graph_tools.validate_query_tree()
+    assert not validation["valid"] and validation["duplicate_handles"] and validation["multiple_goals"], validation
+
     graph_tools.get_node = lambda node_id: dict(nodes.get(node_id, {}))
     try:
         graph_tools.create_analysis("orphan", query_id="source")
@@ -92,12 +105,42 @@ def main():
         raise AssertionError("Analysis binding to a non-Query must be rejected")
 
     mm = MemoryManager(model=object())
+    selected = mm._select_initial_queries(
+        [
+            {"text": "covers a and b", "objective_keys": ["a", "b"]},
+            {"text": "covers a", "objective_keys": ["a"]},
+            {"text": "covers c", "objective_keys": ["c"]},
+        ],
+        [
+            {"objective_key": "a", "requirement": "must", "description": "a"},
+            {"objective_key": "b", "requirement": "must", "description": "b"},
+            {"objective_key": "c", "requirement": "must", "description": "c"},
+        ],
+    )
+    assert len(selected) == 2
+    assert {key for item in selected for key in item["objective_keys"]} == {"a", "b", "c"}
+    fallback = mm._select_initial_queries(
+        [{"text": "unmapped candidate", "objective_keys": []}],
+        [{"objective_key": "a", "requirement": "must", "description": "objective a"}],
+    )
+    assert fallback == [{
+        "text": "objective a",
+        "importance": "core",
+        "objective_keys": ["a"],
+        "acceptance_criteria": [],
+    }]
     try:
         mm.bind_report_section({"title": "bad", "content": "bad"}, evidence_ids=["source"])
     except ValueError:
         pass
     else:
         raise AssertionError("ReportSection binding to a non-Evidence must be rejected")
+    try:
+        mm.bind_report_section({"title": "unbound", "content": "fact " * 30})
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("factual ReportSection without a binding must be rejected")
 
     assert not hasattr(mm, "mark_query")
     assert not hasattr(mm, "expand_query")

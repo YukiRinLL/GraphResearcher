@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 # Query statuses that count as resolved for convergence (mirrors the gate the
 # middleware enforces before allowing further Searcher dispatches).
-_RESOLVED_STATUSES = {"sufficient", "blocked"}
+_RESOLVED_STATUSES = {"sufficient", "blocked", "failed", "deferred"}
 
 # --- Priority model -------------------------------------------------------
 # A query's priority blends a SEMANTIC signal (how central its topic is to the
@@ -96,20 +96,24 @@ def compute_priority(sem_label: Optional[str], parent_id: Optional[str]) -> tupl
 
 
 def structurally_converged() -> bool:
-    """Report whether every high-priority query is adequately answered.
+    """Report whether report-level objectives have reached a terminal state.
 
-    A high-priority query passes when it is ``sufficient`` with a score at or
-    above ``SCORE_THRESHOLD``, or ``blocked`` (no reliable evidence obtainable —
-    counted as best-effort so it cannot stall the run indefinitely). When no
-    high-priority query exists yet, the structural gate is vacuously satisfied
-    once any query is present, leaving the stop decision to the core-gap /
-    novelty checks.
+    New runs converge on must Objectives. The required-path fallback remains
+    only for legacy diagnostic graphs that do not contain Objective nodes.
 
     Returns:
         True when the deterministic, priority-weighted part of convergence is
         met; False otherwise.
     """
     from tools import graph_tools, research_state
+
+    objectives = graph_tools.search_nodes("analysis", {"analysis_type": "objective"})
+    must = [objective for objective in objectives if objective.get("requirement") == "must"]
+    if must:
+        return all(
+            objective.get("status") in {"satisfied", "blocked_best_effort"}
+            for objective in must
+        )
 
     queries = graph_tools.search_nodes("query", {})
     required = [q for q in queries if research_state.is_required_path(q["id"])]

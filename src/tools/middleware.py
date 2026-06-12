@@ -4,7 +4,9 @@
 import json
 import logging
 import re
+import threading
 import time
+from typing import Optional
 
 from langchain.agents.middleware import AgentMiddleware
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
@@ -37,17 +39,34 @@ class ResearchStateMiddleware(AgentMiddleware):
 
     _RESEARCH_NUDGE = (
         "研究状态仍为 RESEARCHING，禁止生成最终报告或结束流程。"
-        "请调用 get_next_actions，并严格执行返回的 assess_query、expand_gaps 或 dispatch_searcher；"
+        "请调用 get_next_actions，并严格执行返回的 assess_query、evaluate_research_portfolio、"
+        "expand_gaps、dispatch_searcher 或 assess_convergence；"
         "完成动作后调用 assess_convergence。"
     )
+
+    def __init__(self, max_repeated_failures: int = 3):
+        """Initialize the repeated state-changing failure breaker."""
+        self.max_repeated_failures = max_repeated_failures
+        self._failure_lock = threading.Lock()
+        self._last_failure_signature: Optional[str] = None
+        self._repeated_failures = 0
 
     @staticmethod
     def _reporter_call(tool_call: dict) -> bool:
         return tool_call.get("name") == "task" and tool_call.get("args", {}).get("subagent_type") == "reporter"
 
     def _gate_reporter(self, tool_call: dict):
-        if not self._reporter_call(tool_call):
+        if tool_call.get("name") != "task":
             return None
+        if not self._reporter_call(tool_call):
+            return ToolMessage(
+                content=json.dumps({
+                    "error": "Only the reporter subagent is allowed in this research workflow",
+                }, ensure_ascii=False),
+                tool_call_id=tool_call["id"],
+                name="task",
+                status="error",
+            )
         from tools import research_state
 
         status = research_state.get_status()
@@ -85,15 +104,60 @@ class ResearchStateMiddleware(AgentMiddleware):
         })
         return None
 
+    def _record_tool_result(self, tool_call: dict, result: object) -> object:
+        """Fail the run after the same state-changing tool error repeats."""
+        if tool_call.get("name") not in {
+            "task",
+            "init_research",
+            "dispatch_searcher",
+            "assess_query",
+            "evaluate_research_portfolio",
+            "expand_gaps",
+            "assess_convergence",
+        }:
+            return result
+        text = _message_text(result)
+        try:
+            payload = json.loads(text) if text else {}
+        except (json.JSONDecodeError, ValueError):
+            payload = {}
+        error = payload.get("error") if isinstance(payload, dict) else None
+        with self._failure_lock:
+            if not error:
+                self._last_failure_signature = None
+                self._repeated_failures = 0
+                return result
+            signature = json.dumps({
+                "name": tool_call.get("name"),
+                "args": tool_call.get("args", {}),
+                "error": error,
+            }, ensure_ascii=False, sort_keys=True)
+            if signature == self._last_failure_signature:
+                self._repeated_failures += 1
+            else:
+                self._last_failure_signature = signature
+                self._repeated_failures = 1
+            if self._repeated_failures < self.max_repeated_failures:
+                return result
+        from tools import research_state
+
+        research_state.update_goal({
+            "research_state": research_state.FAILED,
+            "last_error": f"Repeated identical failed tool action: {signature}",
+        })
+        return result
+
     def wrap_tool_call(self, request, handler):
         """Gate Reporter tool calls using the persistent research state."""
         blocked = self._gate_reporter(request.tool_call)
-        return blocked if blocked is not None else handler(request)
+        result = blocked if blocked is not None else handler(request)
+        return self._record_tool_result(request.tool_call, result)
 
     async def awrap_tool_call(self, request, handler):
         """Gate Reporter tool calls asynchronously."""
         blocked = self._gate_reporter(request.tool_call)
-        return blocked if blocked is not None else await handler(request)
+        result = blocked if blocked is not None else await handler(request)
+        return self._record_tool_result(request.tool_call, result)
 
     @staticmethod
     def _researching_terminal(response) -> bool:
@@ -401,6 +465,10 @@ class ReportValidationMiddleware(AgentMiddleware):
         if not text:
             return False  # empty handled by EmptyResponseRetryMiddleware
         if _OFFER_PATTERN.search(text):
+            return True
+        from tools import report_tools
+
+        if report_tools.validate_final_report(text):
             return True
         if len(text) < self.min_length and text.count("## ") < self.min_sections:
             return True

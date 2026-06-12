@@ -12,7 +12,7 @@ from pathlib import Path
 src_dir = Path(__file__).parent.parent / "src"
 sys.path.insert(0, str(src_dir))
 
-from agents.memory_manager import MemoryManager  # noqa: E402
+from agents.memory_manager import AmbiguousQueryReference, MemoryManager  # noqa: E402
 from tools import graph_tools  # noqa: E402
 
 # --- Fake graph (3 queries; q3.1 is the run14 victim) --------------------
@@ -28,7 +28,9 @@ _calls = {"create_analysis": 0, "add_node": 0}
 
 def _install_fakes():
     graph_tools.get_node = lambda nid: NODES.get(nid)
-    graph_tools.search_nodes = lambda kind, filt=None: list(QUERIES) if kind == "query" else []
+    graph_tools.search_nodes = lambda kind, filt=None: (
+        list(QUERIES) if kind == "query" else [GOAL] if kind == "user_request" else []
+    )
 
     def _add_node(kind, attrs):
         _calls["add_node"] += 1
@@ -65,6 +67,20 @@ def main():
     )
     _check("pure garbage -> None", mm._resolve_query_id("totally-bogus") is None)
     _check("empty -> None", mm._resolve_query_id("") is None)
+    duplicate = {**Q2, "id": "20260608000000000004_dddd4444", "handle": "q1"}
+    QUERIES.append(duplicate)
+    try:
+        mm._resolve_query_id("q1")
+    except AmbiguousQueryReference:
+        pass
+    else:
+        _check("duplicate handle is rejected as ambiguous", False)
+    QUERIES.pop()
+    _check("duplicate handle is rejected as ambiguous", True)
+
+    # A second root initialization in one run context must be rejected before planning.
+    duplicate_init = mm.init_research("another request")
+    _check("second init_research is rejected", duplicate_init.get("existing_goal_id") == GOAL["id"])
 
     # --- insight binding resolves handles and rejects unknown refs ----------
     _install_fakes()

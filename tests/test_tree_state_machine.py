@@ -16,14 +16,22 @@ NODES = {
     "goal": {
         "id": "goal", "type": "UserRequest", "research_state": "RESEARCHING",
         "max_search_rounds": 20, "dispatched_search_rounds": 2, "successful_search_rounds": 2,
+        "scope_mode": "bounded", "portfolio_revision": 1, "evaluated_portfolio_revision": 1,
+    },
+    "o1": {
+        "id": "o1", "type": "Analysis", "analysis_type": "objective",
+        "objective_key": "core-answer", "requirement": "must", "weight": 1.0,
+        "coverage": 0.0, "confidence": 0.0, "status": "open",
     },
     "q1": {
         "id": "q1", "type": "Query", "handle": "q1", "text": "core route", "status": "assessing",
         "priority": 1.0, "sem": 1.0, "required_for_parent": True, "acceptance_criteria": [],
+        "objective_keys": ["core-answer"],
     },
     "q2": {
         "id": "q2", "type": "Query", "handle": "q2", "text": "sibling route", "status": "pending",
         "priority": 0.76, "sem": 0.6, "required_for_parent": True, "acceptance_criteria": [],
+        "objective_keys": ["core-answer"],
     },
     "r1": {"id": "r1", "type": "SearchRun", "query_id": "q1", "status": "succeeded"},
     "r2": {"id": "r2", "type": "SearchRun", "query_id": "q2", "status": "succeeded"},
@@ -32,6 +40,7 @@ NODES = {
     "e2": {"id": "e2", "type": "Evidence", "claim": "sibling evidence"},
 }
 EDGES = [
+    {"source": "goal", "target": "o1", "type": "HAS_OBJECTIVE"},
     {"source": "goal", "target": "q1", "type": "HAS_QUERY"},
     {"source": "goal", "target": "q2", "type": "HAS_QUERY"},
     {"source": "q1", "target": "r1", "type": "SEARCHED_BY"},
@@ -97,13 +106,19 @@ def install_fakes():
         SEQ += 1
         node_id = f"child{SEQ}"
         parent_node = NODES[parent_id]
-        handle = f"{parent_node['handle']}.{len(children(parent_id)) + 1}"
+        parent_handle = parent_node.get("handle")
+        handle = f"{parent_handle}.{len(children(parent_id)) + 1}" if parent_handle else f"q{len(children(parent_id)) + 1}"
         NODES[node_id] = {
             "id": node_id, "type": "Query", "handle": handle, "text": text, "status": "pending",
-            "priority": parent_node["priority"] * 0.85, "sem": 0.6, "required_for_parent": importance != "peripheral",
+            "priority": parent_node.get("priority", 1.0) * 0.85, "sem": 0.6,
+            "required_for_parent": attrs.get("required_for_parent", False),
             "acceptance_criteria": acceptance_criteria or [],
+            "objective_keys": attrs.get("objective_keys") or [],
+            "search_subject_key": attrs.get("search_subject_key"),
+            "recovery_objective_key": attrs.get("recovery_objective_key"),
         }
-        add_edge(parent_id, node_id, EdgeType.PARENT_OF)
+        edge_type = EdgeType.HAS_QUERY if parent_node.get("type") == "UserRequest" else EdgeType.PARENT_OF
+        add_edge(parent_id, node_id, edge_type)
         for gap_id in gap_ids or []:
             add_edge(node_id, gap_id, EdgeType.ADDRESSES_GAP)
             NODES[gap_id]["status"] = "assigned"
@@ -147,32 +162,106 @@ def main():
             "sufficiency_score": 0.5,
             "covered": ["base"],
             "gaps": [
-                {"description": "gap one", "importance": "core", "acceptance_criteria": ["one"]},
-                {"description": "gap two", "importance": "supporting", "acceptance_criteria": ["two"]},
+                {
+                    "description": "gap one", "importance": "core", "acceptance_criteria": ["one"],
+                    "objective_keys": ["core-answer"], "gap_category": "missing_core_evidence",
+                    "search_subject_key": "shared-subject", "decision_impact": 1.0, "confidence_gain": 1.0,
+                },
+                {
+                    "description": "gap two", "importance": "supporting", "acceptance_criteria": ["two"],
+                    "objective_keys": ["core-answer"], "gap_category": "verification",
+                    "search_subject_key": "shared-subject", "decision_impact": 0.8, "confidence_gain": 0.8,
+                },
             ],
             "recommendation": "needs_expansion",
             "reason": "two gaps",
         },
-        {"queries": [{"text": "child query one", "importance": "core", "acceptance_criteria": ["one"]}]},
-        {"queries": [{"text": "child query two", "importance": "supporting", "acceptance_criteria": ["two"]}]},
-        {"sufficiency_score": 0.4, "covered": [], "gaps": [{"description": "repeat"}], "recommendation": "needs_expansion"},
-        {"fatal_unresolved_conflicts": [], "core_threatening_gaps": [], "reason": "done"},
+        {"objectives": [{"objective_key": "core-answer", "coverage": 0.4, "confidence": 0.4}]},
+        {"queries": [{"text": "combined child query", "importance": "core", "acceptance_criteria": ["one", "two"]}]},
+        {
+            "sufficiency_score": 0.8,
+            "covered": ["base"],
+            "gaps": [{
+                "description": "optional detail", "gap_category": "detail",
+                "objective_keys": ["core-answer"], "search_subject_key": "detail",
+                "decision_impact": 0.1, "confidence_gain": 0.1,
+            }],
+            "recommendation": "needs_expansion",
+        },
+        {"objectives": [{"objective_key": "core-answer", "coverage": 0.8, "confidence": 0.75}]},
+        {"objectives": [
+            {"objective_key": "core-answer", "coverage": 0.8, "confidence": 0.75},
+            {"objective_key": "hard-answer", "coverage": 0.1, "confidence": 0.1},
+        ]},
+        {"objectives": [
+            {"objective_key": "core-answer", "coverage": 0.8, "confidence": 0.75},
+            {"objective_key": "hard-answer", "coverage": 0.1, "confidence": 0.1},
+        ]},
+        {"objectives": [
+            {"objective_key": "core-answer", "coverage": 0.8, "confidence": 0.75},
+            {"objective_key": "hard-answer", "coverage": 0.1, "confidence": 0.1},
+            {"objective_key": "exhaustive-answer", "coverage": 0.1, "confidence": 0.1},
+        ]},
+        {"objectives": [
+            {"objective_key": "core-answer", "coverage": 0.8, "confidence": 0.75},
+            {"objective_key": "hard-answer", "coverage": 0.1, "confidence": 0.1},
+            {"objective_key": "exhaustive-answer", "coverage": 0.1, "confidence": 0.1},
+        ]},
+        {"fatal_unresolved_conflicts": [], "reason": "done"},
     ]))
     actions = mm.get_next_actions()
     assert actions[0]["action"] == "assess_query", actions
+    assert actions[0]["query_id"] == "q1" and actions[0]["query_handle"] == "q1", actions
+    assert "exact_query_id" not in actions[0], actions
     assessed = mm.assess_query("q1")
     assert assessed["status"] == "needs_expansion" and len(assessed["created_gaps"]) == 2, assessed
+    portfolio = mm.evaluate_research_portfolio("goal")
+    assert len(portfolio["selected_gap_ids"]) == 2, portfolio
     expanded = mm.expand_gaps("q1")
-    assert len(expanded["created"]) == 2 and NODES["q1"]["status"] == "waiting_children", expanded
+    assert len(expanded["created"]) == 1 and NODES["q1"]["status"] == "waiting_children", expanded
+    assert len(expanded["created"][0]["gap_ids"]) == 2, expanded
     assert all(NODES[c["id"]]["priority"] < NODES["q1"]["priority"] for c in expanded["created"])
 
     NODES["qlow"] = {
         "id": "qlow", "type": "Query", "handle": "q3", "text": "repeated branch", "status": "assessing",
-        "priority": 0.5, "sem": 0.6, "required_for_parent": True, "low_novelty_streak": 2,
+        "priority": 0.5, "sem": 0.6, "required_for_parent": False, "low_novelty_streak": 2,
+        "objective_keys": ["core-answer"],
     }
     EDGES.append({"source": "goal", "target": "qlow", "type": "HAS_QUERY"})
     low = mm.assess_query("qlow")
-    assert low["status"] == "blocked" and not low["created_gaps"], low
+    assert low["status"] == "needs_expansion" and low["created_gaps"], low
+    low_portfolio = mm.evaluate_research_portfolio("goal")
+    assert low_portfolio["deferred_gap_ids"] and NODES["qlow"]["status"] == "sufficient", low_portfolio
+
+    NODES["ohard"] = {
+        "id": "ohard", "type": "Analysis", "analysis_type": "objective",
+        "objective_key": "hard-answer", "requirement": "must", "weight": 1.0,
+        "coverage": 0.1, "confidence": 0.1, "status": "open",
+        "low_gain_streak": 0, "last_evaluated_successful_rounds": 2,
+    }
+    EDGES.append({"source": "goal", "target": "ohard", "type": "HAS_OBJECTIVE"})
+    NODES["goal"]["successful_search_rounds"] = 3
+    mm.evaluate_research_portfolio("goal")
+    assert NODES["ohard"]["low_gain_streak"] == 1
+    NODES["goal"]["successful_search_rounds"] = 4
+    mm.evaluate_research_portfolio("goal")
+    assert NODES["ohard"]["status"] == "blocked_best_effort"
+
+    NODES["oexhaustive"] = {
+        "id": "oexhaustive", "type": "Analysis", "analysis_type": "objective",
+        "objective_key": "exhaustive-answer", "requirement": "must", "weight": 1.0,
+        "coverage": 0.1, "confidence": 0.1, "status": "open",
+        "low_gain_streak": 0, "last_evaluated_successful_rounds": 4,
+    }
+    EDGES.append({"source": "goal", "target": "oexhaustive", "type": "HAS_OBJECTIVE"})
+    NODES["goal"]["scope_mode"] = "exhaustive"
+    NODES["goal"]["successful_search_rounds"] = 5
+    mm.evaluate_research_portfolio("goal")
+    NODES["goal"]["successful_search_rounds"] = 6
+    mm.evaluate_research_portfolio("goal")
+    assert NODES["oexhaustive"]["low_gain_streak"] >= 2
+    assert NODES["oexhaustive"]["status"] == "open"
+    NODES["goal"]["scope_mode"] = "bounded"
 
     NODES["qopt"] = {
         "id": "qopt", "type": "Query", "handle": "q4", "status": "waiting_children",
@@ -192,6 +281,24 @@ def main():
         "name": "task", "id": "call1", "args": {"subagent_type": "reporter"},
     })
     assert blocked is not None
+    general_blocked = ResearchStateMiddleware()._gate_reporter({
+        "name": "task", "id": "general1", "args": {"subagent_type": "general-purpose"},
+    })
+    assert general_blocked is not None and general_blocked.status == "error"
+
+    NODES["orecover"] = {
+        "id": "orecover", "type": "Analysis", "analysis_type": "objective",
+        "objective_key": "recover-answer", "description": "recover missing answer",
+        "acceptance_criteria": ["recover"], "requirement": "must", "weight": 1.0,
+        "coverage": 0.0, "confidence": 0.0, "status": "open",
+    }
+    EDGES.append({"source": "goal", "target": "orecover", "type": "HAS_OBJECTIVE"})
+    recovery = mm._recover_unactionable_research(NODES["goal"], [
+        dict(node) for node in NODES.values() if node.get("type") == "Query"
+    ])
+    assert recovery["action"] == "dispatch_searcher" and recovery["query_id"].startswith("child"), recovery
+    assert "exact_query_id" not in recovery and recovery["query_handle"].startswith("q"), recovery
+    NODES["orecover"].update({"coverage": 0.8, "confidence": 0.75, "status": "satisfied"})
 
     for node in NODES.values():
         if node.get("type") == "Query":
@@ -200,12 +307,26 @@ def main():
     for node in NODES.values():
         if node.get("analysis_type") == "gap":
             node["status"] = "resolved"
+    NODES["o1"].update({"coverage": 0.8, "confidence": 0.75, "status": "satisfied"})
+    NODES["oexhaustive"].update({"coverage": 0.8, "confidence": 0.75, "status": "satisfied"})
+    NODES["goal"]["evaluated_portfolio_revision"] = NODES["goal"]["portfolio_revision"]
     converged = mm.assess_convergence("goal")
     assert converged["research_state"] == "REPORT_READY", converged
     allowed = ResearchStateMiddleware()._gate_reporter({
         "name": "task", "id": "call2", "args": {"subagent_type": "reporter"},
     })
     assert allowed is None and NODES["goal"]["research_state"] == "REPORTING"
+    loop_guard = ResearchStateMiddleware(max_repeated_failures=3)
+    repeated_call = {
+        "name": "task",
+        "id": "general-loop",
+        "args": {"subagent_type": "general-purpose"},
+    }
+    for _ in range(3):
+        blocked_result = loop_guard._gate_reporter(repeated_call)
+        loop_guard._record_tool_result(repeated_call, blocked_result)
+    assert NODES["goal"]["research_state"] == "FAILED"
+    assert "Repeated identical failed tool action" in NODES["goal"]["last_error"]
     print("ALL TREE STATE-MACHINE CHECKS PASSED")
 
 

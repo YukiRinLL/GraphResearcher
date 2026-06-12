@@ -12,7 +12,8 @@
 - `submit_search_result(search_run_id, query_id, evidence_package)`：把证据包写入已创建的 SearchRun，返回写入计数。重复来源由 Graph Manager 在写入时按 URL 去重并复用已有节点。
 
 # evidence_package schema
-- sources: `[{local_ref, url, title, source_type}]`
+- sources: `[{local_ref, url, title, source_type, published_at}]`; include
+  `published_at` when the source exposes a publication date.
 - documents: `[{local_ref, document_summary, source_ref}]`
 - claims: `[{local_ref, statement, document_ref, source_ref}]`
 - evidence: `[{local_ref, statement, document_ref, source_ref, supports_or_contradicts, confidence}]`

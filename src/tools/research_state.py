@@ -16,8 +16,8 @@ COMPLETED = "COMPLETED"
 FAILED = "FAILED"
 
 REPORT_ALLOWED = {REPORT_READY, BUDGET_EXHAUSTED, REPORTING, COMPLETED}
-TERMINAL_QUERY_STATUSES = {"sufficient", "blocked", "failed"}
-OPEN_GAP_STATUSES = {"open", "assigned"}
+TERMINAL_QUERY_STATUSES = {"sufficient", "blocked", "failed", "deferred"}
+OPEN_GAP_STATUSES = {"candidate", "selected", "assigned"}
 _TRANSITIONS = {
     INITIALIZING: {INITIALIZING, RESEARCHING, FAILED},
     RESEARCHING: {RESEARCHING, REPORT_READY, BUDGET_EXHAUSTED, FAILED},
@@ -114,13 +114,14 @@ def get_status(goal_id: Optional[str] = None) -> dict[str, Any]:
     goal = get_goal(goal_id)
     queries = graph_tools.search_nodes("query", {})
     gaps = graph_tools.search_nodes("analysis", {"analysis_type": "gap"})
+    objectives = graph_tools.search_nodes("analysis", {"analysis_type": "objective"})
     counts: dict[str, int] = {}
     for query in queries:
         status = query.get("status") or "unknown"
         counts[status] = counts.get(status, 0) + 1
-    open_required = [
+    active_queries = [
         q for q in queries
-        if is_required_path(q["id"]) and q.get("status") not in TERMINAL_QUERY_STATUSES
+        if q.get("status") not in TERMINAL_QUERY_STATUSES
     ]
     return {
         "goal_id": goal.get("id"),
@@ -129,15 +130,35 @@ def get_status(goal_id: Optional[str] = None) -> dict[str, Any]:
         "dispatched_search_rounds": goal.get("dispatched_search_rounds", 0),
         "successful_search_rounds": goal.get("successful_search_rounds", 0),
         "remaining_search_rounds": remaining_budget(goal.get("id")),
-        "query_status_counts": counts,
-        "open_required_queries": [
-            {"id": q.get("id"), "handle": q.get("handle"), "status": q.get("status"), "text": q.get("text")}
-            for q in open_required
+        "scope_mode": goal.get("scope_mode", "bounded"),
+        "portfolio_revision": goal.get("portfolio_revision", 0),
+        "evaluated_portfolio_revision": goal.get("evaluated_portfolio_revision", 0),
+        "last_max_marginal_utility": goal.get("last_max_marginal_utility", 0.0),
+        "report_readiness_score": goal.get("report_readiness_score", 0.0),
+        "objectives": [
+            {
+                "objective_key": objective.get("objective_key"),
+                "requirement": objective.get("requirement"),
+                "status": objective.get("status"),
+                "coverage": objective.get("coverage"),
+                "confidence": objective.get("confidence"),
+            }
+            for objective in objectives
         ],
-        "open_required_gaps": [
-            {"id": g.get("id"), "description": g.get("description") or g.get("text"), "status": g.get("status")}
+        "query_status_counts": counts,
+        "active_queries": [
+            {"id": q.get("id"), "handle": q.get("handle"), "status": q.get("status"), "text": q.get("text")}
+            for q in active_queries
+        ],
+        "selected_gaps": [
+            {
+                "id": g.get("id"),
+                "description": g.get("description") or g.get("text"),
+                "status": g.get("status"),
+                "marginal_utility": g.get("marginal_utility"),
+            }
             for g in gaps
-            if gap_is_required_path(g["id"]) and g.get("status") in OPEN_GAP_STATUSES
+            if g.get("status") in {"selected", "assigned"}
         ],
         "last_convergence_recommendation": goal.get("last_convergence_recommendation"),
         "report_authorized_reason": goal.get("report_authorized_reason"),

@@ -9,14 +9,15 @@ from typing import Any, Optional
 from memory.graph import EdgeType, NodeType
 
 _QUERY_TRANSITIONS = {
-    "pending": {"searching"},
+    "pending": {"searching", "deferred"},
     "searching": {"assessing", "pending", "blocked", "failed"},
     "assessing": {"sufficient", "needs_expansion", "blocked"},
-    "needs_expansion": {"waiting_children", "blocked"},
+    "needs_expansion": {"waiting_children", "sufficient", "blocked"},
     "waiting_children": {"assessing"},
     "sufficient": set(),
     "blocked": set(),
     "failed": set(),
+    "deferred": set(),
 }
 
 # A single persistent background event loop runs every coroutine. The neo4j
@@ -259,7 +260,7 @@ def create_query_child(
     handle = f"{parent_handle}.{len(children) + 1}" if parent_handle else f"q{len(children) + 1}"
     depth = int(parent.get("depth") or 0) + 1
     priority, tier, sem = convergence.compute_priority(importance, parent_id)
-    required = importance != "peripheral" or any(gap.get("required_for_parent", True) for gap in validated_gaps)
+    required = bool(attributes.pop("required_for_parent", False))
     query_id = _create_query(
         text=text,
         status="pending",
@@ -297,10 +298,11 @@ def transition_query(query_id: str, status: str, **attributes: Any) -> str:
 def create_source(
     url: str,
     title: Optional[str] = None,
-    source_type: Optional[str] = None
+    source_type: Optional[str] = None,
+    **attributes: Any,
 ) -> dict[str, Any]:
     manager = _get_manager()
-    attributes = {"url": url}
+    attributes = {"url": url, **attributes}
     if title:
         attributes["title"] = title
     if source_type:
@@ -392,12 +394,12 @@ def create_analysis(
     analysis_type: str = "insight",
     **attributes: Any,
 ) -> dict[str, Any]:
-    if analysis_type not in {"gap", "insight"}:
+    if analysis_type not in {"gap", "insight", "objective"}:
         raise ValueError(f"Invalid analysis_type: {analysis_type!r}")
     if query_id:
         parent_type = get_node(query_id).get("type")
         allowed = {NodeType.QUERY.value}
-        if analysis_type == "gap":
+        if analysis_type in {"gap", "objective"}:
             allowed.add(NodeType.USER_REQUEST.value)
         if parent_type not in allowed:
             raise ValueError(f"Invalid Analysis parent type for {query_id!r}")
@@ -407,7 +409,10 @@ def create_analysis(
         {"text": text, "analysis_type": analysis_type, **attributes},
     ))
     if query_id:
-        edge_type = EdgeType.HAS_GAP if analysis_type == "gap" else EdgeType.HAS_ANALYSIS
+        edge_type = {
+            "gap": EdgeType.HAS_GAP,
+            "objective": EdgeType.HAS_OBJECTIVE,
+        }.get(analysis_type, EdgeType.HAS_ANALYSIS)
         _run_async(manager.add_edge(query_id, analysis_id, edge_type))
     return analysis_id
 
@@ -543,12 +548,27 @@ def validate_query_tree() -> dict[str, Any]:
         qid for qid, node in queries.items()
         if not re.fullmatch(r"q\d+(?:\.\d+)*", str(node.get("handle") or ""))
     ]
+    handles: dict[str, list[str]] = {}
+    for qid, node in queries.items():
+        handles.setdefault(str(node.get("handle") or ""), []).append(qid)
+    duplicate_handles = [
+        {"handle": handle, "query_ids": ids}
+        for handle, ids in handles.items()
+        if handle and len(ids) > 1
+    ]
+    goals = [node["id"] for node in nodes.values() if node.get("type") == NodeType.USER_REQUEST.value]
+    multiple_goals = goals if len(goals) > 1 else []
     return {
-        "valid": not (orphans or multi_parent or cycles or invalid_handles or invalid_parent_edges),
+        "valid": not (
+            orphans or multi_parent or cycles or invalid_handles or invalid_parent_edges
+            or duplicate_handles or multiple_goals
+        ),
         "orphans": orphans,
         "multi_parent_queries": multi_parent,
         "cycles": sorted(set(cycles)),
         "invalid_handles": invalid_handles,
+        "duplicate_handles": duplicate_handles,
+        "multiple_goals": multiple_goals,
         "invalid_parent_edges": invalid_parent_edges,
     }
 

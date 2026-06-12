@@ -32,9 +32,8 @@ def dispatch_searcher(query_id: str, source_preferences: list[str] | None = None
     free text), so the reference can never be lost in transit.
 
     Args:
-        query_id: The query's short handle (e.g. ``q3.1``) returned by
-            ``init_research`` / ``get_next_actions`` / ``expand_gaps``; the
-            exact node ID is also accepted.
+        query_id: The exact Query node ID returned by ``get_next_actions`` or
+            ``expand_gaps``. Pass it through unchanged.
         source_preferences: Optional preferred source categories or domains.
 
     Returns:
