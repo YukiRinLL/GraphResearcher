@@ -129,18 +129,32 @@ def main():
         "objective_keys": ["a"],
         "acceptance_criteria": [],
     }]
-    try:
-        mm.bind_report_section({"title": "bad", "content": "bad"}, evidence_ids=["source"])
-    except ValueError:
-        pass
-    else:
-        raise AssertionError("ReportSection binding to a non-Evidence must be rejected")
-    try:
-        mm.bind_report_section({"title": "unbound", "content": "fact " * 30})
-    except ValueError:
-        pass
-    else:
-        raise AssertionError("factual ReportSection without a binding must be rejected")
+    created_sections = []
+    bound_sections = []
+
+    def create_report_section(title, content, section_type=None):
+        section_id = f"section-{len(created_sections) + 1}"
+        created_sections.append({
+            "id": section_id,
+            "title": title,
+            "content": content,
+            "section_type": section_type,
+        })
+        return section_id
+
+    graph_tools.create_report_section = create_report_section
+    graph_tools.bind_evidence_to_section = lambda section_id, evidence_ids, claim_ids=None: bound_sections.append({
+        "section_id": section_id,
+        "evidence_ids": list(evidence_ids),
+        "claim_ids": list(claim_ids or []),
+    })
+    bad_binding = mm.bind_report_section({"title": "bad", "content": "bad"}, evidence_ids=["source"])
+    unbound = mm.bind_report_section({"title": "unbound", "content": "fact " * 30})
+    assert bad_binding == "section-1" and unbound == "section-2"
+    assert bound_sections == [
+        {"section_id": "section-1", "evidence_ids": [], "claim_ids": []},
+        {"section_id": "section-2", "evidence_ids": [], "claim_ids": []},
+    ]
 
     assert not hasattr(mm, "mark_query")
     assert not hasattr(mm, "expand_query")

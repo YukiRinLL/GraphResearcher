@@ -30,6 +30,7 @@ def main():
         },
     }
     edges = []
+    created_titles = []
 
     def search_nodes(kind, filt=None):
         wanted = kind.replace("_", "").lower()
@@ -56,7 +57,7 @@ def main():
         )
     ]
     graph_tools.add_edge = add_edge
-    graph_tools.create_report_section = lambda title, content, section_type=None: "section"
+    graph_tools.create_report_section = lambda title, content, section_type=None: created_titles.append(title) or "section"
     research_state.get_goal = lambda goal_id=None: dict(nodes["goal"])
 
     uncited = "## Findings\n\n" + ("A supported factual sentence. " * 8)
@@ -87,8 +88,32 @@ def main():
     assert any(edge["source"] == "section" and edge["target"] == "s1" for edge in edges), edges
     assert not report_tools.validate_final_report(finalized), report_tools.validate_final_report(finalized)
 
+    created_titles.clear()
+    report_tools.finalize_report(
+        "## Recommendations\n\n"
+        + ("Continue targeted research. " * 8)
+        + "\n\n## Findings\n\nSupported finding [1].\n\n"
+        + "## References\n\n[1] Current source https://example.com/current"
+    )
+    assert "Recommendations" not in created_titles, created_titles
+
     internal = valid.replace("A supported factual sentence.", "Research Graph query node.")
     assert any("internal process term" in issue for issue in report_tools.validate_final_report(internal))
+
+    run21_bad = (
+        "## Findings\n\n"
+        "下面的整理基于截至 2025 年的公开资料，并严格受本次研究图谱覆盖范围约束。\n\n"
+        "Supported finding [1].\n\n"
+        "如果你接下来希望进一步细化，可以指定维度，我可以帮你补全。\n\n"
+        "## References\n\n[1] Current source https://example.com/current"
+    )
+    sanitized = report_tools.sanitize_report(run21_bad)
+    assert "研究图谱" not in sanitized and "如果你接下来希望" not in sanitized
+    assert "Supported finding [1]." in sanitized
+    assert not report_tools.validate_delivery_invariants(sanitized)
+
+    uncited_unit = valid.replace("[1]", "", 1)
+    assert any("uncited factual paragraph" in issue for issue in report_tools.validate_delivery_invariants(uncited_unit))
     print("ALL REPORT VALIDATION CHECKS PASSED")
 
 

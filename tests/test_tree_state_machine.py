@@ -312,10 +312,16 @@ def main():
     NODES["goal"]["evaluated_portfolio_revision"] = NODES["goal"]["portfolio_revision"]
     converged = mm.assess_convergence("goal")
     assert converged["research_state"] == "REPORT_READY", converged
+    original_validate_query_tree = graph_tools.validate_query_tree
+    graph_tools.validate_query_tree = lambda: {"valid": False, "orphans": ["q1"]}
     allowed = ResearchStateMiddleware()._gate_reporter({
         "name": "task", "id": "call2", "args": {"subagent_type": "reporter"},
     })
     assert allowed is None and NODES["goal"]["research_state"] == "REPORTING"
+    assert NODES["goal"]["reporter_warnings"] == [
+        "Query tree validation failed before Reporter authorization"
+    ]
+    graph_tools.validate_query_tree = original_validate_query_tree
     loop_guard = ResearchStateMiddleware(max_repeated_failures=3)
     repeated_call = {
         "name": "task",

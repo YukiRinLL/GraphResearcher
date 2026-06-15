@@ -163,5 +163,8 @@ def get_status(goal_id: Optional[str] = None) -> dict[str, Any]:
         "last_convergence_recommendation": goal.get("last_convergence_recommendation"),
         "report_authorized_reason": goal.get("report_authorized_reason"),
         "reporting_from_state": goal.get("reporting_from_state"),
+        "report_delivery_mode": goal.get("report_delivery_mode"),
+        "report_validation_issues": goal.get("report_validation_issues", []),
+        "reporter_warnings": goal.get("reporter_warnings", []),
         "last_error": goal.get("last_error"),
     }

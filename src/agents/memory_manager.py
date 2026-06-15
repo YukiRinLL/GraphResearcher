@@ -1909,89 +1909,70 @@ class MemoryManager:
     # Reporter-facing
     # -----------------------------
     def export_report_context(self, goal_id: Optional[str] = None) -> dict:
-        """Export the full graph context needed to write the report.
-
-        Resolves the research goal from the graph's sole ``user_request`` node
-        when ``goal_id`` is missing or does not match a node, so the report
-        stage works without the caller tracking the exact ID.
-
-        Args:
-            goal_id: The ``user_request`` node ID; resolved automatically if
-                omitted or unknown.
-
-        Returns:
-            dict with the goal node, the full sub-graph, and nodes grouped by
-            type (``queries``, ``evidence``, ``conflicts``, ``analysis``,
-            ``sources``, ``report_sections``).
-        """
+        """Export compact report metadata; evidence is fetched page by page."""
         goal = graph_tools.get_node(goal_id) if goal_id else {}
         if not goal:
             requests = graph_tools.search_nodes("user_request", {})
             if requests:
                 goal = requests[0]
                 goal_id = goal["id"]
-        raw_subgraph = {
-            "nodes": graph_tools.get_all_nodes(),
-            "edges": graph_tools.get_all_edges(),
-        } if goal_id else {"nodes": [], "edges": []}
-        raw_limitations = [
-            node for node in raw_subgraph["nodes"]
-            if str(node.get("type") or "").lower() == "analysis"
-            and node.get("analysis_type") == "objective"
-            and node.get("status") == "blocked_best_effort"
+        objectives = self.get_research_objectives(goal_id)
+        conflicts = graph_tools.search_nodes("conflict", {})
+        from tools import report_tools
+
+        limitations = [
+            str(item.get("description") or item.get("text") or "").strip()
+            for item in objectives
+            if item.get("status") == "blocked_best_effort"
         ]
-        raw_limitations.extend(
-            node for node in raw_subgraph["nodes"]
-            if str(node.get("type") or "").lower() == "conflict"
-            and node.get("resolution_status") in {"unresolved", "investigating", "disclosed"}
-        )
-
-        # Strip internal scheduling fields from every node before they reach the
-        # Reporter, so the writing context carries content only (not graph state).
-        goal = _strip_internal_fields(goal) if goal else goal
-        subgraph = {
-            "nodes": [_strip_internal_fields(n) for n in raw_subgraph.get("nodes", [])],
-            "edges": raw_subgraph.get("edges", []),
-        }
-
-        grouped: dict[str, list[dict]] = {
-            "query": [], "evidence": [], "conflict": [], "analysis": [],
-            "source": [], "reportsection": [],
-        }
-        for node in subgraph["nodes"]:
-            node_type = str(node.get("type") or "").lower()
-            if node_type in grouped:
-                grouped[node_type].append(node)
-
-        # Local import avoids any import cycle (report_tools never imports this
-        # module). The registry pre-numbers sources so the Reporter cites stable
-        # [n] that finalize_report can rebuild deterministically.
-        from tools import report_tools, research_state
-
+        limitations = [item for item in limitations if item]
         return {
-            "goal": goal,
-            "subgraph": subgraph,
-            "queries": grouped["query"],
-            "evidence": grouped["evidence"],
-            "conflicts": grouped["conflict"],
-            "analysis": [
-                item for item in grouped["analysis"]
-                if item.get("analysis_type") != "gap"
+            "goal": {
+                key: goal.get(key)
+                for key in (
+                    "id", "request", "research_goal", "language", "time_window",
+                    "region_scope", "source_preferences",
+                )
+            } if goal else {},
+            "queries": [
+                {
+                    key: query.get(key)
+                    for key in ("id", "handle", "text", "importance")
+                }
+                for query in graph_tools.search_nodes("query", {})
             ],
             "objectives": [
-                item for item in grouped["analysis"]
-                if item.get("analysis_type") == "objective"
+                {
+                    key: objective.get(key)
+                    for key in (
+                        "id", "objective_key", "description", "text",
+                        "requirement", "acceptance_criteria",
+                    )
+                }
+                for objective in objectives
             ],
-            "sources": grouped["source"],
-            "report_sections": grouped["reportsection"],
-            "research_status": research_state.get_status(goal_id),
-            "limitations": raw_limitations,
+            "limitations": limitations,
             "disclosed_conflicts": [
-                item for item in grouped["conflict"]
-                if item.get("resolution_status") == "disclosed"
+                {
+                    "description": item.get("description"),
+                    "conflict_type": item.get("conflict_type"),
+                }
+                for item in conflicts if item.get("resolution_status") == "disclosed"
             ],
             "reference_registry": report_tools.build_reference_registry(),
         }
+
+    def get_report_evidence(self, query_id: str, offset: int = 0, limit: int = 20) -> dict:
+        """Return a compact, citation-ready page of one Query's evidence."""
+        try:
+            resolved = self._resolve_query_id(query_id)
+        except AmbiguousQueryReference as exc:
+            return {"error": str(exc)}
+        if resolved is None:
+            return {"error": f"Unknown query reference: {query_id!r}"}
+        from tools import report_tools
+
+        return report_tools.get_report_evidence(resolved, offset=offset, limit=limit)
 
     def bind_report_section(
         self,
@@ -2000,7 +1981,7 @@ class MemoryManager:
         evidence_ids: Optional[list[str]] = None,
         source_ids: Optional[list[str]] = None,
     ) -> str:
-        """Create a report-section node and bind it to the evidence/claims it uses.
+        """Best-effort persist a report section and its evidence bindings.
 
         Args:
             section: dict with ``title``, ``content`` and optional ``section_type``.
@@ -2012,49 +1993,78 @@ class MemoryManager:
         """
         valid_evidence_ids = []
         for eid in evidence_ids or []:
-            if graph_tools.get_node(eid).get("type") == NodeType.EVIDENCE.value:
+            try:
+                node_type = graph_tools.get_node(eid).get("type")
+            except Exception:  # noqa: BLE001 - binding repair must not block reporting
+                node_type = None
+            if node_type == NodeType.EVIDENCE.value:
                 valid_evidence_ids.append(eid)
             else:
-                raise ValueError(f"ReportSection evidence binding requires Evidence: {eid!r}")
-        
-        # Validate claim IDs exist in the graph
+                logger.warning("Skipping invalid ReportSection Evidence binding: %r", eid)
+
         valid_claim_ids = []
         for cid in claim_ids or []:
-            if graph_tools.get_node(cid).get("type") == NodeType.CLAIM.value:
+            try:
+                node_type = graph_tools.get_node(cid).get("type")
+            except Exception:  # noqa: BLE001 - binding repair must not block reporting
+                node_type = None
+            if node_type == NodeType.CLAIM.value:
                 valid_claim_ids.append(cid)
             else:
-                raise ValueError(f"ReportSection claim binding requires Claim: {cid!r}")
+                logger.warning("Skipping invalid ReportSection Claim binding: %r", cid)
+
         valid_source_ids = []
         for sid in source_ids or []:
-            if graph_tools.get_node(sid).get("type") == NodeType.SOURCE.value:
+            try:
+                node_type = graph_tools.get_node(sid).get("type")
+            except Exception:  # noqa: BLE001 - binding repair must not block reporting
+                node_type = None
+            if node_type == NodeType.SOURCE.value:
                 valid_source_ids.append(sid)
             else:
-                raise ValueError(f"ReportSection source binding requires Source: {sid!r}")
+                logger.warning("Skipping invalid ReportSection Source binding: %r", sid)
+
         content = str(section.get("content") or "").strip()
         if len(content) >= 80 and not (valid_evidence_ids or valid_claim_ids or valid_source_ids):
-            raise ValueError("A factual ReportSection must bind at least one Evidence, Claim, or Source")
-        
-        section_id = graph_tools.create_report_section(
-            title=section.get("title", ""),
-            content=section.get("content", ""),
-            section_type=section.get("section_type"),
-        )
-        graph_tools.bind_evidence_to_section(
-            section_id,
-            evidence_ids=valid_evidence_ids,
-            claim_ids=valid_claim_ids,
-        )
-        for source_id in valid_source_ids:
-            graph_tools.add_edge(section_id, source_id, EdgeType.USES)
-        
-        # Log binding statistics
-        if evidence_ids or claim_ids:
-            logger.info(
-                f"Bound report section {section_id}: "
-                f"{len(valid_evidence_ids)}/{len(evidence_ids or [])} evidence IDs, "
-                f"{len(valid_claim_ids)}/{len(claim_ids or [])} claim IDs validated"
+            logger.warning("Persisting unbound ReportSection: %s", section.get("title", ""))
+
+        try:
+            section_id = graph_tools.create_report_section(
+                title=section.get("title", ""),
+                content=section.get("content", ""),
+                section_type=section.get("section_type"),
             )
-        
+        except Exception:  # noqa: BLE001 - section persistence must not block reporting
+            logger.warning("Skipping ReportSection persistence", exc_info=True)
+            return ""
+
+        try:
+            graph_tools.bind_evidence_to_section(
+                section_id,
+                evidence_ids=valid_evidence_ids,
+                claim_ids=valid_claim_ids,
+            )
+        except Exception:  # noqa: BLE001 - binding repair must not block reporting
+            logger.warning("ReportSection evidence/claim binding failed", exc_info=True)
+        for source_id in valid_source_ids:
+            try:
+                graph_tools.add_edge(section_id, source_id, EdgeType.USES)
+            except Exception:  # noqa: BLE001 - binding repair must not block reporting
+                logger.warning("ReportSection source binding failed: %s", source_id, exc_info=True)
+
+        if evidence_ids or claim_ids or source_ids:
+            logger.info(
+                "Bound report section %s: %s/%s evidence IDs, %s/%s claim IDs, "
+                "%s/%s source IDs accepted",
+                section_id,
+                len(valid_evidence_ids),
+                len(evidence_ids or []),
+                len(valid_claim_ids),
+                len(claim_ids or []),
+                len(valid_source_ids),
+                len(source_ids or []),
+            )
+
         return section_id
 
     # -----------------------------

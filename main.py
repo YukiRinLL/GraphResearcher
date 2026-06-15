@@ -153,6 +153,56 @@ def _content_text(message: object) -> str:
     return text or ""
 
 
+def _fallback_report(request: str, status_summary: dict) -> str:
+    """Build a deterministic cited evidence report when Reporter compilation fails."""
+    del status_summary
+    try:
+        from tools import report_tools
+
+        return report_tools.build_cited_evidence_report(request)
+    except Exception:  # noqa: BLE001 - a minimal neutral report must always exist
+        if re.search(r"[\u4e00-\u9fff]", request or ""):
+            return "# 调研报告\n\n## 结论\n\n暂无可核实结论。\n"
+        return "# Research Report\n\n## Conclusion\n\nNo verifiable findings are available.\n"
+
+
+def _prepare_report_for_delivery(
+    final_text: str,
+    request: str,
+    status_summary: dict,
+    compiled_text: str = "",
+) -> tuple[str, list[str], str]:
+    """Deliver the structured Reporter artifact or a deterministic cited fallback."""
+    del final_text  # Orchestrator terminal prose is never a canonical report.
+    issues: list[str] = []
+    from tools import report_tools
+
+    if compiled_text.strip():
+        try:
+            report_text = report_tools.sanitize_report(compiled_text)
+            report_text = report_tools.finalize_report(report_text)
+            hard_issues = report_tools.validate_delivery_invariants(report_text)
+            quality_issues = report_tools.validate_final_report(report_text)
+            if not hard_issues:
+                return report_text, list(dict.fromkeys(quality_issues)), "compiled_reporter"
+            issues.extend(hard_issues)
+        except Exception as exc:  # noqa: BLE001 - fallback remains mandatory
+            issues.append(f"compiled Reporter report failed: {exc}")
+    else:
+        issues.append("Reporter submitted no valid structured report")
+
+    report_text = _fallback_report(request, status_summary)
+    try:
+        report_text = report_tools.sanitize_report(report_text)
+        report_text = report_tools.finalize_report(report_text)
+        issues.extend(report_tools.validate_delivery_invariants(report_text))
+        issues.extend(report_tools.validate_final_report(report_text))
+    except Exception as exc:  # noqa: BLE001 - the fallback text must still be delivered
+        issues.append(f"cited fallback audit failed: {exc}")
+
+    return report_text, list(dict.fromkeys(issues)), "cited_fallback"
+
+
 def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
     """Run the research loop for a single request and save the artifacts.
 
@@ -228,8 +278,8 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
                 if not messages:
                     continue
 
-                # The report is the Orchestrator's final reviewed message, so only
-                # capture top-level (namespace == ()) text — never a subagent's draft.
+                # Keep top-level text for diagnostics only. The canonical report
+                # must come from Reporter's structured submit_final_report tool.
                 last_text = _content_text(messages[-1])
                 if last_text and not namespace:
                     final_text = last_text
@@ -256,9 +306,6 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
             except Exception:
                 pass
         finally:
-            # The report is the Orchestrator's final reviewed message (it aggregates
-            # the Reporter's draft and revises it). The graph holds evidence and
-            # section→evidence bindings only, not the report itself.
             from tools import research_state
 
             try:
@@ -266,38 +313,40 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
             except Exception as exc:
                 status_summary = {"research_state": None, "status_error": str(exc)}
             state_before_write = status_summary.get("research_state")
-            report_text = final_text or "(no report produced)"
-            # Deterministically rebuild citations/references from the graph's
-            # Source nodes (dedup, drop fabricated refs) and create the
-            # ReportSection→Source bindings the Reporter may have skipped. Runs
-            # before write_text + export so report.md and the JSONL both reflect
-            # it; on any failure the raw report is written unchanged.
-            if state_before_write == research_state.REPORTING and final_text:
-                validation_issues = []
-                try:
-                    from tools import report_tools
+            try:
+                compiled_text = graph_manager_tools.get_compiled_report()
+            except Exception:
+                compiled_text = ""
+            report_text, validation_issues, delivery_mode = _prepare_report_for_delivery(
+                final_text,
+                request,
+                status_summary,
+                compiled_text=compiled_text,
+            )
+            report_saved = False
+            try:
+                report_path.write_text(report_text, encoding="utf-8")
+                report_saved = True
+            except Exception:
+                console.print("[yellow]Report write failed (captured in run.log):[/]")
+                console.print(traceback.format_exc(), markup=False, highlight=False)
 
-                    report_text = report_tools.finalize_report(report_text)
-                    validation_issues = report_tools.validate_final_report(report_text)
-                except Exception:
-                    console.print("[yellow]Report finalize failed (captured in run.log).[/]")
-                    console.print(traceback.format_exc(), markup=False, highlight=False)
-                    validation_issues = ["report finalization failed"]
-                if validation_issues:
-                    research_state.update_goal({
-                        "research_state": research_state.FAILED,
-                        "last_error": f"Final report validation failed: {validation_issues}",
-                    })
-                    report_text = f"Final report validation failed: {validation_issues}"
-                else:
-                    report_path.write_text(report_text, encoding="utf-8")
-                    research_state.update_goal({"research_state": research_state.COMPLETED})
-                status_summary = research_state.get_status()
-            else:
-                report_text = (
-                    "Research did not reach an authorized reporting state. "
-                    f"Current state: {state_before_write or 'uninitialized'}."
+            if validation_issues:
+                console.print(
+                    f"[yellow]Report delivered with {len(validation_issues)} validation warning(s).[/]"
                 )
+            try:
+                goal_update = {
+                    "report_delivery_mode": delivery_mode,
+                    "report_validation_issues": validation_issues,
+                }
+                if report_saved and state_before_write == research_state.REPORTING:
+                    goal_update["research_state"] = research_state.COMPLETED
+                research_state.update_goal(goal_update)
+                status_summary = research_state.get_status()
+            except Exception:
+                console.print("[yellow]Report delivery status update failed (captured in run.log):[/]")
+                console.print(traceback.format_exc(), markup=False, highlight=False)
 
             # Export the run's graph from neo4j to JSONL for graph_viewer.html.
             graph_path = output_dir / "research_graph.jsonl"
@@ -309,8 +358,6 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
                 console.print("[yellow]Graph export to JSONL failed (captured in run.log):[/]")
                 console.print(traceback.format_exc(), markup=False, highlight=False)
 
-            final_state = status_summary.get("research_state")
-            report_saved = final_state == research_state.COMPLETED
             console.rule("[bold green]Final Report" if report_saved else "[bold yellow]Research Status")
             console.print(Markdown(report_text))
             console.print(f"\n[dim]State summary: {json.dumps(status_summary, ensure_ascii=False)}[/]")

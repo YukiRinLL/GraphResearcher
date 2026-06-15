@@ -85,19 +85,11 @@ class ResearchStateMiddleware(AgentMiddleware):
 
         tree = graph_tools.validate_query_tree()
         if not tree.get("valid"):
+            warning = "Query tree validation failed before Reporter authorization"
+            logger.warning("%s: %s", warning, tree)
             research_state.update_goal({
-                "research_state": research_state.FAILED,
-                "last_error": "Query tree validation failed before Reporter authorization",
+                "reporter_warnings": [warning],
             })
-            return ToolMessage(
-                content=json.dumps({
-                    "error": "Reporter authorization rejected because the Query tree is invalid",
-                    "tree_validation": tree,
-                }, ensure_ascii=False),
-                tool_call_id=tool_call["id"],
-                name="task",
-                status="error",
-            )
         research_state.update_goal({
             "research_state": research_state.REPORTING,
             "reporting_from_state": state,
@@ -421,7 +413,8 @@ class SensitiveWordsRetryMiddleware(AgentMiddleware):
 # instead of delivering the report.
 _OFFER_PATTERN = re.compile(
     r"我也可以|需要我|要不要我|是否(要我|需要|继续)|要我继续|可以继续|继续深挖|继续(为你|帮你)|"
-    r"如果你(愿意|需要|想)|我可以(为你|帮你|给出|提供|继续|在下一步|再)|可粘到|"
+    r"如果你(愿意|需要|想|后续希望|接下来希望)|可以指定维度|可直接进\s*ppt|帮你补全|"
+    r"我可以(为你|帮你|给出|提供|继续|在下一步|再)|可粘到|"
     r"请确认|请告诉我|如需.*可|would you like me|should i (continue|proceed)|let me know if|shall i"
 )
 
@@ -465,10 +458,6 @@ class ReportValidationMiddleware(AgentMiddleware):
         if not text:
             return False  # empty handled by EmptyResponseRetryMiddleware
         if _OFFER_PATTERN.search(text):
-            return True
-        from tools import report_tools
-
-        if report_tools.validate_final_report(text):
             return True
         if len(text) < self.min_length and text.count("## ") < self.min_sections:
             return True

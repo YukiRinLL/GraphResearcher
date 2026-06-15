@@ -1,6 +1,7 @@
 """State-machine Graph Manager tools exposed to GraphResearcher agents."""
 
-import uuid
+from pathlib import Path
+from threading import Lock
 from typing import Any, Optional
 
 from langchain_core.tools import tool
@@ -9,17 +10,25 @@ from agents.memory_manager import AmbiguousQueryReference, MemoryManager
 
 _manager: Optional[MemoryManager] = None
 _cache_dir: Optional[str] = None
+_compiled_report: str = ""
+_report_lock = Lock()
 
 
 def configure(output_dir: Optional[str] = None) -> None:
-    """Scope graph storage and rebuild the shared MemoryManager for a run."""
-    global _cache_dir, _manager
+    """Clear and scope graph storage, then rebuild the shared manager for a run."""
+    global _cache_dir, _compiled_report, _manager
     _cache_dir = output_dir
     _manager = None
+    with _report_lock:
+        _compiled_report = ""
+        path = _compiled_report_path()
+        if path and path.exists():
+            path.unlink()
     from tools import convergence, graph_tools
 
-    run_context = f"{output_dir or 'default'}::{uuid.uuid4().hex}"
+    run_context = output_dir or "default"
     graph_tools.set_context(run_context)
+    graph_tools.clear_current_context()
     convergence.reset()
 
 
@@ -28,6 +37,20 @@ def _mm() -> MemoryManager:
     if _manager is None:
         _manager = MemoryManager(cache_dir=_cache_dir)
     return _manager
+
+
+def _compiled_report_path() -> Optional[Path]:
+    """Return the run-scoped canonical Reporter artifact path."""
+    return Path(_cache_dir) / ".compiled_report.md" if _cache_dir else None
+
+
+def get_compiled_report() -> str:
+    """Return the canonical structured Reporter report for the current run."""
+    with _report_lock:
+        if _compiled_report:
+            return _compiled_report
+        path = _compiled_report_path()
+        return path.read_text(encoding="utf-8") if path and path.exists() else ""
 
 
 def prepare_search(query_id: str, source_preferences: Optional[list[str]] = None) -> dict:
@@ -157,27 +180,45 @@ def submit_search_result(search_run_id: str, query_id: str, evidence_package: di
 
 @tool
 def export_report_context(goal_id: Optional[str] = None) -> dict:
-    """Export report context after the reporter gate has authorized writing."""
+    """Export compact report metadata after the reporter gate authorizes writing."""
     return _mm().export_report_context(goal_id)
 
 
 @tool
-def bind_report_section(
-    title: str,
-    content: str,
-    evidence_ids: Optional[list] = None,
-    claim_ids: Optional[list] = None,
-    source_ids: Optional[list] = None,
-    section_type: Optional[str] = None,
-) -> str:
-    """Create a report section and type-safe evidence/claim bindings."""
-    section = {"title": title, "content": content, "section_type": section_type}
-    return _mm().bind_report_section(
-        section,
-        claim_ids=claim_ids,
-        evidence_ids=evidence_ids,
-        source_ids=source_ids,
-    )
+def get_report_evidence(query_id: str, offset: int = 0, limit: int = 20) -> dict:
+    """Return one compact page of citation-ready Claim/Evidence items."""
+    return _mm().get_report_evidence(query_id, offset=offset, limit=limit)
+
+
+@tool
+def get_reference_registry() -> list[dict]:
+    """Return the complete stable Source ID, citation number and URL registry."""
+    from tools import report_tools
+
+    return report_tools.get_reference_registry()
+
+
+@tool
+def submit_final_report(title: str, sections: list[dict]) -> dict:
+    """Validate and compile the canonical report from cited structured blocks.
+
+    Every section requires ``blocks``. Each block requires ``text`` and one or
+    more URL-backed ``source_ids``; set ``kind`` to ``list_item`` for bullets.
+    """
+    global _compiled_report
+    from tools import report_tools
+
+    result = report_tools.compile_structured_report(title, sections)
+    report = result.pop("report", "") if isinstance(result, dict) else ""
+    if not report:
+        return result
+    with _report_lock:
+        _compiled_report = report
+        path = _compiled_report_path()
+        if path:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(report, encoding="utf-8")
+    return {"accepted": True, **result}
 
 
 ORCHESTRATOR_TOOLS: list[Any] = [
@@ -200,7 +241,7 @@ SEARCHER_TOOLS: list[Any] = [submit_search_result]
 
 REPORTER_TOOLS: list[Any] = [
     export_report_context,
-    get_subgraph,
-    get_node,
-    bind_report_section,
+    get_report_evidence,
+    get_reference_registry,
+    submit_final_report,
 ]

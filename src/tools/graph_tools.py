@@ -52,12 +52,12 @@ def set_context(context: Optional[str]) -> None:
 
     neo4j is a single shared database, so without a context every run writes
     into one global pool and text-based query resolution cross-matches nodes
-    from earlier runs. Tagging each run's nodes with a context (the run's
-    output directory) restores the per-run isolation the file-based store had.
+    from earlier runs. Tagging each run's nodes with the output directory
+    restores the per-run isolation the file-based store had.
 
     Args:
-        context: A stable per-run identifier (the run's output directory), or
-            ``None`` for the default global scope.
+        context: The run's output-directory identifier, or ``None`` for the
+            default global scope.
     """
     global _context
     if context != _context:
@@ -75,6 +75,13 @@ def _get_manager():
 
 def clear_manager_cache():
     _manager_cache.clear()
+
+
+def clear_current_context() -> None:
+    """Delete every graph node in the current non-empty run context."""
+    if not _context:
+        raise ValueError("Cannot clear an empty graph context")
+    _run_async(_get_manager().clear_context())
 
 
 def add_node(

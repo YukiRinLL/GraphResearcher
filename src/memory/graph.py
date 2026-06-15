@@ -475,6 +475,20 @@ class GraphManager:
             """
             await session.run(query, id=node_id)
 
+    async def clear_context(self) -> None:
+        """Delete every node whose context exactly matches this manager."""
+        if not self.context:
+            raise ValueError("Cannot clear an empty graph context")
+        session = await self._get_session()
+        async with session:
+            query = """
+            MATCH (n)
+            WHERE n.context = $context
+            DETACH DELETE n
+            """
+            result = await session.run(query, context=self.context)
+            await result.consume()
+
     async def get_node_edges(self, node_id: str, direction: str = "both") -> list[dict]:
         session = await self._get_session()
         async with session:

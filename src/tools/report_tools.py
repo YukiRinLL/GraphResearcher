@@ -16,7 +16,7 @@ report is never broken.
 
 import logging
 import re
-from typing import Optional
+from typing import Any, Optional
 
 from memory.graph import EdgeType
 from tools import graph_tools
@@ -43,6 +43,14 @@ _INTERNAL_TERMS = (
     "sufficiency",
     "source 节点",
 )
+_FORBIDDEN_META_RE = re.compile(
+    r"research graph|研究图谱|本次图谱|图谱覆盖范围|导出片段|"
+    r"由于引用系统限制|引用系统限制|无法.{0,20}引用|正文不逐条打|"
+    r"如果你(?:后续|接下来|希望|需要|想)|可以指定维度|可直接进\s*ppt|"
+    r"帮你补全|如需.{0,40}可",
+    re.IGNORECASE,
+)
+_NO_FINDINGS_TEXT = {"暂无可核实结论。", "No verifiable findings are available."}
 
 
 def build_reference_registry() -> list[dict]:
@@ -77,6 +85,289 @@ def build_reference_registry() -> list[dict]:
             "url": url,
         })
     return registry
+
+
+def get_reference_registry() -> list[dict]:
+    """Return the canonical reference registry for Reporter-facing tools."""
+    return build_reference_registry()
+
+
+def _source_ids_for_item(item_id: str, nodes: dict[str, dict], edges: list[dict]) -> list[str]:
+    """Return URL-bearing Source IDs that support one Claim or Evidence node."""
+    def is_type(node_id: str, expected: str) -> bool:
+        return str(nodes.get(node_id, {}).get("type") or "").lower() == expected.lower()
+
+    source_ids: set[str] = set()
+    document_ids: set[str] = set()
+    evidence_ids: set[str] = set()
+    for edge in edges:
+        source = edge.get("source")
+        target = edge.get("target")
+        edge_type = str(edge.get("type") or "").lower()
+        if target == item_id and is_type(source, "Source"):
+            source_ids.add(source)
+        if target == item_id and is_type(source, "Document"):
+            document_ids.add(source)
+        if target == item_id and is_type(source, "Evidence"):
+            evidence_ids.add(source)
+    for edge in edges:
+        source = edge.get("source")
+        target = edge.get("target")
+        if target in document_ids and is_type(source, "Source"):
+            source_ids.add(source)
+        if target in evidence_ids and is_type(source, "Source"):
+            source_ids.add(source)
+    return sorted(
+        source_id for source_id in source_ids
+        if nodes.get(source_id, {}).get("url")
+    )
+
+
+def get_report_evidence(query_id: str, offset: int = 0, limit: int = 20) -> dict:
+    """Return one compact, citation-ready page of a Query's evidence."""
+    offset = max(0, int(offset or 0))
+    limit = min(100, max(1, int(limit or 20)))
+    nodes = {node["id"]: node for node in graph_tools.get_all_nodes()}
+    edges = graph_tools.get_all_edges()
+    registry = build_reference_registry()
+    registry_by_source = {entry["source_id"]: entry for entry in registry}
+    evaluation = graph_tools.get_query_evaluation_subgraph(query_id)
+    items: list[dict] = []
+    for node in evaluation.get("nodes", []):
+        if str(node.get("type") or "").lower() not in {"claim", "evidence"}:
+            continue
+        source_ids = [
+            source_id for source_id in _source_ids_for_item(node["id"], nodes, edges)
+            if source_id in registry_by_source
+        ]
+        if not source_ids:
+            continue
+        text = node.get("statement") or node.get("claim") or node.get("text")
+        if not str(text or "").strip():
+            continue
+        items.append({
+            "id": node["id"],
+            "type": node["type"],
+            "text": str(text).strip(),
+            "source_ids": source_ids,
+            "citations": [registry_by_source[source_id]["n"] for source_id in source_ids],
+        })
+    items.sort(key=lambda item: item["id"])
+    page = items[offset : offset + limit]
+    next_offset = offset + len(page)
+    return {
+        "query": {
+            key: evaluation.get("query", {}).get(key)
+            for key in ("id", "handle", "text", "importance")
+        },
+        "items": page,
+        "offset": offset,
+        "limit": limit,
+        "total": len(items),
+        "next_offset": next_offset if next_offset < len(items) else None,
+    }
+
+
+def _render_references(registry: list[dict], cited_source_ids: set[str], label: str) -> str:
+    """Render canonical URL-backed references for the selected Source IDs."""
+    lines = [f"## {label}", ""]
+    for entry in registry:
+        if entry["source_id"] not in cited_source_ids:
+            continue
+        if entry["title"] == entry["url"]:
+            lines.append(f"[{entry['n']}] {entry['url']}")
+        else:
+            lines.append(f"[{entry['n']}] {entry['title']} {entry['url']}")
+        lines.append("")
+    return "\n".join(lines).rstrip()
+
+
+def sanitize_report(report_text: str) -> str:
+    """Remove internal-process explanations and service-offer paragraphs."""
+    kept: list[str] = []
+    for block in re.split(r"\n\s*\n", report_text or ""):
+        stripped = block.strip()
+        if not stripped or _FORBIDDEN_META_RE.search(stripped):
+            continue
+        kept.append(stripped)
+    return "\n\n".join(kept).strip() + ("\n" if kept else "")
+
+
+def _reference_entries(report_text: str) -> dict[int, str]:
+    """Return numbered URL-bearing reference entries from report Markdown."""
+    result: dict[int, str] = {}
+    for line in (report_text or "").splitlines():
+        match = re.match(r"^\[(\d{1,4})\]\s+.*?(https?://\S+)\s*$", line.strip())
+        if match:
+            result[int(match.group(1))] = match.group(2).rstrip(".,，。);）]")
+    return result
+
+
+def _body_units(report_text: str) -> list[str]:
+    """Return prose paragraphs and individual list items before references."""
+    ref_match = _REF_HEADING_RE.search(report_text or "")
+    body = report_text[: ref_match.start()] if ref_match else report_text
+    units: list[str] = []
+    for block in re.split(r"\n\s*\n", body):
+        lines = [
+            line.strip() for line in block.splitlines()
+            if line.strip() and not line.lstrip().startswith("#") and line.strip() != "---"
+        ]
+        paragraph: list[str] = []
+        for line in lines:
+            if re.match(r"^(?:[-*+]|\d+[.)])\s+", line):
+                if paragraph:
+                    units.append(" ".join(paragraph))
+                    paragraph = []
+                units.append(line)
+            else:
+                paragraph.append(line)
+        if paragraph:
+            units.append(" ".join(paragraph))
+    return units
+
+
+def validate_delivery_invariants(report_text: str) -> list[str]:
+    """Return hard delivery violations for citations and forbidden prose."""
+    text = report_text or ""
+    issues: list[str] = []
+    if _FORBIDDEN_META_RE.search(text):
+        issues.append("forbidden internal-process or service-offer prose")
+    references = _reference_entries(text)
+    for unit in _body_units(text):
+        if unit in _NO_FINDINGS_TEXT:
+            continue
+        citations = [int(match.group(1)) for match in _CITE_TOKEN_RE.finditer(unit)]
+        if not citations:
+            issues.append(f"uncited factual paragraph or list item: {unit[:80]}")
+            continue
+        for citation in citations:
+            if citation not in references:
+                issues.append(f"citation has no URL-backed reference: [{citation}]")
+    return list(dict.fromkeys(issues))
+
+
+def compile_structured_report(title: str, sections: list[dict]) -> dict:
+    """Validate and deterministically compile a structured cited report."""
+    registry = build_reference_registry()
+    registry_by_source = {entry["source_id"]: entry for entry in registry}
+    errors: list[str] = []
+    compiled_sections: list[dict[str, Any]] = []
+    cited_source_ids: set[str] = set()
+
+    for section_index, section in enumerate(sections or []):
+        section_title = str(section.get("title") or "").strip()
+        blocks = section.get("blocks")
+        if not section_title:
+            errors.append(f"section {section_index + 1} has no title")
+            continue
+        if not isinstance(blocks, list) or not blocks:
+            errors.append(f"section {section_title!r} has no blocks")
+            continue
+        compiled_blocks: list[str] = []
+        section_sources: set[str] = set()
+        for block_index, block in enumerate(blocks):
+            text = str(block.get("text") or "").strip()
+            source_ids = list(dict.fromkeys(block.get("source_ids") or []))
+            if not text:
+                errors.append(f"section {section_title!r} block {block_index + 1} has no text")
+                continue
+            if _FORBIDDEN_META_RE.search(text):
+                errors.append(f"section {section_title!r} block {block_index + 1} contains forbidden meta prose")
+                continue
+            invalid = [source_id for source_id in source_ids if source_id not in registry_by_source]
+            if not source_ids or invalid:
+                errors.append(
+                    f"section {section_title!r} block {block_index + 1} requires valid URL-backed source_ids"
+                )
+                continue
+            clean_text = _CITE_TOKEN_RE.sub("", text).strip()
+            citations = "".join(
+                f"[{registry_by_source[source_id]['n']}]" for source_id in source_ids
+            )
+            kind = block.get("kind")
+            prefix = "- " if kind == "list_item" else ""
+            compiled_blocks.append(f"{prefix}{clean_text} {citations}".strip())
+            section_sources.update(source_ids)
+            cited_source_ids.update(source_ids)
+        if compiled_blocks:
+            compiled_sections.append({
+                "title": section_title,
+                "content": "\n\n".join(compiled_blocks),
+                "source_ids": sorted(section_sources),
+                "section_type": section.get("section_type"),
+            })
+
+    if errors or not compiled_sections:
+        return {"error": "Structured report validation failed", "issues": errors or ["no valid sections"]}
+
+    is_chinese = bool(re.search(r"[\u4e00-\u9fff]", title or ""))
+    report_title = str(title or ("调研报告" if is_chinese else "Research Report")).strip()
+    parts = [f"# {report_title}"]
+    for section in compiled_sections:
+        parts.extend([f"## {section['title']}", section["content"]])
+    parts.append(_render_references(
+        registry,
+        cited_source_ids,
+        "参考文献" if is_chinese else "References",
+    ))
+    report = sanitize_report("\n\n".join(parts))
+    invariant_issues = validate_delivery_invariants(report)
+    if invariant_issues:
+        return {"error": "Compiled report failed delivery invariants", "issues": invariant_issues}
+
+    for section in compiled_sections:
+        section_id = graph_tools.create_report_section(
+            section["title"], section["content"], section["section_type"]
+        )
+        for source_id in section["source_ids"]:
+            graph_tools.add_edge(section_id, source_id, EdgeType.USES)
+    return {
+        "report": report,
+        "section_count": len(compiled_sections),
+        "source_count": len(cited_source_ids),
+    }
+
+
+def build_cited_evidence_report(request: str = "") -> str:
+    """Build a deterministic cited report from every citation-ready evidence item."""
+    registry = build_reference_registry()
+    cited_source_ids: set[str] = set()
+    seen_items: set[str] = set()
+    is_chinese = bool(re.search(r"[\u4e00-\u9fff]", request or ""))
+    parts = ["# 调研报告" if is_chinese else "# Research Report"]
+    queries = graph_tools.search_nodes("query", {})
+    queries.sort(key=lambda query: (query.get("handle") or "", query.get("id") or ""))
+    for query in queries:
+        items: list[dict] = []
+        offset = 0
+        while True:
+            page = get_report_evidence(query["id"], offset=offset, limit=100)
+            items.extend(item for item in page["items"] if item["id"] not in seen_items)
+            if page["next_offset"] is None:
+                break
+            offset = page["next_offset"]
+        if not items:
+            continue
+        heading = query.get("text") or query.get("handle") or query["id"]
+        parts.append(f"## {heading}")
+        for item in items:
+            seen_items.add(item["id"])
+            cited_source_ids.update(item["source_ids"])
+            citations = "".join(f"[{number}]" for number in item["citations"])
+            parts.append(f"- {item['text']} {citations}")
+    if not seen_items:
+        parts.extend([
+            "## 结论" if is_chinese else "## Conclusion",
+            "暂无可核实结论。" if is_chinese else "No verifiable findings are available.",
+        ])
+    if cited_source_ids:
+        parts.append(_render_references(
+            registry,
+            cited_source_ids,
+            "参考文献" if is_chinese else "References",
+        ))
+    return sanitize_report("\n\n".join(parts))
 
 
 def _references_label(text: str, match: Optional[re.Match]) -> str:
@@ -193,9 +484,9 @@ def _persist_sections(body: str, old_to_new: dict, registry_by_n: dict) -> None:
     new_to_source = {new: registry_by_n[old]["source_id"] for old, new in old_to_new.items()}
 
     for section in _parse_sections(body):
-        content = section["content"]
-        if not section["cites"] and len(content) < 80:
+        if not section["cites"]:
             continue
+        content = section["content"]
         prior = existing.get(section["title"])
         section_id = prior["id"] if prior else graph_tools.create_report_section(section["title"], content, None)
         source_ids = {new_to_source.get(new) for new in section["cites"]}
