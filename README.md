@@ -9,6 +9,11 @@ saves the research graph, final report, and run log under the output directory.
 final report, Python `logging`, warnings, and any exception traceback — so a
 failed run is fully diagnosable from the log.
 
+Reporter working artifacts are stored under `reports/`: the evidence-grounded
+outline, chapter content and metadata, conflict records, assembled draft,
+revision candidates, and the selected best report. The top-level `report.md`
+is the final delivered version after parent review.
+
 ```bash
 uv run python main.py "your research request"
 ```

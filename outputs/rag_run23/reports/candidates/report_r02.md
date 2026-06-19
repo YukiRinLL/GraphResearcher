@@ -1,0 +1,129 @@
+# 具身智能（Embodied AI）技术路线与全球产业格局研究
+
+## 执行摘要
+
+本报告聚焦“具身智能（Embodied AI）”这一连接网络空间与物理世界的技术方向。基于 2018–2024 年公开论文和综述，具身智能通常被视为通过“感知—认知—行为（Perception–Cognition–Behavior）闭环”在真实或高保真仿真环境中持续交互的智能体形态，核心目标包括具身感知、具身交互、具身智能体和仿真到现实迁移（sim-to-real）。多模态大模型（包括视觉语言模型、Vision-Language-Action 模型等）与世界模型在现有文献中被普遍讨论为实现具身智能的重要技术架构，但其中部分对“世界模型”等方向的分析来自 2025 年以后发表的特邀综述和预印本，更多体现前瞻判断，尚待产业实践进一步验证。 [19][20][28]
+
+从技术路线看，当前具身智能主要沿几条路径演进：一是以强化学习和模仿学习为核心的技能学习路线，结合大规模仿真和 sim-to-real 域自适应，在导航和操作任务上显著降低真实数据需求；二是“大模型赋能具身智能”路线，将 LLM/LVM/VLM/VLA 作为高层规划器与知识库，通过 Structured Language Planning、In-Context Learning 等方式实现跨任务迁移，并用 RLHF 对齐行为；三是世界模型驱动路线，通过学习环境动力学和任务结构，为规划和策略学习提供内部表征，并在机器人数据生成（Robotic Data Generation）中发挥作用；四是传统 modular / hierarchical 控制与深度学习结合的路线，通过分解探索、导航与操作等子任务，在复杂场景中支持长时程任务。关于“大模型赋能具身智能”和“具身世界模型”的系统性梳理，较多参考了 2025 年之后的专题综述和预印本，其结论具有一定前瞻性和方法论导向色彩，在后文“方法与背景”和“前瞻展望”部分将作进一步展开。 [20][21][22][23][25][28]
+
+从产业和资本维度看，具身智能已形成以机器人为核心的高速增长子市场。商业研究机构预测，全球具身 AI 市场规模有望从 2025 年约 44.4 亿美元增长到 2030 年约 230.6 亿美元，复合年增长率约 39%，其中机器人相关应用是增长最快的子类，物流与供应链场景被认为是 2025–2030 年间增速最高的垂直行业。区域上，北美当前收入占比最高，亚太被视为增速最快地区；代表性厂商横跨 SoftBank Robotics、ABB、Toyota、Agility Robotics、Hanson Robotics 等传统工业与新兴机器人企业。需要注意，这类市场规模与结构预测基于机构内部模型，具体方法论未完全公开，数值存在不确定性。 [42]
+
+在公司层面，全球具身智能玩家呈现出“大模型平台 + 机器人公司”的生态结构。一类是以 OpenAI 等为代表的大模型平台，其角色更偏向提供通用“语义与规划大脑”：一方面在 Dactyl 等项目中探索基于强化学习和大规模仿真的 dexterous manipulation 与 sim-to-real 技术路线；另一方面通过 GPT-4 等 API 向机器人公司开放能力，在多篇行业报道中被形容为机器人系统的“universal AI brain”。另一类是 Figure、Apptronik、Agility Robotics、1X、Tesla、Toyota/TRI、PAL Robotics 等人形或移动机器人公司，主打通用或特定场景的人形/移动机器人形态，在仓储物流、制造、零售和护理等场景进行试点或早期商业部署。 [1][2][6][14][29][30][35][38][39][41]
+
+资本层面，具身智能尤其是人形机器人赛道在 2023–2025 年迎来显著升温。多家媒体报道 Figure AI 在 2024 年完成一笔约 6.75 亿美元、投后估值约 26 亿美元的大额融资，投资方包括 OpenAI、Microsoft、Nvidia、Intel 等，并与 OpenAI 签署合作协议共同开发面向 humanoid 机器人的下一代 AI 模型；这一数字对应的是单轮交易的金额与估值。与此同时，投研机构和专利分析机构从不同口径给出了 Figure AI 及同类公司的累计融资与估值区间，有的研究将 Figure、Apptronik、Agility Robotics 等归为“数亿美元乃至十亿美元级别融资和估值”的代表；也有分析指出，PatentVest 等机构基于专利和融资数据的对比，认为 Figure 在公开专利数量上明显少于 Sanctuary AI 等公司，但在融资额和估值方面反而更高。需要强调的是，这些融资与估值数据主要来源于新闻报道、研究机构测算和专利分析报告，统计时间点、是否计入未官宣轮次以及是否使用推算口径存在差异，均属于二手估算，后续数字可能随新一轮融资或披露而调整。 [12][13][30][31]
+
+从成熟度看，学术论文和行业评论普遍认为当前人形机器人和通用具身智能仍处于“技术验证 + 早期试点”阶段，距离在大规模工业环境中广泛部署仍存在显著不确定性。以人形机器人为例，2021 年 Tesla AI Day 上的 Optimus 发布被视为引发新一轮竞赛的节点，但系统性评估指出，在感知、规划、能耗、执行器设计等方面仍有大量工程和安全挑战，对“未来两三年内广泛部署”的预期持审慎态度，并将当前热度与自动驾驶早期过度乐观的周期进行对比。 [32][43]
+
+本报告在撰写时点为 2026 年 6 月，系统整理了 2018 年以来具身智能相关的论文、公司官网信息、投融资报道和市场研究。需要特别说明：一方面，部分公司（尤其是未上市初创企业）对技术细节、订单收入、估值与股权结构披露有限，报告中融资规模与估值多依赖新闻报道和投研机构估算，存在误差区间；另一方面，不同来源对同一公司的累计融资和估值存在差异，例如针对 Figure AI 的融资总额与估值，不同研究机构和专利分析报告的数字并不完全一致。本报告在相应章节将以“信息有限”“公开资料未完全披露”“不同来源存在差异”等方式提示不确定性，建议投资人将本报告视为基于截至 2026-06 公开信息和二手研究的 best-effort 整理，而非法律或财务意义上的尽调结论或投资建议。 [30][31]
+
+## 一、具身智能的定义与产业边界
+
+从学术综述角度看，具身智能（Embodied Intelligence / Embodied AI）通常被定义为：能够在物理世界中通过“感知—认知—行为（Perception–Cognition–Behavior, PCB）闭环”持续交互的智能体，它不仅处理视觉、语言等多模态信息，还需要在具体环境中采取动作并根据结果更新内部状态。基于 2018–2024 年发表的系统性综述，可以将具身智能的研究目标概括为具身感知（embodied perception）、具身交互（embodied interaction）、具身智能体（embodied agent）以及仿真到现实迁移（sim-to-real adaptation），并将多模态大模型（Multi-modal Large Models, 包括 VLM/VLA 等）与世界模型（World Models）视为支持具身智能体感知、推理与行动的重要技术架构。 [19][20]
+
+具身智能任务在数据形态与训练范式上具有显著区别于传统计算机视觉或纯 NLP 的特征。香港中文大学（深圳）团队的具身 AI 数据综述指出，具身场景中的技能模型（skill models）通常采用强化学习（Reinforcement Learning, RL）和模仿学习（Imitation Learning, IL）进行训练；另一篇数据综述进一步强调，RL 和 IL 是具身技能学习的核心范式，需要大量机器人数据。相关工作还系统讨论了真实机器人数据与仿真数据在成本、可控性和分布覆盖等方面的权衡，指出在实践中会结合 human demonstration data、多模态 trajectories、visuomotor policy、RL 经验池等机制来提高数据效率和策略质量。 [20][22][26]
+
+在算法层面，近期文献将“大模型赋能具身智能”视为一条重要技术主线，把大语言模型（LLM）、视觉大模型（LVM）、视觉语言模型（VLM）、多模态大模型以及 Vision-Language-Action（VLA）模型等统称为 large models，并专门讨论“Embodied Large Models”。相关综述（包括部分 2025 年之后的专题论文）认为，这类大模型可以在具身系统中承担高层规划器、自然语言接口和世界知识库的角色，通过 Structured Language Planning、In-Context Learning（ICL）等机制实现零样本或小样本任务迁移，同时结合 RLHF 等手段对齐具身 agent 的行为偏好。这些判断具有一定前瞻性，更多反映学术界对技术演进方向的预期，并非对现有产业落地情况的完全描述。 [21][27]
+
+与大模型并行，世界模型（world models）驱动的具身智能也是近年被频繁讨论的方向。部分 2025 年以后发表的特邀综述与预印本从模型结构和应用领域两个维度，对具身世界模型进行了技术分类，指出其在具身任务中的潜在角色包括：学习环境动力学和任务结构，为 planning 和 policy learning 提供内部表征；作为强化学习、模仿学习等方法的环境代理；以及在“Robotic Data Generation”等场景中用于生成或扩展机器人训练数据。这些工作主要提供的是方法论框架和未来研究议程，其对产业落地节奏与商业模式的判断仍带有明显的前瞻性质。 [27][28]
+
+从产业边界来看，具身智能通常被视为连接“网络空间（cyber space）”与“物理世界（physical world）”的技术体系，涵盖 embodied perception、embodied interaction、embodied agent 和 sim-to-real adaptation 等多个层次。其与传统工业机器人和自动驾驶的主要区别在于：一是任务空间更开放、长时程决策需求更强，需要在非结构化环境中完成多步骤任务；二是高度依赖多模态感知和大模型推理，而不是预先编程的刚性流程；三是仿真环境、世界模型和数据策略在整个闭环中扮演更加核心的基础设施角色。现有综述在产业场景上覆盖从室内导航、家用与服务机器人、仓储物流到人形机器人等，但对具体商业模式与价值链分工往往只作概括描述，尚难形成统一、细颗粒度的产业边界划分。 [19][20][21]
+
+## 二、主要技术路线总览与分类框架
+
+综合现有综述与代表性技术方案，可以从“模型范式—训练方式—硬件形态—数据与仿真策略”四个维度，对具身智能的主要技术路线进行框架化梳理：在模型范式上，从以 RL/IL 为主的技能模型，到以 LLM/VLM/VLA 为主的决策与规划模型，再到以世界模型为核心的环境建模与生成模型；在训练方式上，从大规模仿真训练与 sim-to-real 迁移，到真实机器人数据驱动的 on-robot learning；在硬件形态上，从移动平台和机械臂扩展到双足/多足人形机器人；在数据与仿真策略上，从离线收集的人机演示与传感器数据，到在线交互生成与仿真环境中的合成数据。现有工作多对这些路线给出方法论层面的对比，而对真实应用中的成本、可靠性和安全性评估仍然有限。 [20][22][23][25]
+
+在 RL/IL 行为学习路线中，Meta 等提出的 sim-to-real 领域自适应方法通过双向域适配（bi-directional domain adaptation）和大规模仿真环境，显著减少了在真实机器人上采集训练数据的需求；Google 等的 i-Sim2Real 框架则在紧密人机交互场景下，利用强化学习在高保真仿真环境中学习策略，再迁移到真实机器人上。NEC Labs 等工业研究团队在 Embodied AI 平台实践中，也强调了利用仿真平台和标准化任务基准加速具身智能算法迭代的重要性。 [22][26]
+
+“大模型赋能具身智能”路线在分类框架中主要体现在决策与任务规划层。近期综述提出“Embodied Large Models”概念，强调将 LLM、VLM、VLA 等作为具身系统中的高层决策模块，通过自然语言与多模态输入统一编码任务需求和环境信息，再由下层控制策略执行具体动作。典型做法包括：利用 LLM 进行任务分解与工具调用；利用多模态大模型理解场景并生成高层动作序列；通过 RLHF 或后验奖励建模，约束具身 agent 的行为安全与偏好。这一方向目前仍以实验室和 demo 验证为主，在复杂开放环境中的鲁棒性和实时性尚有待证明。 [21][27]
+
+世界模型路线在分类框架中承担了“环境建模与内在模拟”的角色。具身世界模型综述和预印本指出，具身世界模型可以分为针对视觉-运动序列的动力学模型、面向任务抽象的符号或半符号模型，以及面向数据生成的生成式模型等类型；它们在规划中既可以作为“imagined rollouts”的环境，也可以在数据匮乏时用于生成额外的训练轨迹。需要注意的是，目前关于具身世界模型的很多工作处于概念框架和小规模实验阶段，对其在大规模商业系统中的可用性和成本收益，还需要更多工程实践来验证。 [28]
+
+与上述新兴路线相比，传统 modular / hierarchical 控制与深度学习结合的路线在工业应用中仍占据重要位置。相关综述指出，通过将复杂任务分解为探索、导航、抓取、操作等子模块，并为每个模块设计相对稳定的控制与感知算法，可以在一定程度上提升系统可解释性和工程可控性；深度学习和具身学习方法则更多在局部模块（如视觉感知、抓取策略）中发挥作用。这一路线在仓储物流等结构化场景中已有较多商用案例，但在高度开放环境和长时程任务上，仍面临泛化能力不足的问题。 [20][21]
+
+## 三、按技术路线梳理全球代表性玩家
+
+从“技术路线 × 公司类型”的视角看，全球具身智能玩家可以大致分为：一类是大模型与云平台公司，如 OpenAI 等，将具身智能视为通用大模型落地的重要方向，在早期 Dactyl 等项目中探索过强化学习与大规模仿真结合的 dexterous manipulation 技术，并在 2024 年前后宣布重启机器人团队，定位于为机器人公司提供“通用大脑”和模型 API；另一类是以 Figure、Apptronik、Agility Robotics、1X、Tesla、Toyota/TRI、PAL Robotics 等为代表的人形或移动机器人公司，在具体硬件平台、执行器与整机系统上深耕，并根据自身能力选择 RL/IL、模仿学习、大模型决策或混合架构等不同技术路线。公开资料表明，不同公司在技术细节披露程度上差异较大，部分仍停留在 demo 和概念验证阶段。 [1][2][6][14][29][30][35][38][39][41]
+
+在美国，人形与具身机器人公司呈现“多点涌现”的格局。Figure 的 Figure 01、Apptronik 的 Apollo、Agility Robotics 的 Digit 等产品，均以通用或半通用人形/双足机器人为核心形态，在仓储、制造、物流等场景进行试点；Tesla 则将 Optimus 视为其 AI & Robotics 战略的一部分，强调利用自家在自动驾驶、感知与大模型方面的积累支撑机器人控制与任务规划。行业榜单和深度研究报告普遍将上述公司列为当前人形机器人赛道的代表。 [32][38][39][41][43]
+
+在中国及亚太地区，阿里、百度、华为、字节、腾讯等大厂在具身智能与机器人方向均有布局，但公开资料多集中在发布会演示、研究论文与部分园区/仓储项目案例上，缺乏系统披露的技术路线和产品节奏；部分初创公司在仓储机器人、服务机器人和特定垂直场景上也有探索。由于本次研究侧重英文公开资料与少数代表性案例，未能对所有区域玩家按技术路线给出系统映射，对中国和日本以外亚洲公司的覆盖尤其有限，需要在后续一手尽调中补充。 [42]
+
+总体而言，现阶段能够从公开资料中相对完整获取“技术路径—产品形态—商业化进展—融资情况—团队画像”五个维度信息的公司主要集中在少数头部玩家，如 OpenAI、Figure、Apptronik、Agility Robotics、1X 等；大量中小公司和部分非英文信息源地区的企业，仅能在有限篇幅内以列表或定性方式呈现。这一不对称性导致本章对不同公司的刻画深度存在显著差异，属于研究边界而非赛道本身的重要性差异。 [30][31][41][42]
+
+## 四、各技术路线的成熟度评估与投资要点
+
+从技术成熟度看，多篇学术论文和行业综述将具身智能不同技术路径的大致阶段划分为：以 RL/IL 为核心的技能学习路线在仿真环境和部分结构化场景中已较为成熟，但在开放环境和复杂任务上的泛化能力仍有限；大模型赋能的具身决策路线在少量原型系统中展现出跨任务迁移与自然语言交互的优势，但在实时性、安全性和成本控制方面尚未形成工程化共识；世界模型负责的环境建模与“内在模拟”方向，目前更多停留在实验性和前瞻性研究阶段，其对数据效率和策略质量的提升在真实复杂系统中仍需验证。 [20][21][22][28]
+
+与技术路径相对应，从应用与商业视角看，人形机器人和通用具身智能整体仍处在“技术验证 + 早期试点”区间。针对人形机器人的一项 2024 年系统性评估指出，尽管行业在感知、控制和硬件方面取得明显进展，但在能耗管理、执行器可靠性、人机安全性以及在非结构化环境中执行长时程任务等方面仍存在大量工程挑战；报告同时将当前的乐观预期与自动驾驶早期阶段进行对比，提醒市场应警惕技术与商业化节奏错配的风险。 [32][43]
+
+在投资要点上，公开研究和行业评论普遍将以下因素视为评估具身智能项目的关键维度：一是数据与算力成本，包括是否能够通过高效仿真、数据重用和模型压缩控制边际成本；二是硬件成本与供应链弹性，尤其是执行器、减速器和高性能传感器的成本与可靠性；三是算法的可泛化性与可解释性，关系到系统在不同场景间迁移的能力；四是安全与监管，包括在工业、公共空间和家庭环境中的合规要求。由于本报告无法获取各公司内部模型与工程实践的详细数据，该部分更多基于公开综述和案例报告进行框架性提炼，对个别公司的匹配度需要结合后续尽调进一步验证。 [20][21][42]
+
+## 五、信息来源、方法与局限
+
+本报告的信息来源包括：公开学术论文与综述（以 2018–2024 年已发表文献为主，辅以少量 2025 年之后的特邀综述与预印本用于方法与前瞻背景说明）、公司官方网站与新闻稿、主流科技与财经媒体报道、第三方市场研究报告以及投研机构和专利分析机构发布的专题研究。在具身智能基础概念及其与大模型、世界模型关系的讨论上，报告重点参考了系统性综述和高校/研究机构发布的综述性论文；在产业与公司层面，则更多依赖企业公开披露、市场研究和投研机构的行业比较研究。 [19][20][28][30][31]
+
+需要特别说明的是：部分关于“大模型赋能具身智能”和“具身世界模型”的技术判断，主要引用自 2025 年之后发表的专题综述与预印本，这些文献为未来研究方向提供了清晰的分类框架和问题清单，但其对产业落地方向和节奏的判断具有显著前瞻性，尚未在大规模商业系统中得到系统验证。为避免混淆，本报告在执行摘要和技术路线评估部分仅将这类结论作为趋势性提示，并在本节与相关段落中明确标注其时间范围与未验证性质。 [21][28]
+
+在目标覆盖上，本报告原始研究设计希望按技术路线系统梳理全球具身智能代表性公司/团队，并对每家主体从技术路径、产品形态、商业化进度、融资情况和核心团队等维度给出结构化信息与对比表格。然而在具体执行过程中，状态机评估显示多个 must 级目标处于 blocked_best_effort 状态，主要原因在于：一是大量未上市初创企业对关键数据披露有限，尤其是模型架构细节、订单收入、非公开轮融资和股权结构；二是部分区域（如中国及亚洲其它国家）的高质量英文二手研究较少，难以在统一口径下完成全面映射。为保证信息可靠性，本报告最终仅对少数重点公司（如 OpenAI、Figure、Apptronik、Agility Robotics、1X 等）做了较深展开，其余公司多以列表式或定性描述呈现，未能给出完整的技术路线图、融资表格和团队画像，这一局限在后续需要结合一手尽调和本地语言资料补齐。 [30][31][41][42]
+
+此外，本报告中涉及的融资规模、估值水平与市场容量等数字，多数来自新闻报道、市场研究机构和投研机构的二手估算，不同来源在统计口径上的差异较大。例如关于 Figure AI 的融资与估值，一类报道（如企业新闻稿与财经媒体）侧重单轮融资金额与当期估值，如 2024 年约 6.75 亿美元融资、约 26 亿美元估值；另一类研究（如行业研究网站与专利分析机构）则从累计融资、潜在投后估值或未来融资谈判区间角度给出更高的数字，有时还会结合专利与技术资产进行间接估值。不同信息源之间在统计时间点、是否纳入尚未官宣轮次、是否使用推算方法等方面均存在差异，读者在使用这些数字时需注意其二手估算属性和潜在修正空间。 [12][13][30][31]
+
+## 六、结论与对投资人的提示
+
+综合前文技术与产业分析，具身智能可以被视为连接云端大模型与物理世界的关键使能技术，其技术路径大致可以归纳为：以 RL/IL 为核心的技能学习路线、大模型赋能的决策与规划路线，以及世界模型驱动的环境建模路线，并在工程实践中与传统 modular / hierarchical 控制架构交织。学术与产业界普遍认为，人形机器人与通用具身智能目前仍处于“技术验证 + 早期试点”阶段，未来 3–5 年能否在特定垂直场景（如仓储物流、制造、特定服务业）实现可持续商业闭环，很大程度上取决于硬件成本曲线、数据与算力效率以及安全与监管框架的成熟速度。 [20][21][22][28][32][43]
+
+对投资人而言，具身智能赛道在未来数年可能呈现“一边是估值与叙事高度拥挤，一边是商业模式与工程实践仍在摸索”的特征。代表性公司（如 Figure、Apptronik、Agility Robotics、1X 等）的融资热度体现了资本市场对通用机器人和具身智能方向的高度关注，但上述公司的产品多仍处于试点或小规模部署阶段，盈利模式与长期单机经济性尚不充分清晰。在资产配置上，更稳健的策略是将具身智能视作高不确定性、强周期性的前沿配置，对单一公司估值保持审慎，重点跟踪其在具体场景中的真实部署进度、单位经济性改善轨迹，以及与大模型平台和产业合作伙伴的协同深度。 [30][31][41][42]
+
+需要再次强调的是，本报告基于截至 2026 年 6 月的公开信息与二手研究整理而成，在公司层面的技术细节、订单收入、估值与股权结构等方面仍存在较大信息空白与口径差异。无论是对 Figure 等代表性公司的融资与估值，还是对人形机器人整体市场规模与渗透率的预测，均更多来源于新闻报道、市场研究与研究机构的模型测算，具有显著不确定性和时点敏感性。因此，投资人应将本报告视为方向性研究底稿，用于理解技术路线、产业格局与典型玩家，而非法律或财务意义上的尽调文件；在作出任何重大投资决策前，仍需结合一手访谈、财务审计、法律合规与技术尽调等工作，形成独立判断。 [12][13][30][31]
+
+## 参考文献
+
+[1] Learning dexterity https://openai.com/index/learning-dexterity/
+
+[2] Learning Dexterous In-Hand Manipulation https://arxiv.org/abs/1808.00177
+
+[6] Learning dexterous in-hand manipulation https://www.researchgate.net/publication/337345997_Learning_dexterous_in-hand_manipulation
+
+[12] Figure: AI Robotics Company Raises $675 Million At $2.6 Billion Valuation And Deal Signed With OpenAI https://pulse2.com/figure-ai-robotics-company-raises-675-million-at-2-6-billion-valuation-and-deal-signed-with-openai/
+
+[13] Humanoid robot-maker partners with OpenAI, gets backing from tech giants https://www.seattletimes.com/business/humanoid-robot-maker-figure-partners-with-openai-and-gets-backing-from-jeff-bezos-and-tech-giants/
+
+[14] RBR50 Spotlight: OpenAI enabling embodied AI to flourish https://www.therobotreport.com/rbr50-spotlight-openai-enabling-embodied-ai-to-flourish/
+
+[19] Paper List and Resource Repository for Embodied AI https://github.com/HCPLab-SYSU/Embodied_AI_Paper_List
+
+[20] A Comprehensive Survey on Embodied Intelligence: Advancements, Challenges, and Future Perspectives https://www.sciopen.com/article/10.26599/AIR.2024.9150042
+
+[21] Large Model Empowered Embodied AI: A Survey on Decision-Making and Embodied Learning https://arxiv.org/html/2508.10399v1
+
+[22] A Survey of Embodied Artificial Intelligence Data ... https://airs.cuhk.edu.cn/sites/default/files/2025-06/Survey_Arxiv.pdf
+
+[23] Bi-directional Domain Adaptation for Sim2Real Transfer of Embodied Navigation Agents https://ai.meta.com/research/publications/bi-directional-domain-adaptation-for-sim2real-transfer-of-embodied-navigation-agents
+
+[25] Embodied AI https://www.nec-labs.com/research/media-analytics/projects/embodied-ai
+
+[26] What Data Imperative for Action Learning in Embodied AI? (2) https://yuhuang-63908.medium.com/what-data-imperative-for-action-learning-in-embodied-ai-2-882c4ade2e7d
+
+[27] Embodied AI: From LLMs to World Models [Feature] https://mn.cs.tsinghua.edu.cn/xinwang/PDF/papers/2025_Embodied%20AI%20from%20LLMs%20to%20World%20Models.pdf
+
+[28] A Survey of Embodied World Models https://www.preprints.org/manuscript/202604.0928
+
+[29] 30+ Humanoid Robot Companies Ranked: Who's Winning in 2026 https://blog.robozaps.com/b/humanoid-robot-companies
+
+[30] Figure vs Apptronik vs Agility Robotics https://sacra.com/research/figure-vs-apptronik-vs-agility-robotics
+
+[31] Humanoid Robots: The Disconnect Between IP Strength And VC Funding Of US And European Humanoid Robot Startups https://www.patentvest.com/patentvest-pulse/humanoid-robots-the-disconnect-between-ip-strength-and-vc-funding-of-us-and-european-humanoid-robot-startups
+
+[32] AI & Robotics https://www.tesla.com/AI
+
+[35] Boston Dynamics and Toyota Research Institute Announce Partnership to Advance Robotics Research http://www.tri.global/news/boston-dynamics-and-toyota-research-institute-announce-partnership-advance-robotics-research
+
+[38] Robotics at Toyota | Toyota Europe https://www.toyota-europe.com/innovation/mobility-solutions/robotics
+
+[39] Robotics | Toyota Research Institute http://www.tri.global/our-work/robotics
+
+[41] Europe’s Humanoid Robotics Moment (LinkedIn post) https://www.linkedin.com/posts/sylviastocker_europes-humanoid-robotics-moment-when-activity-7402690081700081664-tPiI
+
+[42] Embodied AI Market Report 2025 - 2030 https://www.marketsandmarkets.com/Market-Reports/embodied-ai-market-83867232.html
+
+[43] Humanoid Robots at work: where are we ? https://arxiv.org/html/2404.04249v1

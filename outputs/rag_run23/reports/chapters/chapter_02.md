@@ -1,0 +1,9 @@
+从学术综述角度看，具身智能（Embodied Intelligence / Embodied AI）通常被定义为：能够在物理世界中通过“感知—认知—行为（Perception–Cognition–Behavior, PCB）闭环”持续交互的智能体，它不仅处理视觉、语言等多模态信息，还需要在具体环境中采取动作并根据结果更新内部状态。多篇综述将具身智能的研究目标概括为具身感知（embodied perception）、具身交互（embodied interaction）、具身智能体（embodied agent）以及仿真到现实迁移（sim-to-real adaptation），并强调多模态大模型（Multi-modal Large Models, 包括 VLM/VLA 等）与世界模型（World Models）是支持具身智能体感知、推理与行动的重要技术架构。 [19][20]
+
+具身智能任务在数据形态与训练范式上具有显著区别于传统计算机视觉或纯 NLP 的特征。香港中文大学（深圳）团队的具身 AI 数据综述指出，具身场景中的技能模型（skill models）通常采用强化学习（Reinforcement Learning, RL）和模仿学习（Imitation Learning, IL）进行训练；另一篇综述进一步强调，RL 和 IL 是具身技能学习的核心范式，需要大量机器人数据。相关工作还系统讨论了真实机器人数据与仿真数据在成本、可控性和分布覆盖等方面的权衡，指出在实践中会结合 human demonstration data、多模态 trajectories、visuomotor policy、RL 经验池等机制来提高数据效率和策略质量。 [20][22][26]
+
+在算法层面，近期综述将“大模型赋能具身智能”视为一条新的主线，把大语言模型（LLM）、视觉大模型（LVM）、视觉语言模型（VLM）、多模态大模型以及 Vision-Language-Action（VLA）模型等统称为 large models，并专门讨论“Embodied Large Models”。这些大模型可以在具身系统中承担高层规划器、自然语言接口和世界知识库的角色，通过 Structured Language Planning、In-Context Learning（ICL）等机制实现零样本或小样本任务迁移，同时结合 RLHF 等手段对齐具身 agent 的行为偏好。 [21][27]
+
+另一条并行技术主线是“世界模型（world models）驱动的具身智能”。相关预印本对具身世界模型给出了系统的技术分类法，从模型结构和应用领域两个维度梳理工作，指出具身世界模型在具身任务中的角色包括：学习环境动力学和任务结构，为 planning 和 policy learning 提供内部表征；作为强化学习、模仿学习等方法的环境代理；以及在“Robotic Data Generation”等场景中用于生成或扩展机器人训练数据。这些工作共同支撑了将世界模型视为具身智能基础设施的一种趋势。 [27][28]
+
+从产业边界来看，具身智能通常被视为连接“网络空间（cyber space）”与“物理世界（physical world）”的技术体系，涵盖 embodied perception、embodied interaction、embodied agent 和 sim-to-real adaptation 等多个层次。其与传统工业机器人和自动驾驶的主要区别在于：一是任务空间更开放、长时程决策需求更强，需要在非结构化环境中完成多步骤任务；二是高度依赖多模态感知和大模型推理，而不是预先编程的刚性流程；三是仿真环境、世界模型和数据策略在整个闭环中扮演更加核心的基础设施角色。现有综述在产业场景上覆盖从室内导航、家用与服务机器人、仓储物流到人形机器人等，但对具体商业模式与价值链分工往往只作概括描述，尚难形成统一、细颗粒度的产业边界划分。 [19][20][21]

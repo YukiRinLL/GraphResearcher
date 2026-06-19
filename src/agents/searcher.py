@@ -131,16 +131,16 @@ _ANALYZE_USER_TEMPLATE = """\
 只输出一个 JSON 对象（不要 markdown 代码块，不要额外说明），结构如下：
 {{
   "sources": [
-    {{"local_ref": "s1", "url": "https://...", "title": "...", "source_type": "paper|blog|report|news|other"}}
+    {{"local_ref": "s1", "url": "https://...", "title": "...", "source_type": "paper|blog|report|news|other", "source_tier": "primary|secondary|tertiary", "published_at": "YYYY-MM-DD|null"}}
   ],
   "documents": [
     {{"local_ref": "d1", "document_summary": "忠实摘要…", "source_ref": "s1"}}
   ],
   "claims": [
-    {{"local_ref": "c1", "statement": "事实性陈述…", "document_ref": "d1", "source_ref": "s1"}}
+    {{"local_ref": "c1", "statement": "事实性陈述…", "document_ref": "d1", "source_ref": "s1", "confidence": "high|medium|low", "qualifiers": [], "limitations": [], "time_scope": "适用时间|null"}}
   ],
   "evidence": [
-    {{"local_ref": "e1", "statement": "支持或反驳的具体证据片段…", "document_ref": "d1", "source_ref": "s1", "supports_or_contradicts": "c1", "confidence": "high|medium|low"}}
+    {{"local_ref": "e1", "statement": "支持或反驳的具体证据片段…", "document_ref": "d1", "source_ref": "s1", "supports_or_contradicts": "c1", "confidence": "high|medium|low", "qualifiers": [], "limitations": [], "time_scope": "适用时间|null"}}
   ],
   "conflicts": [
     {{"local_ref": "x1", "description": "不同来源的矛盾描述…", "evidence_refs": ["e1", "e2"]}}

@@ -20,7 +20,7 @@ PROMPTS_DIR = Path(__file__).parent / "prompts"
 # Default model name; the project talks to an OpenAI-compatible proxy, so the
 # endpoint is taken from OPENAI_BASE_URL when set. Override the model with
 # the GR_MODEL environment variable.
-DEFAULT_MODEL = os.environ.get("GR_MODEL", "gpt-5.1")
+DEFAULT_MODEL = os.environ.get("GR_MODEL", "gpt-5.5")
 
 # Neo4j config
 NEO4J_URI = os.environ.get("NEO4J_URI", "bolt://localhost:7687")

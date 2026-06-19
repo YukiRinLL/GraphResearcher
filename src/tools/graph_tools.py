@@ -336,14 +336,18 @@ def create_document(
 def create_claim(
     statement: str,
     document_id: Optional[str] = None,
-    source_id: Optional[str] = None
+    source_id: Optional[str] = None,
+    **attributes: Any,
 ) -> dict[str, Any]:
     if document_id and get_node(document_id).get("type") != NodeType.DOCUMENT.value:
         raise ValueError(f"Claim document must be Document: {document_id!r}")
     if source_id and get_node(source_id).get("type") != NodeType.SOURCE.value:
         raise ValueError(f"Claim source must be Source: {source_id!r}")
     manager = _get_manager()
-    claim_id = _run_async(manager.add_node(NodeType.CLAIM, {"statement": statement, "status": "pending"}))
+    claim_id = _run_async(manager.add_node(
+        NodeType.CLAIM,
+        {"statement": statement, "status": "pending", **attributes},
+    ))
     if document_id:
         _run_async(manager.add_edge(document_id, claim_id, EdgeType.CLAIMED_BY))
     if source_id:
@@ -355,7 +359,8 @@ def create_evidence(
     claim: str,
     document_id: Optional[str] = None,
     source_id: Optional[str] = None,
-    supports_claim_id: Optional[str] = None
+    supports_claim_id: Optional[str] = None,
+    **attributes: Any,
 ) -> dict[str, Any]:
     if document_id and get_node(document_id).get("type") != NodeType.DOCUMENT.value:
         raise ValueError(f"Evidence document must be Document: {document_id!r}")
@@ -364,7 +369,10 @@ def create_evidence(
     if supports_claim_id and get_node(supports_claim_id).get("type") != NodeType.CLAIM.value:
         raise ValueError(f"Evidence claim target must be Claim: {supports_claim_id!r}")
     manager = _get_manager()
-    evidence_id = _run_async(manager.add_node(NodeType.EVIDENCE, {"claim": claim, "status": "pending"}))
+    evidence_id = _run_async(manager.add_node(
+        NodeType.EVIDENCE,
+        {"claim": claim, "status": "pending", **attributes},
+    ))
     if document_id:
         _run_async(manager.add_edge(document_id, evidence_id, EdgeType.EXTRACTED_STATEMENT))
     if source_id:

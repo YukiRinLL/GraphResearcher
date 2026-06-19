@@ -1,10 +1,21 @@
-import os
-os.environ["SERPER_API_KEY"] = "a2c5c546ad962e1d0ab7d03435da4b3f806a6c30"
+key='sk-e37335b652203affa74bfa281d70c986ca3e76eea5e6ddf80559dbb4d483b3bd'
 
-from langchain_community.utilities import GoogleSerperAPIWrapper
 
-search = GoogleSerperAPIWrapper()
+from openai import OpenAI
 
-result = search.run("obama's first name?")
+client = OpenAI(
+    base_url="http://168.138.175.149:8080/v1",
+    api_key=key
+)
 
-print(result)
+response = client.chat.completions.create(
+  model="gpt-5.4-pro",
+  messages=[
+    {"role": "user", "content": "你好?"},
+
+  ],
+  timeout=100,
+
+)
+# print(response)
+print(response.choices[0].message.content)

@@ -178,6 +178,8 @@ def test_assembly():
         "expand_gaps",
         "get_next_actions",
         "get_research_objectives",
+        "get_report_review_bundle",
+        "complete_report_review",
     } <= names, names
     assert not {"mark_query", "analyze_subgraph", "expand_query", "export_report_context"} & names, names
     print("assembly OK")

@@ -1,12 +1,9 @@
-"""Deterministic report finalization for GraphResearcher.
+"""Deterministic report compilation and validation for GraphResearcher.
 
-The final report is the Orchestrator's terminal message — the graph stores only
-nodes/edges, never the report text. LLM-authored reference lists drift over a
-long report: duplicates, "同上" / "见 [x]" cross-references, and URL-less
-pseudo-sources (figures, sub-sections). This module rebuilds citations
-deterministically from the graph's ``Source`` nodes so every reference maps to a
-real, unique, URL-bearing node, and restores the ``ReportSection``→``Source``
-traceability the Reporter often skips.
+Reporter candidates are compiled from Claim/Evidence-bound blocks and persisted
+by the report workspace. Citation numbers and references are rebuilt from the
+graph's ``Source`` nodes so every reference maps to a real, unique, URL-bearing
+node, while ``ReportSection`` bindings preserve traceability.
 
 ``finalize_report`` is conservative: it only rewrites ``[n]`` citation tokens
 and the references section; body prose is never altered, and on any failure (no
@@ -92,6 +89,17 @@ def get_reference_registry() -> list[dict]:
     return build_reference_registry()
 
 
+def _registry_by_any_source_id(registry: Optional[list[dict]] = None) -> dict[str, dict]:
+    """Map every duplicate Source ID to its canonical URL registry entry."""
+    registry = registry or build_reference_registry()
+    by_url = {entry["url"]: entry for entry in registry}
+    return {
+        source["id"]: by_url[source["url"]]
+        for source in graph_tools.search_nodes("source", {})
+        if source.get("id") and source.get("url") in by_url
+    }
+
+
 def _source_ids_for_item(item_id: str, nodes: dict[str, dict], edges: list[dict]) -> list[str]:
     """Return URL-bearing Source IDs that support one Claim or Evidence node."""
     def is_type(node_id: str, expected: str) -> bool:
@@ -103,7 +111,6 @@ def _source_ids_for_item(item_id: str, nodes: dict[str, dict], edges: list[dict]
     for edge in edges:
         source = edge.get("source")
         target = edge.get("target")
-        edge_type = str(edge.get("type") or "").lower()
         if target == item_id and is_type(source, "Source"):
             source_ids.add(source)
         if target == item_id and is_type(source, "Document"):
@@ -130,16 +137,17 @@ def get_report_evidence(query_id: str, offset: int = 0, limit: int = 20) -> dict
     nodes = {node["id"]: node for node in graph_tools.get_all_nodes()}
     edges = graph_tools.get_all_edges()
     registry = build_reference_registry()
-    registry_by_source = {entry["source_id"]: entry for entry in registry}
+    registry_by_source = _registry_by_any_source_id(registry)
     evaluation = graph_tools.get_query_evaluation_subgraph(query_id)
     items: list[dict] = []
     for node in evaluation.get("nodes", []):
         if str(node.get("type") or "").lower() not in {"claim", "evidence"}:
             continue
-        source_ids = [
-            source_id for source_id in _source_ids_for_item(node["id"], nodes, edges)
+        source_ids = list(dict.fromkeys(
+            registry_by_source[source_id]["source_id"]
+            for source_id in _source_ids_for_item(node["id"], nodes, edges)
             if source_id in registry_by_source
-        ]
+        ))
         if not source_ids:
             continue
         text = node.get("statement") or node.get("claim") or node.get("text")
@@ -166,6 +174,180 @@ def get_report_evidence(query_id: str, offset: int = 0, limit: int = 20) -> dict
         "total": len(items),
         "next_offset": next_offset if next_offset < len(items) else None,
     }
+
+
+def get_report_items(item_ids: list[str]) -> list[dict]:
+    """Return rich citation-ready details for exact Claim/Evidence IDs."""
+    nodes = {node["id"]: node for node in graph_tools.get_all_nodes()}
+    edges = graph_tools.get_all_edges()
+    registry = build_reference_registry()
+    registry_by_source = _registry_by_any_source_id(registry)
+    canonical_registry = {entry["source_id"]: entry for entry in registry}
+    result: list[dict] = []
+    for item_id in dict.fromkeys(item_ids or []):
+        node = nodes.get(item_id, {})
+        if str(node.get("type") or "").lower() not in {"claim", "evidence"}:
+            continue
+        source_ids = list(dict.fromkeys(
+            registry_by_source[source_id]["source_id"]
+            for source_id in _source_ids_for_item(item_id, nodes, edges)
+            if source_id in registry_by_source
+        ))
+        if not source_ids:
+            continue
+        conflicts = [
+            nodes.get(edge.get("source"), {})
+            for edge in edges
+            if edge.get("target") == item_id
+            and str(edge.get("type", "")).lower() == EdgeType.HAS_CONFLICT.value.lower()
+        ]
+        result.append({
+            "id": item_id,
+            "type": node.get("type"),
+            "text": str(node.get("statement") or node.get("claim") or node.get("text") or "").strip(),
+            "confidence": node.get("confidence"),
+            "qualifiers": node.get("qualifiers") or [],
+            "limitations": node.get("limitations") or [],
+            "time_scope": node.get("time_scope"),
+            "source_ids": source_ids,
+            "sources": [
+                {
+                    **canonical_registry[source_id],
+                    "source_type": nodes.get(source_id, {}).get("source_type"),
+                    "source_tier": nodes.get(source_id, {}).get("source_tier"),
+                    "published_at": nodes.get(source_id, {}).get("published_at"),
+                    "confidence": nodes.get(source_id, {}).get("confidence"),
+                }
+                for source_id in source_ids
+            ],
+            "conflicts": [
+                {
+                    "id": conflict.get("id"),
+                    "description": conflict.get("description"),
+                    "resolution_status": conflict.get("resolution_status"),
+                }
+                for conflict in conflicts if conflict
+            ],
+        })
+    return result
+
+
+def resolve_report_item_ids(references: list[str]) -> list[str]:
+    """Expand Query/Objective references into exact Claim/Evidence IDs."""
+    edges = graph_tools.get_all_edges()
+    result: list[str] = []
+    for reference in dict.fromkeys(references or []):
+        node = graph_tools.get_node(reference)
+        node_type = str(node.get("type") or "").lower()
+        if node_type in {"claim", "evidence"}:
+            result.append(reference)
+            continue
+        query_ids: set[str] = set()
+        if node_type == "query":
+            query_ids.add(reference)
+        elif node_type == "analysis" and node.get("analysis_type") == "objective":
+            query_ids.update(
+                edge["source"] for edge in edges
+                if edge.get("target") == reference
+                and str(edge.get("type", "")).lower() == EdgeType.COVERS_OBJECTIVE.value.lower()
+            )
+        for query_id in query_ids:
+            for item in graph_tools.get_query_evaluation_subgraph(query_id).get("nodes", []):
+                if str(item.get("type") or "").lower() in {"claim", "evidence"}:
+                    result.append(item["id"])
+    return list(dict.fromkeys(result))
+
+
+def compile_bound_blocks(blocks: list[dict]) -> dict:
+    """Compile blocks bound to exact Claim/Evidence IDs and derive citations."""
+    nodes = {node["id"]: node for node in graph_tools.get_all_nodes()}
+    edges = graph_tools.get_all_edges()
+    registry = build_reference_registry()
+    registry_by_source = _registry_by_any_source_id(registry)
+    canonical_registry = {entry["source_id"]: entry for entry in registry}
+    errors: list[str] = []
+    compiled: list[str] = []
+    block_records: list[dict] = []
+    source_ids: set[str] = set()
+    claim_ids: set[str] = set()
+    evidence_ids: set[str] = set()
+    for index, block in enumerate(blocks or [], start=1):
+        text = str(block.get("text") or "").strip()
+        claims = list(dict.fromkeys(block.get("claim_ids") or []))
+        evidence = list(dict.fromkeys(block.get("evidence_ids") or []))
+        if not text:
+            errors.append(f"block {index} has no text")
+            continue
+        if not claims and not evidence:
+            errors.append(f"block {index} requires claim_ids or evidence_ids")
+            continue
+        invalid_claims = [
+            item_id for item_id in claims
+            if str(nodes.get(item_id, {}).get("type") or "").lower() != "claim"
+        ]
+        invalid_evidence = [
+            item_id for item_id in evidence
+            if str(nodes.get(item_id, {}).get("type") or "").lower() != "evidence"
+        ]
+        if invalid_claims or invalid_evidence:
+            errors.append(
+                f"block {index} has invalid bindings: claims={invalid_claims}, evidence={invalid_evidence}"
+            )
+            continue
+        bound_sources: set[str] = set()
+        for item_id in [*claims, *evidence]:
+            bound_sources.update(_source_ids_for_item(item_id, nodes, edges))
+        bound_sources = {
+            registry_by_source[item_id]["source_id"]
+            for item_id in bound_sources if item_id in registry_by_source
+        }
+        if not bound_sources:
+            errors.append(f"block {index} bindings have no URL-backed sources")
+            continue
+        clean_text = _CITE_TOKEN_RE.sub("", text).strip()
+        citations = "".join(
+            f"[{canonical_registry[source_id]['n']}]"
+            for source_id in sorted(bound_sources, key=lambda item: canonical_registry[item]["n"])
+        )
+        rendered = f"{'- ' if block.get('kind') == 'list_item' else ''}{clean_text} {citations}".strip()
+        compiled.append(rendered)
+        source_ids.update(bound_sources)
+        claim_ids.update(claims)
+        evidence_ids.update(evidence)
+        block_records.append({
+            "text": clean_text,
+            "kind": block.get("kind") or "paragraph",
+            "claim_ids": claims,
+            "evidence_ids": evidence,
+            "source_ids": sorted(bound_sources),
+        })
+    if errors or not compiled:
+        return {"error": "Bound block validation failed", "issues": errors or ["no valid blocks"]}
+    return {
+        "content": "\n\n".join(compiled),
+        "source_ids": sorted(source_ids),
+        "claim_ids": sorted(claim_ids),
+        "evidence_ids": sorted(evidence_ids),
+        "blocks": block_records,
+        "block_count": len(block_records),
+    }
+
+
+def assemble_cited_sections(title: str, sections: list[dict]) -> str:
+    """Assemble precompiled cited sections with one deterministic references list."""
+    registry = build_reference_registry()
+    cited = {
+        source_id
+        for section in sections
+        for source_id in section.get("source_ids") or []
+    }
+    is_chinese = bool(re.search(r"[\u4e00-\u9fff]", title or ""))
+    parts = [f"# {str(title or ('调研报告' if is_chinese else 'Research Report')).strip()}"]
+    for section in sections:
+        parts.extend([f"## {section['title']}", str(section.get("content") or "").strip()])
+    if cited:
+        parts.append(_render_references(registry, cited, "参考文献" if is_chinese else "References"))
+    return "\n\n".join(parts).strip() + "\n"
 
 
 def _render_references(registry: list[dict], cited_source_ids: set[str], label: str) -> str:
@@ -230,9 +412,16 @@ def _body_units(report_text: str) -> list[str]:
 def validate_delivery_invariants(report_text: str) -> list[str]:
     """Return hard delivery violations for citations and forbidden prose."""
     text = report_text or ""
-    issues: list[str] = []
+    issues = validate_structural_invariants(text)
     if _FORBIDDEN_META_RE.search(text):
         issues.append("forbidden internal-process or service-offer prose")
+    return list(dict.fromkeys(issues))
+
+
+def validate_structural_invariants(report_text: str) -> list[str]:
+    """Return deterministic citation/reference structure violations."""
+    text = report_text or ""
+    issues: list[str] = []
     references = _reference_entries(text)
     for unit in _body_units(text):
         if unit in _NO_FINDINGS_TEXT:
@@ -249,11 +438,12 @@ def validate_delivery_invariants(report_text: str) -> list[str]:
 
 def compile_structured_report(title: str, sections: list[dict]) -> dict:
     """Validate and deterministically compile a structured cited report."""
-    registry = build_reference_registry()
-    registry_by_source = {entry["source_id"]: entry for entry in registry}
     errors: list[str] = []
     compiled_sections: list[dict[str, Any]] = []
     cited_source_ids: set[str] = set()
+    all_claim_ids: set[str] = set()
+    all_evidence_ids: set[str] = set()
+    block_records: list[dict] = []
 
     for section_index, section in enumerate(sections or []):
         section_title = str(section.get("title") or "").strip()
@@ -264,55 +454,37 @@ def compile_structured_report(title: str, sections: list[dict]) -> dict:
         if not isinstance(blocks, list) or not blocks:
             errors.append(f"section {section_title!r} has no blocks")
             continue
-        compiled_blocks: list[str] = []
-        section_sources: set[str] = set()
-        for block_index, block in enumerate(blocks):
-            text = str(block.get("text") or "").strip()
-            source_ids = list(dict.fromkeys(block.get("source_ids") or []))
-            if not text:
-                errors.append(f"section {section_title!r} block {block_index + 1} has no text")
-                continue
-            if _FORBIDDEN_META_RE.search(text):
-                errors.append(f"section {section_title!r} block {block_index + 1} contains forbidden meta prose")
-                continue
-            invalid = [source_id for source_id in source_ids if source_id not in registry_by_source]
-            if not source_ids or invalid:
-                errors.append(
-                    f"section {section_title!r} block {block_index + 1} requires valid URL-backed source_ids"
-                )
-                continue
-            clean_text = _CITE_TOKEN_RE.sub("", text).strip()
-            citations = "".join(
-                f"[{registry_by_source[source_id]['n']}]" for source_id in source_ids
-            )
-            kind = block.get("kind")
-            prefix = "- " if kind == "list_item" else ""
-            compiled_blocks.append(f"{prefix}{clean_text} {citations}".strip())
-            section_sources.update(source_ids)
-            cited_source_ids.update(source_ids)
-        if compiled_blocks:
+        compiled = compile_bound_blocks(blocks)
+        if compiled.get("error"):
+            errors.extend(f"section {section_title!r}: {issue}" for issue in compiled.get("issues") or [])
+            continue
+        if compiled.get("content"):
             compiled_sections.append({
                 "title": section_title,
-                "content": "\n\n".join(compiled_blocks),
-                "source_ids": sorted(section_sources),
+                "content": compiled["content"],
+                "source_ids": compiled["source_ids"],
+                "claim_ids": compiled["claim_ids"],
+                "evidence_ids": compiled["evidence_ids"],
+                "objective_ids": list(dict.fromkeys(section.get("objective_ids") or [])),
                 "section_type": section.get("section_type"),
             })
+            cited_source_ids.update(compiled["source_ids"])
+            all_claim_ids.update(compiled["claim_ids"])
+            all_evidence_ids.update(compiled["evidence_ids"])
+            block_records.extend(
+                {
+                    "section_title": section_title,
+                    "objective_ids": list(dict.fromkeys(section.get("objective_ids") or [])),
+                    **block,
+                }
+                for block in compiled["blocks"]
+            )
 
     if errors or not compiled_sections:
         return {"error": "Structured report validation failed", "issues": errors or ["no valid sections"]}
 
-    is_chinese = bool(re.search(r"[\u4e00-\u9fff]", title or ""))
-    report_title = str(title or ("调研报告" if is_chinese else "Research Report")).strip()
-    parts = [f"# {report_title}"]
-    for section in compiled_sections:
-        parts.extend([f"## {section['title']}", section["content"]])
-    parts.append(_render_references(
-        registry,
-        cited_source_ids,
-        "参考文献" if is_chinese else "References",
-    ))
-    report = sanitize_report("\n\n".join(parts))
-    invariant_issues = validate_delivery_invariants(report)
+    report = assemble_cited_sections(title, compiled_sections)
+    invariant_issues = validate_structural_invariants(report)
     if invariant_issues:
         return {"error": "Compiled report failed delivery invariants", "issues": invariant_issues}
 
@@ -322,10 +494,23 @@ def compile_structured_report(title: str, sections: list[dict]) -> dict:
         )
         for source_id in section["source_ids"]:
             graph_tools.add_edge(section_id, source_id, EdgeType.USES)
+        graph_tools.bind_evidence_to_section(
+            section_id,
+            evidence_ids=section["evidence_ids"],
+            claim_ids=section["claim_ids"],
+        )
     return {
         "report": report,
         "section_count": len(compiled_sections),
         "source_count": len(cited_source_ids),
+        "bound_block_count": len(block_records),
+        "claim_ids": sorted(all_claim_ids),
+        "evidence_ids": sorted(all_evidence_ids),
+        "objective_ids": sorted({
+            objective_id for section in compiled_sections for objective_id in section["objective_ids"]
+        }),
+        "sections": compiled_sections,
+        "blocks": block_records,
     }
 
 
@@ -590,4 +775,37 @@ def validate_final_report(report_text: str) -> list[str]:
         ]
         if not uses:
             issues.append(f"report section has no evidence/source binding: {section.get('title')}")
+    return list(dict.fromkeys(issues))
+
+
+def collect_report_quality_issues(
+    report_text: str,
+    covered_objective_ids: Optional[list[str]] = None,
+    draft_text: str = "",
+    min_retention_ratio: float = 0.7,
+) -> list[str]:
+    """Return non-blocking review issues for bounded report repair."""
+    issues = validate_final_report(report_text)
+    if _FORBIDDEN_META_RE.search(report_text or ""):
+        issues.append("forbidden internal-process or service-offer prose")
+    covered = set(covered_objective_ids or [])
+    for objective in graph_tools.search_nodes("analysis", {"analysis_type": "objective"}):
+        if objective.get("requirement") != "must":
+            continue
+        description = objective.get("description") or objective.get("text") or objective["id"]
+        if objective["id"] not in covered:
+            issues.append(f"must objective not covered or disclosed: {description}")
+            continue
+        if objective.get("status") == "blocked_best_effort":
+            fragments = [
+                token for token in re.split(r"[\s,，。:：;；/]+", str(description))
+                if len(token) >= 4
+            ][:3]
+            matched = sum(fragment.lower() in report_text.lower() for fragment in fragments)
+            if fragments and matched < min(2, len(fragments)):
+                issues.append(f"blocked must objective limitation omitted: {description}")
+    if draft_text.strip():
+        ratio = len(report_text) / max(1, len(draft_text))
+        if ratio < min_retention_ratio:
+            issues.append(f"final report retains only {ratio:.0%} of assembled draft")
     return list(dict.fromkeys(issues))

@@ -43,6 +43,16 @@ class ResearchStateMiddleware(AgentMiddleware):
         "expand_gaps、dispatch_searcher 或 assess_convergence；"
         "完成动作后调用 assess_convergence。"
     )
+    _REPORT_REVIEW_NUDGE = (
+        "报告阶段尚未完成父级复核，禁止结束流程。"
+        "请调用 get_report_review_bundle 分页检查报告；随后调用 complete_report_review。"
+        "若其返回 next_action=dispatch_reporter，请再次调用 reporter 进行定向修订。"
+    )
+    _REPORT_REVISION_NUDGE = (
+        "报告复核已请求定向修订，禁止继续复核或结束流程。"
+        "请调用 task(subagent_type=\"reporter\", ...) 让 Reporter 根据 get_report_review_issues 修订报告；"
+        "Reporter 提交新候选后再调用 get_report_review_bundle 和 complete_report_review。"
+    )
 
     def __init__(self, max_repeated_failures: int = 3):
         """Initialize the repeated state-changing failure breaker."""
@@ -71,7 +81,11 @@ class ResearchStateMiddleware(AgentMiddleware):
 
         status = research_state.get_status()
         state = status.get("research_state")
-        if state not in {research_state.REPORT_READY, research_state.BUDGET_EXHAUSTED}:
+        revision_requested = (
+            state == research_state.REPORTING
+            and status.get("report_phase") == "revision_requested"
+        )
+        if state not in {research_state.REPORT_READY, research_state.BUDGET_EXHAUSTED} and not revision_requested:
             return ToolMessage(
                 content=json.dumps({
                     "error": "Reporter is not authorized while research is incomplete",
@@ -90,10 +104,12 @@ class ResearchStateMiddleware(AgentMiddleware):
             research_state.update_goal({
                 "reporter_warnings": [warning],
             })
-        research_state.update_goal({
-            "research_state": research_state.REPORTING,
-            "reporting_from_state": state,
-        })
+        attributes = {"research_state": research_state.REPORTING}
+        if not revision_requested:
+            attributes["report_phase"] = "drafting"
+        if state != research_state.REPORTING:
+            attributes["reporting_from_state"] = state
+        research_state.update_goal(attributes)
         return None
 
     def _record_tool_result(self, tool_call: dict, result: object) -> object:
@@ -106,6 +122,7 @@ class ResearchStateMiddleware(AgentMiddleware):
             "evaluate_research_portfolio",
             "expand_gaps",
             "assess_convergence",
+            "complete_report_review",
         }:
             return result
         text = _message_text(result)
@@ -160,11 +177,38 @@ class ResearchStateMiddleware(AgentMiddleware):
 
         return research_state.get_status().get("research_state") == research_state.RESEARCHING
 
+    @staticmethod
+    def _unreviewed_report_terminal(response) -> bool:
+        last = _last_ai_message(response)
+        if last is None or last.tool_calls:
+            return False
+        from tools import research_state
+
+        status = research_state.get_status()
+        return (
+            status.get("research_state") == research_state.REPORTING
+            and status.get("report_phase") != "accepted"
+        )
+
+    @staticmethod
+    def _report_nudge() -> str:
+        from tools import research_state
+
+        status = research_state.get_status()
+        if (
+            status.get("research_state") == research_state.REPORTING
+            and status.get("report_phase") == "revision_requested"
+        ):
+            return ResearchStateMiddleware._REPORT_REVISION_NUDGE
+        return ResearchStateMiddleware._REPORT_REVIEW_NUDGE
+
     def wrap_model_call(self, request, handler):
         """Prevent terminal Orchestrator text while research remains active."""
         response = handler(request)
         if self._researching_terminal(response):
             response = handler(request.override(messages=[*request.messages, HumanMessage(content=self._RESEARCH_NUDGE)]))
+        elif self._unreviewed_report_terminal(response):
+            response = handler(request.override(messages=[*request.messages, HumanMessage(content=self._report_nudge())]))
         return response
 
     async def awrap_model_call(self, request, handler):
@@ -172,6 +216,8 @@ class ResearchStateMiddleware(AgentMiddleware):
         response = await handler(request)
         if self._researching_terminal(response):
             response = await handler(request.override(messages=[*request.messages, HumanMessage(content=self._RESEARCH_NUDGE)]))
+        elif self._unreviewed_report_terminal(response):
+            response = await handler(request.override(messages=[*request.messages, HumanMessage(content=self._report_nudge())]))
         return response
 
 
@@ -420,12 +466,11 @@ _OFFER_PATTERN = re.compile(
 
 
 class ReportValidationMiddleware(AgentMiddleware):
-    """Forces the Orchestrator's terminal response to be a real report.
+    """Validate terminal report prose for runs using the legacy report path.
 
-    Fires only on terminal responses (no tool calls). If the response offers to
-    continue / asks permission, or is very short with no ``##`` sections, it
-    nudges the model to deliver the complete report immediately. After
-    ``max_retries`` it gives up and returns the latest response.
+    The staged report workflow bypasses this middleware once ``report_phase`` is
+    initialized. Older runs still receive the terminal-response completeness
+    nudge.
     """
 
     _NUDGE = (
@@ -449,7 +494,11 @@ class ReportValidationMiddleware(AgentMiddleware):
     def _is_incomplete(self, response) -> bool:
         from tools import research_state
 
-        if research_state.get_status().get("research_state") != research_state.REPORTING:
+        status = research_state.get_status()
+        if (
+            status.get("research_state") != research_state.REPORTING
+            or status.get("report_phase") is not None
+        ):
             return False
         last = _last_ai_message(response)
         if last is None or last.tool_calls:

@@ -336,9 +336,18 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
                     f"[yellow]Report delivered with {len(validation_issues)} validation warning(s).[/]"
                 )
             try:
+                existing_issues = status_summary.get("report_validation_issues") or []
+                combined_issues = list(dict.fromkeys([*existing_issues, *validation_issues]))
+                quality_status = (
+                    "passed"
+                    if not combined_issues and status_summary.get("report_phase") == "accepted"
+                    else "limited"
+                )
                 goal_update = {
                     "report_delivery_mode": delivery_mode,
-                    "report_validation_issues": validation_issues,
+                    "report_phase": "accepted",
+                    "report_quality_status": quality_status,
+                    "report_validation_issues": combined_issues,
                 }
                 if report_saved and state_before_write == research_state.REPORTING:
                     goal_update["research_state"] = research_state.COMPLETED

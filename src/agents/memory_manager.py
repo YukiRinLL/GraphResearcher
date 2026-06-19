@@ -232,6 +232,10 @@ class MemoryManager:
                 evaluated_portfolio_revision=1,
                 last_max_marginal_utility=0.0,
                 report_readiness_score=0.0,
+                report_phase=None,
+                report_revision_attempts=0,
+                report_quality_status=None,
+                report_validation_issues=[],
             )
 
         objectives = self._create_objectives(goal_id, parsed.get("objectives"), user_request)
@@ -1043,7 +1047,7 @@ class MemoryManager:
         objectives = self.get_research_objectives(goal_id)
         must = [item for item in objectives if item.get("requirement") == "must"]
         readiness = (
-            sum(float(item.get("weight") or 1.0) for item in must if item.get("status") in {"satisfied", "blocked_best_effort"})
+            sum(float(item.get("weight") or 1.0) for item in must if item.get("status") == "satisfied")
             / sum(float(item.get("weight") or 1.0) for item in must)
             if must else 1.0
         )
@@ -1743,6 +1747,9 @@ class MemoryManager:
             published_at = _first(source, "published_at", "publication_date", "date")
             if published_at:
                 source_attributes["published_at"] = published_at
+            source_tier = _first(source, "source_tier", "quality_tier")
+            if source_tier:
+                source_attributes["source_tier"] = source_tier
             source_id = self.deduplicate_source(source) or graph_tools.create_source(
                 url=url,
                 title=_first(source, "title"),
@@ -1770,10 +1777,16 @@ class MemoryManager:
             if not claim_text:
                 continue
             doc_ref = _first(claim_item, "document_ref", "document")
+            claim_attributes = {
+                key: claim_item.get(key)
+                for key in ("confidence", "qualifiers", "limitations", "time_scope")
+                if claim_item.get(key) not in (None, [], "")
+            }
             claim_id = graph_tools.create_claim(
                 statement=claim_text,
                 document_id=resolve(doc_ref),
                 source_id=resolve(_first(claim_item, "source_ref", "source")),
+                **claim_attributes,
             )
             if claim_item.get("local_ref"):
                 ref_map[claim_item["local_ref"]] = claim_id
@@ -1794,11 +1807,17 @@ class MemoryManager:
             supports_ref = _first(evidence_item, "supports_or_contradicts", "supports_claim")
             supports_claim_id = resolve(supports_ref) if supports_ref else None
             
+            evidence_attributes = {
+                key: evidence_item.get(key)
+                for key in ("confidence", "qualifiers", "limitations", "time_scope")
+                if evidence_item.get(key) not in (None, [], "")
+            }
             evidence_id = graph_tools.create_evidence(
                 claim=evidence_text,
                 document_id=resolve(doc_ref),
                 source_id=resolve(_first(evidence_item, "source_ref", "source")),
                 supports_claim_id=supports_claim_id,
+                **evidence_attributes,
             )
             if evidence_item.get("local_ref"):
                 ref_map[evidence_item["local_ref"]] = evidence_id
@@ -1946,7 +1965,8 @@ class MemoryManager:
                     key: objective.get(key)
                     for key in (
                         "id", "objective_key", "description", "text",
-                        "requirement", "acceptance_criteria",
+                        "requirement", "acceptance_criteria", "status",
+                        "coverage", "confidence", "assessment_reason",
                     )
                 }
                 for objective in objectives
@@ -1963,15 +1983,40 @@ class MemoryManager:
         }
 
     def get_report_evidence(self, query_id: str, offset: int = 0, limit: int = 20) -> dict:
-        """Return a compact, citation-ready page of one Query's evidence."""
+        """Return a compact page for a Query or an Objective reference."""
+        from tools import report_tools
+
+        node = graph_tools.get_node(query_id)
+        if (
+            node.get("type") == NodeType.ANALYSIS.value
+            and node.get("analysis_type") == "objective"
+        ):
+            item_ids = report_tools.resolve_report_item_ids([query_id])
+            items = report_tools.get_report_items(item_ids)
+            offset = max(0, int(offset or 0))
+            limit = min(100, max(1, int(limit or 20)))
+            page = items[offset : offset + limit]
+            next_offset = offset + len(page)
+            return {
+                "objective": {
+                    key: node.get(key)
+                    for key in (
+                        "id", "objective_key", "description", "requirement",
+                        "status", "coverage", "confidence",
+                    )
+                },
+                "items": page,
+                "offset": offset,
+                "limit": limit,
+                "total": len(items),
+                "next_offset": next_offset if next_offset < len(items) else None,
+            }
         try:
             resolved = self._resolve_query_id(query_id)
         except AmbiguousQueryReference as exc:
             return {"error": str(exc)}
         if resolved is None:
             return {"error": f"Unknown query reference: {query_id!r}"}
-        from tools import report_tools
-
         return report_tools.get_report_evidence(resolved, offset=offset, limit=limit)
 
     def bind_report_section(

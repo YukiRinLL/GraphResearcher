@@ -3,6 +3,7 @@
 import asyncio
 import sys
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 repo_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(repo_dir / "src"))
@@ -61,7 +62,6 @@ def _test_configure_uses_stable_context_and_clears_each_rerun():
     events = []
     original_set_context = graph_tools.set_context
     original_clear = graph_tools.clear_current_context
-    original_compiled_report_path = graph_manager_tools._compiled_report_path
 
     def set_context(context):
         contexts.append(context)
@@ -74,32 +74,30 @@ def _test_configure_uses_stable_context_and_clears_each_rerun():
     try:
         graph_tools.set_context = set_context
         graph_tools.clear_current_context = clear_context
-        graph_manager_tools._compiled_report_path = lambda: None
-
         from tools import convergence
 
         original_reset = convergence.reset
         convergence.reset = lambda: events.append(("reset", contexts[-1]))
         try:
-            graph_manager_tools.configure("outputs/rag_run22")
-            graph_manager_tools.configure("outputs/rag_run22")
+            with TemporaryDirectory() as temp_dir:
+                graph_manager_tools.configure(temp_dir)
+                graph_manager_tools.configure(temp_dir)
         finally:
             convergence.reset = original_reset
     finally:
         graph_tools.set_context = original_set_context
         graph_tools.clear_current_context = original_clear
-        graph_manager_tools._compiled_report_path = original_compiled_report_path
 
-    assert contexts == ["outputs/rag_run22", "outputs/rag_run22"]
+    assert len(contexts) == 2 and contexts[0] == contexts[1]
     assert all("::" not in context for context in contexts)
     assert cleared == contexts
     assert events == [
-        ("set", "outputs/rag_run22"),
-        ("clear", "outputs/rag_run22"),
-        ("reset", "outputs/rag_run22"),
-        ("set", "outputs/rag_run22"),
-        ("clear", "outputs/rag_run22"),
-        ("reset", "outputs/rag_run22"),
+        ("set", contexts[0]),
+        ("clear", contexts[0]),
+        ("reset", contexts[0]),
+        ("set", contexts[0]),
+        ("clear", contexts[0]),
+        ("reset", contexts[0]),
     ]
 
 

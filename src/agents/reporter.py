@@ -12,10 +12,9 @@ from tools.graph_manager_tools import REPORTER_TOOLS
 reporter = {
     "name": "reporter",
     "description": (
-        "Writes the final, citation-bound research report strictly from the "
-        "Research Graph. Reads the exported report context, binds each section "
-        "to the evidence/claims it uses, and returns the full report with "
-        "numbered citations and a references list."
+        "Builds an evidence-grounded report through an outline, chapter bundles, "
+        "Claim/Evidence-bound chapter commits, draft assembly, and targeted "
+        "revisions. Citations and references are compiled deterministically."
     ),
     "system_prompt": config.reporter_system_prompt,
     "tools": REPORTER_TOOLS,

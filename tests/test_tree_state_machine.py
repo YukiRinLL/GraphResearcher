@@ -244,8 +244,9 @@ def main():
     mm.evaluate_research_portfolio("goal")
     assert NODES["ohard"]["low_gain_streak"] == 1
     NODES["goal"]["successful_search_rounds"] = 4
-    mm.evaluate_research_portfolio("goal")
+    blocked_portfolio = mm.evaluate_research_portfolio("goal")
     assert NODES["ohard"]["status"] == "blocked_best_effort"
+    assert blocked_portfolio["report_readiness_score"] < 1.0
 
     NODES["oexhaustive"] = {
         "id": "oexhaustive", "type": "Analysis", "analysis_type": "objective",
@@ -318,9 +319,15 @@ def main():
         "name": "task", "id": "call2", "args": {"subagent_type": "reporter"},
     })
     assert allowed is None and NODES["goal"]["research_state"] == "REPORTING"
+    assert NODES["goal"]["report_phase"] == "drafting"
     assert NODES["goal"]["reporter_warnings"] == [
         "Query tree validation failed before Reporter authorization"
     ]
+    NODES["goal"]["report_phase"] = "revision_requested"
+    revision_allowed = ResearchStateMiddleware()._gate_reporter({
+        "name": "task", "id": "call3", "args": {"subagent_type": "reporter"},
+    })
+    assert revision_allowed is None and NODES["goal"]["report_phase"] == "revision_requested"
     graph_tools.validate_query_tree = original_validate_query_tree
     loop_guard = ResearchStateMiddleware(max_repeated_failures=3)
     repeated_call = {

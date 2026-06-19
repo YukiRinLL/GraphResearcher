@@ -150,11 +150,11 @@ def install_fakes():
     graph_tools.create_document = lambda text, source_id=None: add_typed(
         "Document", {"text": text, "source_id": source_id}
     )
-    graph_tools.create_claim = lambda statement, document_id=None, source_id=None: add_typed(
-        "Claim", {"statement": statement}
+    graph_tools.create_claim = lambda statement, document_id=None, source_id=None, **attrs: add_typed(
+        "Claim", {"statement": statement, **attrs}
     )
-    graph_tools.create_evidence = lambda claim, document_id=None, source_id=None, supports_claim_id=None: add_typed(
-        "Evidence", {"claim": claim}
+    graph_tools.create_evidence = lambda claim, document_id=None, source_id=None, supports_claim_id=None, **attrs: add_typed(
+        "Evidence", {"claim": claim, **attrs}
     )
     graph_tools.create_conflict = lambda description, evidence_ids, conflict_type="factual", resolution_status="unresolved": add_typed(
         "Conflict",
@@ -177,14 +177,17 @@ def main():
 
     result = mm.submit_search_result(first["search_run_id"], "q1", {
         "sources": [
-            {"local_ref": "s1", "url": "https://example.com/valid"},
+            {"local_ref": "s1", "url": "https://example.com/valid", "source_tier": "official"},
             {"local_ref": "invalid"},
         ],
         "documents": [
             {"local_ref": "d1", "document_summary": "valid document", "source_ref": "s1"},
         ],
         "claims": [
-            {"local_ref": "c1", "statement": "valid claim", "document_ref": "d1", "source_ref": "s1"},
+            {
+                "local_ref": "c1", "statement": "valid claim", "document_ref": "d1",
+                "source_ref": "s1", "confidence": "high", "limitations": ["time-bound"],
+            },
         ],
         "evidence": [
             {
@@ -192,11 +195,16 @@ def main():
                 "document_ref": "d1",
                 "source_ref": "s1",
                 "supports_or_contradicts": "c1",
+                "confidence": "medium",
+                "qualifiers": ["reported"],
             },
         ],
     })
     assert result["status"] == "succeeded" and result["written"]["sources"] == 1, result
     assert result["written"]["evidence"] == 1 and NODES["q1"]["status"] == "assessing", result
+    assert any(node.get("source_tier") == "official" for node in NODES.values())
+    assert any(node.get("confidence") == "high" and node.get("limitations") for node in NODES.values())
+    assert any(node.get("confidence") == "medium" and node.get("qualifiers") for node in NODES.values())
     repeated_submit = mm.submit_search_result(first["search_run_id"], "q1", {})
     assert repeated_submit.get("error"), repeated_submit
     assert mm.prepare_search("q1").get("error")
