@@ -17,6 +17,7 @@ from langchain_core.tools import tool
 from memory.graph import NodeType
 
 from agents.memory_manager import MemoryManager
+from tools import workflow_state
 
 _manager: Optional[MemoryManager] = None
 _cache_dir: Optional[str] = None
@@ -66,7 +67,10 @@ def init_research(user_request: str) -> dict:
         dict with ``goal_id``, ``research_goal``, ``language`` and the created
         ``queries`` (each ``{id, text}``).
     """
-    return _mm().init_research(user_request)
+    result = _mm().init_research(user_request)
+    workflow_state.set_goal_id(result.get("goal_id"))
+    workflow_state.set_phase("research")
+    return result
 
 
 @tool
@@ -82,7 +86,9 @@ def get_next_queries(limit: int = 4) -> list:
     Returns:
         A list of ``{id, text, status}`` dicts.
     """
-    return _mm().get_next_queries(limit)
+    result = _mm().get_next_queries(limit)
+    workflow_state.open_research_round()
+    return result
 
 
 @tool
@@ -96,7 +102,9 @@ def analyze_subgraph(query_id: str) -> dict:
         dict with ``sufficiency_score``, ``covered``, ``gaps``, ``conflicts``,
         ``recommendation`` and ``reason``.
     """
-    return _mm().analyze_subgraph(query_id)
+    result = _mm().analyze_subgraph(query_id)
+    workflow_state.record_subgraph_analysis(query_id, result)
+    return result
 
 
 @tool
@@ -137,7 +145,9 @@ def assess_convergence(goal_id: Optional[str] = None) -> dict:
         ``core_threatening_gaps``, ``recommendation`` (``stop``/``continue``)
         and ``reason``.
     """
-    return _mm().assess_convergence(goal_id)
+    result = _mm().assess_convergence(goal_id)
+    workflow_state.record_convergence(result)
+    return result
 
 
 @tool
@@ -181,7 +191,9 @@ def mark_query(query_id: str, status: str, sufficiency_score: Optional[float] = 
         The updated query node.
     """
     metrics = {} if sufficiency_score is None else {"sufficiency_score": sufficiency_score}
-    return _mm().mark_query(query_id, status, **metrics)
+    result = _mm().mark_query(query_id, status, **metrics)
+    workflow_state.consume_mark_query(query_id, status, sufficiency_score)
+    return result
 
 
 @tool
@@ -298,7 +310,7 @@ def bind_report_section(
 
 
 @tool
-def dispatch_searcher(query_id: str, description: str) -> str:
+def dispatch_searcher(query_id: str, description: str) -> dict:
     """Dispatch the Searcher to collect evidence for a single query.
 
     This is the **only** way to send work to the Searcher. ``query_id`` is a
@@ -312,42 +324,67 @@ def dispatch_searcher(query_id: str, description: str) -> str:
             source preferences, and output format expected.
 
     Returns:
-        The Searcher's final message — a summary of the evidence package
-        written to the graph, or an error if the query_id is invalid.
+        A compact structured dict containing the query ID, whether evidence was
+        really written into the graph, write counts, and a short summary.
     """
     from tools import graph_tools
 
     # Validate the query node exists before invoking the searcher.
     node = graph_tools.get_node(query_id)
     if not node or node.get("type") != NodeType.QUERY.value:
-        return (
-            f"dispatch_searcher 失败：query_id {query_id!r} 不存在或不是 query 节点。"
-            "请使用 init_research / expand_query 返回的精确 query 节点 ID。"
-        )
+        result = {
+            "query_id": query_id,
+            "ok": False,
+            "error": (
+                f"dispatch_searcher 失败：query_id {query_id!r} 不存在或不是 query 节点。"
+                "请使用 init_research / expand_query 返回的精确 query 节点 ID。"
+            ),
+            "search_run_id": None,
+            "written": {},
+            "summary": "",
+        }
+        workflow_state.record_search_result(query_id, result)
+        return result
 
     query_text = node.get("text") or ""
+    workflow_state.record_search_dispatch(query_id)
 
     # Lazy import — searcher imports from this module, so import at call time
     # to avoid a circular dependency.
     from agents.searcher import searcher as searcher_graph
 
-    result = searcher_graph.invoke({
+    search_state = searcher_graph.invoke({
         "messages": [HumanMessage(content=description)],
         "query_id": query_id,
         "query_text": query_text,
     })
 
-    # Extract the last AIMessage as the return value (CompiledSubAgent convention).
-    for msg in reversed(result.get("messages", [])):
+    submit_result = search_state.get("submit_result") if isinstance(search_state, dict) else None
+    written = submit_result.get("written", {}) if isinstance(submit_result, dict) else {}
+    search_run_id = submit_result.get("search_run_id") if isinstance(submit_result, dict) else None
+    ok = bool(search_run_id) and any((written or {}).values())
+
+    # Extract the last AIMessage as the human-readable summary.
+    summary = ""
+    for msg in reversed(search_state.get("messages", [])):
         if hasattr(msg, "content") and msg.content and getattr(msg, "tool_calls", None) is None:
             content = msg.content
             if isinstance(content, list):
                 content = "".join(
                     p.get("text", "") if isinstance(p, dict) else str(p) for p in content
                 )
-            return str(content)
+            summary = str(content)
+            break
 
-    return "Searcher 已完成但未返回文本结果。"
+    result = {
+        "query_id": query_id,
+        "ok": ok,
+        "search_run_id": search_run_id,
+        "written": written,
+        "summary": (summary or "Searcher 已完成但未返回文本结果。")[:2000],
+    }
+    workflow_state.record_search_result(query_id, result)
+    return result
 
 
 ORCHESTRATOR_TOOLS: list[Any] = [

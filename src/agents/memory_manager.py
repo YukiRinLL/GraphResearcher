@@ -20,7 +20,7 @@ from typing import Any, Optional
 import config
 import prompts.memory_manager_prompts as mm_prompts
 from memory.graph import EdgeType, NodeType
-from tools import graph_tools
+from tools import graph_tools, workflow_state
 
 logger = logging.getLogger(__name__)
 
@@ -78,6 +78,15 @@ def _strip_internal_fields(node: dict) -> dict:
         A cleaned shallow copy (the graph is not modified).
     """
     return {k: v for k, v in node.items() if k not in _INTERNAL_NODE_FIELDS}
+
+
+def _compact_node(node: dict, limit: int = 2000) -> dict:
+    """Clip oversized text fields while preserving node shape and IDs."""
+    compact = dict(node)
+    for key, value in list(compact.items()):
+        if isinstance(value, str) and len(value) > limit:
+            compact[key] = value[:limit] + "…（已截断）"
+    return compact
 
 
 def _first(d: dict, *keys: str) -> Optional[Any]:
@@ -687,9 +696,9 @@ class MemoryManager:
 
         # Strip internal scheduling fields from every node before they reach the
         # Reporter, so the writing context carries content only (not graph state).
-        goal = _strip_internal_fields(goal) if goal else goal
+        goal = _compact_node(_strip_internal_fields(goal)) if goal else goal
         subgraph = {
-            "nodes": [_strip_internal_fields(n) for n in raw_subgraph.get("nodes", [])],
+            "nodes": [_compact_node(_strip_internal_fields(n)) for n in raw_subgraph.get("nodes", [])],
             "edges": raw_subgraph.get("edges", []),
         }
 
@@ -757,6 +766,11 @@ class MemoryManager:
             content=section.get("content", ""),
             section_type=section.get("section_type"),
         )
+        graph_tools.upsert_node(
+            "report_section",
+            {"created_by": "reporter", "workflow_binding": "reporter"},
+            dedupe_key=section_id,
+        )
         graph_tools.bind_evidence_to_section(
             section_id,
             evidence_ids=valid_evidence_ids,
@@ -770,7 +784,8 @@ class MemoryManager:
                 f"{len(valid_evidence_ids)}/{len(evidence_ids or [])} evidence IDs, "
                 f"{len(valid_claim_ids)}/{len(claim_ids or [])} claim IDs validated"
             )
-        
+
+        workflow_state.record_bound_section()
         return section_id
 
     # -----------------------------

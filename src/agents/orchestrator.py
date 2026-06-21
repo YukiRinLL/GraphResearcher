@@ -17,11 +17,14 @@ import config
 from agents.reporter import reporter
 from tools.graph_manager_tools import ORCHESTRATOR_TOOLS
 from tools.middleware import (
+    ConvergenceGateMiddleware,
     EmptyResponseRetryMiddleware,
+    PendingReviewGateMiddleware,
     QueryIdValidationMiddleware,
     ReportValidationMiddleware,
     SearchRoundLimitMiddleware,
     SensitiveWordsRetryMiddleware,
+    WorkflowPhaseMiddleware,
 )
 
 orchestrator = create_deep_agent(
@@ -30,8 +33,11 @@ orchestrator = create_deep_agent(
     tools=ORCHESTRATOR_TOOLS,
     subagents=[reporter],
     middleware=[
+        WorkflowPhaseMiddleware(),
         SearchRoundLimitMiddleware(),
+        PendingReviewGateMiddleware(),
         QueryIdValidationMiddleware(),
+        ConvergenceGateMiddleware(),
         ReportValidationMiddleware(),
         EmptyResponseRetryMiddleware(),
         SensitiveWordsRetryMiddleware(),

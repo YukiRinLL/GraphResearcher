@@ -19,7 +19,7 @@ import re
 from typing import Optional
 
 from memory.graph import EdgeType
-from tools import graph_tools
+from tools import graph_tools, workflow_state
 
 logger = logging.getLogger(__name__)
 
@@ -149,11 +149,12 @@ def finalize_report(report_text: str) -> str:
 
     finalized = f"{new_body}\n\n{references_block}\n"
 
-    # 6. Restore traceability: ReportSection nodes + section→source USES edges.
-    try:
-        _persist_sections(new_body, old_to_new, registry_by_n)
-    except Exception:  # noqa: BLE001 — graph writes must never break the report
-        logger.warning("finalize_report: section persistence failed", exc_info=True)
+    # 6. Restore traceability only after the runtime accepted the final report.
+    if workflow_state.get("report_validated"):
+        try:
+            _persist_sections(new_body, old_to_new, registry_by_n)
+        except Exception:  # noqa: BLE001 — graph writes must never break the report
+            logger.warning("finalize_report: section persistence failed", exc_info=True)
 
     return finalized
 
@@ -194,6 +195,11 @@ def _persist_sections(body: str, old_to_new: dict, registry_by_n: dict) -> None:
             continue
         content = "\n".join(section["lines"]).strip()
         section_id = graph_tools.create_report_section(section["title"], content, None)
+        graph_tools.upsert_node(
+            "report_section",
+            {"created_by": "finalize_report", "workflow_binding": "fallback"},
+            dedupe_key=section_id,
+        )
         source_ids = {new_to_source.get(new) for new in section["cites"]}
         for source_id in source_ids:
             if source_id:

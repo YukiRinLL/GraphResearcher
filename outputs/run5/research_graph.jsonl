@@ -1,0 +1,778 @@
+{"type": "_graphresearcher", "source": "graph-researcher"}
+{"kind": "node", "id": "20260621124211969595_acd1246b", "type": "UserRequest", "request": "请帮我整理目前全球具身智能发展的技术路线，以及各个路线的代表性公司。需要包括这些公司的技术路径、产品进度、商业化进度、融资情况、团队情况。请尽量覆盖全球范围，按技术路线分类，并总结每条路线的优缺点和当前发展阶段。", "research_goal": "整理当前全球具身智能的发展技术路线、各路线的代表性公司，以及它们的技术路径、产品进度、商业化进度、融资情况、团队情况，并总结各路线的优缺点和当前发展阶段。", "language": "中文"}
+{"kind": "node", "id": "20260621124212676134_2a0f78bb", "type": "Query", "sem": 1.0, "text": "全球 2024 2025 具身智能 技术路线 代表性公司 路线分类 发展阶段", "priority_tier": "high", "priority": 1.0, "status": "pending"}
+{"kind": "node", "id": "20260621124212909504_2aea8a28", "type": "Query", "sem": 1.0, "text": "全球 2024 2025 具身智能 VLA 视觉-语言-动作 机器人基础模型 代表公司 技术路径 产品进度 商业化进度", "priority_tier": "high", "priority": 1.0, "status": "pending"}
+{"kind": "node", "id": "20260621124212942513_cbccb4c2", "type": "Query", "sem": 1.0, "text": "全球 2024 2025 具身智能 人形机器人 通用机器人 平台路线 代表公司 技术路径 产品进度 商业化进度", "priority_tier": "high", "priority": 1.0, "status": "pending"}
+{"kind": "node", "id": "20260621124212969497_c3df378f", "type": "Query", "sem": 0.6, "text": "全球 2024 2025 具身智能 数据采集 远程操控 仿真训练 合成数据 路线 代表公司 融资 团队", "priority_tier": "high", "priority": 0.76, "status": "pending"}
+{"kind": "node", "id": "20260621124212997731_1b9684f9", "type": "Query", "sem": 0.6, "text": "全球 2024 2025 具身智能 代表公司 融资情况 团队情况 商业化进展 产品发布", "priority_tier": "high", "priority": 0.76, "status": "pending"}
+{"kind": "node", "id": "20260621124413831187_69479f9e", "type": "SearchRun", "query_id": "20260621124212942513_cbccb4c2"}
+{"kind": "node", "id": "20260621124413983150_b1e535e2", "type": "Source", "source_type": "report", "title": "具身智能发展报告（2025年）", "url": "http://www.caict.ac.cn/kxyj/qwfb/bps/202601/P020260130541978285206.pdf"}
+{"kind": "node", "id": "20260621124414088626_64ed566a", "type": "Source", "source_type": "news", "title": "770亿美元市场引爆：中国具身智能机器人从“秀肌肉”到“真干活”", "url": "https://my.idc.com/getdoc.jsp?containerId=prCHC54010625"}
+{"kind": "node", "id": "20260621124414111973_291ca4ea", "type": "Source", "source_type": "report", "title": "2025商用具身智能白皮书", "url": "https://pdf.dfcfw.com/pdf/H3_AP202512031793353788_1.pdf?1764833841000.pdf"}
+{"kind": "node", "id": "20260621124414134354_443aec21", "type": "Source", "source_type": "report", "title": "具身智能产业深度研究（五）：人形机器人硬实力助力行业加速量产", "url": "https://www.fxbaogao.com/detail/5129181"}
+{"kind": "node", "id": "20260621124414160046_879f5b3d", "type": "Source", "source_type": "news", "title": "竞合共进 规范先行：全球具身智能的发展与治理", "url": "https://news.gmw.cn/2026-03/19/content_38656011.htm"}
+{"kind": "node", "id": "20260621124414182693_a3d89440", "type": "Source", "source_type": "other", "title": "2025年，人形机器人走到哪一步了？｜机器人系列｜具身智能年度盘点", "url": "https://www.youtube.com/watch?v=qs0ovkaacls"}
+{"kind": "node", "id": "20260621124414201496_d4ba0953", "type": "Document", "source_id": "20260621124413983150_b1e535e2", "text": "报告将具身智能技术路径分为模块化分层、分层大模型、端到端大模型、世界模型四类，并讨论数据—模型—本体闭环、云边端协同、VLA/世界模型以及不同本体形态和产业生态。"}
+{"kind": "node", "id": "20260621124414296578_9f0ac8e3", "type": "Document", "source_id": "20260621124414088626_64ed566a", "text": "IDC新闻稿强调场景、数据、生态三支柱，讨论商业化从展示转向功能价值，并提到服务、工业、医疗、消费等落地方向，以及RaaS、订阅、云—边—端架构和多形态机器人协同的商业模式演进。"}
+{"kind": "node", "id": "20260621124414320213_781a3a22", "type": "Document", "source_id": "20260621124414111973_291ca4ea", "text": "白皮书定义具身智能的全球共识，区分商用场景与工业场景，梳理全球人形机器人发布情况、政策支持和产业链，并讨论人形机器人、人机交互、多模态感知、灵巧操作与商业化落地阶段。"}
+{"kind": "node", "id": "20260621124414339970_e7e64795", "type": "Document", "source_id": "20260621124414134354_443aec21", "text": "研报将人形机器人企业分为硬件型、软件型、全栈型，重点分析宇树科技、乐聚机器人、众擎机器人、逐际动力的技术定位、产品线及量产/交付进度，并给出2024-2025试制、2025年后规模量产的阶段判断。"}
+{"kind": "node", "id": "20260621124414360782_0565c3c4", "type": "Document", "source_id": "20260621124414160046_879f5b3d", "text": "文章梳理全球具身智能技术路线，包括多模态感知、运动控制、双脑架构、大模型与世界模型、能源与材料，并讨论美国、欧盟、日本、韩国的战略布局，以及特斯拉、谷歌、Figure等平台化或生态化路径和商业化方向。"}
+{"kind": "node", "id": "20260621124414387630_10843d39", "type": "Document", "source_id": "20260621124414182693_a3d89440", "text": "视频盘点2025年具身智能行业进展，涉及VLA、双系统架构、合成数据、跨机器人泛化、平台博弈，以及Figure估值、特斯拉Optimus量产节奏和Unitree价格下探等话题。"}
+{"kind": "node", "id": "20260621124414407656_c3156c33", "type": "Claim", "statement": "该报告将具身智能技术路径划分为模块化分层、分层大模型、端到端大模型和世界模型四类，并讨论数据—模型—本体闭环与云边端协同。", "status": "pending"}
+{"kind": "node", "id": "20260621124414539210_21f34b60", "type": "Claim", "statement": "IDC新闻稿认为具身智能商业化围绕场景、数据、生态三支柱展开，且行业正从展示导向转向功能价值导向。", "status": "pending"}
+{"kind": "node", "id": "20260621124414572211_4335fdb9", "type": "Claim", "statement": "白皮书区分了具身智能的商用场景与工业场景，并梳理了全球人形机器人发布情况、政策支持和产业链。", "status": "pending"}
+{"kind": "node", "id": "20260621124414601592_c5028111", "type": "Claim", "statement": "该研报将人形机器人企业划分为硬件型、软件型和全栈型，并对宇树科技、乐聚机器人、众擎机器人、逐际动力的技术定位与量产进度作了分析。", "status": "pending"}
+{"kind": "node", "id": "20260621124414635118_1916638f", "type": "Claim", "statement": "文章概括了全球具身智能的多模态感知、运动控制、双脑架构、大模型与世界模型等技术路线，并提到美国、欧盟、日本、韩国以及特斯拉、谷歌、Figure的布局。", "status": "pending"}
+{"kind": "node", "id": "20260621124414663595_2562fc0a", "type": "Claim", "statement": "视频盘点认为2025年行业讨论重点包括VLA、双系统架构、合成数据、跨机器人泛化和平台竞争，并涉及Figure估值、Optimus量产节奏与Unitree价格变化。", "status": "pending"}
+{"kind": "node", "id": "20260621124414691668_6d1ff0a5", "type": "Evidence", "claim": "报告明确把具身智能技术路径分为模块化分层、分层大模型、端到端大模型、世界模型四条，并讨论数据—模型—本体闭环与云边端协同。", "status": "pending"}
+{"kind": "node", "id": "20260621124414797595_ef5b069d", "type": "Evidence", "claim": "IDC强调商业化从展示转向功能价值，并列出服务、工业、医疗、消费等落地方向，以及RaaS、订阅、云—边—端架构和多形态机器人协同。", "status": "pending"}
+{"kind": "node", "id": "20260621124414840232_fd25fd83", "type": "Evidence", "claim": "白皮书区分商用场景与工业场景，梳理全球人形机器人发布情况、政策支持与产业链，并讨论人形机器人、人机交互、多模态感知、灵巧操作及商业化落地阶段。", "status": "pending"}
+{"kind": "node", "id": "20260621124414883448_c3fefdc7", "type": "Evidence", "claim": "研报把企业分为硬件型、软件型、全栈型，重点写了宇树科技、乐聚机器人、众擎机器人、逐际动力的技术定位、产品线和量产/交付进度，并判断2024-2025试制、2025后规模量产。", "status": "pending"}
+{"kind": "node", "id": "20260621124414925095_d04d1552", "type": "Evidence", "claim": "文章梳理多模态感知、运动控制、双脑架构、大模型与世界模型、能源与材料等路线，并提到美国、欧盟、日本、韩国的战略布局以及特斯拉、谷歌、Figure的平台化或生态化路径。", "status": "pending"}
+{"kind": "node", "id": "20260621124414971405_47cf1f3c", "type": "Evidence", "claim": "视频盘点提到VLA、双系统架构、合成数据、跨机器人泛化与平台博弈，并提及Figure估值、特斯拉Optimus量产节奏和Unitree价格下探。", "status": "pending"}
+{"kind": "node", "id": "20260621124434202658_70dc47b2", "type": "SearchRun", "query_id": "20260621124212676134_2a0f78bb"}
+{"kind": "node", "id": "20260621124434261693_6ce4ca3b", "type": "Source", "source_type": "report", "title": "[PDF] 具身智能发展报告 - 北京人形机器人创新中心", "url": "https://x-humanoid.com/storage/website/2025/01-14/6785fd2145c36-1-27438.pdf"}
+{"kind": "node", "id": "20260621124434286913_30e8c466", "type": "Source", "source_type": "report", "title": "[PDF] 具身智能：万亿赛道，落地元年", "url": "https://pdf.dfcfw.com/pdf/H3_AP202503101644227280_1.pdf"}
+{"kind": "node", "id": "20260621124434345745_8f9fb0a3", "type": "Source", "source_type": "news", "title": "IDC首次发布全球具身智能机器人创新者榜单", "url": "https://my.idc.com/getdoc.jsp?containerId=prCHC53968025&_gl=1*134izcj*_ga*MTg0OTg4MTY1MC4xNzUzOTQ4NDYx*_ga_541ENG1F9X*czE3NjQ3NTE2ODEkbzk4JGcxJHQxNzY0NzUxOTI1JGoyMSRsMCRoMA..*_gcl_au*OTk3Njc2OTQyLjE3NjE3MjQ3MjE."}
+{"kind": "node", "id": "20260621124434365520_3dd4cdea", "type": "Source", "source_type": "report", "title": "2025年具身智能行业研究跨领域融合引领的新一轮智能革命", "url": "https://www.fxbaogao.com/detail/5044556"}
+{"kind": "node", "id": "20260621124434397203_78126983", "type": "Source", "source_type": "report", "title": "[PDF] 计算机行业深度报告大脑：具身智能落地的关键", "url": "https://pdf.dfcfw.com/pdf/H3_AP202510241768086302_1.pdf?1761314712000.pdf"}
+{"kind": "node", "id": "20260621124434423581_29a2c4da", "type": "Source", "source_type": "paper", "title": "具身智能发展趋势与展望 - Engineering", "url": "https://www.engineering.org.cn/sscae/CN/10.15302/J-SSCAE-2025.07.019"}
+{"kind": "node", "id": "20260621124434442924_f7c0926b", "type": "Source", "source_type": "report", "title": "[PDF] 甲子光年智库...具身智能技术发展与行业应用简析", "url": "https://download.s21i.co99.net/28254755/0/0/ABUIABA9GAAgmcKqvQYomLfimwU.pdf?f=2025%E5%85%B7%E8%BA%AB%E6%99%BA%E8%83%BD%E8%A1%8C%E4%B8%9A%E5%8F%91%E5%B1%95%E7%A0%94%E7%A9%B6%E6%8A%A5%E5%91%8A%E5%85%B7%E8%BA%AB%E6%99%BA%E8%83%BD%E6%8A%80%E6%9C%AF%E5%8F%91%E5%B1%95%E4%B8%8E%E8%A1%8C%E4%B8%9A%E5%BA%94%E7%94%A8%E7%AE%80%E6%9E%90.pdf&v=1739235609"}
+{"kind": "node", "id": "20260621124434461533_dfa54378", "type": "Source", "source_type": "report", "title": "[PDF] 具身智能科技前沿热点", "url": "https://aigc.idigital.com.cn/djyanbao/%E3%80%90%E4%B8%AD%E5%85%B3%E6%9D%91%E6%99%BA%E5%8F%8B%E7%A0%94%E7%A9%B6%E9%99%A2%E3%80%912024%E5%85%B7%E8%BA%AB%E6%99%BA%E8%83%BD%E7%A7%91%E6%8A%80%E5%89%8D%E6%B2%BF%E7%83%AD%E7%82%B9-2025-01-02.pdf"}
+{"kind": "node", "id": "20260621124434484538_0bdfd9ef", "type": "Document", "source_id": "20260621124413983150_b1e535e2", "text": "报告提出具身智能技术路径可分为四条，包括模块化分层、分层大模型、端到端大模型和世界模型，并提到端到端VLA以及在分层大模型路线上使用LLM、VLM作为“大脑”。"}
+{"kind": "node", "id": "20260621124434503317_b083dd67", "type": "Document", "source_id": "20260621124434261693_6ce4ca3b", "text": "报告将具身智能描述为人工智能与其他学科交叉融合发展的新范式，并讨论了美国、日本等地区的机器人路线与政策背景。"}
+{"kind": "node", "id": "20260621124434520003_c23d8157", "type": "Document", "source_id": "20260621124434286913_30e8c466", "text": "报告描述了具身智能从软硬件解耦技术到人形机器人的研发与应用，再到与大模型深度融合的发展过程，并提到特斯拉、谷歌、英伟达、Figure One等代表性公司。"}
+{"kind": "node", "id": "20260621124434541799_f6a6e166", "type": "Document", "source_id": "20260621124434345745_8f9fb0a3", "text": "IDC发布全球具身智能机器人创新者榜单，选取四家具有代表性的企业，并强调它们在不同应用场景推动具身智能机器人的落地与商业化。"}
+{"kind": "node", "id": "20260621124434559792_77e4284e", "type": "Document", "source_id": "20260621124434365520_3dd4cdea", "text": "报告梳理具身智能的发展历程为五个阶段，并将2025年相关阶段概括为标准化、泛化与伦理探索。"}
+{"kind": "node", "id": "20260621124434584272_03b311b0", "type": "Document", "source_id": "20260621124434397203_78126983", "text": "报告将具身智能技术路线归纳为三条主流路径：端到端VLA、大脑+小脑分层、世界模型技术路线。"}
+{"kind": "node", "id": "20260621124434603140_fdbf5269", "type": "Document", "source_id": "20260621124434423581_29a2c4da", "text": "文章围绕具身智能的发展趋势与展望，讨论了世界模型、表征学习、因果推理和生成式AI等技术关键词。"}
+{"kind": "node", "id": "20260621124434626753_e041e4e3", "type": "Document", "source_id": "20260621124434442924_f7c0926b", "text": "报告强调以人形机器人为代表的具身智能机器人是连接虚拟数字世界和现实物理世界的最佳载体。"}
+{"kind": "node", "id": "20260621124434645912_80b3a09e", "type": "Document", "source_id": "20260621124434461533_dfa54378", "text": "报告提到Pi（Physical Intelligence）和Sergey Levine等全球代表性样本。"}
+{"kind": "node", "id": "20260621124434663852_e4a6cffa", "type": "Claim", "statement": "中国信息通信研究院的报告将具身智能技术路径划分为四类：模块化分层、分层大模型、端到端大模型和世界模型。", "status": "pending"}
+{"kind": "node", "id": "20260621124434694834_29893e33", "type": "Claim", "statement": "北京人形机器人创新中心的报告将具身智能视为人工智能与其他学科交叉融合发展的新范式，并讨论了美国、日本等地区的机器人路线与政策背景。", "status": "pending"}
+{"kind": "node", "id": "20260621124434722862_1a3eff1e", "type": "Claim", "statement": "一份2025年行业报告把具身智能的发展描述为从软硬件解耦、人形机器人研发与应用，走向与大模型深度融合，并列举特斯拉、谷歌、英伟达、Figure One等代表性公司。", "status": "pending"}
+{"kind": "node", "id": "20260621124434750775_2b90e0a9", "type": "Claim", "statement": "IDC在其全球具身智能机器人创新者榜单中选取了四家代表性企业，并强调这些企业在不同应用场景推动落地与商业化。", "status": "pending"}
+{"kind": "node", "id": "20260621124434783815_a012f1a3", "type": "Claim", "statement": "一份2025年行业研究将具身智能的发展历程划分为五个阶段，并把2025年对应的重点概括为标准化、泛化与伦理探索。", "status": "pending"}
+{"kind": "node", "id": "20260621124434817401_3355d101", "type": "Claim", "statement": "另一份2025年深度报告将具身智能的主流技术路线归纳为三条：端到端VLA、大脑+小脑分层、世界模型。", "status": "pending"}
+{"kind": "node", "id": "20260621124434847700_db21c815", "type": "Claim", "statement": "Engineering相关文章将世界模型、表征学习、因果推理和生成式AI作为具身智能发展趋势与技术框架的重要内容。", "status": "pending"}
+{"kind": "node", "id": "20260621124434876338_7bf844db", "type": "Claim", "statement": "甲子光年智库的报告认为，以人形机器人为代表的具身智能机器人是连接虚拟数字世界和现实物理世界的最佳载体。", "status": "pending"}
+{"kind": "node", "id": "20260621124434908200_1a6248f3", "type": "Claim", "statement": "中关村智友研究院的报告提到了Pi（Physical Intelligence）和Sergey Levine等全球代表性样本。", "status": "pending"}
+{"kind": "node", "id": "20260621124434934207_85e4e348", "type": "Evidence", "claim": "“具身智能技术路径整体可分为四条，包括模块化分层、分层大模型、端到端大模型和世界模型”。", "status": "pending"}
+{"kind": "node", "id": "20260621124434974723_fb0e08f0", "type": "Evidence", "claim": "“端到端VLA”“分层大模型路线上，用LLM、VLM作为‘大脑’”。", "status": "pending"}
+{"kind": "node", "id": "20260621124435013353_4799e80e", "type": "Evidence", "claim": "“具身智能是人工智能与其他学科交叉融合发展的新范式”。", "status": "pending"}
+{"kind": "node", "id": "20260621124435053473_af685dc8", "type": "Evidence", "claim": "“提到美国、日本等地区的机器人路线与政策背景”。", "status": "pending"}
+{"kind": "node", "id": "20260621124435088077_5ee97daa", "type": "Evidence", "claim": "“从软硬件解耦技术到人形机器人的研发与应用，再到与大模型的深度融合”。", "status": "pending"}
+{"kind": "node", "id": "20260621124435133577_cfdae85d", "type": "Evidence", "claim": "“特斯拉、谷歌、英伟达、Figure one”等代表性公司。", "status": "pending"}
+{"kind": "node", "id": "20260621124435168511_8244f14e", "type": "Evidence", "claim": "“IDC选取了四家具有代表性的企业”。", "status": "pending"}
+{"kind": "node", "id": "20260621124435206459_0797bdd7", "type": "Evidence", "claim": "“它们在不同应用场景推动具身智能机器人的落地与商业化”。", "status": "pending"}
+{"kind": "node", "id": "20260621124435245107_e2ca4135", "type": "Evidence", "claim": "“具身智能发展历经五个阶段”。", "status": "pending"}
+{"kind": "node", "id": "20260621124435279676_0f28bf20", "type": "Evidence", "claim": "“标准化、泛化与伦理探索（2025年）”。", "status": "pending"}
+{"kind": "node", "id": "20260621124435318491_4e3e02e6", "type": "Evidence", "claim": "“主要存在三条主流路径：端到端VLA、大脑+小脑分层、世界模型技术路线”。", "status": "pending"}
+{"kind": "node", "id": "20260621124435353579_74844ec9", "type": "Evidence", "claim": "“世界模型、表征学习、因果推理、生成式AI”等关键词。", "status": "pending"}
+{"kind": "node", "id": "20260621124435393170_9b72639a", "type": "Evidence", "claim": "“人形机器人为代表的具身智能机器人是链接虚拟数字世界和现实物理世界的最佳载体”。", "status": "pending"}
+{"kind": "node", "id": "20260621124435429952_f30615fc", "type": "Evidence", "claim": "“Pi (Physical Intelligence)、Sergey Levine”等。", "status": "pending"}
+{"kind": "node", "id": "20260621124435468507_f90d01f3", "type": "Conflict", "conflict_type": "factual", "description": "两份2025年材料对具身智能技术路线的分类粒度不同：一份将技术路径划分为四类，另一份归纳为三条主流路径；其中世界模型在两种分类中都出现，但与分层大模型/大脑+小脑的归类方式不完全一致。", "resolution_status": "unresolved"}
+{"kind": "node", "id": "20260621124457352957_a1946015", "type": "SearchRun", "query_id": "20260621124212909504_2aea8a28"}
+{"kind": "node", "id": "20260621124457367844_1e0c01d3", "type": "Source", "source_type": "blog", "title": "The latest AI news we announced in March - Google Blog", "url": "https://blog.google/innovation-and-ai/products/google-ai-updates-march-2025/"}
+{"kind": "node", "id": "20260621124457380400_5cfeac76", "type": "Source", "source_type": "blog", "title": "Gemini Robotics 1.5 を発表、AI エージェントを物理世界に", "url": "https://blog.google/intl/ja-jp/company-news/technology/gemini-robotics-15-ai/"}
+{"kind": "node", "id": "20260621124457395786_280b0a8a", "type": "Source", "source_type": "other", "title": "NVIDIA Isaac GR00T N1: An Open Foundation Model for Humanoid ...", "url": "https://research.nvidia.com/publication/2025-03_nvidia-isaac-gr00t-n1-open-foundation-model-humanoid-robots"}
+{"kind": "node", "id": "20260621124457407548_64e718dd", "type": "Source", "source_type": "news", "title": "Helix: A Vision-Language-Action Model for Generalist Humanoid ...", "url": "https://www.figure.ai/news/helix"}
+{"kind": "node", "id": "20260621124457421579_ee51778e", "type": "Source", "source_type": "blog", "title": "Vision-Language-Action Models for General Robot Control", "url": "https://huggingface.co/blog/pi0"}
+{"kind": "node", "id": "20260621124457434351_0bcf2c48", "type": "Source", "source_type": "other", "title": "Physical Intelligence (π)", "url": "https://www.pi.website/"}
+{"kind": "node", "id": "20260621124457446643_99dc1d98", "type": "Source", "source_type": "blog", "title": "Covariant introduces RFM-1 to give robots the human-like ability to ...", "url": "https://covariant.ai/covariant-introduces-rfm-1-to-give-robots-the-human-like-ability-to-reason/"}
+{"kind": "node", "id": "20260621124457459633_db6a857c", "type": "Source", "source_type": "paper", "title": "OpenVLA: An Open-Source Vision-Language-Action Model - arXiv", "url": "https://arxiv.org/abs/2406.09246"}
+{"kind": "node", "id": "20260621124457472276_a6797c66", "type": "Source", "source_type": "blog", "title": "AgiBot GO-1: The Evolution of Generalist Embodied Foundation Model from VLA to ViLLA", "url": "https://agibot-world.com/blog/go1"}
+{"kind": "node", "id": "20260621124457484764_af49dd3d", "type": "Source", "source_type": "other", "title": "AgiBot Research", "url": "https://www.agibot.com/research"}
+{"kind": "node", "id": "20260621124457497825_0ee0aa30", "type": "Source", "source_type": "other", "title": "NEO Home Robot", "url": "https://www.1x.tech/neo"}
+{"kind": "node", "id": "20260621124457510993_10e2c06d", "type": "Source", "source_type": "news", "title": "Apptronik Partners with Google DeepMind Robotics", "url": "https://apptronik.com/news-collection/apptronik-partners-with-google-deepmind-robotics"}
+{"kind": "node", "id": "20260621124457527197_5b17d443", "type": "Document", "source_id": "20260621124457367844_1e0c01d3", "text": "Google Blog 的 2025 年 3 月 AI 更新中介绍了 Gemini Robotics，并将其描述为一个先进的视觉-语言-动作（VLA）模型，可直接控制机器人。"}
+{"kind": "node", "id": "20260621124457542910_a7d9240f", "type": "Document", "source_id": "20260621124457380400_5cfeac76", "text": "Google Blog 日文页面介绍 Gemini Robotics 1.5，并将其描述为面向物理世界代理的高性能视觉-语言-动作（VLA）模型。"}
+{"kind": "node", "id": "20260621124457555117_758b9735", "type": "Document", "source_id": "20260621124457395786_280b0a8a", "text": "NVIDIA Isaac GR00T N1 被介绍为面向人形机器人的开放基础模型，使用第一视角人类视频、真实和仿真机器人轨迹以及合成数据进行构建。"}
+{"kind": "node", "id": "20260621124457568335_bc691793", "type": "Document", "source_id": "20260621124457407548_64e718dd", "text": "Figure AI 的 Helix 被介绍为面向通用人形机器人的通用 VLA 模型，统一感知、语言理解和学习到的控制。"}
+{"kind": "node", "id": "20260621124457582087_04d979be", "type": "Document", "source_id": "20260621124457421579_ee51778e", "text": "Hugging Face 上的文章介绍 Physical Intelligence 的 π0，并将其描述为面向通用机器人控制的 VLA 模型。"}
+{"kind": "node", "id": "20260621124457594353_9af08ea4", "type": "Document", "source_id": "20260621124457434351_0bcf2c48", "text": "Physical Intelligence 官网页面提到其新模型可控制移动操作臂完成厨房或卧室清理任务。"}
+{"kind": "node", "id": "20260621124457605043_73291b75", "type": "Document", "source_id": "20260621124457446643_99dc1d98", "text": "Covariant 的 RFM-1 页面将其描述为机器人基础模型，并强调其对语言与物理世界的理解能力。"}
+{"kind": "node", "id": "20260621124457617808_4fd18815", "type": "Document", "source_id": "20260621124457459633_db6a857c", "text": "OpenVLA 论文介绍了一个开源的 7B 参数 VLA 模型，训练数据包含 97 万条真实世界机器人示范。"}
+{"kind": "node", "id": "20260621124457629904_3b367589", "type": "SearchRun", "query_id": "20260621124212969497_c3df378f"}
+{"kind": "node", "id": "20260621124457632304_1973dec6", "type": "Document", "source_id": "20260621124457472276_a6797c66", "text": "AgiBot GO-1 博客介绍 GO-1 为通用具身基础模型，并提出 ViLLA 架构。"}
+{"kind": "node", "id": "20260621124457642844_85aaba16", "type": "Source", "source_type": "report", "title": "[PDF] 具身智能发展报告 - 中国信息通信研究院", "url": "https://www.caict.ac.cn/.../P020260130541978285206.pdf"}
+{"kind": "node", "id": "20260621124457645206_05ea3103", "type": "Document", "source_id": "20260621124457484764_af49dd3d", "text": "AgiBot Research 页面提到 AgiBot World 与 GO-1，并写到其拥有超过 100 万条轨迹的开源具身智能数据集。"}
+{"kind": "node", "id": "20260621124457658071_8b6faf32", "type": "Document", "source_id": "20260621124457497825_0ee0aa30", "text": "1X 的 NEO Home Robot 页面介绍 NEO 使用 Redwood AI 进行学习和重复任务，早期用户可获得基础自主能力。"}
+{"kind": "node", "id": "20260621124457659680_61726108", "type": "Source", "source_type": "report", "title": "[PDF] 2025商用具身智能白皮书", "url": "https://pdf.dfcfw.com/pdf/H3_AP202512031793353788_1.pdf..."}
+{"kind": "node", "id": "20260621124457669689_76c12875", "type": "Document", "source_id": "20260621124457510993_10e2c06d", "text": "Apptronik 与 Google DeepMind Robotics 建立合作，将 Gemini Robotics 引入 Apollo 人形机器人。"}
+{"kind": "node", "id": "20260621124457674821_0b9144bb", "type": "Source", "source_type": "news", "title": "走进数采工厂：深聊机器人数据荒漠、四层金字塔与种树人", "url": "https://www.tmtpost.com/7990555.html"}
+{"kind": "node", "id": "20260621124457687569_3b839c1e", "type": "Claim", "statement": "Gemini Robotics 是一个先进的视觉-语言-动作（VLA）模型，并可直接控制机器人。", "status": "pending"}
+{"kind": "node", "id": "20260621124457691446_d00ac8ed", "type": "Source", "source_type": "news", "title": "具身空间数据技术的路线之争：合成重建VS全端生成", "url": "https://www.qbitai.com/2025/04/275178.html"}
+{"kind": "node", "id": "20260621124457705568_c4501717", "type": "Source", "source_type": "report", "title": "2025 具身智能赛道投资策略报告", "url": "https://www.monadventures.com/reports/13"}
+{"kind": "node", "id": "20260621124457706103_b6788066", "type": "Claim", "statement": "Gemini Robotics 1.5 被定位为高性能 VLA 模型，并面向物理世界中的智能体应用。", "status": "pending"}
+{"kind": "node", "id": "20260621124457722419_32edbe17", "type": "Source", "source_type": "news", "title": "2026年具身智能企业估值盘点｜50+公司最新进展梳理", "url": "https://www.industrysourcing.cn/article/476234"}
+{"kind": "node", "id": "20260621124457726576_21acd64e", "type": "Claim", "statement": "NVIDIA Isaac GR00T N1 是面向人形机器人的开放基础模型。", "status": "pending"}
+{"kind": "node", "id": "20260621124457732426_88e9de87", "type": "Document", "source_id": "20260621124457642844_85aaba16", "text": "文内将具身智能数据分为海量互联网数据、仿真合成数据和真实数据三类，并围绕数据、模型、本体三要素讨论具身智能发展路径，提到行业围绕仿真合成数据和真实数据探索数据采集方案。"}
+{"kind": "node", "id": "20260621124457743458_ed701f78", "type": "Claim", "statement": "GR00T N1 的构建使用了第一视角人类视频、真实和仿真机器人轨迹以及合成数据。", "status": "pending"}
+{"kind": "node", "id": "20260621124457744468_9840f045", "type": "Document", "source_id": "20260621124457659680_61726108", "text": "白皮书提到2025年起北京、上海加快建设具身智能数据采集训练场，企业端尝试通过便携化工具和仿真优化降低成本，内容同时覆盖全球市场趋势、产业链、竞争格局和典型企业案例。"}
+{"kind": "node", "id": "20260621124457756654_9d8dbd4a", "type": "Document", "source_id": "20260621124457674821_0b9144bb", "text": "文章把机器人数据采集归纳为真机遥操数据、仿真合成数据、动作捕捉数据和互联网视频四层并行路线，并点到觅蜂科技、Physical Intelligence、Sharpa、Figure AI、Sunday Robotics、Tesla等代表性公司或团队。"}
+{"kind": "node", "id": "20260621124457759504_68260342", "type": "Claim", "statement": "Figure AI 的 Helix 是一个通用 VLA 模型，面向通用人形机器人。", "status": "pending"}
+{"kind": "node", "id": "20260621124457767718_f1326212", "type": "Document", "source_id": "20260621124457691446_d00ac8ed", "text": "文章称当前具身合成数据主要有视频合成加3D重建与端到端3D生成两条路线，并列出群核科技SpatialVerse/SpatialLM、Hillbot、NVIDIA Cosmos、Sapien/ManiSkill、ATISS、DiffuScene、Infinigen等对象。"}
+{"kind": "node", "id": "20260621124457777107_90d1e93c", "type": "Claim", "statement": "Helix 统一了感知、语言理解和学习到的控制。", "status": "pending"}
+{"kind": "node", "id": "20260621124457778438_b4da0d29", "type": "Document", "source_id": "20260621124457705568_c4501717", "text": "报告强调具身智能的感知、规划、控制、执行闭环仍需突破，数据匮乏是核心挑战，同时指出当前技术选型尚未收敛，多模式混合是主流。"}
+{"kind": "node", "id": "20260621124457790411_5016a04d", "type": "Document", "source_id": "20260621124457722419_32edbe17", "text": "文章梳理了50余家代表性企业，包括优必选、宇树、银河通用、星海图、智元、逐际动力、众擎、云深处、地瓜机器人、觅蜂科技等，并写到各家融资轮次、估值、业务方向和团队背景。"}
+{"kind": "node", "id": "20260621124457797234_9f1a6606", "type": "Claim", "statement": "Physical Intelligence 的 π0 是一个面向通用机器人控制的 VLA 模型。", "status": "pending"}
+{"kind": "node", "id": "20260621124457803366_71e6f480", "type": "Claim", "statement": "具身智能数据可分为海量互联网数据、仿真合成数据和真实数据三类。", "status": "pending"}
+{"kind": "node", "id": "20260621124457824866_a135cc1c", "type": "Claim", "statement": "Physical Intelligence 的新模型可以控制移动操作臂完成厨房或卧室清理任务。", "status": "pending"}
+{"kind": "node", "id": "20260621124457834360_50d78362", "type": "Claim", "statement": "行业围绕仿真合成数据和真实数据积极探索数据采集方案。", "status": "pending"}
+{"kind": "node", "id": "20260621124457873361_424711d3", "type": "Claim", "statement": "Covariant 的 RFM-1 被介绍为机器人基础模型，并强调语言与物理世界理解能力。", "status": "pending"}
+{"kind": "node", "id": "20260621124457883256_ddf65e46", "type": "Claim", "statement": "2025年北京和上海加快建设具身智能数据采集训练场。", "status": "pending"}
+{"kind": "node", "id": "20260621124457896629_84ce3ac9", "type": "Claim", "statement": "OpenVLA 是一个开源的 7B 参数 VLA 模型，训练于 97 万条真实世界机器人示范。", "status": "pending"}
+{"kind": "node", "id": "20260621124457902233_abb6baa6", "type": "Claim", "statement": "企业端尝试通过便携化工具和仿真优化降低具身智能数据采集成本。", "status": "pending"}
+{"kind": "node", "id": "20260621124457914466_a28982a8", "type": "Claim", "statement": "AgiBot GO-1 是一个通用具身基础模型，并提出了 ViLLA 架构。", "status": "pending"}
+{"kind": "node", "id": "20260621124457921238_db120082", "type": "Claim", "statement": "机器人数据采集可被归纳为真机遥操、仿真合成、动作捕捉和互联网视频四层并行路线。", "status": "pending"}
+{"kind": "node", "id": "20260621124457934551_cad1ec2b", "type": "Claim", "statement": "AgiBot Research 页面称其拥有超过 100 万条轨迹的开源具身智能数据集，并关联 AgiBot World 与 GO-1。", "status": "pending"}
+{"kind": "node", "id": "20260621124457936944_ac19a993", "type": "Claim", "statement": "觅蜂科技、Physical Intelligence、Sharpa、Figure AI、Sunday Robotics、Tesla等被列为相关代表性公司或团队。", "status": "pending"}
+{"kind": "node", "id": "20260621124457950335_18c40bfa", "type": "Claim", "statement": "1X 的 NEO Home Robot 使用 Redwood AI 进行学习和重复任务，早期用户可获得基础自主能力。", "status": "pending"}
+{"kind": "node", "id": "20260621124457952471_cff095ee", "type": "Claim", "statement": "当前具身合成数据主要有视频合成加3D重建与端到端3D生成两条路线。", "status": "pending"}
+{"kind": "node", "id": "20260621124457966524_0da89b4f", "type": "Claim", "statement": "Apptronik 与 Google DeepMind Robotics 合作，将 Gemini Robotics 引入 Apollo 人形机器人。", "status": "pending"}
+{"kind": "node", "id": "20260621124457967670_cdc990b9", "type": "Claim", "statement": "群核科技SpatialVerse/SpatialLM、Hillbot、NVIDIA Cosmos、Sapien/ManiSkill、ATISS、DiffuScene、Infinigen等被列为代表性对象。", "status": "pending"}
+{"kind": "node", "id": "20260621124457985616_00e24e55", "type": "Evidence", "claim": "摘要明确写到“Gemini Robotics, an advanced vision-language-action (VLA) model … directly controlling robots.”", "status": "pending"}
+{"kind": "node", "id": "20260621124457987218_6494f30d", "type": "Claim", "statement": "具身智能的感知、规划、控制、执行闭环仍待突破，数据匮乏是核心挑战。", "status": "pending"}
+{"kind": "node", "id": "20260621124458004198_7960519f", "type": "Claim", "statement": "当前具身智能技术选型尚未收敛，多模式混合是主流。", "status": "pending"}
+{"kind": "node", "id": "20260621124458006604_d7670f20", "type": "Evidence", "claim": "摘要写明“Gemini Robotics 1.5 は、最も高性能な視覚・言語・行動 (VLA) モデル”。", "status": "pending"}
+{"kind": "node", "id": "20260621124458020158_42ef1f68", "type": "Claim", "statement": "文章梳理了50余家代表性具身智能企业，包括优必选、宇树、银河通用、星海图、智元、逐际动力、众擎、云深处、地瓜机器人、觅蜂科技等。", "status": "pending"}
+{"kind": "node", "id": "20260621124458026314_efcfb733", "type": "Evidence", "claim": "摘要写到这是“面向人形机器人的开放基础模型”。", "status": "pending"}
+{"kind": "node", "id": "20260621124458037103_741ad124", "type": "Claim", "statement": "文章写到了这些企业的融资轮次、估值、业务方向和团队背景。", "status": "pending"}
+{"kind": "node", "id": "20260621124458048386_bf680602", "type": "Evidence", "claim": "摘要列出训练/构建数据包括“egocentric human videos, real and simulated robot trajectories, and synthetic data”。", "status": "pending"}
+{"kind": "node", "id": "20260621124458054854_62841951", "type": "Evidence", "claim": "文内明确将具身智能数据分为海量互联网数据、仿真合成数据和真实数据三类。", "status": "pending"}
+{"kind": "node", "id": "20260621124458073389_f00e16b3", "type": "Evidence", "claim": "摘要写明 Helix 是“generalist Vision-Language-Action (VLA) model”。", "status": "pending"}
+{"kind": "node", "id": "20260621124458075240_3882fb55", "type": "Evidence", "claim": "文内提到行业围绕仿真合成数据和真实数据积极探索数据采集方案。", "status": "pending"}
+{"kind": "node", "id": "20260621124458093553_23f9575c", "type": "Evidence", "claim": "摘要写明 Helix 统一“perception, language understanding and learned control”。", "status": "pending"}
+{"kind": "node", "id": "20260621124458098060_731d0d68", "type": "Evidence", "claim": "白皮书提到2025年起北京、上海加快建设具身智能数据采集训练场。", "status": "pending"}
+{"kind": "node", "id": "20260621124458115002_bad55331", "type": "Evidence", "claim": "摘要写明 π0 是 VLA 模型，并面向 generalist robot control。", "status": "pending"}
+{"kind": "node", "id": "20260621124458117707_3fce6ba3", "type": "Evidence", "claim": "白皮书提到企业端尝试通过便携化工具和仿真优化来降低成本。", "status": "pending"}
+{"kind": "node", "id": "20260621124458137952_691a00d1", "type": "Evidence", "claim": "摘要提到新模型可以控制 mobile manipulator 完成 kitchen 或 bedroom cleanup tasks。", "status": "pending"}
+{"kind": "node", "id": "20260621124458141783_6242459d", "type": "Evidence", "claim": "文章将机器人数据采集归纳为真机遥操数据、仿真合成数据、动作捕捉数据和互联网视频四层并行路线。", "status": "pending"}
+{"kind": "node", "id": "20260621124458159355_2296e761", "type": "Evidence", "claim": "摘要写到 RFM-1 是“world's most capable Robotics Foundation Model”，并强调语言与物理世界理解。", "status": "pending"}
+{"kind": "node", "id": "20260621124458162348_3b01e241", "type": "Evidence", "claim": "文章点到觅蜂科技、Physical Intelligence、Sharpa、Figure AI、Sunday Robotics、Tesla等代表性公司或团队线索。", "status": "pending"}
+{"kind": "node", "id": "20260621124458180572_330ff39c", "type": "Evidence", "claim": "摘要写明 OpenVLA 是“7B 参数的开源 VLA”，训练于“970k real-world robot demonstrations”。", "status": "pending"}
+{"kind": "node", "id": "20260621124458183282_80778691", "type": "Evidence", "claim": "文章明确说当前具身合成数据有视频合成加3D重建与端到端3D生成两条路线。", "status": "pending"}
+{"kind": "node", "id": "20260621124458200379_66287fb6", "type": "Evidence", "claim": "摘要写明 GO-1 是“generalist embodied foundation model”，并提出 ViLLA 架构。", "status": "pending"}
+{"kind": "node", "id": "20260621124458202631_922ee1bf", "type": "Evidence", "claim": "文章列出群核科技SpatialVerse/SpatialLM、Hillbot、NVIDIA Cosmos、Sapien/ManiSkill、ATISS、DiffuScene、Infinigen等对象。", "status": "pending"}
+{"kind": "node", "id": "20260621124458220625_74e47c90", "type": "Evidence", "claim": "摘要提到“AgiBot World & GO-1”以及“largest open-source embodied AI dataset with 1M+ trajectories”。", "status": "pending"}
+{"kind": "node", "id": "20260621124458224956_3c31fef4", "type": "Evidence", "claim": "报告强调具身智能的感知-规划-控制-执行闭环仍需突破，并把数据匮乏列为核心挑战。", "status": "pending"}
+{"kind": "node", "id": "20260621124458244789_cf0938d0", "type": "Evidence", "claim": "摘要写到 NEO uses Redwood AI for learning and repeated tasks, and early users can get basic autonomy.", "status": "pending"}
+{"kind": "node", "id": "20260621124458247564_b8fbc1d1", "type": "Evidence", "claim": "报告指出当前技术选型尚未收敛，多模式混合是主流。", "status": "pending"}
+{"kind": "node", "id": "20260621124458266640_4d3a5dce", "type": "Evidence", "claim": "摘要写明 Apptronik 与 Google DeepMind Robotics 合作，把 Gemini Robotics 引入 Apollo humanoid robot。", "status": "pending"}
+{"kind": "node", "id": "20260621124458272264_407dd3be", "type": "Evidence", "claim": "文章集中梳理了50余家代表性企业，包括优必选、宇树、银河通用、星海图、智元、逐际动力、众擎、云深处、地瓜机器人、觅蜂科技等。", "status": "pending"}
+{"kind": "node", "id": "20260621124458295672_51f559ff", "type": "Evidence", "claim": "文章写到这些企业的融资轮次、估值、业务方向和团队背景。", "status": "pending"}
+{"kind": "node", "id": "20260621124458319231_a9d85a19", "type": "Conflict", "conflict_type": "factual", "description": "不同来源对具身智能数据与采集路线的分层口径不一致：一份按三类数据划分，另一份按四层并行路线划分。", "resolution_status": "unresolved"}
+{"kind": "node", "id": "20260621124632806885_e6b323ce", "type": "SearchRun", "query_id": "20260621124212997731_1b9684f9"}
+{"kind": "node", "id": "20260621124632830059_3e033ede", "type": "Source", "source_type": "news", "title": "Figure Exceeds $1B in Series C Funding at $39B Post-Money Valuation", "url": ""}
+{"kind": "node", "id": "20260621124632846244_5b771aac", "type": "Source", "source_type": "news", "title": "Figure Raises $675M at $2.6B Valuation...", "url": ""}
+{"kind": "node", "id": "20260621124632863230_39bcda3d", "type": "Source", "source_type": "news", "title": "1X Secures $100M in Series B Funding", "url": ""}
+{"kind": "node", "id": "20260621124632880005_27215bc5", "type": "Source", "source_type": "blog", "title": "Welcoming Dar Sleeper as VP of Product & Design", "url": ""}
+{"kind": "node", "id": "20260621124632899817_5e70c71f", "type": "Source", "source_type": "news", "title": "Apptronik Closes Additional Series A Funding", "url": ""}
+{"kind": "node", "id": "20260621124632916847_3d086701", "type": "Source", "source_type": "other", "title": "Apptronik", "url": ""}
+{"kind": "node", "id": "20260621124632933427_a92c6bfb", "type": "Source", "source_type": "other", "title": "Agility Robotics", "url": ""}
+{"kind": "node", "id": "20260621124632950219_0284331f", "type": "Source", "source_type": "news", "title": "Mercado Libre and Agility Robotics Announce Commercial Agreement", "url": ""}
+{"kind": "node", "id": "20260621124632967975_cab93e07", "type": "Source", "source_type": "news", "title": "Sanctuary AI Announces Strategic Financing From BDC Capital and InBC", "url": ""}
+{"kind": "node", "id": "20260621124632987972_4e6343d4", "type": "Source", "source_type": "blog", "title": "Company and Team Update", "url": ""}
+{"kind": "node", "id": "20260621124633003971_d310cbbc", "type": "Source", "source_type": "news", "title": "Sanctuary AI Unveils Phoenix", "url": ""}
+{"kind": "node", "id": "20260621124633019616_cbb60d7d", "type": "Source", "source_type": "other", "url": ""}
+{"kind": "node", "id": "20260621124633035155_280588be", "type": "Source", "source_type": "other", "url": ""}
+{"kind": "node", "id": "20260621124633051399_f0817fb7", "type": "Document", "source_id": "20260621124632830059_3e033ede", "text": "Figure AI 于 2025 年 9 月宣布完成超过 10 亿美元 Series C，投后估值为 390 亿美元。"}
+{"kind": "node", "id": "20260621124633071831_d6c78f7f", "type": "Document", "source_id": "20260621124632846244_5b771aac", "text": "Figure AI 于 2024 年 2 月公布 6.75 亿美元 Series B，估值 26 亿美元。"}
+{"kind": "node", "id": "20260621124633087533_129c24a1", "type": "Document", "source_id": "20260621124632863230_39bcda3d", "text": "1X 于 2024 年 1 月宣布完成 1 亿美元 Series B。"}
+{"kind": "node", "id": "20260621124633104214_77ab435f", "type": "Document", "source_id": "20260621124632880005_27215bc5", "text": "1X 于 2024 年 7 月任命 Dar Sleeper 为 VP of Product & Design。"}
+{"kind": "node", "id": "20260621124633120933_68f9e7f5", "type": "Document", "source_id": "20260621124632899817_5e70c71f", "text": "Apptronik 公布 4.03 亿美元 Series A（含追加）融资，资金用于 production and deployment。"}
+{"kind": "node", "id": "20260621124633140376_98c6f18f", "type": "Document", "source_id": "20260621124632916847_3d086701", "text": "Apptronik 官方介绍中提到联合创始人/CEO 是 Jeff Cardenas，核心产品为 Apollo。"}
+{"kind": "node", "id": "20260621124633155059_ca2e0f62", "type": "Document", "source_id": "20260621124632933427_a92c6bfb", "text": "Agility Robotics 的公司信息提到 2024 年公开披露了 1.1 亿美元 Series C 追加/战略投资相关融资，强调 Jonathan Hurst 的学术创业背景，Peggy Johnson 于 2024 年出任 CEO，机器人已部署在制造、仓储、物流场景，核心产品为 Digit，并提供 Agility Arc 平台。"}
+{"kind": "node", "id": "20260621124633170702_d2eca27e", "type": "Document", "source_id": "20260621124632950219_0284331f", "text": "Mercado Libre 与 Agility Robotics 宣布达成商业协议。"}
+{"kind": "node", "id": "20260621124633192468_224b0297", "type": "Document", "source_id": "20260621124632967975_cab93e07", "text": "Sanctuary AI 于 2024 年 7 月获得 BDC Capital 和 InBC 的战略融资，累计投资超过 1.4 亿美元。"}
+{"kind": "node", "id": "20260621124633209536_31ee42ea", "type": "Document", "source_id": "20260621124632987972_4e6343d4", "text": "Company and Team Update 提到 Olivia 被正式任命为 CTO，并强调团队的 women-led 属性。"}
+{"kind": "node", "id": "20260621124633225790_28835be5", "type": "Document", "source_id": "20260621124633003971_d310cbbc", "text": "Phoenix 是 Sanctuary AI 的核心通用人形机器人，官方强调 production-ready performance，并面向现有及未来系统交付。"}
+{"kind": "node", "id": "20260621124633244503_d1a3bd2d", "type": "Document", "source_id": "20260621124633019616_cbb60d7d", "text": "Figure AI 的团队被描述为拥有超过 100 年的 combined AI & humanoid experience，创始人为 Brett Adcock；商业化方向指向 homes and commercial operations；2025 年有 Figure 03 相关发布/预告。"}
+{"kind": "node", "id": "20260621124633264718_749977c1", "type": "Document", "source_id": "20260621124633035155_280588be", "text": "1X 的商业化方向偏向 home environment / androids at commercial scale。"}
+{"kind": "node", "id": "20260621124633279837_f1698ad7", "type": "Claim", "statement": "Figure AI 于 2025 年 9 月宣布完成超过 10 亿美元 Series C，投后估值为 390 亿美元。", "status": "pending"}
+{"kind": "node", "id": "20260621124633304530_c4759148", "type": "Claim", "statement": "Figure AI 于 2024 年 2 月公布 6.75 亿美元 Series B，估值 26 亿美元。", "status": "pending"}
+{"kind": "node", "id": "20260621124633333959_96637810", "type": "Claim", "statement": "Figure AI 团队被描述为拥有超过 100 年的 combined AI & humanoid experience，创始人为 Brett Adcock。", "status": "pending"}
+{"kind": "node", "id": "20260621124633359686_4f64971d", "type": "Claim", "statement": "Figure AI 的商业化方向指向 homes and commercial operations，并推进物流/商用落地。", "status": "pending"}
+{"kind": "node", "id": "20260621124633385428_282eafda", "type": "Claim", "statement": "Figure AI 在 2025 年出现 Figure 03 相关发布/预告。", "status": "pending"}
+{"kind": "node", "id": "20260621124633414397_95c68c2c", "type": "Claim", "statement": "1X 于 2024 年 1 月宣布完成 1 亿美元 Series B。", "status": "pending"}
+{"kind": "node", "id": "20260621124633438416_fd9edfbe", "type": "Claim", "statement": "1X 于 2024 年 7 月任命 Dar Sleeper 为 VP of Product & Design。", "status": "pending"}
+{"kind": "node", "id": "20260621124633465635_b9a406fd", "type": "Claim", "statement": "1X 的商业化方向偏向 home environment / androids at commercial scale。", "status": "pending"}
+{"kind": "node", "id": "20260621124633489977_f51fcc3d", "type": "Claim", "statement": "Apptronik 公布 4.03 亿美元 Series A（含追加）融资，资金用于 production and deployment。", "status": "pending"}
+{"kind": "node", "id": "20260621124633513661_db32b740", "type": "Claim", "statement": "Apptronik 官方介绍中提到联合创始人/CEO 是 Jeff Cardenas，核心产品为 Apollo。", "status": "pending"}
+{"kind": "node", "id": "20260621124633542499_733539d1", "type": "Claim", "statement": "Agility Robotics 2024 年公开披露了 1.1 亿美元 Series C 追加/战略投资相关融资。", "status": "pending"}
+{"kind": "node", "id": "20260621124633565388_f49b7643", "type": "Claim", "statement": "Agility Robotics 的团队信息强调 Jonathan Hurst 的学术创业背景，Peggy Johnson 于 2024 年出任 CEO。", "status": "pending"}
+{"kind": "node", "id": "20260621124633593367_8f037806", "type": "Claim", "statement": "Agility Robotics 的机器人已部署在制造、仓储、物流场景。", "status": "pending"}
+{"kind": "node", "id": "20260621124633617489_c69e59e4", "type": "Claim", "statement": "Agility Robotics 的核心产品为 Digit，并推出 Agility Arc 平台。", "status": "pending"}
+{"kind": "node", "id": "20260621124633647939_b63eb617", "type": "Claim", "statement": "Mercado Libre 与 Agility Robotics 宣布达成商业协议。", "status": "pending"}
+{"kind": "node", "id": "20260621124633673135_1ee4b2e6", "type": "Claim", "statement": "Sanctuary AI 于 2024 年 7 月获得 BDC Capital 和 InBC 的战略融资，累计投资超过 1.4 亿美元。", "status": "pending"}
+{"kind": "node", "id": "20260621124633697434_5b857389", "type": "Claim", "statement": "Sanctuary AI 在团队更新中任命 Olivia 为 CTO，并将团队描述为 women-led。", "status": "pending"}
+{"kind": "node", "id": "20260621124633732201_fdb4fe61", "type": "Claim", "statement": "Phoenix 是 Sanctuary AI 的核心通用人形机器人，官方强调 production-ready performance，并面向现有及未来系统交付。", "status": "pending"}
+{"kind": "node", "id": "20260621124633755367_d488dfca", "type": "Evidence", "claim": "2025 年 9 月公布超过 10 亿美元 Series C，估值 390 亿美元。", "status": "pending"}
+{"kind": "node", "id": "20260621124633792742_88b9c506", "type": "Evidence", "claim": "2024 年 2 月公布 6.75 亿美元 Series B，估值 26 亿美元。", "status": "pending"}
+{"kind": "node", "id": "20260621124633824219_8f0839e7", "type": "Evidence", "claim": "团队被描述为拥有超过 100 年的 combined AI & humanoid experience，创始人为 Brett Adcock。", "status": "pending"}
+{"kind": "node", "id": "20260621124633858769_4b4bf00b", "type": "Evidence", "claim": "商业化方向指向 homes and commercial operations，并持续推进物流/商用落地。", "status": "pending"}
+{"kind": "node", "id": "20260621124633891321_4c8f7aa1", "type": "Evidence", "claim": "2025 年出现 Figure 03 相关发布/预告信息，指向人形机器人平台迭代。", "status": "pending"}
+{"kind": "node", "id": "20260621124633926170_91800dea", "type": "Evidence", "claim": "2024 年 1 月宣布完成 1 亿美元 Series B。", "status": "pending"}
+{"kind": "node", "id": "20260621124633962157_373cec9b", "type": "Evidence", "claim": "2024 年 7 月任命 Dar Sleeper 为 VP of Product & Design。", "status": "pending"}
+{"kind": "node", "id": "20260621124633993884_20297d22", "type": "Evidence", "claim": "商业化方向偏向 home environment / androids at commercial scale。", "status": "pending"}
+{"kind": "node", "id": "20260621124634031807_6a7695f5", "type": "Evidence", "claim": "公布 4.03 亿美元 Series A（含追加）融资，资金用于 production and deployment。", "status": "pending"}
+{"kind": "node", "id": "20260621124634063781_858cbeaf", "type": "Evidence", "claim": "官方介绍中提到联合创始人/CEO 是 Jeff Cardenas，核心产品为 Apollo。", "status": "pending"}
+{"kind": "node", "id": "20260621124634098938_15550884", "type": "Evidence", "claim": "2024 年公开披露了 1.1 亿美元 Series C 追加/战略投资相关融资。", "status": "pending"}
+{"kind": "node", "id": "20260621124634131876_f97f6b35", "type": "Evidence", "claim": "团队信息强调 Jonathan Hurst 的学术创业背景，Peggy Johnson 于 2024 年出任 CEO。", "status": "pending"}
+{"kind": "node", "id": "20260621124634165189_c432ef29", "type": "Evidence", "claim": "机器人已部署在制造、仓储、物流场景。", "status": "pending"}
+{"kind": "node", "id": "20260621124634200641_81f80fa9", "type": "Evidence", "claim": "核心产品为 Digit，并推出 Agility Arc 平台。", "status": "pending"}
+{"kind": "node", "id": "20260621124634234550_61729337", "type": "Evidence", "claim": "Mercado Libre 与 Agility Robotics 宣布达成商业协议。", "status": "pending"}
+{"kind": "node", "id": "20260621124634270251_eb88ce72", "type": "Evidence", "claim": "2024 年 7 月获得 BDC Capital 和 InBC 的战略融资，累计投资超过 1.4 亿美元。", "status": "pending"}
+{"kind": "node", "id": "20260621124634301224_d46288ed", "type": "Evidence", "claim": "任命 Olivia 为 CTO，并将团队描述为 women-led。", "status": "pending"}
+{"kind": "node", "id": "20260621124634339945_c5e0f4f8", "type": "Evidence", "claim": "Phoenix 是核心通用人形机器人，官方强调 production-ready performance，并面向现有及未来系统交付。", "status": "pending"}
+{"kind": "node", "id": "20260621125529616520_4795e395", "type": "ReportSection", "title": "一、先给结论", "content": "- 目前全球具身智能并不是“单一路线胜出”，而是一个分层堆栈：本体平台/控制栈、数据采集与仿真、VLA/机器人基础模型、世界模型与空间生成共同推进；不同公司通常只是在其中一层或两层形成强项。[1][2][3][4]\n- 如果按“商业化成熟度”看，最先落地的是仓储/工业/物流等垂直场景机器人；如果按“技术热度”看，VLA/机器人基础模型是当前最活跃方向；如果按“基础设施价值”看，数据采集、遥操作、仿真和合成数据是绕不开的底座。[2][5][6][3]\n- 全球头部玩家主要集中在北美和中国，欧洲有 1X 等代表，但日本、韩国、拉美等区域在本次证据集中覆盖不足，说明“全球”更像是“北美+中国主导、欧洲补位”的格局。[1][2][7][8]"}
+{"kind": "node", "id": "20260621125529824722_da136254", "type": "ReportSection", "title": "二、如何统一看待技术路线", "content": "我建议用一个更实用的四层分类，来消解“3 分法 vs 4 分法”的口径冲突：\n\n1. 本体平台层：做人形、轮式、机械臂等硬件本体与运动控制。\n2. 数据与训练层：真机遥操、动作采集、仿真、合成数据、训练场。\n3. 机器人基础模型层：VLA、模仿学习、策略模型、多模态端到端控制。\n4. 世界模型/空间生成层：3D 场景生成、空间理解、预测与规划。\n\n这个分类的好处是：公司可以跨层布局，不必被单一标签限制；例如 Figure、AgiBot、NVIDIA、Google DeepMind 都同时触及多层，只是侧重点不同。[1][2][9][10][11][12][4]"}
+{"kind": "node", "id": "20260621125529907516_f9ffc420", "type": "ReportSection", "title": "1）本体平台路线：最接近工程化，但通用性还不够", "content": "这条路线的核心是先把“身体”做出来，再逐步叠加智能。优点是工程路径清晰、容易做演示和行业试点；缺点是硬件成本高、可靠性要求高、通用能力弱，容易陷入“能跑会走但不好用”。[1][2]\n\n代表公司：\n- Figure AI：以人形机器人平台叠加 Helix VLA，目标是通用任务执行。产品已经公开到 Helix 这一代模型，并持续推进人形本体；商业化上更偏仓储/家庭/商业操作的早期验证，仍处试点和合作阶段。融资方面是 2024-2025 年最受关注的高融资公司之一；团队以 Brett Adcock 为核心，强项是机器人产品化和资本整合。[11]\n- Apptronik：Apollo 是其主线产品，强调物流、制造等场景；2025 年与 Google DeepMind Robotics 的合作强化了“本体 + 基础模型”路径。商业化仍在试点/合作推进阶段，但已经进入明确的产业客户验证。融资为数亿美元级别的公开热度公司；团队来自 UT Austin 机器人研究积累。[13]\n- Agility Robotics：Digit 是仓储/物流方向的代表，商业化进展相对更实；公开资料显示其已进入制造、仓储与物流部署，并有明确商业合作信号。融资和产能建设都围绕“交付能力”展开，团队长期深耕腿足机器人。[2]\n- 1X：NEO Home Robot 代表家庭/服务场景路线，更强调“家用可用性”而非纯工业。产品已公开发布，商业化仍处非常早期，融资以战略资本和长期布局为主；团队带有欧洲机器人创业背景。[7]\n- Sanctuary AI：Phoenix 与 Carbon 控制系统强调“通用工作机器人”，定位偏工业/企业。产品与演示进展较活跃，商业化仍以试点和展示为主；团队层面有 CTO 调整和公司更新，说明其正处于快速迭代阶段。[8][14]\n- 中国阵营（智元机器人、宇树、优必选、傅利叶等）：整体以本体、运动控制、行业交付见长，正在叠加大模型、遥操和数据闭环。当前更多是“可交付本体 + 场景化应用”路线，商业化比纯基础模型更接近落地，但通用智能还在推进中。[1][2][3]\n\n这条路线的阶段判断：工程化最成熟，商业化最先跑出来，但“通用性”仍是最大短板。[1][2]"}
+{"kind": "node", "id": "20260621125529995460_3f71dec9", "type": "ReportSection", "title": "2）VLA / 机器人基础模型路线：当前最热，但还在验证期", "content": "这条路线试图把视觉、语言、动作统一到一个策略模型里，让机器人通过自然语言和多模态输入直接学会任务。优点是泛化潜力大、能跨任务迁移；缺点是数据需求极高，安全性、实时性和长尾任务仍难。[9][10][11][5][15][6][16][12]\n\n代表公司/项目：\n- Google DeepMind：Gemini Robotics 1.5 明确把“AI agent 带入物理世界”，说明大厂在把通用多模态模型向机器人控制延伸。产品进度已经从研究走向模型发布；商业化更多体现在平台/合作伙伴生态，而不是直接卖机器人本体。[17][9]\n- NVIDIA：Isaac GR00T N1 是开放式人形机器人基础模型，核心是给整个生态提供训练和部署底座。商业化上 NVIDIA 更像“卖铲子”，靠芯片、软件栈和平台能力变现，本身不做终端机器人交付。[10]\n- Figure AI：Helix 是典型的 VLA 方向，强调通用人形操作能力。它把“人形本体”和“基础模型”深度绑定，是当前最受关注的样板之一。[11]\n- Physical Intelligence：π0 是面向通用机器人控制的基础模型代表，偏 manipulation-first。产品更像研究驱动的通用策略模型，还未进入大规模终端商业化，但在技术路线层面影响力很强。[5][15]\n- Covariant：RFM-1 主要面向仓储机器人推理与操作，属于“垂直场景 VLA/基础模型”。商业化更贴近仓储和物流，因此比纯通用机器人更容易验证价值。[6]\n- OpenVLA：开源路线，价值在于建立通用基线和生态，产品化不是其主诉求，但对行业研究和二次开发意义很大。[16]\n- AgiBot：GO-1 从 VLA 进一步走向 ViLLA，说明中国公司也在尝试把基础模型和本体闭环打通。它的特点是“研究 + 产品”并行，既做模型也做机器人平台。[12][18]\n\n这条路线的阶段判断：技术前沿、热度最高，但仍处于“模型能力快速上升、商业闭环尚未稳定”的阶段。[17][10][11][5][16][12]"}
+{"kind": "node", "id": "20260621125530115866_78a63c6f", "type": "ReportSection", "title": "3）数据采集 / 远程操控 / 仿真训练路线：最关键的底座", "content": "具身智能的瓶颈不是只靠更大的模型，而是高质量动作数据太少、太贵、太慢。因此数据采集、遥操作、仿真和合成数据是整个行业的“隐形主线”。[3][4]\n\n代表性方向与公司：\n- NVIDIA：除了 GR00T，也在推动世界模型/合成数据能力，属于“算力 + 仿真 + 训练工具”一体化供给方。[10]\n- 群核科技：公开资料中其 SpatialLM / SpatialVerse 被视为“空间数据/合成数据”代表，强调从空间理解和 3D 数据生成支撑机器人训练。[4]\n- Figure / 1X / Apptronik / AgiBot：这些公司都在不同程度上构建遥操作、数据采集和本体交互闭环，虽然对外宣传重点不同，但底层都离不开数据引擎。[11][12][7][13]\n- 训练场/数据工厂：2025 年行业白皮书提到北京、上海等地加快建设具身智能数据采集训练场，说明“数据基础设施”已从概念变成产业建设。[3]\n\n这条路线的阶段判断：作为基础设施最成熟、最确定；作为独立商业模式还在成型，但战略价值很高。[3][4]"}
+{"kind": "node", "id": "20260621125530189089_828c175c", "type": "ReportSection", "title": "4）世界模型 / 空间生成路线：最前沿，但仍偏研究", "content": "世界模型试图让机器人先“想象”物理世界，再做决策。它的目标不是单次动作，而是对环境、后果和长期规划做预测。优点是有望提升长程规划和泛化；缺点是物理一致性、语义结构、数据规模和评估标准都还不成熟。[1][4]\n\n代表性信号：\n- Google DeepMind 的相关工作、NVIDIA 的 Cosmos/世界模型思路，以及李飞飞相关研究都在推动这一方向。\n- 量子位文章对“合成重建 vs 全端生成”做了很好的拆解，说明空间数据本身也在快速演化，行业还没有统一最优解。[4]\n\n这条路线的阶段判断：离大规模商业化最远，但长期潜力大，可能成为下一阶段具身智能的“认知层”。[1][4]"}
+{"kind": "node", "id": "20260621125530224361_4aad9352", "type": "ReportSection", "title": "A. 机器人基础模型 / VLA", "content": "- Figure AI：Helix；人形+VLA 深度绑定；商业化偏仓储/家庭早期验证；融资热度极高；团队以 Brett Adcock 为核心。[11]\n- Google DeepMind：Gemini Robotics 1.5；偏平台和生态；商业化通过合作伙伴放大。[17][9]\n- NVIDIA：Isaac GR00T N1；基础设施和工具链；商业化靠平台。[10]\n- Physical Intelligence：π0；通用控制模型；仍偏研究与早期产品化。[5][15]\n- Covariant：RFM-1；仓储机器人推理；商业化贴近物流场景。[6]\n- OpenVLA：开源基线；生态价值大于直接商业化。[16]\n- AgiBot：GO-1 / ViLLA；国内少数同时做模型与本体的玩家。[12][18]"}
+{"kind": "node", "id": "20260621125530330651_a4073798", "type": "ReportSection", "title": "B. 人形/通用机器人平台", "content": "- Apptronik：Apollo；制造/物流试点较明确；与 DeepMind 合作增强模型能力。[13]\n- Agility Robotics：Digit；仓储/物流商业化进展更快。[2]\n- 1X：NEO Home Robot；家庭场景方向，仍早期。[7]\n- Sanctuary AI：Phoenix；工业/企业工作机器人；产品和团队都在快速迭代。[8][14]\n- 中国公司：智元、宇树、优必选、傅利叶等；本体与场景交付较强，正向具身大模型叠加。[1][2][3]"}
+{"kind": "node", "id": "20260621125530415527_bf02c498", "type": "ReportSection", "title": "C. 数据/仿真/空间生成", "content": "- NVIDIA：训练、仿真、世界模型工具链最完整。[10]\n- 群核科技：SpatialLM / SpatialVerse 是空间数据路线的代表。[4]\n- 训练场与数据工厂：北京/上海等地的产业化基础设施在加速成形。[3]"}
+{"kind": "node", "id": "20260621125530458464_6cc6f34e", "type": "ReportSection", "title": "五、各路线的优缺点", "content": "- 本体平台路线优点是“能卖、能演示、能落地”；缺点是硬件贵、维护难、通用性弱。[1][2]\n- VLA/基础模型路线优点是“泛化潜力最大”；缺点是数据稀缺、实时控制难、安全验证难。[9][10][5][16]\n- 数据/仿真路线优点是“决定上限且可规模化”；缺点是 sim2real gap 仍然明显，数据质量比数量更重要。[3][4]\n- 世界模型路线优点是“可能解决长时序规划”；缺点是离产品化最远，仍以研究为主。[1][4]"}
+{"kind": "node", "id": "20260621125530540650_89a0efac", "type": "ReportSection", "title": "六、当前发展阶段判断", "content": "- 最成熟：仓储、物流、工业搬运、简单抓取等垂直场景机器人。[2][6][13]\n- 正在放量：人形机器人平台 + 任务模型的试点阶段，开始出现明确合作客户和演示闭环。[11][7][8]\n- 最热研发前沿：VLA / 机器人基础模型。[17][10][5][16][12]\n- 最长期的底层方向：世界模型、空间生成、合成数据闭环。[3][4]"}
+{"kind": "node", "id": "20260621125530679844_ab779d17", "type": "ReportSection", "title": "七、你在看全球具身智能时，最该关注的 5 个指标", "content": "- 是否有稳定的数据闭环，而不是只会做 demo。[3][4]\n- 是否能跨任务泛化，而不是单一场景脚本化执行。[9][5][16]\n- 是否已经进入真实客户试点，而不是停留在发布会。[2][13][8]\n- 是否具备可持续融资和人才吸引力。[11][15][7][14]\n- 是否在“本体、数据、模型、世界模型”四层中占住至少两层。[1][2][10][12]"}
+{"kind": "node", "id": "20260621125530833802_31df8cac", "type": "ReportSection", "title": "八、局限说明", "content": "- 本次证据集对北美和中国覆盖较强，对欧洲、日本、韩国等区域覆盖不足，因此“全球”维度仍偏头部样本主导。[1][2]\n- 部分公司融资金额、交付数量、客户名称在公开证据中并不统一，我在上面尽量用“阶段性、方向性”表述，避免把不一致数据写死。\n- 具身智能路线仍在快速变化，今天看起来是“VLA + 人形 + 数据工厂”的组合，未来也可能被更强的世界模型或更成熟的垂直产品路径重写。[1][3][4]"}
+{"kind": "node", "id": "20260621125530881181_2022c369", "type": "ReportSection", "title": "参考资料", "content": "[1] [PDF] 具身智能发展报告 - 中国信息通信研究院\nhttp://www.caict.ac.cn/kxyj/qwfb/bps/202601/P020260130541978285206.pdf\n\n[2] [PDF] 具身智能发展报告 - 北京人形机器人创新中心\nhttps://x-humanoid.com/storage/website/2025/01-14/6785fd2145c36-1-27438.pdf\n\n[17] The latest AI news we announced in March - Google Blog\nhttps://blog.google/innovation-and-ai/products/google-ai-updates-march-2025/\n\n[9] Gemini Robotics 1.5 を発表、AI エージェントを物理世界に\nhttps://blog.google/intl/ja-jp/company-news/technology/gemini-robotics-15-ai/\n\n[10] NVIDIA Isaac GR00T N1: An Open Foundation Model for Humanoid Robots\nhttps://research.nvidia.com/publication/2025-03_nvidia-isaac-gr00t-n1-open-foundation-model-humanoid-robots\n\n[11] Helix: A Vision-Language-Action Model for Generalist Humanoid Robots\nhttps://www.figure.ai/news/helix\n\n[5] Vision-Language-Action Models for General Robot Control\nhttps://huggingface.co/blog/pi0\n\n[15] Physical Intelligence (π)\nhttps://www.pi.website/\n\n[6] Covariant introduces RFM-1 to give robots the human-like ability to reason\nhttps://covariant.ai/covariant-introduces-rfm-1-to-give-robots-the-human-like-ability-to-reason/\n\n[16] OpenVLA: An Open-Source Vision-Language-Action Model\nhttps://arxiv.org/abs/2406.09246\n\n[12] AgiBot GO-1: The Evolution of Generalist Embodied Foundation Model from VLA to ViLLA\nhttps://agibot-world.com/blog/go1\n\n[18] AgiBot Research\nhttps://www.agibot.com/research\n\n[7] NEO Home Robot\nhttps://www.1x.tech/neo\n\n[13] Apptronik Partners with Google DeepMind Robotics\nhttps://apptronik.com/news-collection/apptronik-partners-with-google-deepmind-robotics\n\n[8] Sanctuary AI Unveils Phoenix™ - A Humanoid General-Purpose Robot Designed for Work\nhttps://sanctuary.ai/news/sanctuary-ai-unveils-phoenix-a-humanoid-general-purpose-robot-designed-for-work/\n\n[14] Company and Team Update - Sanctuary AI\nhttps://www.sanctuary.ai/blog/company-and-team-update\n\n[3] 2025商用具身智能白皮书\nhttps://pdf.dfcfw.com/pdf/H3_AP202512031793353788_1.pdf?1764833841000.pdf=\n\n[4] 具身空间数据技术的路线之争：合成重建VS全端生成 – 量子位\nhttps://www.qbitai.com/2025/04/275178.html\n\n如果你愿意，我下一步可以把这份内容再整理成一个更适合汇报用的版本：一页结论版，或者做成“公司/路线/融资/进度”的对照表。"}
+{"kind": "edge", "source": "20260621124211969595_acd1246b", "target": "20260621124212997731_1b9684f9", "type": "HAS_QUERY"}
+{"kind": "edge", "source": "20260621124211969595_acd1246b", "target": "20260621124212969497_c3df378f", "type": "HAS_QUERY"}
+{"kind": "edge", "source": "20260621124211969595_acd1246b", "target": "20260621124212942513_cbccb4c2", "type": "HAS_QUERY"}
+{"kind": "edge", "source": "20260621124211969595_acd1246b", "target": "20260621124212909504_2aea8a28", "type": "HAS_QUERY"}
+{"kind": "edge", "source": "20260621124211969595_acd1246b", "target": "20260621124212676134_2a0f78bb", "type": "HAS_QUERY"}
+{"kind": "edge", "source": "20260621124212676134_2a0f78bb", "target": "20260621124434202658_70dc47b2", "type": "SEARCHED_BY"}
+{"kind": "edge", "source": "20260621124212909504_2aea8a28", "target": "20260621124457352957_a1946015", "type": "SEARCHED_BY"}
+{"kind": "edge", "source": "20260621124212942513_cbccb4c2", "target": "20260621124413831187_69479f9e", "type": "SEARCHED_BY"}
+{"kind": "edge", "source": "20260621124212969497_c3df378f", "target": "20260621124457629904_3b367589", "type": "SEARCHED_BY"}
+{"kind": "edge", "source": "20260621124212997731_1b9684f9", "target": "20260621124632806885_e6b323ce", "type": "SEARCHED_BY"}
+{"kind": "edge", "source": "20260621124413831187_69479f9e", "target": "20260621124414182693_a3d89440", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124413831187_69479f9e", "target": "20260621124414160046_879f5b3d", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124413831187_69479f9e", "target": "20260621124414134354_443aec21", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124413831187_69479f9e", "target": "20260621124414111973_291ca4ea", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124413831187_69479f9e", "target": "20260621124414088626_64ed566a", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124413831187_69479f9e", "target": "20260621124413983150_b1e535e2", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124413983150_b1e535e2", "target": "20260621124434974723_fb0e08f0", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124413983150_b1e535e2", "target": "20260621124434934207_85e4e348", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124413983150_b1e535e2", "target": "20260621124434663852_e4a6cffa", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124413983150_b1e535e2", "target": "20260621124434484538_0bdfd9ef", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124413983150_b1e535e2", "target": "20260621124414691668_6d1ff0a5", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124413983150_b1e535e2", "target": "20260621124414407656_c3156c33", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124413983150_b1e535e2", "target": "20260621124414201496_d4ba0953", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124414088626_64ed566a", "target": "20260621124414797595_ef5b069d", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124414088626_64ed566a", "target": "20260621124414539210_21f34b60", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124414088626_64ed566a", "target": "20260621124414296578_9f0ac8e3", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124414111973_291ca4ea", "target": "20260621124414840232_fd25fd83", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124414111973_291ca4ea", "target": "20260621124414572211_4335fdb9", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124414111973_291ca4ea", "target": "20260621124414320213_781a3a22", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124414134354_443aec21", "target": "20260621124414883448_c3fefdc7", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124414134354_443aec21", "target": "20260621124414601592_c5028111", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124414134354_443aec21", "target": "20260621124414339970_e7e64795", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124414160046_879f5b3d", "target": "20260621124414925095_d04d1552", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124414160046_879f5b3d", "target": "20260621124414635118_1916638f", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124414160046_879f5b3d", "target": "20260621124414360782_0565c3c4", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124414182693_a3d89440", "target": "20260621124414971405_47cf1f3c", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124414182693_a3d89440", "target": "20260621124414663595_2562fc0a", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124414182693_a3d89440", "target": "20260621124414387630_10843d39", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124414201496_d4ba0953", "target": "20260621124414691668_6d1ff0a5", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124414201496_d4ba0953", "target": "20260621124414407656_c3156c33", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124414296578_9f0ac8e3", "target": "20260621124414797595_ef5b069d", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124414296578_9f0ac8e3", "target": "20260621124414539210_21f34b60", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124414320213_781a3a22", "target": "20260621124414840232_fd25fd83", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124414320213_781a3a22", "target": "20260621124414572211_4335fdb9", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124414339970_e7e64795", "target": "20260621124414883448_c3fefdc7", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124414339970_e7e64795", "target": "20260621124414601592_c5028111", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124414360782_0565c3c4", "target": "20260621124414925095_d04d1552", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124414360782_0565c3c4", "target": "20260621124414635118_1916638f", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124414387630_10843d39", "target": "20260621124414971405_47cf1f3c", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124414387630_10843d39", "target": "20260621124414663595_2562fc0a", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124414691668_6d1ff0a5", "target": "20260621124414407656_c3156c33", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124414797595_ef5b069d", "target": "20260621124414539210_21f34b60", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124414840232_fd25fd83", "target": "20260621124414572211_4335fdb9", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124414883448_c3fefdc7", "target": "20260621124414601592_c5028111", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124414925095_d04d1552", "target": "20260621124414635118_1916638f", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124414971405_47cf1f3c", "target": "20260621124414663595_2562fc0a", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124434202658_70dc47b2", "target": "20260621124434461533_dfa54378", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124434202658_70dc47b2", "target": "20260621124434442924_f7c0926b", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124434202658_70dc47b2", "target": "20260621124434423581_29a2c4da", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124434202658_70dc47b2", "target": "20260621124434397203_78126983", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124434202658_70dc47b2", "target": "20260621124434365520_3dd4cdea", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124434202658_70dc47b2", "target": "20260621124434345745_8f9fb0a3", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124434202658_70dc47b2", "target": "20260621124434286913_30e8c466", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124434202658_70dc47b2", "target": "20260621124434261693_6ce4ca3b", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124434202658_70dc47b2", "target": "20260621124413983150_b1e535e2", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124434261693_6ce4ca3b", "target": "20260621124435053473_af685dc8", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124434261693_6ce4ca3b", "target": "20260621124435013353_4799e80e", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124434261693_6ce4ca3b", "target": "20260621124434694834_29893e33", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124434261693_6ce4ca3b", "target": "20260621124434503317_b083dd67", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124434286913_30e8c466", "target": "20260621124435133577_cfdae85d", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124434286913_30e8c466", "target": "20260621124435088077_5ee97daa", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124434286913_30e8c466", "target": "20260621124434722862_1a3eff1e", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124434286913_30e8c466", "target": "20260621124434520003_c23d8157", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124434345745_8f9fb0a3", "target": "20260621124435206459_0797bdd7", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124434345745_8f9fb0a3", "target": "20260621124435168511_8244f14e", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124434345745_8f9fb0a3", "target": "20260621124434750775_2b90e0a9", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124434345745_8f9fb0a3", "target": "20260621124434541799_f6a6e166", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124434365520_3dd4cdea", "target": "20260621124435279676_0f28bf20", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124434365520_3dd4cdea", "target": "20260621124435245107_e2ca4135", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124434365520_3dd4cdea", "target": "20260621124434783815_a012f1a3", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124434365520_3dd4cdea", "target": "20260621124434559792_77e4284e", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124434397203_78126983", "target": "20260621124435318491_4e3e02e6", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124434397203_78126983", "target": "20260621124434817401_3355d101", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124434397203_78126983", "target": "20260621124434584272_03b311b0", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124434423581_29a2c4da", "target": "20260621124435353579_74844ec9", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124434423581_29a2c4da", "target": "20260621124434847700_db21c815", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124434423581_29a2c4da", "target": "20260621124434603140_fdbf5269", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124434442924_f7c0926b", "target": "20260621124435393170_9b72639a", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124434442924_f7c0926b", "target": "20260621124434876338_7bf844db", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124434442924_f7c0926b", "target": "20260621124434626753_e041e4e3", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124434461533_dfa54378", "target": "20260621124435429952_f30615fc", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124434461533_dfa54378", "target": "20260621124434908200_1a6248f3", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124434461533_dfa54378", "target": "20260621124434645912_80b3a09e", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124434484538_0bdfd9ef", "target": "20260621124434974723_fb0e08f0", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124434484538_0bdfd9ef", "target": "20260621124434934207_85e4e348", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124434484538_0bdfd9ef", "target": "20260621124434663852_e4a6cffa", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124434503317_b083dd67", "target": "20260621124435053473_af685dc8", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124434503317_b083dd67", "target": "20260621124435013353_4799e80e", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124434503317_b083dd67", "target": "20260621124434694834_29893e33", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124434520003_c23d8157", "target": "20260621124435133577_cfdae85d", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124434520003_c23d8157", "target": "20260621124435088077_5ee97daa", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124434520003_c23d8157", "target": "20260621124434722862_1a3eff1e", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124434541799_f6a6e166", "target": "20260621124435206459_0797bdd7", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124434541799_f6a6e166", "target": "20260621124435168511_8244f14e", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124434541799_f6a6e166", "target": "20260621124434750775_2b90e0a9", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124434559792_77e4284e", "target": "20260621124435279676_0f28bf20", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124434559792_77e4284e", "target": "20260621124435245107_e2ca4135", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124434559792_77e4284e", "target": "20260621124434783815_a012f1a3", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124434584272_03b311b0", "target": "20260621124435318491_4e3e02e6", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124434584272_03b311b0", "target": "20260621124434817401_3355d101", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124434603140_fdbf5269", "target": "20260621124435353579_74844ec9", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124434603140_fdbf5269", "target": "20260621124434847700_db21c815", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124434626753_e041e4e3", "target": "20260621124435393170_9b72639a", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124434626753_e041e4e3", "target": "20260621124434876338_7bf844db", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124434645912_80b3a09e", "target": "20260621124435429952_f30615fc", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124434645912_80b3a09e", "target": "20260621124434908200_1a6248f3", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124434934207_85e4e348", "target": "20260621124434663852_e4a6cffa", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124434974723_fb0e08f0", "target": "20260621124434663852_e4a6cffa", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124435013353_4799e80e", "target": "20260621124434694834_29893e33", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124435053473_af685dc8", "target": "20260621124434694834_29893e33", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124435088077_5ee97daa", "target": "20260621124434722862_1a3eff1e", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124435133577_cfdae85d", "target": "20260621124434722862_1a3eff1e", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124435168511_8244f14e", "target": "20260621124434750775_2b90e0a9", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124435206459_0797bdd7", "target": "20260621124434750775_2b90e0a9", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124435245107_e2ca4135", "target": "20260621124434783815_a012f1a3", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124435279676_0f28bf20", "target": "20260621124434783815_a012f1a3", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124435318491_4e3e02e6", "target": "20260621124434817401_3355d101", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124435353579_74844ec9", "target": "20260621124434847700_db21c815", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124435393170_9b72639a", "target": "20260621124434876338_7bf844db", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124435429952_f30615fc", "target": "20260621124434908200_1a6248f3", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124435468507_f90d01f3", "target": "20260621124435318491_4e3e02e6", "type": "HAS_CONFLICT"}
+{"kind": "edge", "source": "20260621124435468507_f90d01f3", "target": "20260621124434934207_85e4e348", "type": "HAS_CONFLICT"}
+{"kind": "edge", "source": "20260621124457352957_a1946015", "target": "20260621124457510993_10e2c06d", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124457352957_a1946015", "target": "20260621124457497825_0ee0aa30", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124457352957_a1946015", "target": "20260621124457484764_af49dd3d", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124457352957_a1946015", "target": "20260621124457472276_a6797c66", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124457352957_a1946015", "target": "20260621124457459633_db6a857c", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124457352957_a1946015", "target": "20260621124457446643_99dc1d98", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124457352957_a1946015", "target": "20260621124457434351_0bcf2c48", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124457352957_a1946015", "target": "20260621124457421579_ee51778e", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124457352957_a1946015", "target": "20260621124457407548_64e718dd", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124457352957_a1946015", "target": "20260621124457395786_280b0a8a", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124457352957_a1946015", "target": "20260621124457380400_5cfeac76", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124457352957_a1946015", "target": "20260621124457367844_1e0c01d3", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124457367844_1e0c01d3", "target": "20260621124457985616_00e24e55", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457367844_1e0c01d3", "target": "20260621124457687569_3b839c1e", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457367844_1e0c01d3", "target": "20260621124457527197_5b17d443", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124457380400_5cfeac76", "target": "20260621124458006604_d7670f20", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457380400_5cfeac76", "target": "20260621124457706103_b6788066", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457380400_5cfeac76", "target": "20260621124457542910_a7d9240f", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124457395786_280b0a8a", "target": "20260621124458048386_bf680602", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457395786_280b0a8a", "target": "20260621124458026314_efcfb733", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457395786_280b0a8a", "target": "20260621124457743458_ed701f78", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457395786_280b0a8a", "target": "20260621124457726576_21acd64e", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457395786_280b0a8a", "target": "20260621124457555117_758b9735", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124457407548_64e718dd", "target": "20260621124458093553_23f9575c", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457407548_64e718dd", "target": "20260621124458073389_f00e16b3", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457407548_64e718dd", "target": "20260621124457777107_90d1e93c", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457407548_64e718dd", "target": "20260621124457759504_68260342", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457407548_64e718dd", "target": "20260621124457568335_bc691793", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124457421579_ee51778e", "target": "20260621124458115002_bad55331", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457421579_ee51778e", "target": "20260621124457797234_9f1a6606", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457421579_ee51778e", "target": "20260621124457582087_04d979be", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124457434351_0bcf2c48", "target": "20260621124458137952_691a00d1", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457434351_0bcf2c48", "target": "20260621124457824866_a135cc1c", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457434351_0bcf2c48", "target": "20260621124457594353_9af08ea4", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124457446643_99dc1d98", "target": "20260621124458159355_2296e761", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457446643_99dc1d98", "target": "20260621124457873361_424711d3", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457446643_99dc1d98", "target": "20260621124457605043_73291b75", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124457459633_db6a857c", "target": "20260621124458180572_330ff39c", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457459633_db6a857c", "target": "20260621124457896629_84ce3ac9", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457459633_db6a857c", "target": "20260621124457617808_4fd18815", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124457472276_a6797c66", "target": "20260621124458200379_66287fb6", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457472276_a6797c66", "target": "20260621124457914466_a28982a8", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457472276_a6797c66", "target": "20260621124457632304_1973dec6", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124457484764_af49dd3d", "target": "20260621124458220625_74e47c90", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457484764_af49dd3d", "target": "20260621124457934551_cad1ec2b", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457484764_af49dd3d", "target": "20260621124457645206_05ea3103", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124457497825_0ee0aa30", "target": "20260621124458244789_cf0938d0", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457497825_0ee0aa30", "target": "20260621124457950335_18c40bfa", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457497825_0ee0aa30", "target": "20260621124457658071_8b6faf32", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124457510993_10e2c06d", "target": "20260621124458266640_4d3a5dce", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457510993_10e2c06d", "target": "20260621124457966524_0da89b4f", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457510993_10e2c06d", "target": "20260621124457669689_76c12875", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124457527197_5b17d443", "target": "20260621124457985616_00e24e55", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124457527197_5b17d443", "target": "20260621124457687569_3b839c1e", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124457542910_a7d9240f", "target": "20260621124458006604_d7670f20", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124457542910_a7d9240f", "target": "20260621124457706103_b6788066", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124457555117_758b9735", "target": "20260621124458048386_bf680602", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124457555117_758b9735", "target": "20260621124458026314_efcfb733", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124457555117_758b9735", "target": "20260621124457743458_ed701f78", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124457555117_758b9735", "target": "20260621124457726576_21acd64e", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124457568335_bc691793", "target": "20260621124458093553_23f9575c", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124457568335_bc691793", "target": "20260621124458073389_f00e16b3", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124457568335_bc691793", "target": "20260621124457777107_90d1e93c", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124457568335_bc691793", "target": "20260621124457759504_68260342", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124457582087_04d979be", "target": "20260621124458115002_bad55331", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124457582087_04d979be", "target": "20260621124457797234_9f1a6606", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124457594353_9af08ea4", "target": "20260621124458137952_691a00d1", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124457594353_9af08ea4", "target": "20260621124457824866_a135cc1c", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124457605043_73291b75", "target": "20260621124458159355_2296e761", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124457605043_73291b75", "target": "20260621124457873361_424711d3", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124457617808_4fd18815", "target": "20260621124458180572_330ff39c", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124457617808_4fd18815", "target": "20260621124457896629_84ce3ac9", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124457629904_3b367589", "target": "20260621124457722419_32edbe17", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124457629904_3b367589", "target": "20260621124457705568_c4501717", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124457629904_3b367589", "target": "20260621124457691446_d00ac8ed", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124457629904_3b367589", "target": "20260621124457674821_0b9144bb", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124457629904_3b367589", "target": "20260621124457659680_61726108", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124457629904_3b367589", "target": "20260621124457642844_85aaba16", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124457632304_1973dec6", "target": "20260621124458200379_66287fb6", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124457632304_1973dec6", "target": "20260621124457914466_a28982a8", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124457642844_85aaba16", "target": "20260621124458075240_3882fb55", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457642844_85aaba16", "target": "20260621124458054854_62841951", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457642844_85aaba16", "target": "20260621124457834360_50d78362", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457642844_85aaba16", "target": "20260621124457803366_71e6f480", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457642844_85aaba16", "target": "20260621124457732426_88e9de87", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124457645206_05ea3103", "target": "20260621124458220625_74e47c90", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124457645206_05ea3103", "target": "20260621124457934551_cad1ec2b", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124457658071_8b6faf32", "target": "20260621124458244789_cf0938d0", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124457658071_8b6faf32", "target": "20260621124457950335_18c40bfa", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124457659680_61726108", "target": "20260621124458117707_3fce6ba3", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457659680_61726108", "target": "20260621124458098060_731d0d68", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457659680_61726108", "target": "20260621124457902233_abb6baa6", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457659680_61726108", "target": "20260621124457883256_ddf65e46", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457659680_61726108", "target": "20260621124457744468_9840f045", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124457669689_76c12875", "target": "20260621124458266640_4d3a5dce", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124457669689_76c12875", "target": "20260621124457966524_0da89b4f", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124457674821_0b9144bb", "target": "20260621124458162348_3b01e241", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457674821_0b9144bb", "target": "20260621124458141783_6242459d", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457674821_0b9144bb", "target": "20260621124457936944_ac19a993", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457674821_0b9144bb", "target": "20260621124457921238_db120082", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457674821_0b9144bb", "target": "20260621124457756654_9d8dbd4a", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124457691446_d00ac8ed", "target": "20260621124458202631_922ee1bf", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457691446_d00ac8ed", "target": "20260621124458183282_80778691", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457691446_d00ac8ed", "target": "20260621124457967670_cdc990b9", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457691446_d00ac8ed", "target": "20260621124457952471_cff095ee", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457691446_d00ac8ed", "target": "20260621124457767718_f1326212", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124457705568_c4501717", "target": "20260621124458247564_b8fbc1d1", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457705568_c4501717", "target": "20260621124458224956_3c31fef4", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457705568_c4501717", "target": "20260621124458004198_7960519f", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457705568_c4501717", "target": "20260621124457987218_6494f30d", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457705568_c4501717", "target": "20260621124457778438_b4da0d29", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124457722419_32edbe17", "target": "20260621124458295672_51f559ff", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457722419_32edbe17", "target": "20260621124458272264_407dd3be", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457722419_32edbe17", "target": "20260621124458037103_741ad124", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457722419_32edbe17", "target": "20260621124458020158_42ef1f68", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124457722419_32edbe17", "target": "20260621124457790411_5016a04d", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124457732426_88e9de87", "target": "20260621124458075240_3882fb55", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124457732426_88e9de87", "target": "20260621124458054854_62841951", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124457732426_88e9de87", "target": "20260621124457834360_50d78362", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124457732426_88e9de87", "target": "20260621124457803366_71e6f480", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124457744468_9840f045", "target": "20260621124458117707_3fce6ba3", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124457744468_9840f045", "target": "20260621124458098060_731d0d68", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124457744468_9840f045", "target": "20260621124457902233_abb6baa6", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124457744468_9840f045", "target": "20260621124457883256_ddf65e46", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124457756654_9d8dbd4a", "target": "20260621124458162348_3b01e241", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124457756654_9d8dbd4a", "target": "20260621124458141783_6242459d", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124457756654_9d8dbd4a", "target": "20260621124457936944_ac19a993", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124457756654_9d8dbd4a", "target": "20260621124457921238_db120082", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124457767718_f1326212", "target": "20260621124458202631_922ee1bf", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124457767718_f1326212", "target": "20260621124458183282_80778691", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124457767718_f1326212", "target": "20260621124457967670_cdc990b9", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124457767718_f1326212", "target": "20260621124457952471_cff095ee", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124457778438_b4da0d29", "target": "20260621124458247564_b8fbc1d1", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124457778438_b4da0d29", "target": "20260621124458224956_3c31fef4", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124457778438_b4da0d29", "target": "20260621124458004198_7960519f", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124457778438_b4da0d29", "target": "20260621124457987218_6494f30d", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124457790411_5016a04d", "target": "20260621124458295672_51f559ff", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124457790411_5016a04d", "target": "20260621124458272264_407dd3be", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124457790411_5016a04d", "target": "20260621124458037103_741ad124", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124457790411_5016a04d", "target": "20260621124458020158_42ef1f68", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124457985616_00e24e55", "target": "20260621124457687569_3b839c1e", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124458006604_d7670f20", "target": "20260621124457706103_b6788066", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124458026314_efcfb733", "target": "20260621124457726576_21acd64e", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124458048386_bf680602", "target": "20260621124457743458_ed701f78", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124458054854_62841951", "target": "20260621124457803366_71e6f480", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124458073389_f00e16b3", "target": "20260621124457759504_68260342", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124458075240_3882fb55", "target": "20260621124457834360_50d78362", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124458093553_23f9575c", "target": "20260621124457777107_90d1e93c", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124458098060_731d0d68", "target": "20260621124457883256_ddf65e46", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124458115002_bad55331", "target": "20260621124457797234_9f1a6606", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124458117707_3fce6ba3", "target": "20260621124457902233_abb6baa6", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124458137952_691a00d1", "target": "20260621124457824866_a135cc1c", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124458141783_6242459d", "target": "20260621124457921238_db120082", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124458159355_2296e761", "target": "20260621124457873361_424711d3", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124458162348_3b01e241", "target": "20260621124457936944_ac19a993", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124458180572_330ff39c", "target": "20260621124457896629_84ce3ac9", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124458183282_80778691", "target": "20260621124457952471_cff095ee", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124458200379_66287fb6", "target": "20260621124457914466_a28982a8", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124458202631_922ee1bf", "target": "20260621124457967670_cdc990b9", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124458220625_74e47c90", "target": "20260621124457934551_cad1ec2b", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124458224956_3c31fef4", "target": "20260621124457987218_6494f30d", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124458244789_cf0938d0", "target": "20260621124457950335_18c40bfa", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124458247564_b8fbc1d1", "target": "20260621124458004198_7960519f", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124458266640_4d3a5dce", "target": "20260621124457966524_0da89b4f", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124458272264_407dd3be", "target": "20260621124458020158_42ef1f68", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124458295672_51f559ff", "target": "20260621124458037103_741ad124", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124458319231_a9d85a19", "target": "20260621124458141783_6242459d", "type": "HAS_CONFLICT"}
+{"kind": "edge", "source": "20260621124458319231_a9d85a19", "target": "20260621124458054854_62841951", "type": "HAS_CONFLICT"}
+{"kind": "edge", "source": "20260621124632806885_e6b323ce", "target": "20260621124633035155_280588be", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124632806885_e6b323ce", "target": "20260621124633019616_cbb60d7d", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124632806885_e6b323ce", "target": "20260621124633003971_d310cbbc", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124632806885_e6b323ce", "target": "20260621124632987972_4e6343d4", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124632806885_e6b323ce", "target": "20260621124632967975_cab93e07", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124632806885_e6b323ce", "target": "20260621124632950219_0284331f", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124632806885_e6b323ce", "target": "20260621124632933427_a92c6bfb", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124632806885_e6b323ce", "target": "20260621124632916847_3d086701", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124632806885_e6b323ce", "target": "20260621124632899817_5e70c71f", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124632806885_e6b323ce", "target": "20260621124632880005_27215bc5", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124632806885_e6b323ce", "target": "20260621124632863230_39bcda3d", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124632806885_e6b323ce", "target": "20260621124632846244_5b771aac", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124632806885_e6b323ce", "target": "20260621124632830059_3e033ede", "type": "FOUND_SOURCE"}
+{"kind": "edge", "source": "20260621124632830059_3e033ede", "target": "20260621124633755367_d488dfca", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124632830059_3e033ede", "target": "20260621124633279837_f1698ad7", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124632830059_3e033ede", "target": "20260621124633051399_f0817fb7", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124632846244_5b771aac", "target": "20260621124633792742_88b9c506", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124632846244_5b771aac", "target": "20260621124633304530_c4759148", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124632846244_5b771aac", "target": "20260621124633071831_d6c78f7f", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124632863230_39bcda3d", "target": "20260621124633926170_91800dea", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124632863230_39bcda3d", "target": "20260621124633414397_95c68c2c", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124632863230_39bcda3d", "target": "20260621124633087533_129c24a1", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124632880005_27215bc5", "target": "20260621124633962157_373cec9b", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124632880005_27215bc5", "target": "20260621124633438416_fd9edfbe", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124632880005_27215bc5", "target": "20260621124633104214_77ab435f", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124632899817_5e70c71f", "target": "20260621124634031807_6a7695f5", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124632899817_5e70c71f", "target": "20260621124633489977_f51fcc3d", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124632899817_5e70c71f", "target": "20260621124633120933_68f9e7f5", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124632916847_3d086701", "target": "20260621124634063781_858cbeaf", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124632916847_3d086701", "target": "20260621124633513661_db32b740", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124632916847_3d086701", "target": "20260621124633140376_98c6f18f", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124632933427_a92c6bfb", "target": "20260621124634200641_81f80fa9", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124632933427_a92c6bfb", "target": "20260621124634165189_c432ef29", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124632933427_a92c6bfb", "target": "20260621124634131876_f97f6b35", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124632933427_a92c6bfb", "target": "20260621124634098938_15550884", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124632933427_a92c6bfb", "target": "20260621124633617489_c69e59e4", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124632933427_a92c6bfb", "target": "20260621124633593367_8f037806", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124632933427_a92c6bfb", "target": "20260621124633565388_f49b7643", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124632933427_a92c6bfb", "target": "20260621124633542499_733539d1", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124632933427_a92c6bfb", "target": "20260621124633155059_ca2e0f62", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124632950219_0284331f", "target": "20260621124634234550_61729337", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124632950219_0284331f", "target": "20260621124633647939_b63eb617", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124632950219_0284331f", "target": "20260621124633170702_d2eca27e", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124632967975_cab93e07", "target": "20260621124634270251_eb88ce72", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124632967975_cab93e07", "target": "20260621124633673135_1ee4b2e6", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124632967975_cab93e07", "target": "20260621124633192468_224b0297", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124632987972_4e6343d4", "target": "20260621124634301224_d46288ed", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124632987972_4e6343d4", "target": "20260621124633697434_5b857389", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124632987972_4e6343d4", "target": "20260621124633209536_31ee42ea", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124633003971_d310cbbc", "target": "20260621124634339945_c5e0f4f8", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124633003971_d310cbbc", "target": "20260621124633732201_fdb4fe61", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124633003971_d310cbbc", "target": "20260621124633225790_28835be5", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124633019616_cbb60d7d", "target": "20260621124633891321_4c8f7aa1", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124633019616_cbb60d7d", "target": "20260621124633858769_4b4bf00b", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124633019616_cbb60d7d", "target": "20260621124633824219_8f0839e7", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124633019616_cbb60d7d", "target": "20260621124633385428_282eafda", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124633019616_cbb60d7d", "target": "20260621124633359686_4f64971d", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124633019616_cbb60d7d", "target": "20260621124633333959_96637810", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124633019616_cbb60d7d", "target": "20260621124633244503_d1a3bd2d", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124633035155_280588be", "target": "20260621124633993884_20297d22", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124633035155_280588be", "target": "20260621124633465635_b9a406fd", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124633035155_280588be", "target": "20260621124633264718_749977c1", "type": "HAS_DOCUMENT"}
+{"kind": "edge", "source": "20260621124633051399_f0817fb7", "target": "20260621124633755367_d488dfca", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124633051399_f0817fb7", "target": "20260621124633279837_f1698ad7", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124633071831_d6c78f7f", "target": "20260621124633792742_88b9c506", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124633071831_d6c78f7f", "target": "20260621124633304530_c4759148", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124633087533_129c24a1", "target": "20260621124633926170_91800dea", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124633087533_129c24a1", "target": "20260621124633414397_95c68c2c", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124633104214_77ab435f", "target": "20260621124633962157_373cec9b", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124633104214_77ab435f", "target": "20260621124633438416_fd9edfbe", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124633120933_68f9e7f5", "target": "20260621124634031807_6a7695f5", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124633120933_68f9e7f5", "target": "20260621124633489977_f51fcc3d", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124633140376_98c6f18f", "target": "20260621124634063781_858cbeaf", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124633140376_98c6f18f", "target": "20260621124633513661_db32b740", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124633155059_ca2e0f62", "target": "20260621124634200641_81f80fa9", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124633155059_ca2e0f62", "target": "20260621124634165189_c432ef29", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124633155059_ca2e0f62", "target": "20260621124634131876_f97f6b35", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124633155059_ca2e0f62", "target": "20260621124634098938_15550884", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124633155059_ca2e0f62", "target": "20260621124633617489_c69e59e4", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124633155059_ca2e0f62", "target": "20260621124633593367_8f037806", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124633155059_ca2e0f62", "target": "20260621124633565388_f49b7643", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124633155059_ca2e0f62", "target": "20260621124633542499_733539d1", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124633170702_d2eca27e", "target": "20260621124634234550_61729337", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124633170702_d2eca27e", "target": "20260621124633647939_b63eb617", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124633192468_224b0297", "target": "20260621124634270251_eb88ce72", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124633192468_224b0297", "target": "20260621124633673135_1ee4b2e6", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124633209536_31ee42ea", "target": "20260621124634301224_d46288ed", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124633209536_31ee42ea", "target": "20260621124633697434_5b857389", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124633225790_28835be5", "target": "20260621124634339945_c5e0f4f8", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124633225790_28835be5", "target": "20260621124633732201_fdb4fe61", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124633244503_d1a3bd2d", "target": "20260621124633891321_4c8f7aa1", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124633244503_d1a3bd2d", "target": "20260621124633858769_4b4bf00b", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124633244503_d1a3bd2d", "target": "20260621124633824219_8f0839e7", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124633244503_d1a3bd2d", "target": "20260621124633385428_282eafda", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124633244503_d1a3bd2d", "target": "20260621124633359686_4f64971d", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124633244503_d1a3bd2d", "target": "20260621124633333959_96637810", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124633264718_749977c1", "target": "20260621124633993884_20297d22", "type": "EXTRACTED_STATEMENT"}
+{"kind": "edge", "source": "20260621124633264718_749977c1", "target": "20260621124633465635_b9a406fd", "type": "CLAIMED_BY"}
+{"kind": "edge", "source": "20260621124633755367_d488dfca", "target": "20260621124633279837_f1698ad7", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124633792742_88b9c506", "target": "20260621124633304530_c4759148", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124633824219_8f0839e7", "target": "20260621124633333959_96637810", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124633858769_4b4bf00b", "target": "20260621124633359686_4f64971d", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124633891321_4c8f7aa1", "target": "20260621124633385428_282eafda", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124633926170_91800dea", "target": "20260621124633414397_95c68c2c", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124633962157_373cec9b", "target": "20260621124633438416_fd9edfbe", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124633993884_20297d22", "target": "20260621124633465635_b9a406fd", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124634031807_6a7695f5", "target": "20260621124633489977_f51fcc3d", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124634063781_858cbeaf", "target": "20260621124633513661_db32b740", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124634098938_15550884", "target": "20260621124633542499_733539d1", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124634131876_f97f6b35", "target": "20260621124633565388_f49b7643", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124634165189_c432ef29", "target": "20260621124633593367_8f037806", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124634200641_81f80fa9", "target": "20260621124633617489_c69e59e4", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124634234550_61729337", "target": "20260621124633647939_b63eb617", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124634270251_eb88ce72", "target": "20260621124633673135_1ee4b2e6", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124634301224_d46288ed", "target": "20260621124633697434_5b857389", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621124634339945_c5e0f4f8", "target": "20260621124633732201_fdb4fe61", "type": "SUPPORTED_BY"}
+{"kind": "edge", "source": "20260621125529616520_4795e395", "target": "20260621124414088626_64ed566a", "type": "USES"}
+{"kind": "edge", "source": "20260621125529616520_4795e395", "target": "20260621124434442924_f7c0926b", "type": "USES"}
+{"kind": "edge", "source": "20260621125529616520_4795e395", "target": "20260621124413983150_b1e535e2", "type": "USES"}
+{"kind": "edge", "source": "20260621125529616520_4795e395", "target": "20260621124457395786_280b0a8a", "type": "USES"}
+{"kind": "edge", "source": "20260621125529616520_4795e395", "target": "20260621124457367844_1e0c01d3", "type": "USES"}
+{"kind": "edge", "source": "20260621125529616520_4795e395", "target": "20260621124434345745_8f9fb0a3", "type": "USES"}
+{"kind": "edge", "source": "20260621125529616520_4795e395", "target": "20260621124457407548_64e718dd", "type": "USES"}
+{"kind": "edge", "source": "20260621125529616520_4795e395", "target": "20260621124434261693_6ce4ca3b", "type": "USES"}
+{"kind": "edge", "source": "20260621125529824722_da136254", "target": "20260621124414182693_a3d89440", "type": "USES"}
+{"kind": "edge", "source": "20260621125529824722_da136254", "target": "20260621124414160046_879f5b3d", "type": "USES"}
+{"kind": "edge", "source": "20260621125529824722_da136254", "target": "20260621124414088626_64ed566a", "type": "USES"}
+{"kind": "edge", "source": "20260621125529824722_da136254", "target": "20260621124434397203_78126983", "type": "USES"}
+{"kind": "edge", "source": "20260621125529824722_da136254", "target": "20260621124413983150_b1e535e2", "type": "USES"}
+{"kind": "edge", "source": "20260621125529824722_da136254", "target": "20260621124457407548_64e718dd", "type": "USES"}
+{"kind": "edge", "source": "20260621125529824722_da136254", "target": "20260621124414134354_443aec21", "type": "USES"}
+{"kind": "edge", "source": "20260621125529907516_f9ffc420", "target": "20260621124414182693_a3d89440", "type": "USES"}
+{"kind": "edge", "source": "20260621125529907516_f9ffc420", "target": "20260621124414088626_64ed566a", "type": "USES"}
+{"kind": "edge", "source": "20260621125529907516_f9ffc420", "target": "20260621124434442924_f7c0926b", "type": "USES"}
+{"kind": "edge", "source": "20260621125529907516_f9ffc420", "target": "20260621124434461533_dfa54378", "type": "USES"}
+{"kind": "edge", "source": "20260621125529907516_f9ffc420", "target": "20260621124413983150_b1e535e2", "type": "USES"}
+{"kind": "edge", "source": "20260621125529907516_f9ffc420", "target": "20260621124457395786_280b0a8a", "type": "USES"}
+{"kind": "edge", "source": "20260621125529907516_f9ffc420", "target": "20260621124457380400_5cfeac76", "type": "USES"}
+{"kind": "edge", "source": "20260621125529907516_f9ffc420", "target": "20260621124457367844_1e0c01d3", "type": "USES"}
+{"kind": "edge", "source": "20260621125529995460_3f71dec9", "target": "20260621124414182693_a3d89440", "type": "USES"}
+{"kind": "edge", "source": "20260621125529995460_3f71dec9", "target": "20260621124414160046_879f5b3d", "type": "USES"}
+{"kind": "edge", "source": "20260621125529995460_3f71dec9", "target": "20260621124434423581_29a2c4da", "type": "USES"}
+{"kind": "edge", "source": "20260621125529995460_3f71dec9", "target": "20260621124434397203_78126983", "type": "USES"}
+{"kind": "edge", "source": "20260621125529995460_3f71dec9", "target": "20260621124434365520_3dd4cdea", "type": "USES"}
+{"kind": "edge", "source": "20260621125529995460_3f71dec9", "target": "20260621124414111973_291ca4ea", "type": "USES"}
+{"kind": "edge", "source": "20260621125529995460_3f71dec9", "target": "20260621124434286913_30e8c466", "type": "USES"}
+{"kind": "edge", "source": "20260621125529995460_3f71dec9", "target": "20260621124434345745_8f9fb0a3", "type": "USES"}
+{"kind": "edge", "source": "20260621125529995460_3f71dec9", "target": "20260621124414134354_443aec21", "type": "USES"}
+{"kind": "edge", "source": "20260621125529995460_3f71dec9", "target": "20260621124434261693_6ce4ca3b", "type": "USES"}
+{"kind": "edge", "source": "20260621125530115866_78a63c6f", "target": "20260621124414182693_a3d89440", "type": "USES"}
+{"kind": "edge", "source": "20260621125530115866_78a63c6f", "target": "20260621124414160046_879f5b3d", "type": "USES"}
+{"kind": "edge", "source": "20260621125530115866_78a63c6f", "target": "20260621124434442924_f7c0926b", "type": "USES"}
+{"kind": "edge", "source": "20260621125530115866_78a63c6f", "target": "20260621124434397203_78126983", "type": "USES"}
+{"kind": "edge", "source": "20260621125530115866_78a63c6f", "target": "20260621124434461533_dfa54378", "type": "USES"}
+{"kind": "edge", "source": "20260621125530115866_78a63c6f", "target": "20260621124457395786_280b0a8a", "type": "USES"}
+{"kind": "edge", "source": "20260621125530115866_78a63c6f", "target": "20260621124457407548_64e718dd", "type": "USES"}
+{"kind": "edge", "source": "20260621125530189089_828c175c", "target": "20260621124413983150_b1e535e2", "type": "USES"}
+{"kind": "edge", "source": "20260621125530189089_828c175c", "target": "20260621124457407548_64e718dd", "type": "USES"}
+{"kind": "edge", "source": "20260621125530224361_4aad9352", "target": "20260621124414182693_a3d89440", "type": "USES"}
+{"kind": "edge", "source": "20260621125530224361_4aad9352", "target": "20260621124414160046_879f5b3d", "type": "USES"}
+{"kind": "edge", "source": "20260621125530224361_4aad9352", "target": "20260621124434423581_29a2c4da", "type": "USES"}
+{"kind": "edge", "source": "20260621125530224361_4aad9352", "target": "20260621124434397203_78126983", "type": "USES"}
+{"kind": "edge", "source": "20260621125530224361_4aad9352", "target": "20260621124434365520_3dd4cdea", "type": "USES"}
+{"kind": "edge", "source": "20260621125530224361_4aad9352", "target": "20260621124414111973_291ca4ea", "type": "USES"}
+{"kind": "edge", "source": "20260621125530224361_4aad9352", "target": "20260621124434286913_30e8c466", "type": "USES"}
+{"kind": "edge", "source": "20260621125530224361_4aad9352", "target": "20260621124434345745_8f9fb0a3", "type": "USES"}
+{"kind": "edge", "source": "20260621125530224361_4aad9352", "target": "20260621124414134354_443aec21", "type": "USES"}
+{"kind": "edge", "source": "20260621125530224361_4aad9352", "target": "20260621124434261693_6ce4ca3b", "type": "USES"}
+{"kind": "edge", "source": "20260621125530330651_a4073798", "target": "20260621124414088626_64ed566a", "type": "USES"}
+{"kind": "edge", "source": "20260621125530330651_a4073798", "target": "20260621124434442924_f7c0926b", "type": "USES"}
+{"kind": "edge", "source": "20260621125530330651_a4073798", "target": "20260621124434461533_dfa54378", "type": "USES"}
+{"kind": "edge", "source": "20260621125530330651_a4073798", "target": "20260621124413983150_b1e535e2", "type": "USES"}
+{"kind": "edge", "source": "20260621125530330651_a4073798", "target": "20260621124457395786_280b0a8a", "type": "USES"}
+{"kind": "edge", "source": "20260621125530330651_a4073798", "target": "20260621124457380400_5cfeac76", "type": "USES"}
+{"kind": "edge", "source": "20260621125530330651_a4073798", "target": "20260621124457367844_1e0c01d3", "type": "USES"}
+{"kind": "edge", "source": "20260621125530415527_bf02c498", "target": "20260621124414160046_879f5b3d", "type": "USES"}
+{"kind": "edge", "source": "20260621125530415527_bf02c498", "target": "20260621124457395786_280b0a8a", "type": "USES"}
+{"kind": "edge", "source": "20260621125530415527_bf02c498", "target": "20260621124457407548_64e718dd", "type": "USES"}
+{"kind": "edge", "source": "20260621125530458464_6cc6f34e", "target": "20260621124414088626_64ed566a", "type": "USES"}
+{"kind": "edge", "source": "20260621125530458464_6cc6f34e", "target": "20260621124413983150_b1e535e2", "type": "USES"}
+{"kind": "edge", "source": "20260621125530458464_6cc6f34e", "target": "20260621124434365520_3dd4cdea", "type": "USES"}
+{"kind": "edge", "source": "20260621125530458464_6cc6f34e", "target": "20260621124457395786_280b0a8a", "type": "USES"}
+{"kind": "edge", "source": "20260621125530458464_6cc6f34e", "target": "20260621124414134354_443aec21", "type": "USES"}
+{"kind": "edge", "source": "20260621125530458464_6cc6f34e", "target": "20260621124457407548_64e718dd", "type": "USES"}
+{"kind": "edge", "source": "20260621125530458464_6cc6f34e", "target": "20260621124434261693_6ce4ca3b", "type": "USES"}
+{"kind": "edge", "source": "20260621125530458464_6cc6f34e", "target": "20260621124414160046_879f5b3d", "type": "USES"}
+{"kind": "edge", "source": "20260621125530540650_89a0efac", "target": "20260621124414182693_a3d89440", "type": "USES"}
+{"kind": "edge", "source": "20260621125530540650_89a0efac", "target": "20260621124414088626_64ed566a", "type": "USES"}
+{"kind": "edge", "source": "20260621125530540650_89a0efac", "target": "20260621124434442924_f7c0926b", "type": "USES"}
+{"kind": "edge", "source": "20260621125530540650_89a0efac", "target": "20260621124434397203_78126983", "type": "USES"}
+{"kind": "edge", "source": "20260621125530540650_89a0efac", "target": "20260621124434461533_dfa54378", "type": "USES"}
+{"kind": "edge", "source": "20260621125530540650_89a0efac", "target": "20260621124434365520_3dd4cdea", "type": "USES"}
+{"kind": "edge", "source": "20260621125530540650_89a0efac", "target": "20260621124457395786_280b0a8a", "type": "USES"}
+{"kind": "edge", "source": "20260621125530540650_89a0efac", "target": "20260621124414111973_291ca4ea", "type": "USES"}
+{"kind": "edge", "source": "20260621125530540650_89a0efac", "target": "20260621124457367844_1e0c01d3", "type": "USES"}
+{"kind": "edge", "source": "20260621125530540650_89a0efac", "target": "20260621124457407548_64e718dd", "type": "USES"}
+{"kind": "edge", "source": "20260621125530540650_89a0efac", "target": "20260621124434345745_8f9fb0a3", "type": "USES"}
+{"kind": "edge", "source": "20260621125530540650_89a0efac", "target": "20260621124434261693_6ce4ca3b", "type": "USES"}
+{"kind": "edge", "source": "20260621125530540650_89a0efac", "target": "20260621124414160046_879f5b3d", "type": "USES"}
+{"kind": "edge", "source": "20260621125530679844_ab779d17", "target": "20260621124414182693_a3d89440", "type": "USES"}
+{"kind": "edge", "source": "20260621125530679844_ab779d17", "target": "20260621124414088626_64ed566a", "type": "USES"}
+{"kind": "edge", "source": "20260621125530679844_ab779d17", "target": "20260621124434442924_f7c0926b", "type": "USES"}
+{"kind": "edge", "source": "20260621125530679844_ab779d17", "target": "20260621124434397203_78126983", "type": "USES"}
+{"kind": "edge", "source": "20260621125530679844_ab779d17", "target": "20260621124434461533_dfa54378", "type": "USES"}
+{"kind": "edge", "source": "20260621125530679844_ab779d17", "target": "20260621124413983150_b1e535e2", "type": "USES"}
+{"kind": "edge", "source": "20260621125530679844_ab779d17", "target": "20260621124434365520_3dd4cdea", "type": "USES"}
+{"kind": "edge", "source": "20260621125530679844_ab779d17", "target": "20260621124457395786_280b0a8a", "type": "USES"}
+{"kind": "edge", "source": "20260621125530679844_ab779d17", "target": "20260621124434286913_30e8c466", "type": "USES"}
+{"kind": "edge", "source": "20260621125530679844_ab779d17", "target": "20260621124457380400_5cfeac76", "type": "USES"}
+{"kind": "edge", "source": "20260621125530679844_ab779d17", "target": "20260621124457367844_1e0c01d3", "type": "USES"}
+{"kind": "edge", "source": "20260621125530679844_ab779d17", "target": "20260621124414134354_443aec21", "type": "USES"}
+{"kind": "edge", "source": "20260621125530679844_ab779d17", "target": "20260621124457407548_64e718dd", "type": "USES"}
+{"kind": "edge", "source": "20260621125530679844_ab779d17", "target": "20260621124434261693_6ce4ca3b", "type": "USES"}
+{"kind": "edge", "source": "20260621125530679844_ab779d17", "target": "20260621124414160046_879f5b3d", "type": "USES"}
+{"kind": "edge", "source": "20260621125530833802_31df8cac", "target": "20260621124413983150_b1e535e2", "type": "USES"}
+{"kind": "edge", "source": "20260621125530833802_31df8cac", "target": "20260621124457395786_280b0a8a", "type": "USES"}
+{"kind": "edge", "source": "20260621125530833802_31df8cac", "target": "20260621124457407548_64e718dd", "type": "USES"}
+{"kind": "edge", "source": "20260621125530833802_31df8cac", "target": "20260621124414088626_64ed566a", "type": "USES"}
+{"kind": "edge", "source": "20260621125530881181_2022c369", "target": "20260621124414182693_a3d89440", "type": "USES"}
+{"kind": "edge", "source": "20260621125530881181_2022c369", "target": "20260621124414088626_64ed566a", "type": "USES"}
+{"kind": "edge", "source": "20260621125530881181_2022c369", "target": "20260621124434442924_f7c0926b", "type": "USES"}
+{"kind": "edge", "source": "20260621125530881181_2022c369", "target": "20260621124434423581_29a2c4da", "type": "USES"}
+{"kind": "edge", "source": "20260621125530881181_2022c369", "target": "20260621124434397203_78126983", "type": "USES"}
+{"kind": "edge", "source": "20260621125530881181_2022c369", "target": "20260621124434461533_dfa54378", "type": "USES"}
+{"kind": "edge", "source": "20260621125530881181_2022c369", "target": "20260621124413983150_b1e535e2", "type": "USES"}
+{"kind": "edge", "source": "20260621125530881181_2022c369", "target": "20260621124434365520_3dd4cdea", "type": "USES"}
+{"kind": "edge", "source": "20260621125530881181_2022c369", "target": "20260621124457395786_280b0a8a", "type": "USES"}
+{"kind": "edge", "source": "20260621125530881181_2022c369", "target": "20260621124414111973_291ca4ea", "type": "USES"}
+{"kind": "edge", "source": "20260621125530881181_2022c369", "target": "20260621124434286913_30e8c466", "type": "USES"}
+{"kind": "edge", "source": "20260621125530881181_2022c369", "target": "20260621124457380400_5cfeac76", "type": "USES"}
+{"kind": "edge", "source": "20260621125530881181_2022c369", "target": "20260621124457367844_1e0c01d3", "type": "USES"}
+{"kind": "edge", "source": "20260621125530881181_2022c369", "target": "20260621124414134354_443aec21", "type": "USES"}
+{"kind": "edge", "source": "20260621125530881181_2022c369", "target": "20260621124434345745_8f9fb0a3", "type": "USES"}
+{"kind": "edge", "source": "20260621125530881181_2022c369", "target": "20260621124457407548_64e718dd", "type": "USES"}
+{"kind": "edge", "source": "20260621125530881181_2022c369", "target": "20260621124434261693_6ce4ca3b", "type": "USES"}
+{"kind": "edge", "source": "20260621125530881181_2022c369", "target": "20260621124414160046_879f5b3d", "type": "USES"}

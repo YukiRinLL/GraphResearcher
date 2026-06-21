@@ -249,6 +249,15 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
             # the Reporter's draft and revises it). The graph holds evidence and
             # section→evidence bindings only, not the report itself.
             report_text = final_text or "(no report produced)"
+            try:
+                from tools import workflow_state
+
+                if not workflow_state.get("report_validated"):
+                    report_text = "(no report produced)"
+            except Exception:
+                console.print("[yellow]Workflow validation check failed (captured in run.log); suppressing raw report.[/]")
+                console.print(traceback.format_exc(), markup=False, highlight=False)
+                report_text = "(no report produced)"
             # Deterministically rebuild citations/references from the graph's
             # Source nodes (dedup, drop fabricated refs) and create the
             # ReportSection→Source bindings the Reporter may have skipped. Runs
