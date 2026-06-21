@@ -41,6 +41,7 @@ class SearcherState(TypedDict):
     search_output: str
     evidence_package: Optional[dict]
     submit_result: Optional[dict]
+    _fatal_error: Optional[str]
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────
@@ -57,16 +58,37 @@ _EMPTY_PACKAGE: dict = {"sources": [], "documents": [], "claims": [], "evidence"
 
 
 def init_node(state: SearcherState) -> dict:
-    """Parse ``query_id`` and ``query_text`` from the Orchestrator's task message.
+    """Resolve ``query_id`` and ``query_text`` for the Searcher pipeline.
 
-    The Orchestrator includes the query ID in its ``task(description=…)``, e.g.:
-    ``围绕 query_id=20260531172839168193_6431079a 的问题检索：系统梳理…``.
+    **Primary path**: ``query_id`` (and optionally ``query_text``) were already
+    injected into the initial state by ``dispatch_searcher`` — use them directly.
+    This is the structured, code-enforced path that guarantees correct linkage.
+
+    **Fallback path**: parse ``query_id=…`` from the task description text
+    (legacy ``task(subagent_type="searcher")`` compatibility).  If neither path
+    yields a valid ID, set ``_fatal_error`` so the graph routes to END.
     """
+    qid = (state.get("query_id") or "").strip()
+    qtext = (state.get("query_text") or "").strip()
+
+    if qid:
+        # Primary path — structured injection from dispatch_searcher.
+        return {"query_id": qid, "query_text": qtext}
+
+    # Fallback path — parse from the task description.
     last = state["messages"][-1]
     content: str = last.content if hasattr(last, "content") else str(last)
 
     m = _QID_RE.search(content)
-    qid = m.group(1) if m else "unknown"
+    qid = m.group(1) if m else ""
+
+    if not qid:
+        return {
+            "_fatal_error": (
+                "Searcher 未能从任务描述中解析到 query_id，且初始 state 也未提供。"
+                "请使用 dispatch_searcher(query_id=<精确节点ID>, description=...) 派发检索。"
+            ),
+        }
 
     # Remove the query_id=… token.  Collapse the whitespace it leaves behind.
     qtext = re.sub(r"\s+", " ", _QID_RE.sub("", content)).strip()
@@ -223,14 +245,29 @@ def submit_node(state: SearcherState) -> dict:
 # ── Graph ────────────────────────────────────────────────────────────────
 
 
+def _route_after_init(state: SearcherState) -> str:
+    """Route to END on fatal error, otherwise continue to web_search."""
+    if state.get("_fatal_error"):
+        return "fail"
+    return "web_search"
+
+
+def _fail_node(state: SearcherState) -> dict:
+    """Emit the fatal error as the final message so the Orchestrator sees it."""
+    error = state.get("_fatal_error", "Unknown fatal error in Searcher init")
+    return {"messages": [AIMessage(content=f"❌ Searcher 派发失败：{error}")]}
+
+
 def _build_graph() -> StateGraph:
     g = StateGraph(SearcherState)
     g.add_node("init", init_node)
+    g.add_node("fail", _fail_node)
     g.add_node("web_search", web_search_node)
     g.add_node("analyze", analyze_node)
     g.add_node("submit", submit_node)
 
-    g.add_edge("init", "web_search")
+    g.add_conditional_edges("init", _route_after_init, {"web_search": "web_search", "fail": "fail"})
+    g.add_edge("fail", END)
     g.add_edge("web_search", "analyze")
     g.add_edge("analyze", "submit")
     g.add_edge("submit", END)

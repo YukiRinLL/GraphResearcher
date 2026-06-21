@@ -229,11 +229,9 @@ class GraphManager:
             )
             record = await result.single()
             if record is None:
-                logger.warning(
-                    "add_edge skipped: missing node(s) source=%s target=%s type=%s",
-                    source_id, target_id, edge_type,
+                raise ValueError(
+                    f"add_edge failed: node(s) not found source={source_id!r} target={target_id!r} type={edge_type!r}"
                 )
-                return ""
             return f"{record['source.id']}_{record['type(r)']}_{record['target.id']}"
 
     async def get_node(self, node_id: str) -> dict:

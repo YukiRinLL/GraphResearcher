@@ -1,0 +1,12 @@
+{"type": "_graphresearcher", "source": "graph-researcher"}
+{"kind": "node", "id": "20260620210758791555_c08f2fc2", "type": "UserRequest", "request": "整理目前全球具身智能发展的技术路线，以及各个路线的代表性公司；需要包括这些公司的技术路径、产品进度、商业化进度、融资情况、团队情况。请给出面向中文读者的结构化综述，尽量覆盖全球范围，重点公司要覆盖美国、欧洲、中国和其他重要地区。", "research_goal": "整理全球具身智能的发展技术路线及各路线代表性公司，并比较其技术路径、产品进度、商业化进度、融资情况和团队情况。", "language": "中文"}
+{"kind": "node", "id": "20260620210759021883_bcb126db", "type": "Query", "sufficiency_score": 0.2, "sem": 1.0, "text": "全球具身智能技术路线 2024-2025 人形机器人 轮式移动机器人 四足机器人 机械臂 视觉语言动作模型", "priority_tier": "high", "priority": 1.0, "status": "blocked"}
+{"kind": "node", "id": "20260620210759144326_5757d2e3", "type": "Query", "sem": 1.0, "text": "全球具身智能代表性公司 2024-2025 人形机器人 机器人初创公司 大模型机器人", "priority_tier": "high", "priority": 1.0, "status": "pending"}
+{"kind": "node", "id": "20260620210759164179_55f35367", "type": "Query", "sem": 0.6, "text": "具身智能公司技术路径 产品进展 商业化进展 2024-2025", "priority_tier": "high", "priority": 0.76, "status": "pending"}
+{"kind": "node", "id": "20260620210759182937_45dd5c4b", "type": "Query", "sem": 0.6, "text": "具身智能公司融资情况 团队背景 2024-2025", "priority_tier": "high", "priority": 0.76, "status": "pending"}
+{"kind": "node", "id": "20260620210759206664_2e0d0b31", "type": "Query", "sem": 0.3, "text": "全球具身智能重点公司 美国 欧洲 中国 其他地区 2024-2025", "priority_tier": "low", "priority": 0.5800000000000001, "status": "pending"}
+{"kind": "edge", "source": "20260620210758791555_c08f2fc2", "target": "20260620210759206664_2e0d0b31", "type": "HAS_QUERY"}
+{"kind": "edge", "source": "20260620210758791555_c08f2fc2", "target": "20260620210759182937_45dd5c4b", "type": "HAS_QUERY"}
+{"kind": "edge", "source": "20260620210758791555_c08f2fc2", "target": "20260620210759164179_55f35367", "type": "HAS_QUERY"}
+{"kind": "edge", "source": "20260620210758791555_c08f2fc2", "target": "20260620210759144326_5757d2e3", "type": "HAS_QUERY"}
+{"kind": "edge", "source": "20260620210758791555_c08f2fc2", "target": "20260620210759021883_bcb126db", "type": "HAS_QUERY"}

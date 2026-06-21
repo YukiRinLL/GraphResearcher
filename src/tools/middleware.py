@@ -167,6 +167,63 @@ def _last_ai_message(response) -> object | None:
 _SEARCH_FALLBACK = {"serper_search": "tavily_search", "tavily_search": "serper_search"}
 
 
+# Regex that extracts a query node ID from a task description — same pattern
+# the Searcher's init_node uses for fallback parsing.
+_QID_RE = re.compile(r"(?:query_id|Query ID|queryId|qid)[=:]\s*([a-f0-9_]+)", re.IGNORECASE)
+
+
+class QueryIdValidationMiddleware(AgentMiddleware):
+    """Guardrail: blocks ``task(subagent_type="searcher")`` calls that lack a
+    valid ``query_id``, and points the Orchestrator to ``dispatch_searcher``.
+
+    The primary dispatch path is ``dispatch_searcher(query_id, description)``
+    where ``query_id`` is a required, typed parameter. This middleware is a
+    safety net for any remaining raw ``task(searcher)`` calls — it prevents
+    the old fragile text-parsing path from creating orphan evidence.
+    """
+
+    _BLOCKED = (
+        "task(subagent_type=\"searcher\") 已被 dispatch_searcher 替代。"
+        "请改用 dispatch_searcher(query_id=<精确query节点ID>, description=...)。"
+        "query_id 必须来自 init_research / expand_query 的返回值。"
+    )
+
+    def __init__(self, subagent_name: str = "searcher"):
+        self.subagent_name = subagent_name
+
+    def _intercept(self, tool_call: dict):
+        if tool_call.get("name") != "task":
+            return None
+        if tool_call.get("args", {}).get("subagent_type") != self.subagent_name:
+            return None
+
+        description = tool_call.get("args", {}).get("description") or ""
+        if _QID_RE.search(description):
+            # Has a query_id pattern — could work via the fallback path.
+            # Still warn, but allow it through.
+            logger.warning(
+                "task(searcher) called with query_id in description; "
+                "allowed through fallback path but dispatch_searcher is preferred."
+            )
+            return None
+
+        logger.warning("task(searcher) blocked: no query_id in description.")
+        return ToolMessage(
+            content=self._BLOCKED,
+            tool_call_id=tool_call["id"],
+            name="task",
+            status="error",
+        )
+
+    def wrap_tool_call(self, request, handler):
+        blocked = self._intercept(request.tool_call)
+        return blocked if blocked is not None else handler(request)
+
+    async def awrap_tool_call(self, request, handler):
+        blocked = self._intercept(request.tool_call)
+        return blocked if blocked is not None else await handler(request)
+
+
 class SearchFallbackMiddleware(AgentMiddleware):
     """Transparently retries a failed web search with the alternate engine.
 

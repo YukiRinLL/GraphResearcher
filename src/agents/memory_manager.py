@@ -552,16 +552,17 @@ class MemoryManager:
                 return None
             return ref_map.get(ref, ref)
 
-        # Recover the real query node ID; the Orchestrator may pass a truncated
-        # ID or a label, which would otherwise orphan this run from the goal.
+        # Resolve the query node ID; reject invalid ones early so we never
+        # create orphan evidence nodes disconnected from the query tree.
         resolved_query_id = self._resolve_query_id(query_id)
-        warning = None
         if resolved_query_id is None:
-            warning = (
-                f"query_id {query_id!r} 未能匹配到任何 query 节点，本次搜索结果可能与研究目标失联；"
-                "请用 init_research 返回的精确 query 节点 ID 重新派发。"
-            )
-            resolved_query_id = query_id
+            return {
+                "error": (
+                    f"query_id {query_id!r} 不存在于图谱中，证据提交被拒绝。"
+                    "请使用 init_research / expand_query 返回的精确 query 节点 ID。"
+                ),
+                "query_id": query_id,
+            }
 
         run_id = graph_tools.add_node(
             "search_run", {"query_id": resolved_query_id}
@@ -644,7 +645,7 @@ class MemoryManager:
             )
 
         graph_tools.save_graph()
-        result = {
+        return {
             "search_run_id": run_id,
             "query_id": resolved_query_id,
             "ref_map": ref_map,
@@ -656,9 +657,6 @@ class MemoryManager:
                 "conflicts": len(evidence_package.get("conflicts", []) or []),
             },
         }
-        if warning:
-            result["warning"] = warning
-        return result
 
     # -----------------------------
     # Reporter-facing

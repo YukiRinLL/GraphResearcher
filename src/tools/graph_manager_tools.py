@@ -11,7 +11,10 @@ importing this module (for assembly checks) does not require API credentials.
 
 from typing import Any, Optional
 
+from langchain_core.messages import HumanMessage
 from langchain_core.tools import tool
+
+from memory.graph import NodeType
 
 from agents.memory_manager import MemoryManager
 
@@ -294,6 +297,59 @@ def bind_report_section(
     return _mm().bind_report_section(section, claim_ids=claim_ids, evidence_ids=evidence_ids)
 
 
+@tool
+def dispatch_searcher(query_id: str, description: str) -> str:
+    """Dispatch the Searcher to collect evidence for a single query.
+
+    This is the **only** way to send work to the Searcher. ``query_id`` is a
+    required, typed parameter — it is never guessed or parsed from free text,
+    so the evidence is always correctly linked to its query node.
+
+    Args:
+        query_id: The exact query node ID (from ``init_research`` or
+            ``expand_query`` return values). Must exist in the graph.
+        description: What to search for, acceptance criteria, time window,
+            source preferences, and output format expected.
+
+    Returns:
+        The Searcher's final message — a summary of the evidence package
+        written to the graph, or an error if the query_id is invalid.
+    """
+    from tools import graph_tools
+
+    # Validate the query node exists before invoking the searcher.
+    node = graph_tools.get_node(query_id)
+    if not node or node.get("type") != NodeType.QUERY.value:
+        return (
+            f"dispatch_searcher 失败：query_id {query_id!r} 不存在或不是 query 节点。"
+            "请使用 init_research / expand_query 返回的精确 query 节点 ID。"
+        )
+
+    query_text = node.get("text") or ""
+
+    # Lazy import — searcher imports from this module, so import at call time
+    # to avoid a circular dependency.
+    from agents.searcher import searcher as searcher_graph
+
+    result = searcher_graph.invoke({
+        "messages": [HumanMessage(content=description)],
+        "query_id": query_id,
+        "query_text": query_text,
+    })
+
+    # Extract the last AIMessage as the return value (CompiledSubAgent convention).
+    for msg in reversed(result.get("messages", [])):
+        if hasattr(msg, "content") and msg.content and getattr(msg, "tool_calls", None) is None:
+            content = msg.content
+            if isinstance(content, list):
+                content = "".join(
+                    p.get("text", "") if isinstance(p, dict) else str(p) for p in content
+                )
+            return str(content)
+
+    return "Searcher 已完成但未返回文本结果。"
+
+
 ORCHESTRATOR_TOOLS: list[Any] = [
     init_research,
     get_next_queries,
@@ -305,6 +361,7 @@ ORCHESTRATOR_TOOLS: list[Any] = [
     create_analysis,
     get_subgraph,
     get_node,
+    dispatch_searcher,
     export_report_context,
 ]
 
