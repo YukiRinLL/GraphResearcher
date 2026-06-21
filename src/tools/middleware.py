@@ -43,10 +43,16 @@ class ResearchStateMiddleware(AgentMiddleware):
         "expand_gaps、dispatch_searcher 或 assess_convergence；"
         "完成动作后调用 assess_convergence。"
     )
+    _REPORTER_NUDGE = (
+        "研究状态已经允许生成最终报告，但规范报告必须由 reporter 子代理通过 "
+        "submit_final_report 提交。禁止直接输出报告正文、摘要、表格或结论。"
+        "请立即调用 task(subagent_type=\"reporter\", ...)；只向 reporter 传递用户研究目标。"
+    )
 
-    def __init__(self, max_repeated_failures: int = 3):
+    def __init__(self, max_repeated_failures: int = 3, max_reporter_nudges: int = 2):
         """Initialize the repeated state-changing failure breaker."""
         self.max_repeated_failures = max_repeated_failures
+        self.max_reporter_nudges = max_reporter_nudges
         self._failure_lock = threading.Lock()
         self._last_failure_signature: Optional[str] = None
         self._repeated_failures = 0
@@ -160,18 +166,38 @@ class ResearchStateMiddleware(AgentMiddleware):
 
         return research_state.get_status().get("research_state") == research_state.RESEARCHING
 
+    @staticmethod
+    def _report_ready_terminal_without_report(response) -> bool:
+        last = _last_ai_message(response)
+        if last is None or last.tool_calls:
+            return False
+        from tools import graph_manager_tools, research_state
+
+        state = research_state.get_status().get("research_state")
+        if state not in {research_state.REPORT_READY, research_state.BUDGET_EXHAUSTED}:
+            return False
+        return not graph_manager_tools.get_compiled_report().strip()
+
     def wrap_model_call(self, request, handler):
-        """Prevent terminal Orchestrator text while research remains active."""
+        """Prevent terminal Orchestrator text before canonical report handoff."""
         response = handler(request)
         if self._researching_terminal(response):
             response = handler(request.override(messages=[*request.messages, HumanMessage(content=self._RESEARCH_NUDGE)]))
+        for _ in range(self.max_reporter_nudges):
+            if not self._report_ready_terminal_without_report(response):
+                break
+            response = handler(request.override(messages=[*request.messages, HumanMessage(content=self._REPORTER_NUDGE)]))
         return response
 
     async def awrap_model_call(self, request, handler):
-        """Prevent terminal Orchestrator text asynchronously while researching."""
+        """Async counterpart of :meth:`wrap_model_call`."""
         response = await handler(request)
         if self._researching_terminal(response):
             response = await handler(request.override(messages=[*request.messages, HumanMessage(content=self._RESEARCH_NUDGE)]))
+        for _ in range(self.max_reporter_nudges):
+            if not self._report_ready_terminal_without_report(response):
+                break
+            response = await handler(request.override(messages=[*request.messages, HumanMessage(content=self._REPORTER_NUDGE)]))
         return response
 
 
@@ -420,30 +446,26 @@ _OFFER_PATTERN = re.compile(
 
 
 class ReportValidationMiddleware(AgentMiddleware):
-    """Forces the Orchestrator's terminal response to be a real report.
+    """Prevents incomplete terminal text during Reporter handoff.
 
     Fires only on terminal responses (no tool calls). If the response offers to
-    continue / asks permission, or is very short with no ``##`` sections, it
-    nudges the model to deliver the complete report immediately. After
-    ``max_retries`` it gives up and returns the latest response.
+    continue / asks permission while reporting, it nudges the model to finish
+    the Reporter handoff instead of writing or extending report prose itself.
+    After ``max_retries`` it gives up and returns the latest response.
     """
 
     _NUDGE = (
-        "你正处于无人值守流程，必须立即交付完整最终报告，不得以提议继续、反问或请求确认结束。"
-        "请基于已收集的证据直接输出含 `##` 章节标题与编号引用 `[1]` 的完整报告；"
-        "证据不足时也要给出带已披露局限的完整报告，而不是停下来询问。"
+        "你正处于无人值守流程，不得以提议继续、反问或请求确认结束。"
+        "最终报告正文必须来自 reporter 的 submit_final_report；"
+        "如果 reporter 已提交，只需简短确认，不要输出或改写报告正文。"
     )
 
-    def __init__(self, min_length: int = 600, min_sections: int = 1, max_retries: int = 2):
+    def __init__(self, max_retries: int = 2):
         """Initialize the middleware.
 
         Args:
-            min_length: Below this length (and lacking sections) counts as incomplete.
-            min_sections: Minimum number of ``##`` headings expected.
             max_retries: Maximum nudge retries.
         """
-        self.min_length = min_length
-        self.min_sections = min_sections
         self.max_retries = max_retries
 
     def _is_incomplete(self, response) -> bool:
@@ -458,8 +480,6 @@ class ReportValidationMiddleware(AgentMiddleware):
         if not text:
             return False  # empty handled by EmptyResponseRetryMiddleware
         if _OFFER_PATTERN.search(text):
-            return True
-        if len(text) < self.min_length and text.count("## ") < self.min_sections:
             return True
         return False
 

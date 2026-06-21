@@ -189,7 +189,13 @@ def _prepare_report_for_delivery(
         except Exception as exc:  # noqa: BLE001 - fallback remains mandatory
             issues.append(f"compiled Reporter report failed: {exc}")
     else:
-        issues.append("Reporter submitted no valid structured report")
+        state = status_summary.get("research_state")
+        if state in {"REPORT_READY", "BUDGET_EXHAUSTED"}:
+            issues.append("Reporter was authorized but never submitted a structured report")
+        elif state == "REPORTING":
+            issues.append("Reporter was invoked but did not submit a structured report")
+        else:
+            issues.append("Reporter submitted no valid structured report")
 
     report_text = _fallback_report(request, status_summary)
     try:
