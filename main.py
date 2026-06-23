@@ -249,6 +249,10 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
 
     final_text = ""
     orig_stdout, orig_stderr = sys.stdout, sys.stderr
+    root_logger = logging.getLogger()
+    original_handlers = list(root_logger.handlers)
+    original_level = root_logger.level
+    run_log_handler: logging.Handler | None = None
     # Tee stdout+stderr into run.log so EVERYTHING printed — rich output,
     # logging, warnings, and tracebacks — is captured, not just emitted lines.
     with open(log_path, "w", encoding="utf-8") as log_file:
@@ -256,7 +260,10 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
         sys.stderr = _Tee(orig_stderr, log_file)
         try:
             if opts["log_level"] != "NONE":
-                logging.basicConfig(level=getattr(logging, opts["log_level"]))
+                run_log_handler = logging.StreamHandler(sys.stderr)
+                run_log_handler.setFormatter(logging.Formatter(logging.BASIC_FORMAT))
+                root_logger.handlers = [run_log_handler]
+                root_logger.setLevel(getattr(logging, opts["log_level"]))
 
             from tools import graph_manager_tools, middleware
 
@@ -369,6 +376,12 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
             console.print(f"\n[dim]State summary: {json.dumps(status_summary, ensure_ascii=False)}[/]")
             saved = f"{report_path}, {graph_path}, {log_path}" if report_saved else f"{graph_path}, {log_path}"
             console.print(f"\n[dim]Saved: {saved}[/]")
+            if run_log_handler is not None:
+                root_logger.removeHandler(run_log_handler)
+                run_log_handler.close()
+                run_log_handler = None
+                root_logger.handlers = original_handlers
+                root_logger.setLevel(original_level)
             sys.stdout, sys.stderr = orig_stdout, orig_stderr
 
 

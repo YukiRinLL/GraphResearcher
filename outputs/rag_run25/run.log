@@ -1,0 +1,22 @@
+Request: 
+请帮我整理下目前全球具身智能发展的技术路线，以及各个路线的代表性公司，需要包括这些公司的技术路径，产品进度，商业化进度，融
+资情况，团队情况
+Output dir: outputs/rag_run25 | max search rounds: 20
+
+[HumanMessage] 
+请帮我整理下目前全球具身智能发展的技术路线，以及各个路线的代表性公司，需要包括这些公司的技术路径，产品进度，商业化进度，融
+资情况，团队情况
+INFO:httpx:HTTP Request: POST https://yunwu.ai/v1/chat/completions "HTTP/1.1 200 OK"
+[AIMessage → tool] init_research({'user_request': 
+'整理目前全球具身智能发展的技术路线，以及各个路线的代表性公司；需要包括这些公司的技术路径、产品进度、商业化进度、融资情况、
+团队情况。'})
+───────────────────────────────────────────────────── Research Status ─────────────────────────────────────────────────────
+Research did not reach an authorized reporting state. Current state: uninitialized.                                        
+
+State summary: {"goal_id": null, "research_state": null, "max_search_rounds": 0, "dispatched_search_rounds": 0, 
+"successful_search_rounds": 0, "remaining_search_rounds": null, "scope_mode": "bounded", "portfolio_revision": 0, 
+"evaluated_portfolio_revision": 0, "last_max_marginal_utility": 0.0, "report_readiness_score": 0.0, "objectives": [], 
+"query_status_counts": {}, "active_queries": [], "selected_gaps": [], "last_convergence_recommendation": null, 
+"report_authorized_reason": null, "reporting_from_state": null, "last_error": null}
+
+Saved: outputs/rag_run25/research_graph.jsonl, outputs/rag_run25/run.log
