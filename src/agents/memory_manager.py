@@ -647,6 +647,183 @@ class MemoryManager:
                 return owner["id"]
         return None
 
+    @staticmethod
+    def _normalize_claim_key(text: str, explicit: Optional[str] = None) -> str:
+        """Return a stable key for a canonical Claim."""
+        explicit = str(explicit or "").strip()
+        if explicit and explicit.lower() not in {"null", "none"}:
+            return "-".join(explicit.lower().split())[:80]
+        return _gap_key(text)
+
+    @staticmethod
+    def _stance_edge_type(stance: Optional[str]) -> EdgeType:
+        """Map a normalizer stance to the graph edge type."""
+        value = str(stance or "supports").lower()
+        if value in {"contradicts", "contradict", "against"}:
+            return EdgeType.CONTRADICTED_BY
+        if value in {"qualifies", "qualify", "qualified"}:
+            return EdgeType.QUALIFIED_BY
+        return EdgeType.SUPPORTED_BY
+
+    def _fallback_claim_specs(self, query: dict, statements: list[dict], evidence: list[dict]) -> list[dict]:
+        """Build conservative Claim specs when the LLM normalizer returns none."""
+        specs: list[dict] = []
+        objective_keys = query.get("objective_keys") or []
+        for statement in statements:
+            text = str(statement.get("text") or statement.get("statement") or "").strip()
+            if not text:
+                continue
+            specs.append({
+                "canonical_text": text,
+                "claim_key": self._normalize_claim_key(text),
+                "statement_refs": [statement["id"]],
+                "evidence_refs": [
+                    {"id": item["id"], "stance": item.get("stance") or "supports"}
+                    for item in evidence
+                    if item.get("statement_ref") == statement["id"]
+                ],
+                "objective_keys": objective_keys,
+                "confidence": 0.5,
+                "qualifiers": statement.get("qualifiers") or [],
+                "limitations": statement.get("limitations") or [],
+            })
+        if specs:
+            return specs
+        for item in evidence:
+            text = str(item.get("text") or item.get("claim") or "").strip()
+            if not text:
+                continue
+            specs.append({
+                "canonical_text": text,
+                "claim_key": self._normalize_claim_key(text),
+                "statement_refs": [],
+                "evidence_refs": [{"id": item["id"], "stance": item.get("stance") or "supports"}],
+                "objective_keys": objective_keys,
+                "confidence": 0.45,
+                "qualifiers": item.get("qualifiers") or [],
+                "limitations": item.get("limitations") or [],
+            })
+        return specs
+
+    def normalize_claims(self, query_id: str) -> dict:
+        """Create or update canonical Claims for one Query's owned materials."""
+        query = graph_tools.get_node(query_id)
+        evaluation = graph_tools.get_query_evaluation_subgraph(query_id)
+        nodes = evaluation.get("nodes", [])
+        statements = [
+            node for node in nodes
+            if node.get("type") == NodeType.STATEMENT.value
+        ]
+        evidence = [
+            node for node in nodes
+            if node.get("type") == NodeType.EVIDENCE.value
+        ]
+        if not statements and not evidence:
+            return {"created_or_updated_claim_ids": [], "claim_count": 0}
+        if not statements:
+            specs = self._fallback_claim_specs(query, statements, evidence)
+            return self._write_claim_specs(query, specs, statements, evidence)
+
+        compact = {
+            "statements": [
+                {
+                    "id": item.get("id"),
+                    "text": item.get("text") or item.get("statement"),
+                    "document_id": item.get("document_id"),
+                    "source_id": item.get("source_id"),
+                    "qualifiers": item.get("qualifiers") or [],
+                    "limitations": item.get("limitations") or [],
+                    "confidence": item.get("confidence"),
+                }
+                for item in statements
+            ],
+            "evidence": [
+                {
+                    "id": item.get("id"),
+                    "text": item.get("text") or item.get("claim"),
+                    "document_id": item.get("document_id"),
+                    "source_id": item.get("source_id"),
+                    "statement_ref": item.get("statement_ref"),
+                    "claim_ref": item.get("claim_ref"),
+                    "stance": item.get("stance"),
+                    "qualifiers": item.get("qualifiers") or [],
+                    "limitations": item.get("limitations") or [],
+                    "confidence": item.get("confidence"),
+                }
+                for item in evidence
+            ],
+        }
+        prompt = (
+            mm_prompts.normalize_claims
+            .replace("{query}", json.dumps({
+                "id": query.get("id"),
+                "text": query.get("text"),
+                "objective_keys": query.get("objective_keys") or [],
+                "acceptance_criteria": query.get("acceptance_criteria") or [],
+            }, ensure_ascii=False))
+            .replace("{evidence_subgraph}", json.dumps(compact, ensure_ascii=False))
+        )
+        verdict = self._invoke_json(prompt)
+        raw_specs = verdict.get("claims") if isinstance(verdict, dict) else None
+        specs = [item for item in raw_specs or [] if isinstance(item, dict)]
+        if not specs:
+            specs = self._fallback_claim_specs(query, statements, evidence)
+        return self._write_claim_specs(query, specs, statements, evidence)
+
+    def _write_claim_specs(
+        self,
+        query: dict,
+        specs: list[dict],
+        statements: list[dict],
+        evidence: list[dict],
+    ) -> dict:
+        """Persist normalized Claim specs and their provenance edges."""
+        node_by_id = {node.get("id"): node for node in statements + evidence if node.get("id")}
+        objective_by_key = {item["objective_key"]: item for item in self.get_research_objectives()}
+        claim_ids: list[str] = []
+        for spec in specs:
+            canonical = str(spec.get("canonical_text") or spec.get("statement") or "").strip()
+            if not canonical:
+                continue
+            claim_key = self._normalize_claim_key(canonical, spec.get("claim_key"))
+            try:
+                confidence = max(0.0, min(1.0, float(spec.get("confidence", 0.5))))
+            except (TypeError, ValueError):
+                confidence = 0.5
+            objective_keys = [
+                key for key in (spec.get("objective_keys") or query.get("objective_keys") or [])
+                if key in objective_by_key
+            ]
+            claim_id = graph_tools.create_claim(
+                statement=canonical,
+                canonical_text=canonical,
+                claim_key=claim_key,
+                confidence=confidence,
+                qualifiers=spec.get("qualifiers") if isinstance(spec.get("qualifiers"), list) else [],
+                limitations=spec.get("limitations") if isinstance(spec.get("limitations"), list) else [],
+                objective_keys=objective_keys,
+            )
+            claim_ids.append(claim_id)
+            for statement_id in spec.get("statement_refs") or []:
+                if node_by_id.get(statement_id, {}).get("type") == NodeType.STATEMENT.value:
+                    graph_tools.add_edge(statement_id, claim_id, EdgeType.NORMALIZED_TO)
+            for item in spec.get("evidence_refs") or []:
+                if isinstance(item, str):
+                    evidence_id, stance = item, "supports"
+                elif isinstance(item, dict):
+                    evidence_id = item.get("id")
+                    stance = item.get("stance")
+                else:
+                    continue
+                if node_by_id.get(evidence_id, {}).get("type") == NodeType.EVIDENCE.value:
+                    graph_tools.add_edge(evidence_id, claim_id, self._stance_edge_type(stance))
+            for key in objective_keys:
+                graph_tools.add_edge(claim_id, objective_by_key[key]["id"], EdgeType.COVERS_OBJECTIVE)
+        return {
+            "created_or_updated_claim_ids": list(dict.fromkeys(claim_ids)),
+            "claim_count": len(set(claim_ids)),
+        }
+
     def assess_query(self, query_id: str) -> dict:
         """Assess one Query's owned evidence and automatically advance its state."""
         from tools import research_state
@@ -670,11 +847,13 @@ class MemoryManager:
             if any(c.get("status") not in {"sufficient", "blocked", "failed", "deferred"} for c in children):
                 return {"error": f"Query {query.get('handle') or resolved} still has unfinished selected children"}
 
+        normalization = self.normalize_claims(resolved)
         evaluation = graph_tools.get_query_evaluation_subgraph(resolved)
         prompt = mm_prompts.assess_query.replace(
             "{query}", json.dumps({
                 "text": query.get("text"),
                 "acceptance_criteria": query.get("acceptance_criteria") or [],
+                "normalized_claims": normalization,
             }, ensure_ascii=False)
         ).replace("{evaluation_subgraph}", json.dumps(evaluation, ensure_ascii=False))
         verdict = self._invoke_json(prompt)
@@ -1620,7 +1799,11 @@ class MemoryManager:
         sections = {
             "sources": ("Source", lambda item: bool(_first(item, "url"))),
             "documents": ("Document", lambda item: bool(_first(item, "document_summary", "summary_zh", "summary", "text", "content"))),
-            "claims": ("Claim", lambda item: bool(_first(item, "statement", "text_zh", "text"))),
+            "statements": ("Statement", lambda item: bool(_first(item, "statement", "text_zh", "text"))),
+            # Legacy packages used ``claims`` for document-bound extracted
+            # statements. Treat them as Statement refs at ingest time; Claim
+            # nodes are created later by normalize_claims().
+            "claims": ("Statement", lambda item: bool(_first(item, "statement", "text_zh", "text"))),
             "evidence": ("Evidence", lambda item: bool(_first(item, "statement", "evidence_text", "text_zh", "text"))),
         }
         for section, (node_type, valid) in sections.items():
@@ -1639,19 +1822,31 @@ class MemoryManager:
         for document in evidence_package.get("documents", []) or []:
             if not valid_ref(_first(document, "source_ref", "source"), NodeType.SOURCE.value):
                 return "Document source_ref must reference a valid Source"
-        for claim in evidence_package.get("claims", []) or []:
-            if not valid_ref(_first(claim, "document_ref", "document"), NodeType.DOCUMENT.value):
-                return "Claim document_ref must reference a valid Document"
-            if not valid_ref(_first(claim, "source_ref", "source"), NodeType.SOURCE.value):
-                return "Claim source_ref must reference a valid Source"
+        statement_items = list(evidence_package.get("statements", []) or [])
+        statement_items.extend(evidence_package.get("claims", []) or [])
+        for statement in statement_items:
+            if not valid_ref(_first(statement, "document_ref", "document"), NodeType.DOCUMENT.value):
+                return "Statement document_ref must reference a valid Document"
+            if not valid_ref(_first(statement, "source_ref", "source"), NodeType.SOURCE.value):
+                return "Statement source_ref must reference a valid Source"
         for evidence in evidence_package.get("evidence", []) or []:
             if not valid_ref(_first(evidence, "document_ref", "document"), NodeType.DOCUMENT.value):
                 return "Evidence document_ref must reference a valid Document"
             if not valid_ref(_first(evidence, "source_ref", "source"), NodeType.SOURCE.value):
                 return "Evidence source_ref must reference a valid Source"
-            supports = _first(evidence, "supports_or_contradicts", "supports_claim")
-            if supports and not valid_ref(supports, NodeType.CLAIM.value):
-                return "Evidence supports_or_contradicts must reference a valid Claim"
+            claim_ref = _first(evidence, "claim_ref", "normalized_claim_ref")
+            if claim_ref and not valid_ref(claim_ref, NodeType.CLAIM.value):
+                return "Evidence claim_ref must reference a valid Claim"
+            legacy_ref = _first(evidence, "supports_or_contradicts", "supports_claim")
+            if (
+                legacy_ref
+                and legacy_ref not in {"supports", "contradicts", "qualifies", "support", "contradict", "qualify"}
+                and not (
+                    valid_ref(legacy_ref, NodeType.STATEMENT.value)
+                    or valid_ref(legacy_ref, NodeType.CLAIM.value)
+                )
+            ):
+                return "Evidence legacy support reference must reference a valid Statement or Claim"
         for conflict in evidence_package.get("conflicts", []) or []:
             refs = conflict.get("evidence_refs") or conflict.get("related_claims") or []
             if any(not valid_ref(ref, NodeType.EVIDENCE.value) for ref in refs):
@@ -1662,7 +1857,7 @@ class MemoryManager:
         """Write a structured evidence package into the Research Graph.
 
         Accepts the evidence package produced by the Searcher (sources,
-        documents, claims, evidence, conflicts), creates the corresponding
+        documents, statements, evidence, conflicts), creates the corresponding
         nodes/edges, and connects them to ``query_id`` through a ``search_run``
         node. Local references (``local_ref``) in the package are resolved to
         the created graph IDs.
@@ -1678,6 +1873,7 @@ class MemoryManager:
         ref_map: dict[str, str] = {}
         source_ids: list[str] = []
         document_ids: list[str] = []
+        statement_ids: list[str] = []
         claim_ids: list[str] = []
         evidence_ids: list[str] = []
         conflict_ids: list[str] = []
@@ -1695,7 +1891,7 @@ class MemoryManager:
                 "search_run_id": None,
                 "query_id": query_id,
                 "ref_map": {},
-                "written": {"sources": 0, "documents": 0, "claims": 0, "evidence": 0, "conflicts": 0},
+                "written": {"sources": 0, "documents": 0, "statements": 0, "claims": 0, "evidence": 0, "conflicts": 0},
                 "error": str(exc),
             }
         if resolved_query_id is None:
@@ -1706,7 +1902,7 @@ class MemoryManager:
                 "search_run_id": None,
                 "query_id": query_id,
                 "ref_map": {},
-                "written": {"sources": 0, "documents": 0, "claims": 0, "evidence": 0, "conflicts": 0},
+                "written": {"sources": 0, "documents": 0, "statements": 0, "claims": 0, "evidence": 0, "conflicts": 0},
                 "error": (
                     f"query_id {query_id!r} 未匹配到任何 query 节点，未写入图谱；"
                     "请用句柄（如 q3.1）或精确 query 节点 ID 重新派发。"
@@ -1724,7 +1920,7 @@ class MemoryManager:
             return {
                 "search_run_id": search_run_id,
                 "query_id": resolved_query_id,
-                "written": {"sources": 0, "documents": 0, "claims": 0, "evidence": 0, "conflicts": 0},
+                "written": {"sources": 0, "documents": 0, "statements": 0, "claims": 0, "evidence": 0, "conflicts": 0},
                 "error": "SearchRun is not running or does not belong to the Query",
             }
         validation_error = self._validate_evidence_package_refs(evidence_package)
@@ -1764,23 +1960,31 @@ class MemoryManager:
             document_ids.append(doc_id)
             produced_ids.append(doc_id)
 
-        # Process claims first - these are the higher-level assertions
-        for claim_item in evidence_package.get("claims", []) or []:
-            claim_text = _first(claim_item, "statement", "text_zh", "text")
-            if not claim_text:
+        statement_items = list(evidence_package.get("statements", []) or [])
+        # Backward compatibility: old analyzers emitted document-bound
+        # ``claims``. They are statements here; canonical Claim nodes are
+        # created later by normalize_claims().
+        statement_items.extend(evidence_package.get("claims", []) or [])
+        for statement_item in statement_items:
+            statement_text = _first(statement_item, "statement", "text_zh", "text")
+            if not statement_text:
                 continue
-            doc_ref = _first(claim_item, "document_ref", "document")
-            claim_id = graph_tools.create_claim(
-                statement=claim_text,
+            doc_ref = _first(statement_item, "document_ref", "document")
+            statement_id = graph_tools.create_statement(
+                text=statement_text,
                 document_id=resolve(doc_ref),
-                source_id=resolve(_first(claim_item, "source_ref", "source")),
+                source_id=resolve(_first(statement_item, "source_ref", "source")),
+                qualifiers=statement_item.get("qualifiers") if isinstance(statement_item.get("qualifiers"), list) else [],
+                limitations=statement_item.get("limitations") if isinstance(statement_item.get("limitations"), list) else [],
+                confidence=_first(statement_item, "confidence"),
+                locator=_first(statement_item, "locator", "span", "quote_locator"),
             )
-            if claim_item.get("local_ref"):
-                ref_map[claim_item["local_ref"]] = claim_id
-            claim_ids.append(claim_id)
-            produced_ids.append(claim_id)
+            if statement_item.get("local_ref"):
+                ref_map[statement_item["local_ref"]] = statement_id
+            statement_ids.append(statement_id)
+            produced_ids.append(statement_id)
 
-        # Process evidence - these support or contradict claims
+        # Process evidence. Claim stance is resolved after normalization.
         for evidence_item in evidence_package.get("evidence", []) or []:
             evidence_text = _first(evidence_item, "statement", "evidence_text", "text_zh", "text")
             if not evidence_text:
@@ -1790,15 +1994,31 @@ class MemoryManager:
             if not doc_ref and isinstance(sources_ref, list) and sources_ref:
                 doc_ref = sources_ref[0]
             
-            # Check if this evidence supports a specific claim
-            supports_ref = _first(evidence_item, "supports_or_contradicts", "supports_claim")
-            supports_claim_id = resolve(supports_ref) if supports_ref else None
+            legacy_ref = _first(evidence_item, "supports_or_contradicts", "supports_claim")
+            statement_ref = None
+            claim_ref = resolve(_first(evidence_item, "claim_ref", "normalized_claim_ref"))
+            if legacy_ref and legacy_ref not in {"supports", "contradicts", "qualifies", "support", "contradict", "qualify"}:
+                resolved_legacy = resolve(legacy_ref)
+                legacy_node = graph_tools.get_node(resolved_legacy) if resolved_legacy else {}
+                if legacy_node.get("type") == NodeType.STATEMENT.value:
+                    statement_ref = resolved_legacy
+                elif legacy_node.get("type") == NodeType.CLAIM.value:
+                    claim_ref = resolved_legacy
             
             evidence_id = graph_tools.create_evidence(
                 claim=evidence_text,
                 document_id=resolve(doc_ref),
                 source_id=resolve(_first(evidence_item, "source_ref", "source")),
-                supports_claim_id=supports_claim_id,
+                evidence_type=_first(evidence_item, "evidence_type", "type"),
+                confidence=_first(evidence_item, "confidence"),
+                qualifiers=evidence_item.get("qualifiers") if isinstance(evidence_item.get("qualifiers"), list) else [],
+                limitations=evidence_item.get("limitations") if isinstance(evidence_item.get("limitations"), list) else [],
+                locator=_first(evidence_item, "locator", "span", "quote_locator"),
+                statement_ref=statement_ref,
+                claim_ref=claim_ref,
+                stance=_first(evidence_item, "stance") or (
+                    legacy_ref if legacy_ref in {"supports", "contradicts", "qualifies"} else None
+                ),
             )
             if evidence_item.get("local_ref"):
                 ref_map[evidence_item["local_ref"]] = evidence_id
@@ -1830,7 +2050,8 @@ class MemoryManager:
 
         source_count = len(source_ids)
         evidence_count = len(evidence_ids)
-        succeeded = source_count > 0 and evidence_count > 0
+        statement_count = len(statement_ids)
+        succeeded = source_count > 0 and (evidence_count > 0 or statement_count > 0)
         evidence_keys = {
             _gap_key(_first(item, "statement", "evidence_text", "text_zh", "text") or "")
             for item in evidence_package.get("evidence", []) or []
@@ -1880,6 +2101,7 @@ class MemoryManager:
             "written": {
                 "sources": len(source_ids),
                 "documents": len(document_ids),
+                "statements": len(statement_ids),
                 "claims": len(claim_ids),
                 "evidence": len(evidence_ids),
                 "conflicts": len(conflict_ids),

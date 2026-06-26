@@ -99,6 +99,7 @@ def _source_ids_for_item(item_id: str, nodes: dict[str, dict], edges: list[dict]
 
     source_ids: set[str] = set()
     document_ids: set[str] = set()
+    statement_ids: set[str] = set()
     evidence_ids: set[str] = set()
     for edge in edges:
         source = edge.get("source")
@@ -108,14 +109,27 @@ def _source_ids_for_item(item_id: str, nodes: dict[str, dict], edges: list[dict]
             source_ids.add(source)
         if target == item_id and is_type(source, "Document"):
             document_ids.add(source)
+        if target == item_id and is_type(source, "Statement"):
+            statement_ids.add(source)
         if target == item_id and is_type(source, "Evidence"):
             evidence_ids.add(source)
     for edge in edges:
         source = edge.get("source")
         target = edge.get("target")
+        if target in statement_ids and is_type(source, "Source"):
+            source_ids.add(source)
+        if target in statement_ids and is_type(source, "Document"):
+            document_ids.add(source)
         if target in document_ids and is_type(source, "Source"):
             source_ids.add(source)
         if target in evidence_ids and is_type(source, "Source"):
+            source_ids.add(source)
+        if target in evidence_ids and is_type(source, "Document"):
+            document_ids.add(source)
+    for edge in edges:
+        source = edge.get("source")
+        target = edge.get("target")
+        if target in document_ids and is_type(source, "Source"):
             source_ids.add(source)
     return sorted(
         source_id for source_id in source_ids

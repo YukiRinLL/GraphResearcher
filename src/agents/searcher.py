@@ -4,7 +4,7 @@ Replaces the prompt-based ``create_deep_agent`` with an explicit StateGraph
 so that the pipeline order and data hand-off are guaranteed by the graph,
 not by the model's interpretation of a prompt:
 
-    init → web_search (LLM agent) → analyze (LLM extraction) → submit (function)
+    init → web_search (LLM agent) → extract_evidence_package (LLM extraction) → submit (function)
 
 The Orchestrator dispatches it via the structured ``dispatch_searcher`` tool,
 which injects ``query_id``/``query_text`` directly into the state (so the query
@@ -50,11 +50,17 @@ class SearcherState(TypedDict):
 
 _QID_RE = re.compile(r"(?:query_id|Query ID|queryId|qid|id)[=:]\s*([a-f0-9_]+)", re.IGNORECASE)
 
-# Characters beyond this limit are dropped from the search output before it
-# is passed to the analyze node, to avoid context-window exhaustion.
+# Characters beyond this limit are dropped from the search output before it is
+# passed to the extraction node, to avoid context-window exhaustion.
 _MAX_SEARCH_OUTPUT_CHARS = 50_000
 
-_EMPTY_PACKAGE: dict = {"sources": [], "documents": [], "claims": [], "evidence": [], "conflicts": []}
+_EMPTY_PACKAGE: dict = {
+    "sources": [],
+    "documents": [],
+    "statements": [],
+    "evidence": [],
+    "conflicts": [],
+}
 
 # ── Nodes ────────────────────────────────────────────────────────────────
 
@@ -118,9 +124,9 @@ def web_search_node(state: SearcherState) -> dict:
     return {"search_output": search_output, "messages": result["messages"]}
 
 
-# The user-message template for the analyze node.  The search output is
+# The user-message template for the extraction node.  The search output is
 # inlined here — no sub-agent context-isolation gap.
-_ANALYZE_USER_TEMPLATE = """\
+_EXTRACT_EVIDENCE_PACKAGE_USER_TEMPLATE = """\
 ## 任务
 对以下网页原始素材做结构化知识抽取，生成 evidence_package。
 
@@ -136,18 +142,19 @@ _ANALYZE_USER_TEMPLATE = """\
   "documents": [
     {{"local_ref": "d1", "document_summary": "忠实摘要…", "source_ref": "s1"}}
   ],
-  "claims": [
-    {{"local_ref": "c1", "statement": "事实性陈述…", "document_ref": "d1", "source_ref": "s1"}}
+  "statements": [
+    {{"local_ref": "st1", "text": "该文档声称的事实性陈述…", "document_ref": "d1", "source_ref": "s1", "qualifiers": [], "limitations": [], "confidence": "high|medium|low"}}
   ],
   "evidence": [
-    {{"local_ref": "e1", "statement": "支持或反驳的具体证据片段…", "document_ref": "d1", "source_ref": "s1", "supports_or_contradicts": "c1", "confidence": "high|medium|low"}}
+    {{"local_ref": "e1", "text": "可复核的具体证据片段…", "document_ref": "d1", "source_ref": "s1", "evidence_type": "data|definition|quote|policy|experiment|code_fact|other", "locator": null, "qualifiers": [], "limitations": [], "confidence": "high|medium|low"}}
   ],
   "conflicts": [
     {{"local_ref": "x1", "description": "不同来源的矛盾描述…", "evidence_refs": ["e1", "e2"]}}
   ]
 }}
 - local_ref 用于包内交叉引用（如 document.source_ref 指向 sources[].local_ref）。
-- 每条 claim 和 evidence 必须有可追溯的 source_ref 和 document_ref。
+- 每条 statement 和 evidence 必须有可追溯的 source_ref 和 document_ref。
+- 不要生成 Claim；Claim 由 Graph Manager 后续从多个 Statement/Evidence 中归一化。
 - 如果素材中完全没有可抽取的内容，返回所有字段为空数组的 JSON（不可省略任何字段）。
 - 不要编造任何 URL、标题、数据或日期；缺失的元数据用 null。
 
@@ -155,14 +162,14 @@ _ANALYZE_USER_TEMPLATE = """\
 {search_output}"""
 
 
-def analyze_node(state: SearcherState) -> dict:
+def extract_evidence_package_node(state: SearcherState) -> dict:
     """Extract a structured ``evidence_package`` from the raw search output.
 
     The web-search result is **inlined** in the prompt so the LLM always sees
     the actual materials — there is no sub-agent boundary between search and
-    analysis.
+    extraction.
     """
-    prompt = _ANALYZE_USER_TEMPLATE.format(
+    prompt = _EXTRACT_EVIDENCE_PACKAGE_USER_TEMPLATE.format(
         query_text=state["query_text"],
         search_output=state.get("search_output") or "（无搜索结果）",
     )
@@ -209,6 +216,8 @@ def _parse_evidence_package(text: str) -> dict:
     # Fill in any missing top-level keys.
     for key in _EMPTY_PACKAGE:
         data.setdefault(key, [])
+    # Backward compatibility for packages produced by older prompts.
+    data.setdefault("claims", [])
     return data
 
 
@@ -238,12 +247,12 @@ def _build_graph() -> StateGraph:
     g = StateGraph(SearcherState)
     g.add_node("init", init_node)
     g.add_node("web_search", web_search_node)
-    g.add_node("analyze", analyze_node)
+    g.add_node("extract_evidence_package", extract_evidence_package_node)
     g.add_node("submit", submit_node)
 
     g.add_edge("init", "web_search")
-    g.add_edge("web_search", "analyze")
-    g.add_edge("analyze", "submit")
+    g.add_edge("web_search", "extract_evidence_package")
+    g.add_edge("extract_evidence_package", "submit")
     g.add_edge("submit", END)
 
     g.set_entry_point("init")

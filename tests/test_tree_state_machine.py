@@ -101,6 +101,20 @@ def install_fakes():
             add_edge(query_id, node_id, EdgeType.HAS_GAP if analysis_type == "gap" else EdgeType.HAS_ANALYSIS)
         return node_id
 
+    def create_claim(statement, document_id=None, source_id=None, claim_key=None, canonical_text=None, **attrs):
+        global SEQ
+        SEQ += 1
+        node_id = f"claim{SEQ}"
+        NODES[node_id] = {
+            "id": node_id,
+            "type": "Claim",
+            "statement": statement,
+            "canonical_text": canonical_text or statement,
+            "claim_key": claim_key,
+            **attrs,
+        }
+        return node_id
+
     def create_query_child(parent_id, text, importance, acceptance_criteria=None, gap_ids=None, **attrs):
         global SEQ
         SEQ += 1
@@ -134,6 +148,7 @@ def install_fakes():
     graph_tools.get_all_nodes = lambda: [dict(n) for n in NODES.values()]
     graph_tools.get_all_edges = lambda: [dict(e) for e in EDGES]
     graph_tools.create_analysis = create_analysis
+    graph_tools.create_claim = create_claim
     graph_tools.create_query_child = create_query_child
 
 

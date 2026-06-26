@@ -1,6 +1,7 @@
 """Synchronous typed helpers over the Research Graph."""
 
 import asyncio
+import hashlib
 import os
 import re
 import threading
@@ -333,17 +334,88 @@ def create_document(
     return doc_id
 
 
+def _stable_text_key(prefix: str, *parts: Any) -> str:
+    normalized = "\n".join(" ".join(str(part or "").split()).lower() for part in parts)
+    return f"{prefix}:{hashlib.sha256(normalized.encode('utf-8')).hexdigest()[:24]}"
+
+
+def create_statement(
+    text: str,
+    document_id: str,
+    source_id: Optional[str] = None,
+    qualifiers: Optional[list[str]] = None,
+    limitations: Optional[list[str]] = None,
+    confidence: Optional[str] = None,
+    locator: Optional[str] = None,
+    statement_key: Optional[str] = None,
+    **attributes: Any,
+) -> dict[str, Any]:
+    if document_id and get_node(document_id).get("type") != NodeType.DOCUMENT.value:
+        raise ValueError(f"Statement document must be Document: {document_id!r}")
+    if source_id and get_node(source_id).get("type") != NodeType.SOURCE.value:
+        raise ValueError(f"Statement source must be Source: {source_id!r}")
+    statement_key = statement_key or _stable_text_key("statement", document_id, locator, text)
+    matches = search_nodes("statement", {"statement_key": statement_key})
+    if matches:
+        statement_id = matches[0]["id"]
+        upsert_node(NodeType.STATEMENT, {
+            "text": text,
+            "document_id": document_id,
+            "source_id": source_id,
+            "qualifiers": qualifiers or [],
+            "limitations": limitations or [],
+            "confidence": confidence,
+            "locator": locator,
+            "statement_key": statement_key,
+            **attributes,
+        }, statement_id)
+    else:
+        manager = _get_manager()
+        statement_id = _run_async(manager.add_node(NodeType.STATEMENT, {
+            "text": text,
+            "document_id": document_id,
+            "source_id": source_id,
+            "qualifiers": qualifiers or [],
+            "limitations": limitations or [],
+            "confidence": confidence,
+            "locator": locator,
+            "statement_key": statement_key,
+            **attributes,
+        }))
+    _run_async(_get_manager().add_edge(document_id, statement_id, EdgeType.EXTRACTED_STATEMENT))
+    if source_id:
+        _run_async(_get_manager().add_edge(source_id, statement_id, EdgeType.SUPPORTED_BY))
+    return statement_id
+
+
 def create_claim(
     statement: str,
     document_id: Optional[str] = None,
-    source_id: Optional[str] = None
+    source_id: Optional[str] = None,
+    claim_key: Optional[str] = None,
+    canonical_text: Optional[str] = None,
+    **attributes: Any,
 ) -> dict[str, Any]:
     if document_id and get_node(document_id).get("type") != NodeType.DOCUMENT.value:
         raise ValueError(f"Claim document must be Document: {document_id!r}")
     if source_id and get_node(source_id).get("type") != NodeType.SOURCE.value:
         raise ValueError(f"Claim source must be Source: {source_id!r}")
+    canonical_text = canonical_text or statement
+    claim_key = claim_key or _stable_text_key("claim", canonical_text)
+    properties = {
+        "statement": statement,
+        "canonical_text": canonical_text,
+        "claim_key": claim_key,
+        "status": attributes.pop("status", "normalized"),
+        **attributes,
+    }
     manager = _get_manager()
-    claim_id = _run_async(manager.add_node(NodeType.CLAIM, {"statement": statement, "status": "pending"}))
+    matches = search_nodes("claim", {"claim_key": claim_key})
+    if matches:
+        claim_id = matches[0]["id"]
+        upsert_node(NodeType.CLAIM, properties, claim_id)
+    else:
+        claim_id = _run_async(manager.add_node(NodeType.CLAIM, properties))
     if document_id:
         _run_async(manager.add_edge(document_id, claim_id, EdgeType.CLAIMED_BY))
     if source_id:
@@ -352,10 +424,18 @@ def create_claim(
 
 
 def create_evidence(
-    claim: str,
+    claim: Optional[str] = None,
     document_id: Optional[str] = None,
     source_id: Optional[str] = None,
-    supports_claim_id: Optional[str] = None
+    supports_claim_id: Optional[str] = None,
+    text: Optional[str] = None,
+    evidence_type: Optional[str] = None,
+    confidence: Optional[str] = None,
+    qualifiers: Optional[list[str]] = None,
+    limitations: Optional[list[str]] = None,
+    locator: Optional[str] = None,
+    evidence_key: Optional[str] = None,
+    **attributes: Any,
 ) -> dict[str, Any]:
     if document_id and get_node(document_id).get("type") != NodeType.DOCUMENT.value:
         raise ValueError(f"Evidence document must be Document: {document_id!r}")
@@ -363,10 +443,31 @@ def create_evidence(
         raise ValueError(f"Evidence source must be Source: {source_id!r}")
     if supports_claim_id and get_node(supports_claim_id).get("type") != NodeType.CLAIM.value:
         raise ValueError(f"Evidence claim target must be Claim: {supports_claim_id!r}")
+    evidence_text = text or claim or ""
+    evidence_key = evidence_key or _stable_text_key("evidence", document_id, locator, evidence_text)
     manager = _get_manager()
-    evidence_id = _run_async(manager.add_node(NodeType.EVIDENCE, {"claim": claim, "status": "pending"}))
+    properties = {
+        "text": evidence_text,
+        "claim": evidence_text,  # legacy report/readiness code still reads this field.
+        "status": "pending",
+        "document_id": document_id,
+        "source_id": source_id,
+        "evidence_type": evidence_type,
+        "confidence": confidence,
+        "qualifiers": qualifiers or [],
+        "limitations": limitations or [],
+        "locator": locator,
+        "evidence_key": evidence_key,
+        **attributes,
+    }
+    matches = search_nodes("evidence", {"evidence_key": evidence_key})
+    if matches:
+        evidence_id = matches[0]["id"]
+        upsert_node(NodeType.EVIDENCE, properties, evidence_id)
+    else:
+        evidence_id = _run_async(manager.add_node(NodeType.EVIDENCE, properties))
     if document_id:
-        _run_async(manager.add_edge(document_id, evidence_id, EdgeType.EXTRACTED_STATEMENT))
+        _run_async(manager.add_edge(document_id, evidence_id, EdgeType.HAS_EVIDENCE))
     if source_id:
         _run_async(manager.add_edge(source_id, evidence_id, EdgeType.SUPPORTED_BY))
     if supports_claim_id:
@@ -615,8 +716,28 @@ def get_query_evaluation_subgraph(query_id: str) -> dict[str, Any]:
         if etype == "has_conflict" and edge.get("target") in produced_ids:
             selected_ids.add(edge["source"])
             selected_edges.append(edge)
+        elif (
+            edge.get("source") in selected_ids
+            and etype in {"normalized_to", "supported_by", "contradicted_by", "qualified_by"}
+            and nodes.get(edge.get("target"), {}).get("type") == NodeType.CLAIM.value
+        ):
+            selected_ids.add(edge["target"])
+            selected_edges.append(edge)
         elif edge.get("source") in selected_ids and edge.get("target") in selected_ids:
             selected_edges.append(edge)
+
+    for edge in edges:
+        if edge.get("source") in selected_ids and edge.get("target") in selected_ids:
+            selected_edges.append(edge)
+
+    deduped_edges: list[dict[str, Any]] = []
+    seen_edges: set[tuple[Any, Any, Any]] = set()
+    for edge in selected_edges:
+        key = (edge.get("source"), edge.get("target"), edge.get("type"))
+        if key in seen_edges:
+            continue
+        seen_edges.add(key)
+        deduped_edges.append(edge)
 
     children = []
     for child_id in get_query_children(query_id):
@@ -637,7 +758,7 @@ def get_query_evaluation_subgraph(query_id: str) -> dict[str, Any]:
     return {
         "query": query,
         "nodes": [nodes[nid] for nid in selected_ids if nid in nodes],
-        "edges": selected_edges,
+        "edges": deduped_edges,
         "children": children,
     }
 

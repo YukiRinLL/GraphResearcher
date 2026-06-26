@@ -125,6 +125,46 @@ Owned evaluation subgraph:
 {evaluation_subgraph}
 """
 
+normalize_claims = """You are the Claim Normalizer for GraphResearcher.
+Create canonical research Claims from the provided Query-owned Statements and Evidence.
+
+Definitions:
+- Statement: what one Document says, preserving source context.
+- Evidence: a concrete verifiable item from a Document.
+- Claim: a normalized research proposition synthesized from one or more Statements/Evidence. It is not a quote from one source.
+
+Rules:
+- Return only valid JSON.
+- Base every Claim on provided node IDs. Do not invent facts.
+- Merge duplicate or paraphrased Statements into one Claim when they express the same proposition.
+- Use evidence stance: supports, contradicts, or qualifies.
+- If the material is weak, keep the Claim narrow and put limitations/qualifiers in fields.
+
+Return:
+{
+  "claims": [
+    {
+      "canonical_text": "normalized proposition",
+      "claim_key": "stable-short-key-or-null",
+      "statement_refs": ["statement-node-id"],
+      "evidence_refs": [
+        {"id": "evidence-node-id", "stance": "supports|contradicts|qualifies"}
+      ],
+      "objective_keys": ["affected-objective-key"],
+      "confidence": 0.0,
+      "qualifiers": ["scope or condition"],
+      "limitations": ["source or evidence limitation"]
+    }
+  ]
+}
+
+Query:
+{query}
+
+Statements and evidence:
+{evidence_subgraph}
+"""
+
 plan_followup_query = """You are the Query Planner for GraphResearcher.
 Author one self-contained child search query that jointly covers the assigned
 atomic gaps sharing one search subject.

@@ -150,11 +150,14 @@ def install_fakes():
     graph_tools.create_document = lambda text, source_id=None: add_typed(
         "Document", {"text": text, "source_id": source_id}
     )
+    graph_tools.create_statement = lambda text, document_id, source_id=None, **attrs: add_typed(
+        "Statement", {"text": text, "document_id": document_id, "source_id": source_id, **attrs}
+    )
     graph_tools.create_claim = lambda statement, document_id=None, source_id=None: add_typed(
         "Claim", {"statement": statement}
     )
-    graph_tools.create_evidence = lambda claim, document_id=None, source_id=None, supports_claim_id=None: add_typed(
-        "Evidence", {"claim": claim}
+    graph_tools.create_evidence = lambda claim=None, document_id=None, source_id=None, supports_claim_id=None, **attrs: add_typed(
+        "Evidence", {"claim": claim, "text": attrs.get("text") or claim, **attrs}
     )
     graph_tools.create_conflict = lambda description, evidence_ids, conflict_type="factual", resolution_status="unresolved": add_typed(
         "Conflict",
@@ -197,6 +200,7 @@ def main():
     })
     assert result["status"] == "succeeded" and result["written"]["sources"] == 1, result
     assert result["written"]["evidence"] == 1 and NODES["q1"]["status"] == "assessing", result
+    assert result["written"]["statements"] == 1 and result["written"]["claims"] == 0, result
     repeated_submit = mm.submit_search_result(first["search_run_id"], "q1", {})
     assert repeated_submit.get("error"), repeated_submit
     assert mm.prepare_search("q1").get("error")
