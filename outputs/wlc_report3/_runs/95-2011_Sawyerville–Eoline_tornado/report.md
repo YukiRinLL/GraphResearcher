@@ -1,0 +1,61 @@
+# 2011 Sawyerville–Eoline tornado
+
+## 2011 Sawyerville–Eoline tornado
+
+The 2011 Sawyerville–Eoline tornado was a long-track, strong tornado that occurred on April 27, 2011 in central Alabama, United States, during the multi-day April 25–28, 2011 tornado outbreak often referred to as the April 2011 Super Outbreak. The tornado tracked from far southwest Greene County near the Tombigbee River west of Tishabee around 5:30 pm Central Daylight Time (CDT) to an area just northeast of Marvel in northeastern Bibb County around 6:55 pm, following a generally northeastward path through Greene, Hale, and Bibb counties. The National Weather Service (NWS) Weather Forecast Office in Birmingham officially rated the tornado EF3 on the Enhanced Fujita scale, with an estimated maximum wind speed of about 145 mph (233 km/h), and characterized it as a strong tornado. According to NWS survey data, the Sawyerville–Eoline tornado had a damage path length of approximately 72.13 miles (116.1 km) and a maximum width of about 1,760 yards (1 mile; 1.6 km). Along its track the tornado caused extensive damage to mobile homes, single-family residences, churches, businesses, and forested areas, resulting in seven fatalities and about fifty injuries across the three counties. [1][2][3][4][5][6][7][8]
+
+## Meteorological background
+
+The Sawyerville–Eoline tornado formed within a broader tornado outbreak that affected the eastern half of the United States from April 25 to 28, 2011, a sequence of severe weather events commonly described in meteorological assessments as a multi-day "Super Outbreak". On April 27, 2011, supercell thunderstorms developed across Alabama and neighboring states, producing multiple violent, long-track tornadoes. A National Oceanic and Atmospheric Administration (NOAA) service assessment described the April 27 event as one of the deadliest U.S. tornado episodes since systematic record keeping began in 1950, with 316 fatalities across five states, more than 2,400 injuries, and over US$4.2 billion in damages, comparing it to the 1974 Super Tornado Outbreak and noting that it resulted in more deaths than the 1965 Palm Sunday outbreak. Within central Alabama, the NWS Birmingham documented numerous tornadoes from the afternoon into the evening of April 27 and produced a summary table and narratives describing the tracks and intensities of these events, including the Sawyerville–Eoline tornado. [2][3][4][7][1]
+
+According to the NWS Birmingham event summary and storm reports, tornado warnings were issued for Greene, Hale, and Bibb counties from approximately 4:50 pm to 7:45 pm CDT on April 27, covering the period during which the Sawyerville–Eoline tornado and other tornadoes affected the region. These warnings were associated with supercell thunderstorms moving across central Alabama as part of the larger outbreak environment. [1][9][2][7]
+
+## Tornado formation and track
+
+The NWS Birmingham damage survey determined that the Sawyerville–Eoline tornado touched down in far southwest Greene County near the Tombigbee River, just west of the community of Tishabee, on County Road 69 near Head Drive at approximately 5:30 pm CDT on April 27, 2011. From its initial touchdown the tornado traveled generally northeast across rural areas of Greene County north of Forkland. The survey described this initial segment of the track as producing EF1 damage, with the tornado strengthening to EF2 intensity while still in Greene County. Along this portion of the path, at least four mobile homes, three outbuildings, and two churches were damaged or destroyed, and numerous trees were downed, resulting in two minor injuries. [1][5]
+
+After crossing rural Greene County, the tornado crossed the Black Warrior River and entered Hale County west of Sawyerville, continuing along a northeast trajectory. It crossed Alabama Route 14 just north of Sawyerville, where the survey indicated that the tornado intensified to EF3 on the Enhanced Fujita scale, with estimated winds of about 145 mph. As the tornado continued through Hale County, it crossed County Roads 18 and 21, Alabama Highway 69 south of the community of Harper Hill, and County Road 29 east of Ingram, causing extensive structural damage. This portion of the track primarily affected the Sawyerville–Havana area of Hale County, where numerous mobile homes and single-family houses and at least one church were damaged or destroyed, and thousands of trees were knocked down. [1][5][10][11]
+
+Continuing northeast, the tornado moved into the Talladega National Forest near Ingram, where the survey documented significant tree damage extending to the Bibb County line. In Bibb County, the tornado tracked through forested and rural areas and then moved through the community of Eoline, where it again produced EF3 damage with estimated winds of about 145 mph. In Eoline, numerous mobile homes and single-family homes sustained minor to major damage, and approximately a dozen such structures were destroyed. The Eoline Fire Department building and another business were also destroyed, and one fatality occurred in a vehicle near the fire department, with at least ten other injuries reported in the area. [1][5]
+
+After passing through Eoline, the tornado continued northeastward and crossed Alabama Highway 5 south of West Blocton, where survey data indicate that it weakened slightly to EF2 intensity with estimated winds near 125 mph. Several mobile homes and single-family houses sustained major damage or were destroyed near County Road 26, and thousands of trees were downed along the path through Talladega National Forest. The tornado subsequently weakened further and lifted just northeast of Marvel in far northeastern Bibb County around 6:55 pm CDT. [1][5][8]
+
+Survey measurements from NWS Birmingham indicate that the entire Sawyerville–Eoline tornado path was approximately 72.13 miles long, with a maximum width of about 1,760 yards (roughly 1 mile). Within this track, the Hale County segment associated with the Sawyerville–Havana area is documented in the NOAA Storm Events Database as having a length of about 25.18 miles at the same maximum width. A subsequent narrative on the Tornado Talk website describes the track as "nearly 77 miles" and notes that the event was a long-track tornado that crossed central Alabama. The difference between the NWS-measured length and the longer value reported by Tornado Talk likely reflects methodological differences or the inclusion of the entire multi-county track in a rounded estimate, and most official documentation cites the NWS survey length. [1][5][6]
+
+## Impacts and casualties
+
+The Sawyerville–Eoline tornado produced widespread structural and vegetation damage along its multi-county track through Greene, Hale, and Bibb counties. In Greene County, the tornado damaged or destroyed multiple mobile homes, outbuildings, and churches and downed numerous trees, resulting in two minor injuries according to NWS Birmingham. In Hale County, particularly in the Sawyerville–Havana area, extensive structural damage occurred along County Roads 18, 21, and 29 and Alabama Highway 69, where numerous mobile homes and single-family homes, as well as at least one church, were damaged or destroyed. Thousands of trees were knocked down, contributing to blocked roads and damage to utility infrastructure. [1][5][6][10][11]
+
+In Bibb County, significant structural damage was reported in and around Eoline, where numerous mobile homes and single-family houses sustained minor to major damage and around a dozen such structures were destroyed. The tornado destroyed the Eoline Fire Department building and another business, and caused major tree damage in the Talladega National Forest and adjacent areas. The NOAA Storm Events Database notes that the Hale County portion of the event alone resulted in property damage estimated at US$17 million. The broader Sawyerville–Eoline track is described by Tornado Talk as having decimated dozens of rural homes and caused "remarkable" vegetation damage across central Alabama. [1][5][8][6]
+
+Casualty figures for the Sawyerville–Eoline tornado are primarily drawn from the NWS Birmingham survey and the NOAA Storm Events Database, which together indicate a total of seven fatalities and about fifty injuries across Greene, Hale, and Bibb counties. Within Greene County, survey narratives describe two minor injuries. In Hale County, the NWS documentation reports at least forty injuries and six fatalities associated with extensive structural damage in the Sawyerville–Havana area, with fatality details in the Storm Events Database indicating that deaths occurred largely in mobile homes and similar structures. In Bibb County near Eoline, the survey records one fatality in a vehicle near the Eoline Fire Department and at least ten other injuries. Because the Hale County and Bibb County narratives use phrases such as "at least" for injury counts, these figures represent minimums and may involve some overlap between county-level tallies and overall path totals. A later summary on Tornado Talk cites a slightly higher total of fifty-two injuries for the tornado while retaining the figure of seven fatalities, illustrating minor differences between secondary accounts and the primary NWS data. [1][5][6]
+
+## Aftermath and legacy
+
+The Sawyerville–Eoline tornado occurred on the same day as several higher-profile tornadoes in Alabama, including violent long-track events that affected larger population centers, and subsequent news retrospectives have noted that the Sawyerville–Eoline tornado received comparatively less public attention despite its severity. Coverage by outlets such as CBS 42 has placed the Sawyerville–Eoline EF3 tornado within a list of significant April 27, 2011 tornadoes in Alabama, while also emphasizing that the broader outbreak produced numerous violent and long-track tornadoes across the state. Tornado Talk describes the tornado as intense and long-track, notes that it was overshadowed by other concurrent events, and highlights its substantial impacts on small communities and rural areas along the Sawyerville–Eoline corridor. [6][7]
+
+Local and regional accounts reflecting on the April 27, 2011 outbreak have included recollections from emergency management personnel and residents in Hale County, where the Sawyerville–Eoline tornado caused concentrated damage and casualties. These retrospective narratives emphasize the challenges of responding to a severe tornado in a rural area with dispersed housing, mobile homes, and limited infrastructure, within the context of a day that involved multiple simultaneous tornado emergencies. [3][11]
+
+## References
+
+[1] Sawyerville-Eoline Tornado - April 27, 2011 https://www.weather.gov/bmx/event_04272011sawyerville
+
+[2] Historic Outbreak of April 27, 2011 https://www.weather.gov/bmx/event_04272011
+
+[3] The historic tornadoes of April 2011 http://repository.library.noaa.gov/view/noaa/6977
+
+[4] Overview of the April 25-28, 2011 Super Outbreak https://www.tornadotalk.com/overview-of-the-april-25-28-2011-super-outbreak/
+
+[5] Storm Events Database - Event Details: Tornado (EF3), Hale County, AL, April 27, 2011 https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742
+
+[6] Sawyerville-Eoline, AL EF3 Tornado – April 27, 2011 https://www.tornadotalk.com/sawyerville-eoline-al-ef3-tornado-april-27-2011/
+
+[7] Looking Back at April 27, 2011 https://www.cbs42.com/news/local/looking-back-at-april-27-2011/
+
+[8] April 27, 2011 - March of the Supercells https://storymaps.arcgis.com/stories/47cb7288a887417dbc3966b6ac5dba03
+
+[9] Local Storm Reports for April 27, 2011 https://www.weather.gov/bmx/event_04272011lsr
+
+[10] EF4 tornado on Apr. 27, 2011 15:35 PM CDT (Montgomery Advertiser Tornado Archive entry referencing Sawyerville–Eoline path) https://data.montgomeryadvertiser.com/tornado-archive/alabama/309071/
+
+[11] Remembering Alabama's April 27, 2011 Tornado Outbreak https://tuscaloosathread.com/alabama-tornado-anniversary-2011/

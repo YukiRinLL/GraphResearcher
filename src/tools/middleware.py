@@ -502,3 +502,92 @@ class ReportValidationMiddleware(AgentMiddleware):
             nudge = HumanMessage(content=self._NUDGE)
             response = await handler(request.override(messages=[*request.messages, nudge]))
         return response
+
+
+class ReporterRevisionMiddleware(AgentMiddleware):
+    """Force the Reporter subagent to repair and resubmit failed report attempts."""
+
+    def __init__(self, max_retries: int = 2):
+        self.max_retries = max_retries
+        self._retries_used = 0
+
+    @staticmethod
+    def _latest_attempt() -> dict:
+        from tools import graph_manager_tools
+
+        return graph_manager_tools.get_last_report_attempt()
+
+    @staticmethod
+    def _needs_revision(response) -> bool:
+        last = _last_ai_message(response)
+        if last is None or last.tool_calls:
+            return False
+        attempt = ReporterRevisionMiddleware._latest_attempt()
+        if not attempt:
+            return True
+        return (not bool(attempt.get("accepted"))) or bool(attempt.get("revision_requested"))
+
+    @staticmethod
+    def _build_prompt(attempt: dict) -> str:
+        if not attempt:
+            return (
+                "你尚未成功调用 submit_final_report。请立即读取已收集的证据并提交结构化报告；"
+                "不要直接结束，也不要输出报告正文。"
+            )
+
+        submitted_sections = int(attempt.get("submitted_sections") or 0)
+        dropped_sections = int(attempt.get("dropped_sections") or 0)
+        allow_rewrite = (
+            not str(attempt.get("salvaged_report") or "").strip()
+            or attempt.get("severity") == "hard"
+            or (submitted_sections > 0 and dropped_sections * 2 > submitted_sections)
+        )
+        action = (
+            "仅在没有可保留的 prose 报告、受影响 section 超过一半、或错误属于全局硬错误时，才允许较大范围重写。"
+            if allow_rewrite else
+            "默认保留已通过的 section 与 block，只修复被点名的问题，不要从头重写整篇。"
+        )
+        lines = [
+            "submit_final_report 尚未达到可结束状态，请继续修订并重新提交。",
+            f"- accepted={bool(attempt.get('accepted'))}",
+            f"- revision_requested={bool(attempt.get('revision_requested'))}",
+            f"- severity={attempt.get('severity') or 'unknown'}",
+            f"- retention_ratio={attempt.get('retention_ratio')}",
+            f"- kept_blocks={attempt.get('kept_blocks')} / submitted_blocks={attempt.get('submitted_blocks')}",
+            action,
+            "按以下问题定点修复：",
+        ]
+        for issue in attempt.get("issues", [])[:8]:
+            if not isinstance(issue, dict):
+                lines.append(f"- {issue}")
+                continue
+            location = []
+            if issue.get("section_title"):
+                location.append(f"section={issue['section_title']}")
+            if issue.get("block_index"):
+                location.append(f"block={issue['block_index']}")
+            location_text = f" ({', '.join(location)})" if location else ""
+            lines.append(
+                f"- [{issue.get('severity', 'soft')}] {issue.get('code', 'issue')}{location_text}: "
+                f"{issue.get('message')} 修复建议：{issue.get('repair_hint')}"
+            )
+        lines.append("修复后再次调用 submit_final_report；如果仍需修订，继续迭代，不要直接结束。")
+        return "\n".join(lines)
+
+    def wrap_model_call(self, request, handler):
+        """Retry terminal Reporter responses until the structured submit passes or retries are exhausted."""
+        response = handler(request)
+        while self._retries_used < self.max_retries and self._needs_revision(response):
+            prompt = HumanMessage(content=self._build_prompt(self._latest_attempt()))
+            self._retries_used += 1
+            response = handler(request.override(messages=[*request.messages, prompt]))
+        return response
+
+    async def awrap_model_call(self, request, handler):
+        """Async counterpart of :meth:`wrap_model_call`."""
+        response = await handler(request)
+        while self._retries_used < self.max_retries and self._needs_revision(response):
+            prompt = HumanMessage(content=self._build_prompt(self._latest_attempt()))
+            self._retries_used += 1
+            response = await handler(request.override(messages=[*request.messages, prompt]))
+        return response

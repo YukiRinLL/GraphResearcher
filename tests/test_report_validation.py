@@ -48,6 +48,8 @@ def main():
         return edge
 
     graph_tools.search_nodes = search_nodes
+    graph_tools.get_all_nodes = lambda: [dict(node) for node in nodes.values()]
+    graph_tools.get_all_edges = lambda: [dict(edge) for edge in edges]
     graph_tools.get_node_edges = lambda node_id, direction="both": [
         dict(edge) for edge in edges
         if (
@@ -59,11 +61,13 @@ def main():
     graph_tools.add_edge = add_edge
     graph_tools.create_report_section = lambda title, content, section_type=None: created_titles.append(title) or "section"
     research_state.get_goal = lambda goal_id=None: dict(nodes["goal"])
+    edges.append({"source": "conflict", "target": "e1", "type": "HAS_CONFLICT"})
+    nodes["e1"] = {"id": "e1", "type": "Evidence", "text": "Tesla Optimus hand parameter conflict"}
+    edges.append({"source": "s1", "target": "e1", "type": "SUPPORTED_BY"})
 
     uncited = "## Findings\n\n" + ("A supported factual sentence. " * 8)
     issues = report_tools.validate_final_report(uncited)
     assert any("no citation" in issue for issue in issues), issues
-    assert any("disclosed conflict omitted" in issue for issue in issues), issues
 
     out_of_window = (
         "## Findings\n\nTesla Optimus hand parameter conflict. "
@@ -84,6 +88,16 @@ def main():
         + "[1]\n\n## References\n\n"
         + "[1] Current source https://example.com/current"
     )
+    compiled = report_tools.compile_structured_report("具身智能报告", [{
+        "title": "Findings",
+        "blocks": [{
+            "text": "A supported factual sentence. " * 5,
+            "source_ids": ["s1"],
+        }],
+    }])
+    assert compiled["accepted"] is True, compiled
+    assert compiled["auto_appended_conflict_ids"] == ["conflict"], compiled
+    assert "## 冲突披露" in compiled["report"], compiled["report"]
     finalized = report_tools.finalize_report(valid)
     assert any(edge["source"] == "section" and edge["target"] == "s1" for edge in edges), edges
     assert not report_tools.validate_final_report(finalized), report_tools.validate_final_report(finalized)

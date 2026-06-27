@@ -1,0 +1,90 @@
+{
+  "accepted": false,
+  "revision_requested": false,
+  "severity": "hard",
+  "report": "",
+  "salvaged_report": "",
+  "issues": [
+    {
+      "code": "content_consistency_failed",
+      "severity": "hard",
+      "section_title": "",
+      "block_index": null,
+      "message": "disclosed conflict omitted: 关于2025年全球及中国人形机器人出货量与市场结构的描述存在潜在统计口径差异：德",
+      "repair_hint": "Ensure disclosed conflicts are covered and every factual section keeps citations."
+    },
+    {
+      "code": "content_consistency_failed",
+      "severity": "hard",
+      "section_title": "",
+      "block_index": null,
+      "message": "disclosed conflict omitted: 天太机器人在德本榜单中被称已签署“全球首个万台具身智能人形机器人订单”，而新战略",
+      "repair_hint": "Ensure disclosed conflicts are covered and every factual section keeps citations."
+    },
+    {
+      "code": "content_consistency_failed",
+      "severity": "hard",
+      "section_title": "",
+      "block_index": null,
+      "message": "disclosed conflict omitted: 36氪报告预测人形机器人将在2026年迈入十万台级别的量产规模，而新战略移动机器",
+      "repair_hint": "Ensure disclosed conflicts are covered and every factual section keeps citations."
+    },
+    {
+      "code": "content_consistency_failed",
+      "severity": "hard",
+      "section_title": "",
+      "block_index": null,
+      "message": "disclosed conflict omitted: 自变量机器人2026年A++轮融资日期存在不同报道：一处报道为2026年1月（2",
+      "repair_hint": "Ensure disclosed conflicts are covered and every factual section keeps citations."
+    },
+    {
+      "code": "content_consistency_failed",
+      "severity": "hard",
+      "section_title": "",
+      "block_index": null,
+      "message": "disclosed conflict omitted: 关于自变量机器人最新B轮融资金额的报道差异：深圳市发改委门户称其完成20亿元人民",
+      "repair_hint": "Ensure disclosed conflicts are covered and every factual section keeps citations."
+    },
+    {
+      "code": "content_consistency_failed",
+      "severity": "hard",
+      "section_title": "",
+      "block_index": null,
+      "message": "disclosed conflict omitted: 对2026年一季度或上半年具身智能及相关领域融资事件数量和金额的宏观统计存在口径",
+      "repair_hint": "Ensure disclosed conflicts are covered and every factual section keeps citations."
+    },
+    {
+      "code": "content_consistency_failed",
+      "severity": "hard",
+      "section_title": "",
+      "block_index": null,
+      "message": "disclosed conflict omitted: 银河通用最近一轮大额融资金额描述略有差异：清华大学转载《中国科学报》称银河通用近",
+      "repair_hint": "Ensure disclosed conflicts are covered and every factual section keeps citations."
+    },
+    {
+      "code": "content_consistency_failed",
+      "severity": "hard",
+      "section_title": "",
+      "block_index": null,
+      "message": "disclosed conflict omitted: RoboZaps 博客估计截至2026年积极研发人形机器人的公司约有30–50家",
+      "repair_hint": "Ensure disclosed conflicts are covered and every factual section keeps citations."
+    },
+    {
+      "code": "content_consistency_failed",
+      "severity": "hard",
+      "section_title": "",
+      "block_index": null,
+      "message": "disclosed conflict omitted: 不同来源对统计样本对象和公司数量给出了不同数字：RoboZaps 列出 30+ ",
+      "repair_hint": "Ensure disclosed conflicts are covered and every factual section keeps citations."
+    }
+  ],
+  "retention_ratio": 1.0,
+  "submitted_sections": 6,
+  "kept_sections": 6,
+  "dropped_sections": 0,
+  "submitted_blocks": 39,
+  "kept_blocks": 39,
+  "dropped_blocks": 0,
+  "section_count": 6,
+  "source_count": 30
+}

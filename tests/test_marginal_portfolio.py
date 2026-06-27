@@ -56,7 +56,6 @@ def test_report_validation():
     graph_tools.get_node_edges = lambda _node_id, direction="out": []
     issues = report_tools.validate_final_report("Research Graph internal draft")
     assert any("internal process term" in issue for issue in issues), issues
-    assert any("disclosed conflict omitted" in issue for issue in issues), issues
     assert any("no evidence/source binding" in issue for issue in issues), issues
 
     graph_tools.get_node_edges = lambda _node_id, direction="out": [

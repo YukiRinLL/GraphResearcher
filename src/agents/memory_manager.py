@@ -2139,7 +2139,6 @@ class MemoryManager:
                 goal = requests[0]
                 goal_id = goal["id"]
         objectives = self.get_research_objectives(goal_id)
-        conflicts = graph_tools.search_nodes("conflict", {})
         from tools import report_tools
 
         limitations = [
@@ -2174,13 +2173,7 @@ class MemoryManager:
                 for objective in objectives
             ],
             "limitations": limitations,
-            "disclosed_conflicts": [
-                {
-                    "description": item.get("description"),
-                    "conflict_type": item.get("conflict_type"),
-                }
-                for item in conflicts if item.get("resolution_status") == "disclosed"
-            ],
+            "disclosed_conflicts": report_tools.get_disclosed_conflicts(),
             "reference_registry": report_tools.build_reference_registry(),
         }
 

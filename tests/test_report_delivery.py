@@ -118,6 +118,7 @@ def main():
         assert "subgraph" not in context and "evidence" not in context and "research_status" not in context
         assert context["reference_registry"][0]["source_id"] == "s1"
         assert len(str(context)) < 5000
+        assert context["disclosed_conflicts"] == []
 
         first_page = mm.get_report_evidence("q1", offset=0, limit=1)
         second_page = mm.get_report_evidence("q1", offset=1, limit=1)
@@ -134,9 +135,23 @@ def main():
                 {"text": "该公司开发仓储机器人。", "source_ids": ["s1"], "kind": "list_item"},
             ],
         }])
-        assert "error" not in compiled, compiled
+        assert compiled["accepted"] is True and compiled["revision_requested"] is False, compiled
         assert "公司未公开具体融资金额" in compiled["report"]
         assert not report_tools.validate_delivery_invariants(compiled["report"])
+
+        soft_compiled = report_tools.compile_structured_report("机器人公司研究", [{
+            "title": "公司与融资",
+            "blocks": [
+                {"text": "公司未公开具体融资金额。", "source_ids": ["s1"]},
+                {"text": "本次图谱证据更多集中在融资公开口径。", "source_ids": ["s1"]},
+            ],
+        }])
+        assert soft_compiled["accepted"] is True and soft_compiled["revision_requested"] is True, soft_compiled
+        assert soft_compiled["severity"] == "soft"
+        assert soft_compiled["report"] == ""
+        assert "公司未公开具体融资金额" in soft_compiled["salvaged_report"]
+        assert "本次图谱" not in soft_compiled["salvaged_report"]
+        assert any(issue["code"] == "forbidden_meta_prose" for issue in soft_compiled["issues"])
 
         orchestrator_rewrite = (
             "下面的整理基于截至 2025 年的公开资料，并严格受本次研究图谱覆盖范围约束。\n\n"
@@ -159,11 +174,26 @@ def main():
             "机器人公司研究",
             {"research_state": "REPORTING"},
             compiled_text="",
+            salvaged_text=soft_compiled["salvaged_report"],
+            attempt_summary=soft_compiled,
         )
-        assert mode == "cited_fallback" and issues
-        assert "研究图谱" not in fallback and "如果你接下来希望" not in fallback
+        assert mode == "salvaged_reporter", (mode, issues)
         assert "公司未公开具体融资金额" in fallback
         assert not report_tools.validate_delivery_invariants(fallback)
+
+        context_only, issues, mode = app_main._prepare_report_for_delivery(
+            orchestrator_rewrite,
+            "机器人公司研究",
+            {"research_state": "REPORTING"},
+            compiled_text="",
+            salvaged_text="",
+            attempt_summary={"accepted": False, "issues": [{"message": "no valid sections"}]},
+        )
+        assert mode == "context_fallback", (mode, issues)
+        assert "## 融资与资本进展" in context_only
+        assert "## 研究范围与局限" in context_only
+        assert "公司未公开具体融资金额" in context_only
+        assert not report_tools.validate_delivery_invariants(context_only)
 
         with TemporaryDirectory() as temp_dir:
             graph_manager_tools.configure(temp_dir)
@@ -174,10 +204,27 @@ def main():
                     "blocks": [{"text": "公司未公开具体融资金额。", "source_ids": ["s1"]}],
                 }],
             })
-            assert result["accepted"] is True
+            assert result["accepted"] is True and result["revision_requested"] is False
             canonical = graph_manager_tools.get_compiled_report()
             assert "公司未公开具体融资金额" in canonical
             assert Path(temp_dir, ".compiled_report.md").exists()
+
+            soft_result = graph_manager_tools.submit_final_report.invoke({
+                "title": "机器人公司研究",
+                "sections": [{
+                    "title": "公司与融资",
+                    "blocks": [
+                        {"text": "公司未公开具体融资金额。", "source_ids": ["s1"]},
+                        {"text": "本次图谱证据更多集中在融资公开口径。", "source_ids": ["s1"]},
+                    ],
+                }],
+            })
+            assert soft_result["accepted"] is True and soft_result["revision_requested"] is True
+            assert Path(temp_dir, ".salvaged_report.md").exists()
+            assert Path(temp_dir, ".best_report.md").exists()
+            assert Path(temp_dir, ".report_attempt.json").exists()
+            assert graph_manager_tools.get_last_report_attempt()["revision_requested"] is True
+            assert "公司未公开具体融资金额" in graph_manager_tools.get_best_report()
     finally:
         for name, original in originals.items():
             setattr(graph_tools, name, original)

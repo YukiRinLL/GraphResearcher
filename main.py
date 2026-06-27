@@ -153,8 +153,8 @@ def _content_text(message: object) -> str:
     return text or ""
 
 
-def _fallback_report(request: str, status_summary: dict) -> str:
-    """Build a deterministic cited evidence report when Reporter compilation fails."""
+def _evidence_fallback_report(request: str, status_summary: dict) -> str:
+    """Build the last-resort deterministic evidence-list report."""
     del status_summary
     try:
         from tools import report_tools
@@ -171,23 +171,48 @@ def _prepare_report_for_delivery(
     request: str,
     status_summary: dict,
     compiled_text: str = "",
+    salvaged_text: str = "",
+    attempt_summary: dict | None = None,
 ) -> tuple[str, list[str], str]:
-    """Deliver the structured Reporter artifact or a deterministic cited fallback."""
+    """Deliver the best available report artifact using prose-first fallbacks."""
     del final_text  # Orchestrator terminal prose is never a canonical report.
     issues: list[str] = []
     from tools import report_tools
 
-    if compiled_text.strip():
+    def audit_candidate(text: str, mode: str) -> tuple[str, list[str], bool]:
+        local_issues: list[str] = []
         try:
-            report_text = report_tools.sanitize_report(compiled_text)
+            report_text = report_tools.sanitize_report(text)
             report_text = report_tools.finalize_report(report_text)
             hard_issues = report_tools.validate_delivery_invariants(report_text)
-            quality_issues = report_tools.validate_final_report(report_text)
-            if not hard_issues:
-                return report_text, list(dict.fromkeys(quality_issues)), "compiled_reporter"
-            issues.extend(hard_issues)
+            quality_issues = report_tools.validate_report_quality(report_text)
+            consistency_issues = report_tools.validate_final_report(report_text)
+            local_issues.extend(hard_issues)
+            local_issues.extend(quality_issues)
+            if not hard_issues and not quality_issues:
+                return report_text, list(dict.fromkeys(consistency_issues)), True
+            local_issues.extend(consistency_issues)
         except Exception as exc:  # noqa: BLE001 - fallback remains mandatory
-            issues.append(f"compiled Reporter report failed: {exc}")
+            local_issues.append(f"{mode} audit failed: {exc}")
+        return "", list(dict.fromkeys(local_issues)), False
+
+    if compiled_text.strip():
+        report_text, local_issues, ok = audit_candidate(compiled_text, "compiled_reporter")
+        if ok:
+            return report_text, local_issues, "compiled_reporter"
+        issues.extend(local_issues)
+
+    if salvaged_text.strip():
+        report_text, local_issues, ok = audit_candidate(salvaged_text, "salvaged_reporter")
+        if ok:
+            return report_text, local_issues, "salvaged_reporter"
+        issues.extend(local_issues)
+
+    if attempt_summary:
+        for issue in attempt_summary.get("issues", []):
+            message = issue.get("message") if isinstance(issue, dict) else str(issue)
+            if message:
+                issues.append(f"report attempt: {message}")
     else:
         state = status_summary.get("research_state")
         if state in {"REPORT_READY", "BUDGET_EXHAUSTED"}:
@@ -197,16 +222,24 @@ def _prepare_report_for_delivery(
         else:
             issues.append("Reporter submitted no valid structured report")
 
-    report_text = _fallback_report(request, status_summary)
+    context_report = report_tools.build_context_fallback_report(request)
+    if context_report.strip():
+        report_text, local_issues, ok = audit_candidate(context_report, "context_fallback")
+        if ok:
+            return report_text, list(dict.fromkeys(issues + local_issues)), "context_fallback"
+        issues.extend(local_issues)
+
+    report_text = _evidence_fallback_report(request, status_summary)
     try:
         report_text = report_tools.sanitize_report(report_text)
         report_text = report_tools.finalize_report(report_text)
         issues.extend(report_tools.validate_delivery_invariants(report_text))
+        issues.extend(report_tools.validate_report_quality(report_text))
         issues.extend(report_tools.validate_final_report(report_text))
     except Exception as exc:  # noqa: BLE001 - the fallback text must still be delivered
-        issues.append(f"cited fallback audit failed: {exc}")
+        issues.append(f"evidence fallback audit failed: {exc}")
 
-    return report_text, list(dict.fromkeys(issues)), "cited_fallback"
+    return report_text, list(dict.fromkeys(issues)), "evidence_fallback"
 
 
 def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
@@ -330,11 +363,26 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
                 compiled_text = graph_manager_tools.get_compiled_report()
             except Exception:
                 compiled_text = ""
+            try:
+                salvaged_text = graph_manager_tools.get_salvaged_report()
+            except Exception:
+                salvaged_text = ""
+            try:
+                attempt_summary = graph_manager_tools.get_last_report_attempt()
+            except Exception:
+                attempt_summary = {}
+            attempt_summary_brief = {
+                key: value
+                for key, value in attempt_summary.items()
+                if key not in {"report", "salvaged_report"}
+            }
             report_text, validation_issues, delivery_mode = _prepare_report_for_delivery(
                 final_text,
                 request,
                 status_summary,
                 compiled_text=compiled_text,
+                salvaged_text=salvaged_text,
+                attempt_summary=attempt_summary,
             )
             report_saved = False
             try:
@@ -352,6 +400,7 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
                 goal_update = {
                     "report_delivery_mode": delivery_mode,
                     "report_validation_issues": validation_issues,
+                    "report_attempt_summary": attempt_summary_brief,
                 }
                 if report_saved and state_before_write == research_state.REPORTING:
                     goal_update["research_state"] = research_state.COMPLETED

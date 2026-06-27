@@ -1,5 +1,6 @@
 """State-machine Graph Manager tools exposed to GraphResearcher agents."""
 
+import json
 from pathlib import Path
 from threading import Lock
 from typing import Any, Optional
@@ -11,19 +12,31 @@ from agents.memory_manager import AmbiguousQueryReference, MemoryManager
 _manager: Optional[MemoryManager] = None
 _cache_dir: Optional[str] = None
 _compiled_report: str = ""
+_salvaged_report: str = ""
+_best_report: str = ""
+_last_report_attempt: dict[str, Any] = {}
 _report_lock = Lock()
 
 
 def configure(output_dir: Optional[str] = None) -> None:
     """Clear and scope graph storage, then rebuild the shared manager for a run."""
-    global _cache_dir, _compiled_report, _manager
+    global _best_report, _cache_dir, _compiled_report, _last_report_attempt, _manager, _salvaged_report
     _cache_dir = output_dir
     _manager = None
     with _report_lock:
         _compiled_report = ""
-        path = _compiled_report_path()
-        if path and path.exists():
-            path.unlink()
+        _salvaged_report = ""
+        _best_report = ""
+        _last_report_attempt = {}
+        for path_getter in (
+            _compiled_report_path,
+            _salvaged_report_path,
+            _best_report_path,
+            _report_attempt_path,
+        ):
+            path = path_getter()
+            if path and path.exists():
+                path.unlink()
     from tools import convergence, graph_tools
 
     run_context = output_dir or "default"
@@ -44,6 +57,21 @@ def _compiled_report_path() -> Optional[Path]:
     return Path(_cache_dir) / ".compiled_report.md" if _cache_dir else None
 
 
+def _salvaged_report_path() -> Optional[Path]:
+    """Return the run-scoped salvaged Reporter artifact path."""
+    return Path(_cache_dir) / ".salvaged_report.md" if _cache_dir else None
+
+
+def _best_report_path() -> Optional[Path]:
+    """Return the run-scoped best-available Reporter artifact path."""
+    return Path(_cache_dir) / ".best_report.md" if _cache_dir else None
+
+
+def _report_attempt_path() -> Optional[Path]:
+    """Return the run-scoped JSON summary for the latest report attempt."""
+    return Path(_cache_dir) / ".report_attempt.json" if _cache_dir else None
+
+
 def get_compiled_report() -> str:
     """Return the canonical structured Reporter report for the current run."""
     with _report_lock:
@@ -51,6 +79,50 @@ def get_compiled_report() -> str:
             return _compiled_report
         path = _compiled_report_path()
         return path.read_text(encoding="utf-8") if path and path.exists() else ""
+
+
+def get_salvaged_report() -> str:
+    """Return the latest salvaged prose report for the current run."""
+    with _report_lock:
+        if _salvaged_report:
+            return _salvaged_report
+        path = _salvaged_report_path()
+        return path.read_text(encoding="utf-8") if path and path.exists() else ""
+
+
+def get_best_report() -> str:
+    """Return the best available prose report for the current run."""
+    with _report_lock:
+        if _best_report:
+            return _best_report
+        path = _best_report_path()
+        return path.read_text(encoding="utf-8") if path and path.exists() else ""
+
+
+def get_last_report_attempt() -> dict[str, Any]:
+    """Return the latest structured report-attempt summary."""
+    with _report_lock:
+        if _last_report_attempt:
+            return dict(_last_report_attempt)
+        path = _report_attempt_path()
+        if path and path.exists():
+            try:
+                return json.loads(path.read_text(encoding="utf-8"))
+            except json.JSONDecodeError:
+                return {}
+        return {}
+
+
+def _write_optional_text(path: Optional[Path], text: str) -> None:
+    """Persist one report artifact when a path is configured."""
+    if path is None:
+        return
+    if not text:
+        if path.exists():
+            path.unlink()
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
 
 
 def prepare_search(query_id: str, source_preferences: Optional[list[str]] = None) -> dict:
@@ -204,21 +276,28 @@ def submit_final_report(title: str, sections: list[dict]) -> dict:
 
     Every section requires ``blocks``. Each block requires ``text`` and one or
     more URL-backed ``source_ids``; set ``kind`` to ``list_item`` for bullets.
+    When a section discloses structured conflicts, pass
+    ``disclosed_conflict_ids`` and optionally ``section_type="conflict_disclosure"``.
     """
-    global _compiled_report
+    global _best_report, _compiled_report, _last_report_attempt, _salvaged_report
     from tools import report_tools
 
     result = report_tools.compile_structured_report(title, sections)
-    report = result.pop("report", "") if isinstance(result, dict) else ""
-    if not report:
-        return result
     with _report_lock:
-        _compiled_report = report
-        path = _compiled_report_path()
+        _compiled_report = str(result.get("report") or "")
+        _salvaged_report = str(result.get("salvaged_report") or "")
+        _best_report = _compiled_report or _salvaged_report
+        _last_report_attempt = dict(result)
+
+        _write_optional_text(_compiled_report_path(), _compiled_report)
+        _write_optional_text(_salvaged_report_path(), _salvaged_report)
+        _write_optional_text(_best_report_path(), _best_report)
+
+        path = _report_attempt_path()
         if path:
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(report, encoding="utf-8")
-    return {"accepted": True, **result}
+            path.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+    return result
 
 
 ORCHESTRATOR_TOOLS: list[Any] = [

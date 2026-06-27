@@ -8,6 +8,7 @@ Orchestrator via the built-in `task` tool.
 
 import config
 from tools.graph_manager_tools import REPORTER_TOOLS
+from tools.middleware import ReporterRevisionMiddleware
 
 reporter = {
     "name": "reporter",
@@ -19,4 +20,5 @@ reporter = {
     ),
     "system_prompt": config.reporter_system_prompt,
     "tools": REPORTER_TOOLS,
+    "middleware": [ReporterRevisionMiddleware()],
 }
