@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 # src/memory/graph.py
 import asyncio
+import json
 import logging
 import os
 import uuid
@@ -107,6 +110,40 @@ class GraphEdge:
 
 logger = logging.getLogger(__name__)
 
+_JSON_SENTINEL = "__gr_json__:"
+
+
+def _is_primitive_property(value: Any) -> bool:
+    return value is None or isinstance(value, (str, int, float, bool))
+
+
+def _is_primitive_list(value: Any) -> bool:
+    return isinstance(value, list) and all(_is_primitive_property(item) for item in value)
+
+
+def _encode_property_value(value: Any) -> Any:
+    if _is_primitive_property(value) or _is_primitive_list(value):
+        return value
+    return f"{_JSON_SENTINEL}{json.dumps(value, ensure_ascii=False, sort_keys=True, default=str)}"
+
+
+def _decode_property_value(value: Any) -> Any:
+    if not (isinstance(value, str) and value.startswith(_JSON_SENTINEL)):
+        return value
+    payload = value[len(_JSON_SENTINEL):]
+    try:
+        return json.loads(payload)
+    except json.JSONDecodeError:
+        return value
+
+
+def _encode_properties(properties: dict[str, Any]) -> dict[str, Any]:
+    return {key: _encode_property_value(value) for key, value in properties.items()}
+
+
+def _decode_properties(properties: dict[str, Any]) -> dict[str, Any]:
+    return {key: _decode_property_value(value) for key, value in properties.items()}
+
 
 NEO4J_URI = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
 NEO4J_USERNAME = os.environ.get("NEO4J_USERNAME", "neo4j")
@@ -158,6 +195,7 @@ class GraphManager:
     async def add_node(self, node_type: str, attributes: dict, node_id: Optional[str] = None) -> str:
         if node_id is None:
             node_id = self._generate_id()
+        encoded_attributes = _encode_properties(attributes)
 
         session = await self._get_session()
         async with session:
@@ -178,12 +216,13 @@ class GraphManager:
                 query,
                 id=node_id,
                 context=self.context,
-                properties=attributes
+                properties=encoded_attributes
             )
             record = await result.single()
             return str(record["n.id"])
 
     async def upsert_node(self, node_type: str, attributes: dict, dedupe_key: Optional[str] = None) -> str:
+        encoded_attributes = _encode_properties(attributes)
         if dedupe_key:
             session = await self._get_session()
             async with session:
@@ -204,7 +243,7 @@ class GraphManager:
                     query,
                     id=dedupe_key,
                     context=self.context,
-                    properties=attributes
+                    properties=encoded_attributes
                 )
                 record = await result.single()
                 if record:
@@ -269,6 +308,7 @@ class GraphManager:
             return int(record["count"]) if record else 0
 
     async def add_edge(self, source_id: str, target_id: str, edge_type: str, attributes: Optional[dict] = None) -> str:
+        encoded_attributes = _encode_properties(attributes or {})
         session = await self._get_session()
         async with session:
             try:
@@ -291,7 +331,7 @@ class GraphManager:
                 query,
                 source_id=source_id,
                 target_id=target_id,
-                properties=attributes or {}
+                properties=encoded_attributes
             )
             record = await result.single()
             if record is None:
@@ -316,7 +356,7 @@ class GraphManager:
                 return {}
             node = record["n"]
             labels = record["labels"]
-            properties = dict(node)
+            properties = _decode_properties(dict(node))
             
             node_type = next((label for label in labels if label != 'Node'), labels[0] if labels else 'Node')
             return {
@@ -340,7 +380,7 @@ class GraphManager:
 
             for i, (key, value) in enumerate(filter.items()):
                 where_clauses.append(f"n.{key} = $param{i}")
-                params[f"param{i}"] = value
+                params[f"param{i}"] = _encode_property_value(value)
 
             query = f"""
             MATCH (n:{label})
@@ -354,7 +394,7 @@ class GraphManager:
             for record in records:
                 node = record["n"]
                 labels = record["labels"]
-                properties = dict(node)
+                properties = _decode_properties(dict(node))
                 node_type = next((label for label in labels if label != 'Node'), labels[0] if labels else 'Node')
                 nodes.append({
                     "id": node.get("id"),
@@ -399,7 +439,7 @@ class GraphManager:
             nodes = []
             for node in record["nodes"]:
                 if hasattr(node, "get"):
-                    properties = dict(node)
+                    properties = _decode_properties(dict(node))
                     labels = getattr(node, 'labels', [])
                     node_type = next((label for label in labels if label != 'Node'), 'Node') if labels else 'Node'
                     nodes.append({
@@ -411,7 +451,7 @@ class GraphManager:
             edges = []
             for rel in record["relationships"]:
                 if hasattr(rel, "start_node") and hasattr(rel, "end_node"):
-                    properties = dict(rel)
+                    properties = _decode_properties(dict(rel))
                     edges.append({
                         "source": rel.start_node.get("id"),
                         "target": rel.end_node.get("id"),
@@ -438,7 +478,7 @@ class GraphManager:
             for record in records:
                 node = record["n"]
                 labels = record["labels"]
-                properties = dict(node)
+                properties = _decode_properties(dict(node))
                 node_type = next((label for label in labels if label != 'Node'), labels[0] if labels else 'Node')
                 nodes.append({
                     "id": node.get("id"),
@@ -460,7 +500,7 @@ class GraphManager:
             edges = []
             for record in records:
                 rel = record["r"]
-                properties = dict(rel)
+                properties = _decode_properties(dict(rel))
                 edges.append({
                     "source": record["source"].get("id"),
                     "target": record["target"].get("id"),
@@ -520,7 +560,7 @@ class GraphManager:
             edges = []
             for record in records:
                 rel = record["r"]
-                properties = dict(rel)
+                properties = _decode_properties(dict(rel))
                 edges.append({
                     "source": record["source"].get("id"),
                     "target": record["target"].get("id"),
