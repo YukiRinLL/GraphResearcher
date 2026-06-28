@@ -1,0 +1,1432 @@
+{
+  "title": "2011 Sawyerville–Eoline tornado",
+  "status": "completed",
+  "total_statements": 56,
+  "total_citations": 9,
+  "valid_citations": 9,
+  "evaluated_statements": 56,
+  "skipped_statements": 0,
+  "support": 49,
+  "not_support": 7,
+  "conflict": 0,
+  "support_ratio": 0.875,
+  "conflict_ratio": 0.0,
+  "results": [
+    {
+      "statement_index": 0,
+      "statement": "The 2011 Sawyerville–Eoline tornado was a long-tracked, strong tornado that occurred in central Alabama during the afternoon and early evening of April 27, 2011, as part of the 2011 Super Outbreak.",
+      "citation_num": "6",
+      "citation_url": "https://storymaps.arcgis.com/stories/47cb7288a887417dbc3966b6ac5dba03",
+      "verdict": "support",
+      "reason": "The citation confirms the Sawyerville-Eoline tornado was an EF-3 that tracked across three counties for over 70 miles on April 27, 2011."
+    },
+    {
+      "statement_index": 0,
+      "statement": "The 2011 Sawyerville–Eoline tornado was a long-tracked, strong tornado that occurred in central Alabama during the afternoon and early evening of April 27, 2011, as part of the 2011 Super Outbreak.",
+      "citation_num": "3",
+      "citation_url": "https://www.tornadotalk.com/overview-of-the-april-25-28-2011-super-outbreak",
+      "verdict": "support",
+      "reason": "The citation lists the 'Sawyerville-Eoline, AL EF3 Tornado – April 27, 2011' as part of the April 25-28, 2011 Super Outbreak summary."
+    },
+    {
+      "statement_index": 0,
+      "statement": "The 2011 Sawyerville–Eoline tornado was a long-tracked, strong tornado that occurred in central Alabama during the afternoon and early evening of April 27, 2011, as part of the 2011 Super Outbreak.",
+      "citation_num": "5",
+      "citation_url": "https://www.al.com/news/2022/04/18-hours-of-horror-a-look-back-at-the-tornadoes-of-april-27-2011.html",
+      "verdict": "support",
+      "reason": "The citation confirms the Sawyerville–Eoline tornado was an EF3, 72.13-mile track event occurring in Greene, Hale, and Bibb counties on April 27, 2011."
+    },
+    {
+      "statement_index": 0,
+      "statement": "The 2011 Sawyerville–Eoline tornado was a long-tracked, strong tornado that occurred in central Alabama during the afternoon and early evening of April 27, 2011, as part of the 2011 Super Outbreak.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "support",
+      "reason": "The citation confirms the Sawyerville-Eoline tornado occurred in Central Alabama on April 27, 2011, as part of the outbreak."
+    },
+    {
+      "statement_index": 0,
+      "statement": "The 2011 Sawyerville–Eoline tornado was a long-tracked, strong tornado that occurred in central Alabama during the afternoon and early evening of April 27, 2011, as part of the 2011 Super Outbreak.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "not_support",
+      "reason": "While the document describes the tornado, it does not explicitly mention the '2011 Super Outbreak'."
+    },
+    {
+      "statement_index": 0,
+      "statement": "The 2011 Sawyerville–Eoline tornado was a long-tracked, strong tornado that occurred in central Alabama during the afternoon and early evening of April 27, 2011, as part of the 2011 Super Outbreak.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "not_support",
+      "reason": "The citation provides details for a Hale County segment but does not specifically mention the name 'Sawyerville–Eoline tornado' or provide the full track details."
+    },
+    {
+      "statement_index": 1,
+      "statement": "The tornado was rated EF3 on the Enhanced Fujita scale by the National Weather Service (NWS), with an estimated maximum wind speed of about 145 mph (233 km/h), a maximum path width of roughly 1 mile (1,760 yd), and an overall path length of 72.13 miles (116.1 km) across Greene, Hale, and Bibb counties.",
+      "citation_num": "6",
+      "citation_url": "https://storymaps.arcgis.com/stories/47cb7288a887417dbc3966b6ac5dba03",
+      "verdict": "not_support",
+      "reason": "The citation provides the max width (1 mile), max wind (145 mph), path length (over 70 miles), and EF rating, but does not explicitly name the specific counties (Greene, Hale, Bibb) or the exact numeric path length of 72.13 miles."
+    },
+    {
+      "statement_index": 1,
+      "statement": "The tornado was rated EF3 on the Enhanced Fujita scale by the National Weather Service (NWS), with an estimated maximum wind speed of about 145 mph (233 km/h), a maximum path width of roughly 1 mile (1,760 yd), and an overall path length of 72.13 miles (116.1 km) across Greene, Hale, and Bibb counties.",
+      "citation_num": "3",
+      "citation_url": "https://www.tornadotalk.com/overview-of-the-april-25-28-2011-super-outbreak",
+      "verdict": "not_support",
+      "reason": "The provided citation text mentions the existence of the Sawyerville-Eoline tornado but does not provide specific technical details like wind speed, path width, or path length."
+    },
+    {
+      "statement_index": 1,
+      "statement": "The tornado was rated EF3 on the Enhanced Fujita scale by the National Weather Service (NWS), with an estimated maximum wind speed of about 145 mph (233 km/h), a maximum path width of roughly 1 mile (1,760 yd), and an overall path length of 72.13 miles (116.1 km) across Greene, Hale, and Bibb counties.",
+      "citation_num": "5",
+      "citation_url": "https://www.al.com/news/2022/04/18-hours-of-horror-a-look-back-at-the-tornadoes-of-april-27-2011.html",
+      "verdict": "support",
+      "reason": "The citation explicitly lists the Sawyerville–Eoline tornado as EF3 with 145 mph winds, a 72.13-mile track, and locations in Greene, Hale, and Bibb counties."
+    },
+    {
+      "statement_index": 1,
+      "statement": "The tornado was rated EF3 on the Enhanced Fujita scale by the National Weather Service (NWS), with an estimated maximum wind speed of about 145 mph (233 km/h), a maximum path width of roughly 1 mile (1,760 yd), and an overall path length of 72.13 miles (116.1 km) across Greene, Hale, and Bibb counties.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "support",
+      "reason": "The citation table for the afternoon wave explicitly lists the Sawyerville-Eoline tornado with an EF-3 rating, 145 mph winds, a 72.13 mile path length, and 1760 yard width."
+    },
+    {
+      "statement_index": 1,
+      "statement": "The tornado was rated EF3 on the Enhanced Fujita scale by the National Weather Service (NWS), with an estimated maximum wind speed of about 145 mph (233 km/h), a maximum path width of roughly 1 mile (1,760 yd), and an overall path length of 72.13 miles (116.1 km) across Greene, Hale, and Bibb counties.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation confirms these specific ratings and dimensions for the tornado."
+    },
+    {
+      "statement_index": 1,
+      "statement": "The tornado was rated EF3 on the Enhanced Fujita scale by the National Weather Service (NWS), with an estimated maximum wind speed of about 145 mph (233 km/h), a maximum path width of roughly 1 mile (1,760 yd), and an overall path length of 72.13 miles (116.1 km) across Greene, Hale, and Bibb counties.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "not_support",
+      "reason": "The citation contains details for the Hale County segment but does not provide data for the entire 72.13-mile track across multiple counties."
+    },
+    {
+      "statement_index": 2,
+      "statement": "Along its track from near Tishabee in far southwest Greene County through the communities of Sawyerville, Harper Hill, and Eoline to near Marvel in northeastern Bibb County, the tornado caused severe damage to hundreds of structures, including the destruction of numerous mobile homes, single-family houses, a church, and the Eoline Fire Department, and it downed thousands of trees.",
+      "citation_num": "6",
+      "citation_url": "https://storymaps.arcgis.com/stories/47cb7288a887417dbc3966b6ac5dba03",
+      "verdict": "not_support",
+      "reason": "The citation mentions damage in Sawyerville, Harper Hill, Eoline, and the Talladega National Forest, but it does not specify the start point near Tishabee or the endpoint near Marvel."
+    },
+    {
+      "statement_index": 2,
+      "statement": "Along its track from near Tishabee in far southwest Greene County through the communities of Sawyerville, Harper Hill, and Eoline to near Marvel in northeastern Bibb County, the tornado caused severe damage to hundreds of structures, including the destruction of numerous mobile homes, single-family houses, a church, and the Eoline Fire Department, and it downed thousands of trees.",
+      "citation_num": "3",
+      "citation_url": "https://www.tornadotalk.com/overview-of-the-april-25-28-2011-super-outbreak",
+      "verdict": "not_support",
+      "reason": "The provided citation text contains a link to the tornado summary but does not detail the specific track, communities, or structural damage listed in the statement."
+    },
+    {
+      "statement_index": 2,
+      "statement": "Along its track from near Tishabee in far southwest Greene County through the communities of Sawyerville, Harper Hill, and Eoline to near Marvel in northeastern Bibb County, the tornado caused severe damage to hundreds of structures, including the destruction of numerous mobile homes, single-family houses, a church, and the Eoline Fire Department, and it downed thousands of trees.",
+      "citation_num": "5",
+      "citation_url": "https://www.al.com/news/2022/04/18-hours-of-horror-a-look-back-at-the-tornadoes-of-april-27-2011.html",
+      "verdict": "not_support",
+      "reason": "The provided citation does not contain specific details regarding the destruction of mobile homes, churches, the Eoline Fire Department, or the specific number of downed trees."
+    },
+    {
+      "statement_index": 2,
+      "statement": "Along its track from near Tishabee in far southwest Greene County through the communities of Sawyerville, Harper Hill, and Eoline to near Marvel in northeastern Bibb County, the tornado caused severe damage to hundreds of structures, including the destruction of numerous mobile homes, single-family houses, a church, and the Eoline Fire Department, and it downed thousands of trees.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "not_support",
+      "reason": "The provided citation does not contain specific details regarding the destruction of the Eoline Fire Department or specific community names along the track."
+    },
+    {
+      "statement_index": 2,
+      "statement": "Along its track from near Tishabee in far southwest Greene County through the communities of Sawyerville, Harper Hill, and Eoline to near Marvel in northeastern Bibb County, the tornado caused severe damage to hundreds of structures, including the destruction of numerous mobile homes, single-family houses, a church, and the Eoline Fire Department, and it downed thousands of trees.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "not_support",
+      "reason": "The citation does not use the word 'hundreds' regarding structure damage, though it lists specific types destroyed."
+    },
+    {
+      "statement_index": 2,
+      "statement": "Along its track from near Tishabee in far southwest Greene County through the communities of Sawyerville, Harper Hill, and Eoline to near Marvel in northeastern Bibb County, the tornado caused severe damage to hundreds of structures, including the destruction of numerous mobile homes, single-family houses, a church, and the Eoline Fire Department, and it downed thousands of trees.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "not_support",
+      "reason": "While the citation mentions the destruction of a church and trees, it does not mention the Eoline Fire Department or specific damage to hundreds of structures."
+    },
+    {
+      "statement_index": 3,
+      "statement": "NWS Birmingham’s event summary and outbreak table attribute 7 fatalities and 50 injuries to the full Sawyerville–Eoline tornado track.",
+      "citation_num": "6",
+      "citation_url": "https://storymaps.arcgis.com/stories/47cb7288a887417dbc3966b6ac5dba03",
+      "verdict": "support",
+      "reason": "The citation states the Sawyerville-Eoline tornado had 50 injuries and 7 fatalities."
+    },
+    {
+      "statement_index": 3,
+      "statement": "NWS Birmingham’s event summary and outbreak table attribute 7 fatalities and 50 injuries to the full Sawyerville–Eoline tornado track.",
+      "citation_num": "3",
+      "citation_url": "https://www.tornadotalk.com/overview-of-the-april-25-28-2011-super-outbreak",
+      "verdict": "not_support",
+      "reason": "The citation does not provide specific casualty or injury counts attributed to this specific tornado."
+    },
+    {
+      "statement_index": 3,
+      "statement": "NWS Birmingham’s event summary and outbreak table attribute 7 fatalities and 50 injuries to the full Sawyerville–Eoline tornado track.",
+      "citation_num": "5",
+      "citation_url": "https://www.al.com/news/2022/04/18-hours-of-horror-a-look-back-at-the-tornadoes-of-april-27-2011.html",
+      "verdict": "support",
+      "reason": "The citation's 'Long-Track Tornadoes' table lists the Sawyerville–Eoline EF-3 tornado with 7 deaths and 50 injuries."
+    },
+    {
+      "statement_index": 3,
+      "statement": "NWS Birmingham’s event summary and outbreak table attribute 7 fatalities and 50 injuries to the full Sawyerville–Eoline tornado track.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "support",
+      "reason": "The NWS Birmingham table for the afternoon wave lists 7 fatalities and 50 injuries for the Sawyerville-Eoline tornado."
+    },
+    {
+      "statement_index": 3,
+      "statement": "NWS Birmingham’s event summary and outbreak table attribute 7 fatalities and 50 injuries to the full Sawyerville–Eoline tornado track.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation explicitly states 7 fatalities and 50 injuries for the event."
+    },
+    {
+      "statement_index": 3,
+      "statement": "NWS Birmingham’s event summary and outbreak table attribute 7 fatalities and 50 injuries to the full Sawyerville–Eoline tornado track.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "not_support",
+      "reason": "The provided citation does not include NWS Birmingham’s full event summary or outbreak table."
+    },
+    {
+      "statement_index": 4,
+      "statement": "The NOAA National Centers for Environmental Information (NCEI) Storm Events database segment for the Hale County portion lists 6 direct deaths and 40 direct injuries, reflecting NCEI’s practice of reporting county-based segments rather than whole-track totals.",
+      "citation_num": "6",
+      "citation_url": "https://storymaps.arcgis.com/stories/47cb7288a887417dbc3966b6ac5dba03",
+      "verdict": "not_support",
+      "reason": "The citation does not mention the NOAA NCEI Storm Events database or its practices regarding county-based segments."
+    },
+    {
+      "statement_index": 4,
+      "statement": "The NOAA National Centers for Environmental Information (NCEI) Storm Events database segment for the Hale County portion lists 6 direct deaths and 40 direct injuries, reflecting NCEI’s practice of reporting county-based segments rather than whole-track totals.",
+      "citation_num": "3",
+      "citation_url": "https://www.tornadotalk.com/overview-of-the-april-25-28-2011-super-outbreak",
+      "verdict": "not_support",
+      "reason": "The citation does not provide NCEI database information or specific fatality/injury counts for the Hale County segment."
+    },
+    {
+      "statement_index": 4,
+      "statement": "The NOAA National Centers for Environmental Information (NCEI) Storm Events database segment for the Hale County portion lists 6 direct deaths and 40 direct injuries, reflecting NCEI’s practice of reporting county-based segments rather than whole-track totals.",
+      "citation_num": "5",
+      "citation_url": "https://www.al.com/news/2022/04/18-hours-of-horror-a-look-back-at-the-tornadoes-of-april-27-2011.html",
+      "verdict": "not_support",
+      "reason": "The provided citation does not mention the NOAA National Centers for Environmental Information (NCEI) database or its specific segment reporting practices."
+    },
+    {
+      "statement_index": 4,
+      "statement": "The NOAA National Centers for Environmental Information (NCEI) Storm Events database segment for the Hale County portion lists 6 direct deaths and 40 direct injuries, reflecting NCEI’s practice of reporting county-based segments rather than whole-track totals.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "not_support",
+      "reason": "The provided citation text does not reference the NCEI Storm Events database or its specific county-based casualty figures."
+    },
+    {
+      "statement_index": 4,
+      "statement": "The NOAA National Centers for Environmental Information (NCEI) Storm Events database segment for the Hale County portion lists 6 direct deaths and 40 direct injuries, reflecting NCEI’s practice of reporting county-based segments rather than whole-track totals.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "not_support",
+      "reason": "The provided text does not mention the NCEI Storm Events database or its specific segment reporting practices."
+    },
+    {
+      "statement_index": 4,
+      "statement": "The NOAA National Centers for Environmental Information (NCEI) Storm Events database segment for the Hale County portion lists 6 direct deaths and 40 direct injuries, reflecting NCEI’s practice of reporting county-based segments rather than whole-track totals.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "support",
+      "reason": "The citation's 'Event Details' section for Hale County lists 6 deaths and 40 injuries, consistent with the statement's description of NCEI's county-based reporting."
+    },
+    {
+      "statement_index": 5,
+      "statement": "The Sawyerville–Eoline tornado formed during a large and deadly tornado outbreak that affected the southeastern United States from April 25 to 28, 2011, commonly referred to as the 2011 Super Outbreak.",
+      "citation_num": "7",
+      "citation_url": "http://repository.library.noaa.gov/view/noaa/6977",
+      "verdict": "not_support",
+      "reason": "The citation provides information about the April 27, 2011 event but does not mention the Sawyerville–Eoline tornado or the term '2011 Super Outbreak'."
+    },
+    {
+      "statement_index": 5,
+      "statement": "The Sawyerville–Eoline tornado formed during a large and deadly tornado outbreak that affected the southeastern United States from April 25 to 28, 2011, commonly referred to as the 2011 Super Outbreak.",
+      "citation_num": "3",
+      "citation_url": "https://www.tornadotalk.com/overview-of-the-april-25-28-2011-super-outbreak",
+      "verdict": "support",
+      "reason": "The citation explicitly identifies the April 25-28, 2011 event as the 'Super Outbreak'."
+    },
+    {
+      "statement_index": 6,
+      "statement": "A NOAA service assessment reported that the broader outbreak produced 368 confirmed tornadoes, including 224 on April 27 alone, with four EF5, eleven EF4, and twenty-one EF3 tornadoes, causing approximately 324 fatalities, more than 3,100 injuries, and about 12 billion USD in damage.",
+      "citation_num": "7",
+      "citation_url": "http://repository.library.noaa.gov/view/noaa/6977",
+      "verdict": "not_support",
+      "reason": "The provided text contains different statistical figures and does not mention these specific tornado counts or damage totals."
+    },
+    {
+      "statement_index": 6,
+      "statement": "A NOAA service assessment reported that the broader outbreak produced 368 confirmed tornadoes, including 224 on April 27 alone, with four EF5, eleven EF4, and twenty-one EF3 tornadoes, causing approximately 324 fatalities, more than 3,100 injuries, and about 12 billion USD in damage.",
+      "citation_num": "3",
+      "citation_url": "https://www.tornadotalk.com/overview-of-the-april-25-28-2011-super-outbreak",
+      "verdict": "support",
+      "reason": "The citation provides the exact statistics of 368 confirmed tornadoes, 224 on April 27, 4 EF5, 11 EF4, 21 EF3, 324 fatalities, 3100+ injuries, and $12 billion in damage."
+    },
+    {
+      "statement_index": 7,
+      "statement": "April 27, 2011, featured several waves of severe thunderstorms and tornadoes that moved across Alabama from before sunrise into the late evening.",
+      "citation_num": "8",
+      "citation_url": "https://04272011-noaa.hub.arcgis.com",
+      "verdict": "not_support",
+      "reason": "The provided citation contains general headers and links for a site about the April 27, 2011 event, but it does not contain the specific descriptive text regarding storm waves or timing mentioned in the statement."
+    },
+    {
+      "statement_index": 7,
+      "statement": "April 27, 2011, featured several waves of severe thunderstorms and tornadoes that moved across Alabama from before sunrise into the late evening.",
+      "citation_num": "5",
+      "citation_url": "https://www.al.com/news/2022/04/18-hours-of-horror-a-look-back-at-the-tornadoes-of-april-27-2011.html",
+      "verdict": "support",
+      "reason": "The citation describes the outbreak as having three waves (morning, midday, evening) spanning about 18 hours on April 27."
+    },
+    {
+      "statement_index": 7,
+      "statement": "April 27, 2011, featured several waves of severe thunderstorms and tornadoes that moved across Alabama from before sunrise into the late evening.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "support",
+      "reason": "The citation states there were two waves of severe weather, one early morning and one in the afternoon, covering the day of April 27."
+    },
+    {
+      "statement_index": 7,
+      "statement": "April 27, 2011, featured several waves of severe thunderstorms and tornadoes that moved across Alabama from before sunrise into the late evening.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "support",
+      "reason": "The narrative confirms two rounds of severe weather occurred on April 27, 2011, spanning early morning through the afternoon."
+    },
+    {
+      "statement_index": 8,
+      "statement": "NOAA’s GeoPlatform hub describes multiple rounds of tornado- and wind-damage-producing storms crossing the state over nearly 18 hours.",
+      "citation_num": "8",
+      "citation_url": "https://04272011-noaa.hub.arcgis.com",
+      "verdict": "not_support",
+      "reason": "The provided citation does not contain the descriptive text regarding 18 hours of storm activity."
+    },
+    {
+      "statement_index": 8,
+      "statement": "NOAA’s GeoPlatform hub describes multiple rounds of tornado- and wind-damage-producing storms crossing the state over nearly 18 hours.",
+      "citation_num": "5",
+      "citation_url": "https://www.al.com/news/2022/04/18-hours-of-horror-a-look-back-at-the-tornadoes-of-april-27-2011.html",
+      "verdict": "not_support",
+      "reason": "The citation does not mention 'NOAA’s GeoPlatform hub' or its descriptions of the storms."
+    },
+    {
+      "statement_index": 8,
+      "statement": "NOAA’s GeoPlatform hub describes multiple rounds of tornado- and wind-damage-producing storms crossing the state over nearly 18 hours.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "not_support",
+      "reason": "The citation mentions a link to a NOAA GeoPlatform page but does not provide the specific description or time duration mentioned in the statement."
+    },
+    {
+      "statement_index": 8,
+      "statement": "NOAA’s GeoPlatform hub describes multiple rounds of tornado- and wind-damage-producing storms crossing the state over nearly 18 hours.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "not_support",
+      "reason": "The provided text does not mention 'NOAA’s GeoPlatform hub' or the specific claim about 18 hours of storms."
+    },
+    {
+      "statement_index": 9,
+      "statement": "The NCEI episode narrative notes that this sequence broke the state record for the number of tornadoes in a single day and characterizes it as the most significant tornado outbreak in Alabama’s history.",
+      "citation_num": "8",
+      "citation_url": "https://04272011-noaa.hub.arcgis.com",
+      "verdict": "not_support",
+      "reason": "The provided citation does not contain any text referencing the NCEI episode narrative or statistics about the outbreak's significance."
+    },
+    {
+      "statement_index": 9,
+      "statement": "The NCEI episode narrative notes that this sequence broke the state record for the number of tornadoes in a single day and characterizes it as the most significant tornado outbreak in Alabama’s history.",
+      "citation_num": "5",
+      "citation_url": "https://www.al.com/news/2022/04/18-hours-of-horror-a-look-back-at-the-tornadoes-of-april-27-2011.html",
+      "verdict": "not_support",
+      "reason": "The citation mentions the tornado outbreak was historic but does not reference an 'NCEI episode narrative' or specific state records regarding the number of tornadoes."
+    },
+    {
+      "statement_index": 9,
+      "statement": "The NCEI episode narrative notes that this sequence broke the state record for the number of tornadoes in a single day and characterizes it as the most significant tornado outbreak in Alabama’s history.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "not_support",
+      "reason": "The citation does not reference NCEI episode narratives or state records for the number of tornadoes."
+    },
+    {
+      "statement_index": 9,
+      "statement": "The NCEI episode narrative notes that this sequence broke the state record for the number of tornadoes in a single day and characterizes it as the most significant tornado outbreak in Alabama’s history.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "support",
+      "reason": "The episode narrative explicitly states this event broke the record for tornadoes in a day for Alabama and was the most significant in the state's history."
+    },
+    {
+      "statement_index": 10,
+      "statement": "NWS Birmingham’s historic outbreak summary divides the day into multiple waves of storms and indicates that the Sawyerville–Eoline tornado occurred during the most intense afternoon and evening phase of tornado activity in central Alabama.",
+      "citation_num": "3",
+      "citation_url": "https://www.tornadotalk.com/overview-of-the-april-25-28-2011-super-outbreak",
+      "verdict": "not_support",
+      "reason": "The citation does not describe the specific waves of storms as reported by NWS Birmingham."
+    },
+    {
+      "statement_index": 10,
+      "statement": "NWS Birmingham’s historic outbreak summary divides the day into multiple waves of storms and indicates that the Sawyerville–Eoline tornado occurred during the most intense afternoon and evening phase of tornado activity in central Alabama.",
+      "citation_num": "9",
+      "citation_url": "https://www.weather.gov/gsp/EpicOutbreak",
+      "verdict": "not_support",
+      "reason": "The provided text does not mention the Sawyerville–Eoline tornado or NWS Birmingham's historic outbreak summary."
+    },
+    {
+      "statement_index": 10,
+      "statement": "NWS Birmingham’s historic outbreak summary divides the day into multiple waves of storms and indicates that the Sawyerville–Eoline tornado occurred during the most intense afternoon and evening phase of tornado activity in central Alabama.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "support",
+      "reason": "The citation divides the event into two waves and lists the Sawyerville-Eoline tornado in the afternoon/evening wave table."
+    },
+    {
+      "statement_index": 11,
+      "statement": "In statewide summaries of the April 25–28 period, NOAA and NWS note that the combined tornado pathlengths reached about 3,200 miles, the greatest of any documented U.S. tornado outbreak and roughly 600 miles longer than the total pathlength in the 1974 Super Outbreak.",
+      "citation_num": "3",
+      "citation_url": "https://www.tornadotalk.com/overview-of-the-april-25-28-2011-super-outbreak",
+      "verdict": "support",
+      "reason": "The citation quotes Dr. Greg Forbes stating the paths added up to 3,200 miles and were over 600 miles longer than the 1974 Super Outbreak."
+    },
+    {
+      "statement_index": 11,
+      "statement": "In statewide summaries of the April 25–28 period, NOAA and NWS note that the combined tornado pathlengths reached about 3,200 miles, the greatest of any documented U.S. tornado outbreak and roughly 600 miles longer than the total pathlength in the 1974 Super Outbreak.",
+      "citation_num": "9",
+      "citation_url": "https://www.weather.gov/gsp/EpicOutbreak",
+      "verdict": "not_support",
+      "reason": "The provided text does not contain information regarding total tornado pathlengths or NOAA/NWS statewide summaries of that nature."
+    },
+    {
+      "statement_index": 11,
+      "statement": "In statewide summaries of the April 25–28 period, NOAA and NWS note that the combined tornado pathlengths reached about 3,200 miles, the greatest of any documented U.S. tornado outbreak and roughly 600 miles longer than the total pathlength in the 1974 Super Outbreak.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "not_support",
+      "reason": "The provided citation does not contain information regarding total combined path lengths or comparisons to the 1974 Super Outbreak."
+    },
+    {
+      "statement_index": 12,
+      "statement": "The scale of the environment that produced the Sawyerville–Eoline event was exceptional.",
+      "citation_num": "3",
+      "citation_url": "https://www.tornadotalk.com/overview-of-the-april-25-28-2011-super-outbreak",
+      "verdict": "not_support",
+      "reason": "The citation does not contain information regarding the environmental scale of the Sawyerville-Eoline event."
+    },
+    {
+      "statement_index": 12,
+      "statement": "The scale of the environment that produced the Sawyerville–Eoline event was exceptional.",
+      "citation_num": "9",
+      "citation_url": "https://www.weather.gov/gsp/EpicOutbreak",
+      "verdict": "not_support",
+      "reason": "The provided text does not mention the Sawyerville–Eoline event."
+    },
+    {
+      "statement_index": 12,
+      "statement": "The scale of the environment that produced the Sawyerville–Eoline event was exceptional.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "not_support",
+      "reason": "The citation provides meteorological data but does not explicitly describe the scale of the environment as 'exceptional'."
+    },
+    {
+      "statement_index": 13,
+      "statement": "The Sawyerville–Eoline tornado touched down in far southwest Greene County, Alabama, near the Tombigbee River just west of the community of Tishabee along County Road 69 near Head Drive during the late afternoon or early evening of April 27, 2011.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "not_support",
+      "reason": "The citation provides coordinates and general location information but does not mention specific landmarks like the Tombigbee River or Head Drive."
+    },
+    {
+      "statement_index": 13,
+      "statement": "The Sawyerville–Eoline tornado touched down in far southwest Greene County, Alabama, near the Tombigbee River just west of the community of Tishabee along County Road 69 near Head Drive during the late afternoon or early evening of April 27, 2011.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation confirms the touchdown location and timing details."
+    },
+    {
+      "statement_index": 14,
+      "statement": "The NWS outbreak summary provides start coordinates of 32.6152°N, 88.0543°W and an approximate start time of 5:30 p.m. Central Daylight Time.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "support",
+      "reason": "The citation's table lists the start point as 32.6152/-88.0543 and the start time as 5:30 pm."
+    },
+    {
+      "statement_index": 14,
+      "statement": "The NWS outbreak summary provides start coordinates of 32.6152°N, 88.0543°W and an approximate start time of 5:30 p.m. Central Daylight Time.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation provides the exact coordinates and start time mentioned."
+    },
+    {
+      "statement_index": 15,
+      "statement": "From its point of origin, the tornado moved generally east-northeast across Greene, Hale, and Bibb counties before dissipating east of West Blocton in northeastern Bibb County.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "not_support",
+      "reason": "The citation does not explicitly mention the dissipation point being east of West Blocton."
+    },
+    {
+      "statement_index": 15,
+      "statement": "From its point of origin, the tornado moved generally east-northeast across Greene, Hale, and Bibb counties before dissipating east of West Blocton in northeastern Bibb County.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The text confirms the path direction and the dissipation point northeast of Marvel."
+    },
+    {
+      "statement_index": 16,
+      "statement": "Survey information from NWS Birmingham describes the tornado as a long-tracked, strong tornado rated EF3 on the Enhanced Fujita scale, with an estimated maximum wind speed of 145 mph.",
+      "citation_num": "3",
+      "citation_url": "https://www.tornadotalk.com/overview-of-the-april-25-28-2011-super-outbreak",
+      "verdict": "not_support",
+      "reason": "The citation mentions the tornado in the list of summaries but does not include the specific NWS survey description or wind speed."
+    },
+    {
+      "statement_index": 16,
+      "statement": "Survey information from NWS Birmingham describes the tornado as a long-tracked, strong tornado rated EF3 on the Enhanced Fujita scale, with an estimated maximum wind speed of 145 mph.",
+      "citation_num": "5",
+      "citation_url": "https://www.al.com/news/2022/04/18-hours-of-horror-a-look-back-at-the-tornadoes-of-april-27-2011.html",
+      "verdict": "support",
+      "reason": "The citation confirms the event as an EF3 tornado with 145 mph winds and a 72.13-mile track."
+    },
+    {
+      "statement_index": 16,
+      "statement": "Survey information from NWS Birmingham describes the tornado as a long-tracked, strong tornado rated EF3 on the Enhanced Fujita scale, with an estimated maximum wind speed of 145 mph.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "support",
+      "reason": "The citation's table confirms the EF3 rating and 145 mph wind speed for this event."
+    },
+    {
+      "statement_index": 16,
+      "statement": "Survey information from NWS Birmingham describes the tornado as a long-tracked, strong tornado rated EF3 on the Enhanced Fujita scale, with an estimated maximum wind speed of 145 mph.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation confirms these specific details from the NWS Birmingham survey."
+    },
+    {
+      "statement_index": 17,
+      "statement": "The total damage path length of the tornado was 72.13 miles with a maximum path width of 1,760 yards, and the event was associated with 7 fatalities and 50 injuries.",
+      "citation_num": "3",
+      "citation_url": "https://www.tornadotalk.com/overview-of-the-april-25-28-2011-super-outbreak",
+      "verdict": "not_support",
+      "reason": "The citation lists the tornado as a summary topic but does not provide the specific total path length, width, or casualty numbers."
+    },
+    {
+      "statement_index": 17,
+      "statement": "The total damage path length of the tornado was 72.13 miles with a maximum path width of 1,760 yards, and the event was associated with 7 fatalities and 50 injuries.",
+      "citation_num": "5",
+      "citation_url": "https://www.al.com/news/2022/04/18-hours-of-horror-a-look-back-at-the-tornadoes-of-april-27-2011.html",
+      "verdict": "support",
+      "reason": "The citation provides the track length (72.13 miles), fatalities (7), and injuries (50) for this specific tornado."
+    },
+    {
+      "statement_index": 17,
+      "statement": "The total damage path length of the tornado was 72.13 miles with a maximum path width of 1,760 yards, and the event was associated with 7 fatalities and 50 injuries.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "support",
+      "reason": "The citation's table explicitly lists these figures for the Sawyerville-Eoline event."
+    },
+    {
+      "statement_index": 17,
+      "statement": "The total damage path length of the tornado was 72.13 miles with a maximum path width of 1,760 yards, and the event was associated with 7 fatalities and 50 injuries.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation explicitly lists these stats for the path length, width, and casualties."
+    },
+    {
+      "statement_index": 18,
+      "statement": "Tornado Talk’s overview of the April 25–28 outbreak classifies the Sawyerville–Eoline event as one of the twenty-one EF3 tornadoes confirmed during the Super Outbreak.",
+      "citation_num": "3",
+      "citation_url": "https://www.tornadotalk.com/overview-of-the-april-25-28-2011-super-outbreak",
+      "verdict": "support",
+      "reason": "The citation includes the 'Sawyerville-Eoline, AL EF3 Tornado' under the list of 21 rated EF3 tornadoes for the outbreak."
+    },
+    {
+      "statement_index": 18,
+      "statement": "Tornado Talk’s overview of the April 25–28 outbreak classifies the Sawyerville–Eoline event as one of the twenty-one EF3 tornadoes confirmed during the Super Outbreak.",
+      "citation_num": "5",
+      "citation_url": "https://www.al.com/news/2022/04/18-hours-of-horror-a-look-back-at-the-tornadoes-of-april-27-2011.html",
+      "verdict": "not_support",
+      "reason": "The provided citation does not reference 'Tornado Talk' or its classification of the event."
+    },
+    {
+      "statement_index": 18,
+      "statement": "Tornado Talk’s overview of the April 25–28 outbreak classifies the Sawyerville–Eoline event as one of the twenty-one EF3 tornadoes confirmed during the Super Outbreak.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "not_support",
+      "reason": "The provided citation does not reference 'Tornado Talk' or its classification of the outbreak."
+    },
+    {
+      "statement_index": 18,
+      "statement": "Tornado Talk’s overview of the April 25–28 outbreak classifies the Sawyerville–Eoline event as one of the twenty-one EF3 tornadoes confirmed during the Super Outbreak.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "not_support",
+      "reason": "The provided text contains no information about 'Tornado Talk' or its classification of the outbreak."
+    },
+    {
+      "statement_index": 19,
+      "statement": "In Greene County, damage initially corresponded to EF1 intensity but increased to EF2 as the tornado progressed, damaging at least four mobile homes, three outbuildings, and two churches, and uprooting or snapping numerous trees.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation describes this progression of intensity and property damage in Greene County."
+    },
+    {
+      "statement_index": 19,
+      "statement": "In Greene County, damage initially corresponded to EF1 intensity but increased to EF2 as the tornado progressed, damaging at least four mobile homes, three outbuildings, and two churches, and uprooting or snapping numerous trees.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "not_support",
+      "reason": "The citation text does not provide specific details regarding Greene County damage intensities or damage to churches/outbuildings in that county."
+    },
+    {
+      "statement_index": 20,
+      "statement": "As the tornado crossed the Black Warrior River into Hale County, it intensified further, reaching EF3 strength near and just north of Sawyerville and maintaining EF3 intensity in and near Eoline, before weakening to EF2 south of West Blocton and gradually dissipating near Marvel.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation outlines the intensification and weakening points of the tornado path as described."
+    },
+    {
+      "statement_index": 20,
+      "statement": "As the tornado crossed the Black Warrior River into Hale County, it intensified further, reaching EF3 strength near and just north of Sawyerville and maintaining EF3 intensity in and near Eoline, before weakening to EF2 south of West Blocton and gradually dissipating near Marvel.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "not_support",
+      "reason": "The citation does not describe the full progression through Eoline, West Blocton, or Marvel."
+    },
+    {
+      "statement_index": 21,
+      "statement": "NCEI’s Storm Events database provides a county-specific entry for the Hale County segment, listing an EF3 rating, a segment path length of 25.18 miles, a maximum width of 1,760 yards, and a start and end time from 4:43 p.m. to 5:20 p.m. local time, beginning 4.92 miles west of Sawyerville and ending 3.64 miles east-southeast of Phipps.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "not_support",
+      "reason": "The citation does not provide the NCEI Storm Events database specific segment data for Hale County."
+    },
+    {
+      "statement_index": 21,
+      "statement": "NCEI’s Storm Events database provides a county-specific entry for the Hale County segment, listing an EF3 rating, a segment path length of 25.18 miles, a maximum width of 1,760 yards, and a start and end time from 4:43 p.m. to 5:20 p.m. local time, beginning 4.92 miles west of Sawyerville and ending 3.64 miles east-southeast of Phipps.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "support",
+      "reason": "The citation provides specific data for the Hale County segment, including EF3 rating, path length, width, and timing, which match the statement."
+    },
+    {
+      "statement_index": 22,
+      "statement": "The NWS Birmingham outbreak table aggregates the full multi-county track under a single entry, explaining the longer 72.13-mile pathlength and higher casualty totals.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "support",
+      "reason": "The citation presents the event as a single entry in the table, consistent with the description of a full multi-county track."
+    },
+    {
+      "statement_index": 22,
+      "statement": "The NWS Birmingham outbreak table aggregates the full multi-county track under a single entry, explaining the longer 72.13-mile pathlength and higher casualty totals.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "not_support",
+      "reason": "The citation does not include the NWS Birmingham outbreak table or its specific methodology for path length aggregation."
+    },
+    {
+      "statement_index": 23,
+      "statement": "The Sawyerville–Eoline tornado caused significant structural damage along much of its path, particularly in and near the communities of Sawyerville, Harper Hill, and Eoline.",
+      "citation_num": "6",
+      "citation_url": "https://storymaps.arcgis.com/stories/47cb7288a887417dbc3966b6ac5dba03",
+      "verdict": "support",
+      "reason": "The citation confirms the tornado caused extensive structural damage along its path, particularly in Sawyerville, Harper Hill, and Eoline."
+    },
+    {
+      "statement_index": 23,
+      "statement": "The Sawyerville–Eoline tornado caused significant structural damage along much of its path, particularly in and near the communities of Sawyerville, Harper Hill, and Eoline.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation confirms significant structural damage in these specific communities."
+    },
+    {
+      "statement_index": 23,
+      "statement": "The Sawyerville–Eoline tornado caused significant structural damage along much of its path, particularly in and near the communities of Sawyerville, Harper Hill, and Eoline.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "not_support",
+      "reason": "The citation provides details for Hale County but lacks sufficient broader regional damage reports to verify the full track impact."
+    },
+    {
+      "statement_index": 24,
+      "statement": "Hundreds of structures were damaged or destroyed, including numerous mobile homes, single-family residences, one church, and the Eoline Fire Department, and thousands of trees were downed along the track from Greene County into Bibb County.",
+      "citation_num": "6",
+      "citation_url": "https://storymaps.arcgis.com/stories/47cb7288a887417dbc3966b6ac5dba03",
+      "verdict": "not_support",
+      "reason": "The citation mentions 'two dozen' homes were damaged or destroyed and 'thousands' of trees downed, but does not explicitly state 'hundreds of structures'."
+    },
+    {
+      "statement_index": 24,
+      "statement": "Hundreds of structures were damaged or destroyed, including numerous mobile homes, single-family residences, one church, and the Eoline Fire Department, and thousands of trees were downed along the track from Greene County into Bibb County.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation confirms these types of damages and the loss of thousands of trees along the track."
+    },
+    {
+      "statement_index": 24,
+      "statement": "Hundreds of structures were damaged or destroyed, including numerous mobile homes, single-family residences, one church, and the Eoline Fire Department, and thousands of trees were downed along the track from Greene County into Bibb County.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "not_support",
+      "reason": "The citation does not confirm damage to the Eoline Fire Department or 'hundreds of structures'."
+    },
+    {
+      "statement_index": 25,
+      "statement": "In Greene County, near Tishabee, the tornado damaged or destroyed at least four mobile homes, three outbuildings, and two churches and caused extensive tree damage, with two minor injuries reported.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation confirms the damage reports and injury count for Greene County."
+    },
+    {
+      "statement_index": 26,
+      "statement": "This initial damage in Greene County reflects the intensifying phase of the tornado before it crossed the Black Warrior River toward Hale County.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "not_support",
+      "reason": "The document describes the event but does not explicitly characterize the Greene County damage as an 'intensifying phase'."
+    },
+    {
+      "statement_index": 27,
+      "statement": "The most severe damage in Hale County occurred as the tornado crossed Alabama Route 14 just north of Sawyerville and continued through rural areas toward Harper Hill and Ingram.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation confirms the location of severe damage near AL Route 14 and Harper Hill."
+    },
+    {
+      "statement_index": 27,
+      "statement": "The most severe damage in Hale County occurred as the tornado crossed Alabama Route 14 just north of Sawyerville and continued through rural areas toward Harper Hill and Ingram.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "support",
+      "reason": "The event narrative confirms the tornado crossed AL Route 14 north of Sawyerville and moved toward Harper Hill and Ingram."
+    },
+    {
+      "statement_index": 28,
+      "statement": "The tornado intensified to EF3 strength near Route 14, with estimated winds of 145 mph, and caused extensive structural damage along County Roads 18 and 21, Alabama Highway 69 south of Harper Hill, and County Road 29 east of Ingram.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation confirms the EF3 intensification and specific locations impacted in Hale County."
+    },
+    {
+      "statement_index": 28,
+      "statement": "The tornado intensified to EF3 strength near Route 14, with estimated winds of 145 mph, and caused extensive structural damage along County Roads 18 and 21, Alabama Highway 69 south of Harper Hill, and County Road 29 east of Ingram.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "support",
+      "reason": "The event narrative explicitly lists these locations and the EF3/145 mph wind rating for the Hale County portion of the track."
+    },
+    {
+      "statement_index": 29,
+      "statement": "Numerous mobile homes and single-family houses, along with one church, were damaged or destroyed in Hale County, and thousands of trees were knocked down as the tornado moved toward the Talladega National Forest and the Bibb County line.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation confirms the structural damages and tree losses in Hale County."
+    },
+    {
+      "statement_index": 29,
+      "statement": "Numerous mobile homes and single-family houses, along with one church, were damaged or destroyed in Hale County, and thousands of trees were knocked down as the tornado moved toward the Talladega National Forest and the Bibb County line.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "support",
+      "reason": "The event narrative confirms damage to mobile/single-family homes, one church, thousands of trees, and movement toward the Bibb County line."
+    },
+    {
+      "statement_index": 30,
+      "statement": "In the Eoline area, numerous mobile homes and single-family homes sustained minor to major damage, about a dozen dwellings were destroyed, and both the Eoline Fire Department and another business were destroyed.",
+      "citation_num": "6",
+      "citation_url": "https://storymaps.arcgis.com/stories/47cb7288a887417dbc3966b6ac5dba03",
+      "verdict": "not_support",
+      "reason": "The citation mentions the destruction of the Eoline Fire Department and general damage to homes, but does not provide the specific breakdown of 'about a dozen dwellings destroyed' or 'another business'."
+    },
+    {
+      "statement_index": 30,
+      "statement": "In the Eoline area, numerous mobile homes and single-family homes sustained minor to major damage, about a dozen dwellings were destroyed, and both the Eoline Fire Department and another business were destroyed.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation details these specific losses in the Eoline area."
+    },
+    {
+      "statement_index": 31,
+      "statement": "One fatality occurred in a vehicle near the Eoline fire station, and at least ten other injuries were recorded in that portion of the track.",
+      "citation_num": "6",
+      "citation_url": "https://storymaps.arcgis.com/stories/47cb7288a887417dbc3966b6ac5dba03",
+      "verdict": "not_support",
+      "reason": "The citation does not provide specific details regarding a fatality at the fire station or a specific count of injuries in that area."
+    },
+    {
+      "statement_index": 31,
+      "statement": "One fatality occurred in a vehicle near the Eoline fire station, and at least ten other injuries were recorded in that portion of the track.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation confirms one death in a vehicle and at least ten other injuries in Eoline."
+    },
+    {
+      "statement_index": 32,
+      "statement": "ArcGIS StoryMaps material emphasizes that the most intense damage occurred near Sawyerville, Harper Hill, and Eoline, including the complete destruction of some buildings.",
+      "citation_num": "6",
+      "citation_url": "https://storymaps.arcgis.com/stories/47cb7288a887417dbc3966b6ac5dba03",
+      "verdict": "support",
+      "reason": "The citation text explicitly states the most intense damage occurred near Sawyerville, Harper Hill, and Eoline, including the complete destruction of the Eoline Fire Department."
+    },
+    {
+      "statement_index": 32,
+      "statement": "ArcGIS StoryMaps material emphasizes that the most intense damage occurred near Sawyerville, Harper Hill, and Eoline, including the complete destruction of some buildings.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "not_support",
+      "reason": "The provided text contains no mention of 'ArcGIS StoryMaps'."
+    },
+    {
+      "statement_index": 33,
+      "statement": "As the tornado moved northeast across southern Bibb County, it weakened to EF2 intensity while crossing Alabama Highway 5 south of West Blocton.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation confirms the EF2 rating near West Blocton."
+    },
+    {
+      "statement_index": 34,
+      "statement": "Several mobile homes and single-family homes near County Road 26 suffered major damage or were destroyed, and thousands of trees were downed along this path before the tornado lifted northeast of Marvel.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation confirms the damage near CR 26 and the final path to Marvel."
+    },
+    {
+      "statement_index": 35,
+      "statement": "The EF3 segments near Sawyerville and Eoline were more intense than the later stage of the tornado.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The document describes the EF3 intensity at Sawyerville/Eoline and a lower EF2 intensity later in the track."
+    },
+    {
+      "statement_index": 36,
+      "statement": "The NCEI Storm Events entry for the Hale County segment lists property damage of 17 million USD, with zero crop damage recorded, and extensive timber losses.",
+      "citation_num": "6",
+      "citation_url": "https://storymaps.arcgis.com/stories/47cb7288a887417dbc3966b6ac5dba03",
+      "verdict": "not_support",
+      "reason": "The citation does not contain information regarding monetary property damage or crop damage figures."
+    },
+    {
+      "statement_index": 36,
+      "statement": "The NCEI Storm Events entry for the Hale County segment lists property damage of 17 million USD, with zero crop damage recorded, and extensive timber losses.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "not_support",
+      "reason": "The provided text does not contain property damage dollar figures from the NCEI."
+    },
+    {
+      "statement_index": 36,
+      "statement": "The NCEI Storm Events entry for the Hale County segment lists property damage of 17 million USD, with zero crop damage recorded, and extensive timber losses.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "support",
+      "reason": "The citation lists property damage as 17.00M and crop damage as 0.00K for the Hale County event."
+    },
+    {
+      "statement_index": 37,
+      "statement": "The qualitative descriptions of damage indicate that the Sawyerville–Eoline tornado had a substantial economic impact on the affected rural communities.",
+      "citation_num": "6",
+      "citation_url": "https://storymaps.arcgis.com/stories/47cb7288a887417dbc3966b6ac5dba03",
+      "verdict": "not_support",
+      "reason": "While the citation describes significant damage, it does not explicitly use the terminology 'substantial economic impact'."
+    },
+    {
+      "statement_index": 37,
+      "statement": "The qualitative descriptions of damage indicate that the Sawyerville–Eoline tornado had a substantial economic impact on the affected rural communities.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "not_support",
+      "reason": "The text documents physical damage but does not analyze the economic impact."
+    },
+    {
+      "statement_index": 37,
+      "statement": "The qualitative descriptions of damage indicate that the Sawyerville–Eoline tornado had a substantial economic impact on the affected rural communities.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "not_support",
+      "reason": "While structural damage is mentioned, the text does not contain an explicit analysis of 'substantial economic impact' on rural communities."
+    },
+    {
+      "statement_index": 38,
+      "statement": "Official sources attribute 7 fatalities and 50 injuries to the full track of the Sawyerville–Eoline tornado across Greene, Hale, and Bibb counties.",
+      "citation_num": "5",
+      "citation_url": "https://www.al.com/news/2022/04/18-hours-of-horror-a-look-back-at-the-tornadoes-of-april-27-2011.html",
+      "verdict": "support",
+      "reason": "The citation lists the Sawyerville–Eoline tornado with 7 deaths and 50 injuries for the duration of its 72.13-mile track."
+    },
+    {
+      "statement_index": 38,
+      "statement": "Official sources attribute 7 fatalities and 50 injuries to the full track of the Sawyerville–Eoline tornado across Greene, Hale, and Bibb counties.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "support",
+      "reason": "The citation's NWS table attributes 7 fatalities and 50 injuries to the event."
+    },
+    {
+      "statement_index": 38,
+      "statement": "Official sources attribute 7 fatalities and 50 injuries to the full track of the Sawyerville–Eoline tornado across Greene, Hale, and Bibb counties.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation provides these total casualty numbers for the full track."
+    },
+    {
+      "statement_index": 39,
+      "statement": "An AL.com retrospective timeline confirms the tornado as an EF3 event with 145 mph winds, a 72.13-mile track, 7 deaths, and 50 injuries.",
+      "citation_num": "5",
+      "citation_url": "https://www.al.com/news/2022/04/18-hours-of-horror-a-look-back-at-the-tornadoes-of-april-27-2011.html",
+      "verdict": "support",
+      "reason": "The citation's table lists the event as an EF3 with 145 mph winds, a 72.13-mile track, 7 deaths, and 50 injuries."
+    },
+    {
+      "statement_index": 39,
+      "statement": "An AL.com retrospective timeline confirms the tornado as an EF3 event with 145 mph winds, a 72.13-mile track, 7 deaths, and 50 injuries.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "not_support",
+      "reason": "The citation does not reference an AL.com retrospective timeline."
+    },
+    {
+      "statement_index": 39,
+      "statement": "An AL.com retrospective timeline confirms the tornado as an EF3 event with 145 mph winds, a 72.13-mile track, 7 deaths, and 50 injuries.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "not_support",
+      "reason": "The provided text does not mention AL.com or its retrospective timelines."
+    },
+    {
+      "statement_index": 40,
+      "statement": "The NCEI Storm Events database entry for the Hale County segment lists 6 direct deaths and 40 direct injuries.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "not_support",
+      "reason": "The citation does not provide NCEI Storm Events database casualty figures for Hale County."
+    },
+    {
+      "statement_index": 40,
+      "statement": "The NCEI Storm Events database entry for the Hale County segment lists 6 direct deaths and 40 direct injuries.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "not_support",
+      "reason": "The provided text does not reference the NCEI Storm Events database records."
+    },
+    {
+      "statement_index": 40,
+      "statement": "The NCEI Storm Events database entry for the Hale County segment lists 6 direct deaths and 40 direct injuries.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "support",
+      "reason": "The event details for the Hale County entry confirm 6 direct deaths and 40 direct injuries."
+    },
+    {
+      "statement_index": 41,
+      "statement": "Fatalities and injuries in Hale County occurred primarily in and around Sawyerville, Harper Hill, and Ingram.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "not_support",
+      "reason": "The citation does not detail the specific locations of fatalities and injuries within the counties."
+    },
+    {
+      "statement_index": 41,
+      "statement": "Fatalities and injuries in Hale County occurred primarily in and around Sawyerville, Harper Hill, and Ingram.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "not_support",
+      "reason": "The document provides injury/fatality counts per county/location but does not explicitly state they occurred 'primarily' in those specific areas."
+    },
+    {
+      "statement_index": 41,
+      "statement": "Fatalities and injuries in Hale County occurred primarily in and around Sawyerville, Harper Hill, and Ingram.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "not_support",
+      "reason": "The citation mentions locations like Sawyerville and Harper Hill but does not confirm the distribution of injuries across these specific areas."
+    },
+    {
+      "statement_index": 42,
+      "statement": "Fatal and non-fatal injuries were distributed along the track, with concentrations in heavily damaged residential areas in both Hale and Bibb counties.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "not_support",
+      "reason": "The document describes locations of damage but does not explicitly map the distribution of injuries in the manner stated."
+    },
+    {
+      "statement_index": 42,
+      "statement": "Fatal and non-fatal injuries were distributed along the track, with concentrations in heavily damaged residential areas in both Hale and Bibb counties.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "not_support",
+      "reason": "The citation does not provide information regarding the spatial distribution of injuries across the entire multi-county track."
+    },
+    {
+      "statement_index": 43,
+      "statement": "Tornado warnings were in effect for Greene, Hale, and Bibb counties from 4:50 p.m. until 7:45 p.m. on April 27, 2011.",
+      "citation_num": "8",
+      "citation_url": "https://04272011-noaa.hub.arcgis.com",
+      "verdict": "not_support",
+      "reason": "The provided citation does not contain specific information regarding tornado warnings for individual counties or specific timeframes."
+    },
+    {
+      "statement_index": 43,
+      "statement": "Tornado warnings were in effect for Greene, Hale, and Bibb counties from 4:50 p.m. until 7:45 p.m. on April 27, 2011.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "not_support",
+      "reason": "The citation does not provide specific warning timelines for these counties."
+    },
+    {
+      "statement_index": 43,
+      "statement": "Tornado warnings were in effect for Greene, Hale, and Bibb counties from 4:50 p.m. until 7:45 p.m. on April 27, 2011.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation explicitly states the time frame for the tornado warnings."
+    },
+    {
+      "statement_index": 44,
+      "statement": "Warnings were issued as part of a broader sequence of watches and warnings associated with the afternoon and evening supercell thunderstorms.",
+      "citation_num": "8",
+      "citation_url": "https://04272011-noaa.hub.arcgis.com",
+      "verdict": "not_support",
+      "reason": "The provided citation does not contain information regarding the broader sequence of watches and warnings for the event."
+    },
+    {
+      "statement_index": 44,
+      "statement": "Warnings were issued as part of a broader sequence of watches and warnings associated with the afternoon and evening supercell thunderstorms.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "support",
+      "reason": "The citation lists various PDS Tornado Watches covering the afternoon and evening hours."
+    },
+    {
+      "statement_index": 44,
+      "statement": "Warnings were issued as part of a broader sequence of watches and warnings associated with the afternoon and evening supercell thunderstorms.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "not_support",
+      "reason": "The citation does not discuss the broader sequence of watches and warnings associated with the outbreak."
+    },
+    {
+      "statement_index": 45,
+      "statement": "Meteorologists and survey teams documented consistent evidence of a strong, long-tracked tornado along the route from near Tishabee through Sawyerville and Eoline to near Marvel.",
+      "citation_num": "7",
+      "citation_url": "http://repository.library.noaa.gov/view/noaa/6977",
+      "verdict": "not_support",
+      "reason": "The citation text does not contain any information regarding a tornado track from Tishabee through Sawyerville, Eoline, and Marvel."
+    },
+    {
+      "statement_index": 45,
+      "statement": "Meteorologists and survey teams documented consistent evidence of a strong, long-tracked tornado along the route from near Tishabee through Sawyerville and Eoline to near Marvel.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The text confirms that meteorologists surveyed the path from Tishabee to Marvel."
+    },
+    {
+      "statement_index": 45,
+      "statement": "Meteorologists and survey teams documented consistent evidence of a strong, long-tracked tornado along the route from near Tishabee through Sawyerville and Eoline to near Marvel.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "not_support",
+      "reason": "The citation provides a narrative for a specific tornado in Hale County, but does not state that meteorologists documented the entire route from Tishabee to Marvel."
+    },
+    {
+      "statement_index": 46,
+      "statement": "Local emergency services and community facilities were directly affected by the tornado, including the destruction of the Eoline Fire Department.",
+      "citation_num": "7",
+      "citation_url": "http://repository.library.noaa.gov/view/noaa/6977",
+      "verdict": "not_support",
+      "reason": "The citation does not mention the Eoline Fire Department or specific local facilities being destroyed."
+    },
+    {
+      "statement_index": 46,
+      "statement": "Local emergency services and community facilities were directly affected by the tornado, including the destruction of the Eoline Fire Department.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation mentions the destruction of the Eoline Fire Department."
+    },
+    {
+      "statement_index": 46,
+      "statement": "Local emergency services and community facilities were directly affected by the tornado, including the destruction of the Eoline Fire Department.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "not_support",
+      "reason": "The citation does not mention the destruction of the Eoline Fire Department."
+    },
+    {
+      "statement_index": 47,
+      "statement": "Available sources focus primarily on meteorological and damage assessment aspects, with limited detail on search-and-rescue or long-term relief efforts.",
+      "citation_num": "7",
+      "citation_url": "http://repository.library.noaa.gov/view/noaa/6977",
+      "verdict": "not_support",
+      "reason": "The citation focuses on the National Weather Service performance assessment but does not explicitly characterize the scope of available sources or specific search-and-rescue details."
+    },
+    {
+      "statement_index": 47,
+      "statement": "Available sources focus primarily on meteorological and damage assessment aspects, with limited detail on search-and-rescue or long-term relief efforts.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The provided content is almost entirely focused on meteorological data and damage assessments."
+    },
+    {
+      "statement_index": 47,
+      "statement": "Available sources focus primarily on meteorological and damage assessment aspects, with limited detail on search-and-rescue or long-term relief efforts.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "support",
+      "reason": "The provided text focuses heavily on meteorological data, damage surveys, and incident totals, with no mention of search-and-rescue or relief efforts."
+    },
+    {
+      "statement_index": 48,
+      "statement": "The Sawyerville–Eoline tornado is classified in NOAA-linked summaries as an Alabama EF3 tornado that occurred on April 27 among the outbreak’s strong and violent events.",
+      "citation_num": "8",
+      "citation_url": "https://04272011-noaa.hub.arcgis.com",
+      "verdict": "not_support",
+      "reason": "The provided citation does not contain information or summaries regarding the Sawyerville–Eoline tornado."
+    },
+    {
+      "statement_index": 48,
+      "statement": "The Sawyerville–Eoline tornado is classified in NOAA-linked summaries as an Alabama EF3 tornado that occurred on April 27 among the outbreak’s strong and violent events.",
+      "citation_num": "3",
+      "citation_url": "https://www.tornadotalk.com/overview-of-the-april-25-28-2011-super-outbreak",
+      "verdict": "support",
+      "reason": "The citation classifies the event as an Alabama EF3 tornado that occurred on April 27, 2011."
+    },
+    {
+      "statement_index": 48,
+      "statement": "The Sawyerville–Eoline tornado is classified in NOAA-linked summaries as an Alabama EF3 tornado that occurred on April 27 among the outbreak’s strong and violent events.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "support",
+      "reason": "The citation identifies the Sawyerville-Eoline tornado as an EF3 event occurring on April 27 in Central Alabama."
+    },
+    {
+      "statement_index": 49,
+      "statement": "Tornado Talk’s overview treats this tornado as a distinct long-track event within broader analyses of the outbreak.",
+      "citation_num": "8",
+      "citation_url": "https://04272011-noaa.hub.arcgis.com",
+      "verdict": "not_support",
+      "reason": "The provided citation does not contain any mention of 'Tornado Talk' or its analyses."
+    },
+    {
+      "statement_index": 49,
+      "statement": "Tornado Talk’s overview treats this tornado as a distinct long-track event within broader analyses of the outbreak.",
+      "citation_num": "3",
+      "citation_url": "https://www.tornadotalk.com/overview-of-the-april-25-28-2011-super-outbreak",
+      "verdict": "support",
+      "reason": "The citation provides a dedicated link for the 'Sawyerville-Eoline, AL EF3 Tornado' as a specific summary."
+    },
+    {
+      "statement_index": 49,
+      "statement": "Tornado Talk’s overview treats this tornado as a distinct long-track event within broader analyses of the outbreak.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "not_support",
+      "reason": "The citation does not mention or cite 'Tornado Talk' as an analytical source."
+    },
+    {
+      "statement_index": 50,
+      "statement": "The April 27 outbreak in Alabama produced 316 fatalities across the Southeast, including 234 in Alabama, more than 2,400 injuries, and over 4.2 billion USD in damage.",
+      "citation_num": "7",
+      "citation_url": "http://repository.library.noaa.gov/view/noaa/6977",
+      "verdict": "support",
+      "reason": "The citation explicitly states that the April 27, 2011 event resulted in 316 fatalities (234 in Alabama), over 2,400 injuries, and over 4.2 billion USD in damage."
+    },
+    {
+      "statement_index": 50,
+      "statement": "The April 27 outbreak in Alabama produced 316 fatalities across the Southeast, including 234 in Alabama, more than 2,400 injuries, and over 4.2 billion USD in damage.",
+      "citation_num": "3",
+      "citation_url": "https://www.tornadotalk.com/overview-of-the-april-25-28-2011-super-outbreak",
+      "verdict": "not_support",
+      "reason": "The citation does not mention these specific state-level fatality, injury, or damage statistics."
+    },
+    {
+      "statement_index": 50,
+      "statement": "The April 27 outbreak in Alabama produced 316 fatalities across the Southeast, including 234 in Alabama, more than 2,400 injuries, and over 4.2 billion USD in damage.",
+      "citation_num": "9",
+      "citation_url": "https://www.weather.gov/gsp/EpicOutbreak",
+      "verdict": "not_support",
+      "reason": "The provided text does not include specific fatality, injury, or damage cost statistics for the entire Southeast or Alabama."
+    },
+    {
+      "statement_index": 50,
+      "statement": "The April 27 outbreak in Alabama produced 316 fatalities across the Southeast, including 234 in Alabama, more than 2,400 injuries, and over 4.2 billion USD in damage.",
+      "citation_num": "5",
+      "citation_url": "https://www.al.com/news/2022/04/18-hours-of-horror-a-look-back-at-the-tornadoes-of-april-27-2011.html",
+      "verdict": "not_support",
+      "reason": "The citation mentions 240 deaths in Alabama but does not provide the specific figures for the entire Southeast, total injuries, or total dollar damage."
+    },
+    {
+      "statement_index": 50,
+      "statement": "The April 27 outbreak in Alabama produced 316 fatalities across the Southeast, including 234 in Alabama, more than 2,400 injuries, and over 4.2 billion USD in damage.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "not_support",
+      "reason": "The citation mentions 240 fatalities in Alabama but does not cite these specific aggregated numbers for the Southeast."
+    },
+    {
+      "statement_index": 50,
+      "statement": "The April 27 outbreak in Alabama produced 316 fatalities across the Southeast, including 234 in Alabama, more than 2,400 injuries, and over 4.2 billion USD in damage.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "not_support",
+      "reason": "The total statistics provided in the citation (140 deaths, 2,001 injuries, 3.184B damage) differ from the figures cited in the statement."
+    },
+    {
+      "statement_index": 51,
+      "statement": "During the 24-hour period ending at 12:00 UTC on April 28, the number of tornadoes exceeded the previous 24-hour record set during the 1974 Super Outbreak.",
+      "citation_num": "7",
+      "citation_url": "http://repository.library.noaa.gov/view/noaa/6977",
+      "verdict": "not_support",
+      "reason": "The citation mentions the 1974 Super Tornado Outbreak as a point of comparison for fatalities, but does not discuss 24-hour tornado count records."
+    },
+    {
+      "statement_index": 51,
+      "statement": "During the 24-hour period ending at 12:00 UTC on April 28, the number of tornadoes exceeded the previous 24-hour record set during the 1974 Super Outbreak.",
+      "citation_num": "3",
+      "citation_url": "https://www.tornadotalk.com/overview-of-the-april-25-28-2011-super-outbreak",
+      "verdict": "not_support",
+      "reason": "The citation states that 224 tornadoes on April 27 is the 'most ever in a 24-hour period,' but does not specifically mention the 1974 record for comparison."
+    },
+    {
+      "statement_index": 51,
+      "statement": "During the 24-hour period ending at 12:00 UTC on April 28, the number of tornadoes exceeded the previous 24-hour record set during the 1974 Super Outbreak.",
+      "citation_num": "9",
+      "citation_url": "https://www.weather.gov/gsp/EpicOutbreak",
+      "verdict": "support",
+      "reason": "The text states that the number of tornadoes for the 24-hour period ending at 1200 UTC on 28 April 2011 shattered the record set during the 1974 Super Outbreak."
+    },
+    {
+      "statement_index": 51,
+      "statement": "During the 24-hour period ending at 12:00 UTC on April 28, the number of tornadoes exceeded the previous 24-hour record set during the 1974 Super Outbreak.",
+      "citation_num": "5",
+      "citation_url": "https://www.al.com/news/2022/04/18-hours-of-horror-a-look-back-at-the-tornadoes-of-april-27-2011.html",
+      "verdict": "not_support",
+      "reason": "The citation does not provide information regarding the 1974 Super Outbreak or comparative records for the 24-hour period ending April 28."
+    },
+    {
+      "statement_index": 51,
+      "statement": "During the 24-hour period ending at 12:00 UTC on April 28, the number of tornadoes exceeded the previous 24-hour record set during the 1974 Super Outbreak.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "not_support",
+      "reason": "The citation does not mention 24-hour records or the 1974 comparison."
+    },
+    {
+      "statement_index": 51,
+      "statement": "During the 24-hour period ending at 12:00 UTC on April 28, the number of tornadoes exceeded the previous 24-hour record set during the 1974 Super Outbreak.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "not_support",
+      "reason": "The citation text does not discuss global 24-hour records or the 1974 Super Outbreak."
+    },
+    {
+      "statement_index": 52,
+      "statement": "The April 27–28 event is the deadliest U.S. tornado outbreak since the March 18, 1925 Tri-State tornado.",
+      "citation_num": "7",
+      "citation_url": "http://repository.library.noaa.gov/view/noaa/6977",
+      "verdict": "not_support",
+      "reason": "The citation identifies the event as one of the deadliest since record keeping began in 1950, but it does not mention the 1925 Tri-State tornado."
+    },
+    {
+      "statement_index": 52,
+      "statement": "The April 27–28 event is the deadliest U.S. tornado outbreak since the March 18, 1925 Tri-State tornado.",
+      "citation_num": "3",
+      "citation_url": "https://www.tornadotalk.com/overview-of-the-april-25-28-2011-super-outbreak",
+      "verdict": "not_support",
+      "reason": "The citation does not state whether the event was the deadliest since 1925."
+    },
+    {
+      "statement_index": 52,
+      "statement": "The April 27–28 event is the deadliest U.S. tornado outbreak since the March 18, 1925 Tri-State tornado.",
+      "citation_num": "9",
+      "citation_url": "https://www.weather.gov/gsp/EpicOutbreak",
+      "verdict": "support",
+      "reason": "The text explicitly states that the death toll was second only to the outbreak of 18 March 1925."
+    },
+    {
+      "statement_index": 52,
+      "statement": "The April 27–28 event is the deadliest U.S. tornado outbreak since the March 18, 1925 Tri-State tornado.",
+      "citation_num": "5",
+      "citation_url": "https://www.al.com/news/2022/04/18-hours-of-horror-a-look-back-at-the-tornadoes-of-april-27-2011.html",
+      "verdict": "not_support",
+      "reason": "The citation does not mention the 1925 Tri-State tornado or compare the 2011 event to it."
+    },
+    {
+      "statement_index": 52,
+      "statement": "The April 27–28 event is the deadliest U.S. tornado outbreak since the March 18, 1925 Tri-State tornado.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "not_support",
+      "reason": "The citation does not comment on historical death tolls or compare this event to the 1925 Tri-State tornado."
+    },
+    {
+      "statement_index": 52,
+      "statement": "The April 27–28 event is the deadliest U.S. tornado outbreak since the March 18, 1925 Tri-State tornado.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "not_support",
+      "reason": "The citation does not compare this event to the 1925 Tri-State tornado."
+    },
+    {
+      "statement_index": 53,
+      "statement": "The Sawyerville–Eoline tornado was one of several deadly tornadoes that struck Alabama on April 27, alongside higher-rated events such as the Hackleburg EF5 and the Tuscaloosa–Birmingham EF4.",
+      "citation_num": "7",
+      "citation_url": "http://repository.library.noaa.gov/view/noaa/6977",
+      "verdict": "not_support",
+      "reason": "The citation does not mention the Sawyerville–Eoline tornado, the Hackleburg tornado, or the Tuscaloosa–Birmingham tornado."
+    },
+    {
+      "statement_index": 53,
+      "statement": "The Sawyerville–Eoline tornado was one of several deadly tornadoes that struck Alabama on April 27, alongside higher-rated events such as the Hackleburg EF5 and the Tuscaloosa–Birmingham EF4.",
+      "citation_num": "3",
+      "citation_url": "https://www.tornadotalk.com/overview-of-the-april-25-28-2011-super-outbreak",
+      "verdict": "support",
+      "reason": "The citation lists the Sawyerville-Eoline tornado alongside the Hackleburg and Tuscaloosa EF5/EF4 events within the summary categories."
+    },
+    {
+      "statement_index": 53,
+      "statement": "The Sawyerville–Eoline tornado was one of several deadly tornadoes that struck Alabama on April 27, alongside higher-rated events such as the Hackleburg EF5 and the Tuscaloosa–Birmingham EF4.",
+      "citation_num": "9",
+      "citation_url": "https://www.weather.gov/gsp/EpicOutbreak",
+      "verdict": "not_support",
+      "reason": "The provided text does not mention the Sawyerville–Eoline, Hackleburg, or Tuscaloosa–Birmingham tornadoes specifically by those names or EF-ratings."
+    },
+    {
+      "statement_index": 53,
+      "statement": "The Sawyerville–Eoline tornado was one of several deadly tornadoes that struck Alabama on April 27, alongside higher-rated events such as the Hackleburg EF5 and the Tuscaloosa–Birmingham EF4.",
+      "citation_num": "5",
+      "citation_url": "https://www.al.com/news/2022/04/18-hours-of-horror-a-look-back-at-the-tornadoes-of-april-27-2011.html",
+      "verdict": "support",
+      "reason": "The citation identifies the Sawyerville–Eoline event as one of several tornadoes on April 27 and mentions the Hackleburg and Tuscaloosa–Birmingham storms."
+    },
+    {
+      "statement_index": 53,
+      "statement": "The Sawyerville–Eoline tornado was one of several deadly tornadoes that struck Alabama on April 27, alongside higher-rated events such as the Hackleburg EF5 and the Tuscaloosa–Birmingham EF4.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "support",
+      "reason": "The citation lists these tornadoes in the same table and context as major events of the afternoon wave."
+    },
+    {
+      "statement_index": 53,
+      "statement": "The Sawyerville–Eoline tornado was one of several deadly tornadoes that struck Alabama on April 27, alongside higher-rated events such as the Hackleburg EF5 and the Tuscaloosa–Birmingham EF4.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "not_support",
+      "reason": "While the citation mentions the Hackleburg and Tuscaloosa events in the narrative, it does not define them as 'higher-rated' relative to the Sawyerville event in a comparative context."
+    },
+    {
+      "statement_index": 54,
+      "statement": "NWS Birmingham’s event page and historic outbreak table treat the tornado as a single, continuous track, while the NCEI Storm Events database records a specific Hale County segment.",
+      "citation_num": "5",
+      "citation_url": "https://www.al.com/news/2022/04/18-hours-of-horror-a-look-back-at-the-tornadoes-of-april-27-2011.html",
+      "verdict": "not_support",
+      "reason": "The provided citation does not discuss the technical reporting structures of NWS Birmingham versus the NCEI Storm Events database."
+    },
+    {
+      "statement_index": 54,
+      "statement": "NWS Birmingham’s event page and historic outbreak table treat the tornado as a single, continuous track, while the NCEI Storm Events database records a specific Hale County segment.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "support",
+      "reason": "The citation displays the event as a single track in its table, while acknowledging the complexity of the event paths."
+    },
+    {
+      "statement_index": 54,
+      "statement": "NWS Birmingham’s event page and historic outbreak table treat the tornado as a single, continuous track, while the NCEI Storm Events database records a specific Hale County segment.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "not_support",
+      "reason": "The document does not explicitly state how external databases like NCEI record this data."
+    },
+    {
+      "statement_index": 54,
+      "statement": "NWS Birmingham’s event page and historic outbreak table treat the tornado as a single, continuous track, while the NCEI Storm Events database records a specific Hale County segment.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "not_support",
+      "reason": "The citation does not contain the NWS Birmingham event page or its specific treatment of the track, only the NCEI database information."
+    },
+    {
+      "statement_index": 55,
+      "statement": "The coexistence of different figures in official sources reflects NCEI’s county-segmented cataloguing compared with NWS Birmingham’s whole-track reporting.",
+      "citation_num": "5",
+      "citation_url": "https://www.al.com/news/2022/04/18-hours-of-horror-a-look-back-at-the-tornadoes-of-april-27-2011.html",
+      "verdict": "not_support",
+      "reason": "The citation does not explain the cataloguing differences between official government databases."
+    },
+    {
+      "statement_index": 55,
+      "statement": "The coexistence of different figures in official sources reflects NCEI’s county-segmented cataloguing compared with NWS Birmingham’s whole-track reporting.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "support",
+      "reason": "The citation confirms that NWS Birmingham reports total track statistics while acknowledging that other datasets exist for this storm survey."
+    },
+    {
+      "statement_index": 55,
+      "statement": "The coexistence of different figures in official sources reflects NCEI’s county-segmented cataloguing compared with NWS Birmingham’s whole-track reporting.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "not_support",
+      "reason": "The document does not analyze or compare reporting practices of NWS versus NCEI."
+    },
+    {
+      "statement_index": 55,
+      "statement": "The coexistence of different figures in official sources reflects NCEI’s county-segmented cataloguing compared with NWS Birmingham’s whole-track reporting.",
+      "citation_num": "4",
+      "citation_url": "https://www.ncei.noaa.gov/stormevents/eventdetails.jsp?id=314742",
+      "verdict": "not_support",
+      "reason": "The citation provides NCEI data but does not explicitly contrast or explain the methodologies of NWS Birmingham vs NCEI."
+    }
+  ]
+}
