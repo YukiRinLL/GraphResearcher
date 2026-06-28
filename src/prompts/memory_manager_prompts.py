@@ -5,8 +5,10 @@ Extract:
 1. The user's research goal (one sentence, derived from the request).
 2. The expected output/report language.
 3. The requested or reasonably inferred time window, region scope, and source preferences.
-4. A small report-level research contract (`objectives`).
-5. Candidate INITIAL queries and the objective keys each query covers.
+4. Explicit search constraints imposed by the user (forbidden domains, forbidden URLs, forbidden source classes).
+5. Output requirements that must survive into planning, writing, and final review (genre, lead structure, citation format, tone, must-cover items, must-avoid items).
+6. A small report-level research contract (`objectives`).
+7. Candidate INITIAL queries and the objective keys each query covers.
 
 How to decompose (critical):
 - Split along the request's OWN thematic structure, NOT by geography/region. If the request enumerates dimensions (e.g. technology routes -> representative companies -> {tech path, product progress, commercialization, financing, team}), the top-level split follows that thematic spine. A scope word like "global" is only a qualifier, never a decomposition axis — do not split into North America / China / Europe.
@@ -16,12 +18,21 @@ How to decompose (critical):
   explicitly asks for all items, a complete inventory, or exhaustive coverage.
 - Produce a compact candidate set of COARSE queries. The code will choose the
   smallest subset that covers every must objective.
+- For a single named subject with several must-cover dimensions, propose
+  SEPARATE initial queries for the major dimensions (for example discovery /
+  provenance, physical description / iconography, interpretation / debates,
+  significance / reception) instead of collapsing everything into one omnibus
+  query.
 - Make every query SELF-CONTAINED: each stands on its own with no reference to any other query. Never use "上述/前述/该区域/这些公司/the above/aforementioned" or anything pointing at another query's output. Restate the topic, time window, and region (if any) inside each query.
 
 Query text format:
 - query.text is the literal string fed to a web search engine. Write a TIGHT natural-language search phrase: include the key entities and the time window, but no filler. Not a verbose question, not bare keywords.
 - Do NOT write an instruction to an agent (no "调研/梳理/整理/针对…" imperative phrasing).
 - Author the query text in the language of the user request.
+- If the request is about one specifically named work/object/person/topic and that subject is given as an exact quoted title/name, preserve that exact phrase in the query text instead of replacing it with looser related terms or nearby place/person names.
+- For a single specifically named subject, avoid speculative comparanda in INITIAL queries. Do not inject nearby places, neighboring finds, famous excavations, other objects, or scholar names unless they are already explicit in the user request or are necessary for minimal disambiguation.
+- When the task is to identify discovery context, provenance, physical description, or significance of one named object, prefer generic dimension words such as "discovery", "provenance", "iconography", "museum collection", "catalogue", "authenticity", or "dating" over guessed locations or comparators.
+- If a specifically named subject is known to be ambiguous or reused for multiple objects/finds, the FIRST initial query must explicitly resolve the referent of that exact name before broadening into discovery context or significance. In that case, prefer discriminators like "authenticity", "Ashmolean", "museum", "catalogue", "iconography", "Evans", or "signet ring" rather than nearby sites or later discoveries that may belong to a different object with the same or similar nickname.
 
 Per-query importance (one of "core" / "supporting" / "peripheral"):
 - "core": directly carries a central conclusion of the research goal; the report cannot stand without it.
@@ -32,6 +43,7 @@ Rules:
 - Return only valid JSON. Do not wrap it in Markdown.
 - Do not invent specific facts, sources, citations, or conclusions.
 - If the user does not specify the language or time window, infer a reasonable default.
+- Preserve hard user constraints instead of collapsing them into generic goals. If the request bans certain sites, pages, or source types, copy them into `search_constraints`. If the request specifies article shape, lead behavior, citation style, or tone, copy them into `output_requirements`.
 
 Return this JSON shape:
 {
@@ -40,6 +52,21 @@ Return this JSON shape:
   "time_window": "requested or inferred time window, or null",
   "region_scope": "requested region scope, or null",
   "source_preferences": ["preferred source category or domain, if specified"],
+  "search_constraints": {
+    "blocked_domains": ["domain the searcher must not use"],
+    "blocked_urls": ["exact URL the searcher must not open"],
+    "blocked_source_types": ["source category the searcher must avoid"],
+    "notes": ["other hard search restrictions"]
+  },
+  "output_requirements": {
+    "genre": "wikipedia_article|research_report|briefing|other",
+    "citation_style": "plain-English description of the required citation format, or null",
+    "lead_section_required": true,
+    "lead_section_no_heading": true,
+    "tone": ["neutral", "encyclopedic"],
+    "must_cover": ["non-negotiable content or structure requirement"],
+    "must_avoid": ["forbidden source, format, or wording requirement"]
+  },
   "scope_mode": "bounded|exhaustive",
   "objectives": [
     {
@@ -89,6 +116,7 @@ Rules:
 - Return only valid JSON.
 - `sufficiency_score` is in [0, 1].
 - Return `recommendation="sufficient"` only when the Query's acceptance criteria are met with reliable evidence.
+- For a single exact named subject, evidence about nearby finds, later comparanda, or another object sharing a similar nickname does NOT satisfy coverage unless the evidence explicitly ties back to the same referent.
 - If more research may help, split the missing work into ATOMIC gaps. Gap
   creation does not mean the gap will be searched; global portfolio evaluation
   selects only work with enough report-level marginal value.
@@ -178,6 +206,11 @@ Reason: {reason}
 Requirements:
 - Inline the parent's concrete subject BY VALUE into every new query (e.g. write "Figure AI 人形机器人 量产进度 2025", never "该公司的量产进度"). Never reference another query: no "上述/前述/该/这些/the above".
 - Each query must be SELF-CONTAINED and a TIGHT natural-language search phrase: key entities + time window, no filler, not a verbose question, not bare keywords, not an instruction to an agent.
+- Keep the query SHORT and directly searchable. Target one primary subtopic only; do not try to satisfy every acceptance criterion inside the query text itself.
+- When the parent topic is one exact named object/article subject, preserve that exact subject and do not swap in a nearby excavation, famous tomb, or comparandum as the search anchor. If disambiguation is still needed, use one referent-locking cue such as museum, catalogue, authenticity, or first publisher rather than a different object's findspot.
+- Never concatenate a bibliography into the query. Do not list multiple paper/chapter titles, multiple author surnames, long title strings, page-range requests, or a stack of venue names in one query.
+- If a gap depends on known literature, use at most one especially discriminative title/author cue in the query text; keep the rest in `acceptance_criteria`, not in the search phrase.
+- Prefer one concrete subject + one subtopic + a few discriminative terms. As a hard rule of thumb, keep the query roughly under 16 words / 140 characters when possible.
 - Cover only the assigned related gaps; do not repeat what the existing siblings already cover.
 - Author the query text in the language of the research goal.
 - Tag each query with an importance ("core" / "supporting" / "peripheral") relative to the research goal's core conclusions, judged the same way as the parent's own role.
@@ -217,6 +250,7 @@ Assess report-level objective coverage and confidence from the available query
 assessments and evidence summaries. Do not reward exhaustive detail, additional
 examples, product-name verification, or parameter completion unless the user
 explicitly requested exhaustive coverage.
+For a single exact named subject, do not award high coverage when most evidence is actually about a nearby site, comparandum, or a different referent with the same nickname. Coverage should stay low until the evidence clearly centers the requested referent itself.
 
 Return only JSON:
 {

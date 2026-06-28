@@ -1,0 +1,712 @@
+{
+  "title": "Ring of Nestor",
+  "status": "completed",
+  "total_statements": 40,
+  "total_citations": 3,
+  "valid_citations": 3,
+  "evaluated_statements": 40,
+  "skipped_statements": 0,
+  "support": 24,
+  "not_support": 14,
+  "conflict": 2,
+  "support_ratio": 0.6,
+  "conflict_ratio": 0.05,
+  "results": [
+    {
+      "statement_index": 0,
+      "statement": "The Ring of Nestor is a large gold signet ring associated with Aegean archaeology and long discussed in relation to Minoan religion and ideas about the afterlife.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about the Ring of Nestor or Aegean archaeology."
+    },
+    {
+      "statement_index": 0,
+      "statement": "The Ring of Nestor is a large gold signet ring associated with Aegean archaeology and long discussed in relation to Minoan religion and ideas about the afterlife.",
+      "citation_num": "2",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?sid=f21a5887df1e4b8e25f8bf6975c8b93a&ui_lang=eng",
+      "verdict": "not_support",
+      "reason": "The citation content does not describe the ring as 'large' or state that it has been 'long discussed' in relation to Minoan religion and ideas about the afterlife."
+    },
+    {
+      "statement_index": 0,
+      "statement": "The Ring of Nestor is a large gold signet ring associated with Aegean archaeology and long discussed in relation to Minoan religion and ideas about the afterlife.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The abstract, key takeaways, and related papers consistently associate the Ring of Nestor with Aegean archaeology, Minoan art, and discussions of authenticity, iconography, and religious practices, including the afterlife."
+    },
+    {
+      "statement_index": 1,
+      "statement": "The ring was originally presented by Arthur Evans as part of a group of gold signet rings and bead seals reportedly found in a funerary context at Thisbe in Boeotia, Greece, and was classified by him as a Late Minoan work of the Late Bronze Age.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about Arthur Evans, Thisbe, or the classification of any rings."
+    },
+    {
+      "statement_index": 1,
+      "statement": "The ring was originally presented by Arthur Evans as part of a group of gold signet rings and bead seals reportedly found in a funerary context at Thisbe in Boeotia, Greece, and was classified by him as a Late Minoan work of the Late Bronze Age.",
+      "citation_num": "2",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?sid=f21a5887df1e4b8e25f8bf6975c8b93a&ui_lang=eng",
+      "verdict": "not_support",
+      "reason": "The citation content does not state that Arthur Evans classified the ring as a 'Late Minoan work of the Late Bronze Age'."
+    },
+    {
+      "statement_index": 1,
+      "statement": "The ring was originally presented by Arthur Evans as part of a group of gold signet rings and bead seals reportedly found in a funerary context at Thisbe in Boeotia, Greece, and was classified by him as a Late Minoan work of the Late Bronze Age.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The reference list includes Arthur Evans's 1925 paper titled 'The \"Ring of Nestor\": A Glimpse into the Minoan After-World and a Sepulchral Treasure of Gold Signet-Rings and Bead-Seals from Thisbê, Boeotia', and the Marinatos paper states Evans accepted it as authentic."
+    },
+    {
+      "statement_index": 2,
+      "statement": "The ring's bezel carries a complex engraved figural scene that Evans interpreted as a vision of the \"Minoan after-world\", and the ring subsequently became a widely cited example in studies of Minoan iconography and eschatology.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about the ring's bezel, Evans's interpretations, or Minoan iconography/eschatology."
+    },
+    {
+      "statement_index": 2,
+      "statement": "The ring's bezel carries a complex engraved figural scene that Evans interpreted as a vision of the \"Minoan after-world\", and the ring subsequently became a widely cited example in studies of Minoan iconography and eschatology.",
+      "citation_num": "2",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?sid=f21a5887df1e4b8e25f8bf6975c8b93a&ui_lang=eng",
+      "verdict": "not_support",
+      "reason": "The citation content does not describe the ring's bezel or state that it became a widely cited example in studies of Minoan iconography and eschatology."
+    },
+    {
+      "statement_index": 2,
+      "statement": "The ring's bezel carries a complex engraved figural scene that Evans interpreted as a vision of the \"Minoan after-world\", and the ring subsequently became a widely cited example in studies of Minoan iconography and eschatology.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "Evans's 1925 paper title explicitly mentions 'A Glimpse into the Minoan After-World', and the abstract and FAQs of the main paper discuss its iconography and religious significance, implying its role in studies of Minoan iconography and eschatology."
+    },
+    {
+      "statement_index": 3,
+      "statement": "More recent scholarship refers to the object as the \"Pseudo-Minoan Nestor Ring\" and argues that its imagery and problematic provenance point to a modern or hybrid creation strongly influenced by Egyptian New Kingdom funerary iconography, leading to ongoing debate about its authenticity, date, and cultural attribution.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about recent scholarship, the 'Pseudo-Minoan Nestor Ring', or debates about authenticity."
+    },
+    {
+      "statement_index": 3,
+      "statement": "More recent scholarship refers to the object as the \"Pseudo-Minoan Nestor Ring\" and argues that its imagery and problematic provenance point to a modern or hybrid creation strongly influenced by Egyptian New Kingdom funerary iconography, leading to ongoing debate about its authenticity, date, and cultural attribution.",
+      "citation_num": "2",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?sid=f21a5887df1e4b8e25f8bf6975c8b93a&ui_lang=eng",
+      "verdict": "not_support",
+      "reason": "The citation content is a bibliographic entry for a 1925 work and does not contain information about more recent scholarship or debates regarding the ring's authenticity or iconography."
+    },
+    {
+      "statement_index": 3,
+      "statement": "More recent scholarship refers to the object as the \"Pseudo-Minoan Nestor Ring\" and argues that its imagery and problematic provenance point to a modern or hybrid creation strongly influenced by Egyptian New Kingdom funerary iconography, leading to ongoing debate about its authenticity, date, and cultural attribution.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The Marinatos paper is titled 'The Pseudo-Minoan Nestor Ring and Its Egyptian Iconography' and discusses its authenticity, suspicious find circumstances, and dependence on Egyptian prototypes, confirming the ongoing debate."
+    },
+    {
+      "statement_index": 4,
+      "statement": "Arthur Evans introduced the Ring of Nestor in a study titled \"The ring of Nestor: A glimpse into the Minoan after-world and a sepulchral treasure of gold signet-rings and bead-seals from Thisbê, Boeotia\".",
+      "citation_num": "2",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?sid=f21a5887df1e4b8e25f8bf6975c8b93a&ui_lang=eng",
+      "verdict": "support",
+      "reason": "The citation content explicitly lists Arthur J. Evans as the author and provides the exact title of the study: 'The ring of Nestor: A glimpse into the Minoan after-world and a sepulchral treasure of gold signet-rings and bead-seals from Thisbê, Boeotia'."
+    },
+    {
+      "statement_index": 4,
+      "statement": "Arthur Evans introduced the Ring of Nestor in a study titled \"The ring of Nestor: A glimpse into the Minoan after-world and a sepulchral treasure of gold signet-rings and bead-seals from Thisbê, Boeotia\".",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The reference list directly quotes the title of Arthur Evans's 1925 study: 'The \"Ring of Nestor\": A Glimpse into the Minoan After-World and a Sepulchral Treasure of Gold Signet-Rings and Bead-Seals from Thisbê, Boeotia'."
+    },
+    {
+      "statement_index": 5,
+      "statement": "In this account, Arthur Evans described the ring as belonging to a group of gold signet rings and bead seals said to come from a tomb at Thisbe in Boeotia, which he characterised as a \"sepulchral treasure\".",
+      "citation_num": "2",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?sid=f21a5887df1e4b8e25f8bf6975c8b93a&ui_lang=eng",
+      "verdict": "support",
+      "reason": "The title and a section heading in the citation content explicitly mention 'a sepulchral treasure of gold signet-rings and bead-seals from Thisbê, Boeotia', confirming Evans's characterization and the origin."
+    },
+    {
+      "statement_index": 5,
+      "statement": "In this account, Arthur Evans described the ring as belonging to a group of gold signet rings and bead seals said to come from a tomb at Thisbe in Boeotia, which he characterised as a \"sepulchral treasure\".",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "Evans's 1925 paper title, as listed in the references, explicitly mentions 'a sepulchral treasure of gold signet-rings and bead-seals from Thisbê, Boeotia'."
+    },
+    {
+      "statement_index": 6,
+      "statement": "On this basis, the Ring of Nestor entered scholarly literature as a gold signet ring from a Greek mainland funerary context, associated with burial practices and elite grave goods.",
+      "citation_num": "2",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?sid=f21a5887df1e4b8e25f8bf6975c8b93a&ui_lang=eng",
+      "verdict": "not_support",
+      "reason": "While the citation implies a funerary context, it does not explicitly state that the ring was associated with 'elite grave goods' or how it 'entered scholarly literature' in this specific manner."
+    },
+    {
+      "statement_index": 6,
+      "statement": "On this basis, the Ring of Nestor entered scholarly literature as a gold signet ring from a Greek mainland funerary context, associated with burial practices and elite grave goods.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The context of Evans's initial presentation and the subsequent debate about its authenticity and provenance imply that it was initially accepted into scholarly literature as a gold signet ring from a Greek mainland funerary context."
+    },
+    {
+      "statement_index": 7,
+      "statement": "Later re‑examinations of the object’s history have questioned the reliability of the reported findspot and excavation circumstances at Thisbe.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about re-examinations, findspots, or excavation circumstances at Thisbe."
+    },
+    {
+      "statement_index": 8,
+      "statement": "A detailed study of the \"Pseudo-Minoan Nestor Ring\" reviews the archaeological background and chain of ownership, arguing that inconsistencies in the Thisbe narrative and the ring’s circulation on the art market complicate the attribution of a secure tomb context.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about any detailed study, archaeological background, or the art market."
+    },
+    {
+      "statement_index": 9,
+      "statement": "The detailed study of the \"Pseudo-Minoan Nestor Ring\" emphasises that the collection history and market trajectory of the ring are crucial for assessing its authenticity and for understanding how it came to be integrated into discussions of Aegean prehistory.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about any detailed study, collection history, or Aegean prehistory."
+    },
+    {
+      "statement_index": 10,
+      "statement": "The Ring of Nestor is consistently described as a large, heavy gold signet ring, with a substantial bezel bearing an engraved figural composition.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no description of any ring, its material, or its composition."
+    },
+    {
+      "statement_index": 10,
+      "statement": "The Ring of Nestor is consistently described as a large, heavy gold signet ring, with a substantial bezel bearing an engraved figural composition.",
+      "citation_num": "2",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?sid=f21a5887df1e4b8e25f8bf6975c8b93a&ui_lang=eng",
+      "verdict": "not_support",
+      "reason": "The citation content is a bibliographic entry and does not provide a physical description of the ring, such as its size, weight, or the details of its bezel."
+    },
+    {
+      "statement_index": 10,
+      "statement": "The Ring of Nestor is consistently described as a large, heavy gold signet ring, with a substantial bezel bearing an engraved figural composition.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "not_support",
+      "reason": "While the ring is described as a 'gold signet ring' with an 'engraved figural composition' and 'bezel' in various parts of the text, it is not consistently or explicitly described as 'large, heavy' or having a 'substantial bezel'."
+    },
+    {
+      "statement_index": 11,
+      "statement": "Evans stressed the ring’s size and thickness and presented the engraved scene as a finely executed relief, comparable in craftsmanship to Late Minoan gold rings from Crete.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about Evans, ring size, engraved scenes, or craftsmanship comparisons."
+    },
+    {
+      "statement_index": 11,
+      "statement": "Evans stressed the ring’s size and thickness and presented the engraved scene as a finely executed relief, comparable in craftsmanship to Late Minoan gold rings from Crete.",
+      "citation_num": "2",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?sid=f21a5887df1e4b8e25f8bf6975c8b93a&ui_lang=eng",
+      "verdict": "not_support",
+      "reason": "The citation content does not contain details about what Evans stressed regarding the ring's physical attributes or his comparisons of its craftsmanship."
+    },
+    {
+      "statement_index": 11,
+      "statement": "Evans stressed the ring’s size and thickness and presented the engraved scene as a finely executed relief, comparable in craftsmanship to Late Minoan gold rings from Crete.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "not_support",
+      "reason": "The citation content does not explicitly state that Evans stressed the ring’s size and thickness or presented the engraved scene as a finely executed relief comparable to other rings, only that he accepted it as authentic and classified it."
+    },
+    {
+      "statement_index": 12,
+      "statement": "Subsequent iconographic studies similarly refer to the Ring of Nestor as a gold signet ring of notable dimensions and elaborate workmanship, situating it within, or in conscious imitation of, the corpus of Minoan and pseudo‑Minoan seal imagery.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about iconographic studies, ring dimensions, or Minoan/pseudo-Minoan seal imagery."
+    },
+    {
+      "statement_index": 12,
+      "statement": "Subsequent iconographic studies similarly refer to the Ring of Nestor as a gold signet ring of notable dimensions and elaborate workmanship, situating it within, or in conscious imitation of, the corpus of Minoan and pseudo‑Minoan seal imagery.",
+      "citation_num": "2",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?sid=f21a5887df1e4b8e25f8bf6975c8b93a&ui_lang=eng",
+      "verdict": "not_support",
+      "reason": "The citation content does not discuss subsequent iconographic studies or their descriptions of the ring."
+    },
+    {
+      "statement_index": 12,
+      "statement": "Subsequent iconographic studies similarly refer to the Ring of Nestor as a gold signet ring of notable dimensions and elaborate workmanship, situating it within, or in conscious imitation of, the corpus of Minoan and pseudo‑Minoan seal imagery.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "not_support",
+      "reason": "While subsequent studies discuss its iconography and place within Minoan/pseudo-Minoan imagery and imply elaborate workmanship, the specific phrase 'notable dimensions' is not explicitly mentioned."
+    },
+    {
+      "statement_index": 13,
+      "statement": "A signet ring is a finger ring whose bezel carries an engraved design intended to be impressed into clay or other soft material as a seal.",
+      "citation_num": "2",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?sid=f21a5887df1e4b8e25f8bf6975c8b93a&ui_lang=eng",
+      "verdict": "not_support",
+      "reason": "The citation content mentions 'gold signet-rings' but does not provide a definition of a signet ring or its function."
+    },
+    {
+      "statement_index": 13,
+      "statement": "A signet ring is a finger ring whose bezel carries an engraved design intended to be impressed into clay or other soft material as a seal.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "not_support",
+      "reason": "The citation content discusses signet rings but does not provide a definition of what a signet ring is."
+    },
+    {
+      "statement_index": 14,
+      "statement": "In Bronze Age Aegean contexts, such rings are often associated with administrative or ritual functions.",
+      "citation_num": "2",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?sid=f21a5887df1e4b8e25f8bf6975c8b93a&ui_lang=eng",
+      "verdict": "not_support",
+      "reason": "The citation content does not provide general information about the typical functions of rings in Bronze Age Aegean contexts."
+    },
+    {
+      "statement_index": 14,
+      "statement": "In Bronze Age Aegean contexts, such rings are often associated with administrative or ritual functions.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The related paper by Tully and Crooks mentions Late Minoan signet rings functioning in 'expression and maintenance of elite identities' and depicting 'occasional rites', indicating ritual functions."
+    },
+    {
+      "statement_index": 15,
+      "statement": "Evans understood the Ring of Nestor within this broader category of sealing devices and compared its engraved imagery and technical execution to those of other Aegean gold signet rings.",
+      "citation_num": "2",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?sid=f21a5887df1e4b8e25f8bf6975c8b93a&ui_lang=eng",
+      "verdict": "not_support",
+      "reason": "The citation content does not detail Evans's analytical framework, his understanding of the ring as a sealing device, or his specific comparisons."
+    },
+    {
+      "statement_index": 15,
+      "statement": "Evans understood the Ring of Nestor within this broader category of sealing devices and compared its engraved imagery and technical execution to those of other Aegean gold signet rings.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "Evans's 1925 paper title mentions 'gold signet-rings and bead-seals', implying he understood it as a sealing device, and the abstract discusses its significance in Minoan art, suggesting comparison with other Aegean rings."
+    },
+    {
+      "statement_index": 16,
+      "statement": "The bezel of the Ring of Nestor carries a complex figural scene that Evans famously interpreted as a glimpse of the \"Minoan after-world\".",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about the bezel, figural scenes, Evans, or the 'Minoan after-world'."
+    },
+    {
+      "statement_index": 16,
+      "statement": "The bezel of the Ring of Nestor carries a complex figural scene that Evans famously interpreted as a glimpse of the \"Minoan after-world\".",
+      "citation_num": "2",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?sid=f21a5887df1e4b8e25f8bf6975c8b93a&ui_lang=eng",
+      "verdict": "not_support",
+      "reason": "The citation content does not describe the ring's bezel or state that Evans's interpretation was 'famously' made, although it confirms his interpretation of the 'Minoan after-world'."
+    },
+    {
+      "statement_index": 16,
+      "statement": "The bezel of the Ring of Nestor carries a complex figural scene that Evans famously interpreted as a glimpse of the \"Minoan after-world\".",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "Evans's 1925 paper title explicitly mentions 'A Glimpse into the Minoan After-World', and the abstract of the main paper refers to the 'iconography surrounding the 'Ring of Nestor'."
+    },
+    {
+      "statement_index": 17,
+      "statement": "Evans's description emphasised the presence of human figures, a sacred architectural structure, and various symbols that he associated with the realm of the dead or the underworld, construing the composition as a religious vision related to beliefs about the afterlife.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about Evans's descriptions, human figures, or beliefs about the afterlife."
+    },
+    {
+      "statement_index": 17,
+      "statement": "Evans's description emphasised the presence of human figures, a sacred architectural structure, and various symbols that he associated with the realm of the dead or the underworld, construing the composition as a religious vision related to beliefs about the afterlife.",
+      "citation_num": "2",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?sid=f21a5887df1e4b8e25f8bf6975c8b93a&ui_lang=eng",
+      "verdict": "not_support",
+      "reason": "The citation content does not provide specific details of Evans's description of the ring's imagery or his interpretation of its components."
+    },
+    {
+      "statement_index": 17,
+      "statement": "Evans's description emphasised the presence of human figures, a sacred architectural structure, and various symbols that he associated with the realm of the dead or the underworld, construing the composition as a religious vision related to beliefs about the afterlife.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "not_support",
+      "reason": "While Evans interpreted the ring in relation to the 'Minoan after-world', the citation content does not explicitly detail his emphasis on specific elements like 'human figures, a sacred architectural structure, and various symbols' in his description of this particular ring."
+    },
+    {
+      "statement_index": 18,
+      "statement": "This reading contributed to the ring’s prominence in discussions of Minoan religion and eschatology, where it was often cited as visual evidence for conceptions of an afterlife in Minoan culture.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about the ring's prominence, Minoan religion, or eschatology."
+    },
+    {
+      "statement_index": 18,
+      "statement": "This reading contributed to the ring’s prominence in discussions of Minoan religion and eschatology, where it was often cited as visual evidence for conceptions of an afterlife in Minoan culture.",
+      "citation_num": "2",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?sid=f21a5887df1e4b8e25f8bf6975c8b93a&ui_lang=eng",
+      "verdict": "not_support",
+      "reason": "The citation content does not discuss the ring's prominence in scholarly discussions or its use as visual evidence for Minoan afterlife conceptions."
+    },
+    {
+      "statement_index": 18,
+      "statement": "This reading contributed to the ring’s prominence in discussions of Minoan religion and eschatology, where it was often cited as visual evidence for conceptions of an afterlife in Minoan culture.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The abstract and FAQs discuss the ring's iconography and religious practices, and the ongoing debate about its authenticity implies its prominence in discussions of Minoan religion and eschatology."
+    },
+    {
+      "statement_index": 19,
+      "statement": "An iconographic study of the Ring of Nestor analyses the arrangement of figures, deities, ritual activities, and architectural elements on the bezel, comparing these motifs with established traditions in Minoan seal imagery and gold rings.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The main paper's abstract states it 'presents an analysis of the iconography surrounding the 'Ring of Nestor'' and aims to contribute to discourse regarding its 'significance in Minoan and Mycenaean art', implying comparison of motifs."
+    },
+    {
+      "statement_index": 20,
+      "statement": "This iconographic study treats the scene as a deliberate composition involving interactions between human and divine figures and the setting of a sacred building, and considers how these elements might relate to ritual performances and beliefs about the afterlife.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The main paper's abstract discusses 'analysis of the iconography' and 'significance in Minoan and Mycenaean art', while the FAQs mention 'religious practices and artistic representations', supporting the idea of a deliberate composition related to ritual and afterlife beliefs."
+    },
+    {
+      "statement_index": 21,
+      "statement": "The ring’s iconography does not correspond neatly to securely dated Bronze Age Minoan parallels, making its interpretation dependent on broader comparative frameworks.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The Marinatos paper argues that the ring's coherence depends on 'Egyptian prototypes' and that the butterfly motif argues against its authenticity, implying its iconography does not neatly correspond to Minoan parallels and relies on broader comparative frameworks."
+    },
+    {
+      "statement_index": 22,
+      "statement": "A more recent study characterises the object as the \"Pseudo-Minoan Nestor Ring\" and argues that key features of the scene are more closely related to Egyptian New Kingdom funerary and religious imagery than to securely attested Aegean Bronze Age iconography.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about any recent study, the 'Pseudo-Minoan Nestor Ring', or Egyptian/Aegean iconography."
+    },
+    {
+      "statement_index": 23,
+      "statement": "The recent study highlights particular poses of the figures, architectural forms, and symbolic motifs that resemble compositions in Egyptian tomb and temple reliefs, and notes that such combinations are rare or undocumented in authentic Minoan seal art.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about any recent study, figures, architectural forms, or Minoan seal art."
+    },
+    {
+      "statement_index": 24,
+      "statement": "On this basis, the author of the recent study suggests that the ring’s iconography reflects a hybrid or imitative engagement with Egyptian visual traditions, calling into question its value as direct evidence for Minoan religious beliefs.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about any recent study, ring iconography, or Minoan religious beliefs."
+    },
+    {
+      "statement_index": 25,
+      "statement": "Evans classified the Ring of Nestor stylistically as Late Minoan, comparing its engraved scene with gold rings from Crete that he attributed to the Late Bronze Age.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about Evans, classification, engraved scenes, or gold rings from Crete."
+    },
+    {
+      "statement_index": 25,
+      "statement": "Evans classified the Ring of Nestor stylistically as Late Minoan, comparing its engraved scene with gold rings from Crete that he attributed to the Late Bronze Age.",
+      "citation_num": "2",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?sid=f21a5887df1e4b8e25f8bf6975c8b93a&ui_lang=eng",
+      "verdict": "not_support",
+      "reason": "The citation content does not detail Evans's stylistic classification of the ring or his specific comparisons."
+    },
+    {
+      "statement_index": 25,
+      "statement": "Evans classified the Ring of Nestor stylistically as Late Minoan, comparing its engraved scene with gold rings from Crete that he attributed to the Late Bronze Age.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The Marinatos paper states Evans 'accepted it as authentic' and the Vlachopoulos paper mentions 'Creto-Mycenaean gold rings' and 'Late Bronze Age', supporting Evans's classification as Late Minoan."
+    },
+    {
+      "statement_index": 26,
+      "statement": "Evans considered the Thisbe tomb context and the ring’s perceived stylistic affinities to support a date within the Late Minoan sequence and treated it as an authentic Bronze Age work belonging to the Minoan artistic tradition.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about Evans, Thisbe, stylistic affinities, or Bronze Age works."
+    },
+    {
+      "statement_index": 26,
+      "statement": "Evans considered the Thisbe tomb context and the ring’s perceived stylistic affinities to support a date within the Late Minoan sequence and treated it as an authentic Bronze Age work belonging to the Minoan artistic tradition.",
+      "citation_num": "2",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?sid=f21a5887df1e4b8e25f8bf6975c8b93a&ui_lang=eng",
+      "verdict": "not_support",
+      "reason": "The citation content does not provide details of Evans's arguments for dating the ring or his assessment of its authenticity."
+    },
+    {
+      "statement_index": 26,
+      "statement": "Evans considered the Thisbe tomb context and the ring’s perceived stylistic affinities to support a date within the Late Minoan sequence and treated it as an authentic Bronze Age work belonging to the Minoan artistic tradition.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "Evans's 1925 paper title mentions a 'sepulchral treasure... from Thisbê, Boeotia', and the Marinatos paper states Evans 'accepted it as authentic', indicating he treated it as an authentic Bronze Age work based on context and perceived affinities."
+    },
+    {
+      "statement_index": 27,
+      "statement": "In the ensuing decades, Evans's classification was adopted by many Aegean archaeologists, and the ring was widely cited as a paradigmatic example of a Minoan gold signet ring.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about Evans's classification, Aegean archaeologists, or Minoan gold signet rings."
+    },
+    {
+      "statement_index": 27,
+      "statement": "In the ensuing decades, Evans's classification was adopted by many Aegean archaeologists, and the ring was widely cited as a paradigmatic example of a Minoan gold signet ring.",
+      "citation_num": "2",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?sid=f21a5887df1e4b8e25f8bf6975c8b93a&ui_lang=eng",
+      "verdict": "not_support",
+      "reason": "The citation content does not discuss the subsequent adoption of Evans's classification or the ring's citation in later archaeological literature."
+    },
+    {
+      "statement_index": 27,
+      "statement": "In the ensuing decades, Evans's classification was adopted by many Aegean archaeologists, and the ring was widely cited as a paradigmatic example of a Minoan gold signet ring.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "conflict",
+      "reason": "The Marinatos paper explicitly states that 'many other scholars condemned it as a forgery', which contradicts the idea that Evans's classification was 'adopted by many Aegean archaeologists' and 'widely cited as a paradigmatic example'."
+    },
+    {
+      "statement_index": 28,
+      "statement": "Recent scholarship reassesses both the archaeological context and the stylistic evidence and concludes that the Ring of Nestor is more likely a modern forgery or pseudo‑Minoan creation than an authentic Late Bronze Age artifact.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about recent scholarship, archaeological context, or the authenticity of the Ring of Nestor."
+    },
+    {
+      "statement_index": 29,
+      "statement": "The study arguing this position points to the problematic and poorly documented nature of the reported discovery at Thisbe, the role of the art market and collecting practices in the ring’s early history, and the lack of close parallels for its iconography in securely dated Minoan seal art.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about any study, discovery at Thisbe, the art market, or Minoan seal art."
+    },
+    {
+      "statement_index": 30,
+      "statement": "The study emphasises the strong proximity of the bezel scene to Egyptian New Kingdom imagery and contends that the combination of Egyptian‑derived motifs with a Minoan‑style gold signet format is characteristic of hybrid or imitative works produced outside the Bronze Age Aegean.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about any study, bezel scenes, Egyptian New Kingdom imagery, or hybrid works."
+    },
+    {
+      "statement_index": 31,
+      "statement": "The question of authenticity remains debated in the literature.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about authenticity debates or literature."
+    },
+    {
+      "statement_index": 31,
+      "statement": "The question of authenticity remains debated in the literature.",
+      "citation_num": "2",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?sid=f21a5887df1e4b8e25f8bf6975c8b93a&ui_lang=eng",
+      "verdict": "not_support",
+      "reason": "The citation content is a bibliographic entry for a 1925 work and does not contain information about ongoing debates regarding the ring's authenticity."
+    },
+    {
+      "statement_index": 31,
+      "statement": "The question of authenticity remains debated in the literature.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The abstract, key takeaways, and FAQs of the main paper, as well as the Marinatos paper, all explicitly mention the ongoing debate about the ring's authenticity."
+    },
+    {
+      "statement_index": 32,
+      "statement": "Evans’s original Late Minoan attribution and the ring’s earlier reception as a canonical Minoan signet remain part of the historiography.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about Evans's attribution, Minoan signets, or historiography."
+    },
+    {
+      "statement_index": 32,
+      "statement": "Evans’s original Late Minoan attribution and the ring’s earlier reception as a canonical Minoan signet remain part of the historiography.",
+      "citation_num": "2",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?sid=f21a5887df1e4b8e25f8bf6975c8b93a&ui_lang=eng",
+      "verdict": "not_support",
+      "reason": "The citation content does not explicitly state Evans's 'Late Minoan attribution' or discuss the ring's reception as 'canonical' within historiography."
+    },
+    {
+      "statement_index": 32,
+      "statement": "Evans’s original Late Minoan attribution and the ring’s earlier reception as a canonical Minoan signet remain part of the historiography.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The Marinatos paper mentions Evans's initial acceptance of the ring's authenticity, and the Vlachopoulos paper discusses the reassessment of authenticity, confirming Evans's original attribution remains part of the historical discussion."
+    },
+    {
+      "statement_index": 33,
+      "statement": "The recent designation of the piece as the \"Pseudo-Minoan Nestor Ring\" has gained prominence among scholars who focus on its Egyptian iconography and problematic provenance.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about the 'Pseudo-Minoan Nestor Ring', scholars, Egyptian iconography, or provenance."
+    },
+    {
+      "statement_index": 33,
+      "statement": "The recent designation of the piece as the \"Pseudo-Minoan Nestor Ring\" has gained prominence among scholars who focus on its Egyptian iconography and problematic provenance.",
+      "citation_num": "2",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?sid=f21a5887df1e4b8e25f8bf6975c8b93a&ui_lang=eng",
+      "verdict": "not_support",
+      "reason": "The citation content does not discuss recent scholarly designations or analyses of the ring's iconography or provenance."
+    },
+    {
+      "statement_index": 33,
+      "statement": "The recent designation of the piece as the \"Pseudo-Minoan Nestor Ring\" has gained prominence among scholars who focus on its Egyptian iconography and problematic provenance.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The Marinatos paper is titled 'The Pseudo-Minoan Nestor Ring and Its Egyptian Iconography' and discusses its 'Egyptian prototypes' and 'suspicious' find circumstances, confirming the prominence of this designation and focus."
+    },
+    {
+      "statement_index": 34,
+      "statement": "Discussions of the ring’s date and status typically contrast Evans’s view of an authentic Late Bronze Age Minoan work with the later argument that it is a modern or pseudo‑Minoan object, highlighting the methodological challenges involved in evaluating artifacts with ambiguous contexts and hybrid stylistic features.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about the ring's date, status, Evans's view, or methodological challenges."
+    },
+    {
+      "statement_index": 34,
+      "statement": "Discussions of the ring’s date and status typically contrast Evans’s view of an authentic Late Bronze Age Minoan work with the later argument that it is a modern or pseudo‑Minoan object, highlighting the methodological challenges involved in evaluating artifacts with ambiguous contexts and hybrid stylistic features.",
+      "citation_num": "2",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?sid=f21a5887df1e4b8e25f8bf6975c8b93a&ui_lang=eng",
+      "verdict": "not_support",
+      "reason": "The citation content does not discuss later scholarly debates, contrasting views on the ring's date and status, or methodological challenges."
+    },
+    {
+      "statement_index": 34,
+      "statement": "Discussions of the ring’s date and status typically contrast Evans’s view of an authentic Late Bronze Age Minoan work with the later argument that it is a modern or pseudo‑Minoan object, highlighting the methodological challenges involved in evaluating artifacts with ambiguous contexts and hybrid stylistic features.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The Marinatos paper contrasts Evans's view with arguments about forgery and Egyptian iconography, and the main paper's abstract and FAQs highlight the authenticity debates and methodological challenges in evaluating such artifacts."
+    },
+    {
+      "statement_index": 35,
+      "statement": "In twentieth‑century Aegean archaeology, the Ring of Nestor was regarded as an important example of a Minoan gold signet ring, particularly for discussions of Minoan religion, ritual, and conceptions of the afterlife.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about Aegean archaeology, the Ring of Nestor, Minoan religion, or the afterlife."
+    },
+    {
+      "statement_index": 35,
+      "statement": "In twentieth‑century Aegean archaeology, the Ring of Nestor was regarded as an important example of a Minoan gold signet ring, particularly for discussions of Minoan religion, ritual, and conceptions of the afterlife.",
+      "citation_num": "2",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?sid=f21a5887df1e4b8e25f8bf6975c8b93a&ui_lang=eng",
+      "verdict": "not_support",
+      "reason": "The citation content does not state how the Ring of Nestor was regarded in twentieth-century Aegean archaeology or its importance for specific discussions."
+    },
+    {
+      "statement_index": 35,
+      "statement": "In twentieth‑century Aegean archaeology, the Ring of Nestor was regarded as an important example of a Minoan gold signet ring, particularly for discussions of Minoan religion, ritual, and conceptions of the afterlife.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "conflict",
+      "reason": "The Marinatos paper states that 'many other scholars condemned it as a forgery', which contradicts the idea that it was 'regarded as an important example of a Minoan gold signet ring' by the broader archaeological community throughout the 20th century."
+    },
+    {
+      "statement_index": 36,
+      "statement": "Evans’s interpretation of the bezel scene as a vision of the \"Minoan after-world\" encouraged scholars to use the ring as visual support for reconstructions of Minoan eschatological beliefs, and it featured in broader debates about the nature of Minoan cult, sacred architecture, and mortuary ideology.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about Evans's interpretation, bezel scenes, Minoan after-world, or eschatological beliefs."
+    },
+    {
+      "statement_index": 36,
+      "statement": "Evans’s interpretation of the bezel scene as a vision of the \"Minoan after-world\" encouraged scholars to use the ring as visual support for reconstructions of Minoan eschatological beliefs, and it featured in broader debates about the nature of Minoan cult, sacred architecture, and mortuary ideology.",
+      "citation_num": "2",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?sid=f21a5887df1e4b8e25f8bf6975c8b93a&ui_lang=eng",
+      "verdict": "not_support",
+      "reason": "The citation content does not discuss the impact of Evans's interpretation on other scholars or its role in broader debates about Minoan cult, architecture, or ideology."
+    },
+    {
+      "statement_index": 36,
+      "statement": "Evans’s interpretation of the bezel scene as a vision of the \"Minoan after-world\" encouraged scholars to use the ring as visual support for reconstructions of Minoan eschatological beliefs, and it featured in broader debates about the nature of Minoan cult, sacred architecture, and mortuary ideology.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "Evans's interpretation of the 'Minoan after-world' from his paper title, combined with the ongoing academic debate about the ring's iconography and religious significance, supports its role in discussions of Minoan beliefs and cult."
+    },
+    {
+      "statement_index": 37,
+      "statement": "Modern studies that reclassify the object as the \"Pseudo-Minoan Nestor Ring\" emphasise that, even if it is a modern or hybrid creation, it remains significant for understanding the development of Aegean archaeology and the history of collecting and forgery.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about modern studies, the 'Pseudo-Minoan Nestor Ring', Aegean archaeology, collecting, or forgery."
+    },
+    {
+      "statement_index": 37,
+      "statement": "Modern studies that reclassify the object as the \"Pseudo-Minoan Nestor Ring\" emphasise that, even if it is a modern or hybrid creation, it remains significant for understanding the development of Aegean archaeology and the history of collecting and forgery.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The Tsangaraki paper, listed as a related paper, discusses a forged ring as a 'historical-cultural document' of its time, supporting the idea that even modern creations are significant for understanding archaeology and the history of forgery."
+    },
+    {
+      "statement_index": 38,
+      "statement": "The ring’s changing status—from a canonical Minoan artifact to a questioned or pseudo‑Minoan piece—illustrates how scholarly interpretations can be shaped by market histories, cross‑cultural iconographic borrowings, and evolving criteria for authenticity.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about the ring's status, scholarly interpretations, market histories, or authenticity criteria."
+    },
+    {
+      "statement_index": 38,
+      "statement": "The ring’s changing status—from a canonical Minoan artifact to a questioned or pseudo‑Minoan piece—illustrates how scholarly interpretations can be shaped by market histories, cross‑cultural iconographic borrowings, and evolving criteria for authenticity.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The shift from Evans's acceptance to later skepticism and the focus on Egyptian iconography and problematic provenance (Marinatos paper) illustrates how interpretations are shaped by evolving criteria and cross-cultural borrowings."
+    },
+    {
+      "statement_index": 39,
+      "statement": "Scholars argue that the case of the Ring of Nestor offers insight into how particular objects can influence academic narratives about ancient religions and societies, regardless of whether they ultimately prove to be authentic products of the periods to which they were first assigned.",
+      "citation_num": "3",
+      "citation_url": "https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography",
+      "verdict": "not_support",
+      "reason": "The citation content is a security check page and contains no information about scholars, the Ring of Nestor, academic narratives, or ancient religions/societies."
+    },
+    {
+      "statement_index": 39,
+      "statement": "Scholars argue that the case of the Ring of Nestor offers insight into how particular objects can influence academic narratives about ancient religions and societies, regardless of whether they ultimately prove to be authentic products of the periods to which they were first assigned.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The Tsangaraki paper's approach to a forged artifact as a 'historical-cultural document' and the extensive academic debate surrounding the Ring of Nestor, regardless of its authenticity, support this argument."
+    }
+  ]
+}

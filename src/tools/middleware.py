@@ -555,6 +555,8 @@ class ReporterRevisionMiddleware(AgentMiddleware):
             f"- retention_ratio={attempt.get('retention_ratio')}",
             f"- kept_blocks={attempt.get('kept_blocks')} / submitted_blocks={attempt.get('submitted_blocks')}",
             action,
+            "- blocks[].source_ids 只能填写 URL-backed Source ID：优先直接复用 get_report_evidence 返回的 items[].source_ids，或 get_reference_registry()[].source_id；不要填 items[].id / claim id / evidence id / conflict id。",
+            "- 如果首段是 lead，仍然给该 section 一个正常标题；不要提交空 title。",
             "按以下问题定点修复：",
         ]
         for issue in attempt.get("issues", [])[:8]:

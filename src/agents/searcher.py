@@ -15,6 +15,7 @@ caller can read the final report message.
 
 import json
 import re
+from urllib.parse import urlparse
 from typing import Annotated, Optional, TypedDict
 
 from langchain.agents import create_agent
@@ -61,6 +62,165 @@ _EMPTY_PACKAGE: dict = {
     "evidence": [],
     "conflicts": [],
 }
+
+
+def _repair_json_text(text: str) -> str:
+    """Repair a few common LLM JSON formatting slips before parsing."""
+    repaired = text
+    repaired = re.sub(r',(\s*[}\]])', r"\1", repaired)
+    repaired = re.sub(r':\s*(null|true|false)"(?=\s*[,}\]])', r": \1", repaired)
+    repaired = re.sub(r':\s*(-?\d+(?:\.\d+)?)"(?=\s*[,}\]])', r": \1", repaired)
+    return repaired
+
+
+def _normalize_domain(domain: str) -> str:
+    """Normalize one domain string for constraint checks."""
+    return (domain or "").strip().lower().lstrip(".")
+
+
+def _url_matches_constraints(url: str, blocked_domains: list[str], blocked_urls: list[str]) -> bool:
+    """Return whether one URL violates explicit user search constraints."""
+    if not url:
+        return False
+    if url in blocked_urls:
+        return True
+    domain = _normalize_domain(urlparse(url).netloc)
+    return any(
+        blocked and (domain == blocked or domain.endswith(f".{blocked}"))
+        for blocked in blocked_domains
+    )
+
+
+def _search_constraint_note(query_text: str) -> str:
+    """Render a concise system note for hard search restrictions."""
+    try:
+        task = json.loads(query_text)
+    except (json.JSONDecodeError, TypeError, ValueError):
+        return ""
+    constraints = task.get("search_constraints") or {}
+    blocked_domains = constraints.get("blocked_domains") or []
+    blocked_urls = constraints.get("blocked_urls") or []
+    blocked_types = constraints.get("blocked_source_types") or []
+    notes = constraints.get("notes") or []
+    lines: list[str] = []
+    if blocked_domains:
+        lines.append(f"Blocked domains: {blocked_domains}")
+    if blocked_urls:
+        lines.append(f"Blocked URLs: {blocked_urls}")
+    if blocked_types:
+        lines.append(f"Blocked source types: {blocked_types}")
+    if notes:
+        lines.append(f"Other hard restrictions: {notes}")
+    if not lines:
+        return ""
+    return (
+        "Hard search restrictions from the user. Do not keep, open, summarize, or cite any blocked result.\n"
+        + "\n".join(lines)
+    )
+
+
+def _sanitize_evidence_package(package: dict, query_text: str) -> dict:
+    """Normalize one evidence package and drop blocked sources plus broken refs."""
+    sanitized = dict(package)
+    sources = list(package.get("sources", []) or [])
+    documents = list(package.get("documents", []) or [])
+    statements = list(package.get("statements", []) or [])
+    evidence = list(package.get("evidence", []) or [])
+    conflicts = list(package.get("conflicts", []) or [])
+
+    source_refs = {item.get("local_ref") for item in sources if item.get("local_ref")}
+    kept_documents = [
+        item for item in documents
+        if item.get("local_ref") and item.get("source_ref") in source_refs
+    ]
+    document_refs = {item.get("local_ref") for item in kept_documents}
+    kept_statements = [
+        item for item in statements
+        if item.get("local_ref")
+        and item.get("source_ref") in source_refs
+        and item.get("document_ref") in document_refs
+    ]
+    kept_evidence = [
+        item for item in evidence
+        if item.get("local_ref")
+        and item.get("source_ref") in source_refs
+        and item.get("document_ref") in document_refs
+    ]
+    kept_evidence_refs = {item.get("local_ref") for item in kept_evidence}
+    kept_conflicts = []
+    for conflict in conflicts:
+        refs = [ref for ref in (conflict.get("evidence_refs") or []) if ref in kept_evidence_refs]
+        if refs:
+            kept_conflicts.append({**conflict, "evidence_refs": refs})
+
+    sanitized["sources"] = sources
+    sanitized["documents"] = kept_documents
+    sanitized["statements"] = kept_statements
+    sanitized["evidence"] = kept_evidence
+    sanitized["conflicts"] = kept_conflicts
+
+    try:
+        task = json.loads(query_text)
+    except (json.JSONDecodeError, TypeError, ValueError):
+        return sanitized
+    constraints = task.get("search_constraints") or {}
+    blocked_domains = [
+        _normalize_domain(item) for item in (constraints.get("blocked_domains") or []) if item
+    ]
+    blocked_urls = [item for item in (constraints.get("blocked_urls") or []) if item]
+    blocked_types = {
+        str(item).strip().lower() for item in (constraints.get("blocked_source_types") or []) if item
+    }
+    if not blocked_domains and not blocked_urls and not blocked_types:
+        return sanitized
+
+    blocked_source_refs = {
+        source.get("local_ref")
+        for source in sanitized.get("sources", [])
+        if (
+            _url_matches_constraints(
+                str(source.get("url") or ""),
+                blocked_domains=blocked_domains,
+                blocked_urls=blocked_urls,
+            )
+            or str(source.get("source_type") or "").strip().lower() in blocked_types
+        )
+    }
+    if not blocked_source_refs:
+        return sanitized
+
+    kept_sources = [
+        source for source in sanitized.get("sources", [])
+        if source.get("local_ref") not in blocked_source_refs
+    ]
+    kept_documents = [
+        document for document in sanitized.get("documents", [])
+        if document.get("source_ref") not in blocked_source_refs
+    ]
+    kept_document_refs = {document.get("local_ref") for document in kept_documents}
+    kept_statements = [
+        item for item in sanitized.get("statements", [])
+        if item.get("source_ref") not in blocked_source_refs
+        and item.get("document_ref") in kept_document_refs
+    ]
+    kept_evidence = [
+        item for item in sanitized.get("evidence", [])
+        if item.get("source_ref") not in blocked_source_refs
+        and item.get("document_ref") in kept_document_refs
+    ]
+    kept_evidence_refs = {item.get("local_ref") for item in kept_evidence}
+    kept_conflicts = []
+    for conflict in sanitized.get("conflicts", []):
+        refs = [ref for ref in (conflict.get("evidence_refs") or []) if ref in kept_evidence_refs]
+        if refs:
+            kept_conflicts.append({**conflict, "evidence_refs": refs})
+
+    sanitized["sources"] = kept_sources
+    sanitized["documents"] = kept_documents
+    sanitized["statements"] = kept_statements
+    sanitized["evidence"] = kept_evidence
+    sanitized["conflicts"] = kept_conflicts
+    return sanitized
 
 # ── Nodes ────────────────────────────────────────────────────────────────
 
@@ -113,8 +273,32 @@ def web_search_node(state: SearcherState) -> dict:
     Uses a lightweight ``create_agent`` (not ``create_deep_agent``) — it only
     needs search + page-read tools, not the ``task()`` sub-agent dispatcher.
     """
-    task_msg = HumanMessage(content=state["query_text"])
-    result = _web_search_agent.invoke({"messages": [task_msg]})
+    messages: list = []
+    blocked_domains: list[str] = []
+    blocked_urls: list[str] = []
+    blocked_source_types: list[str] = []
+    try:
+        task = json.loads(state["query_text"])
+    except (json.JSONDecodeError, TypeError, ValueError):
+        task = {}
+    constraints = task.get("search_constraints") or {}
+    blocked_domains = [str(item) for item in (constraints.get("blocked_domains") or []) if item]
+    blocked_urls = [str(item) for item in (constraints.get("blocked_urls") or []) if item]
+    blocked_source_types = [
+        str(item) for item in (constraints.get("blocked_source_types") or []) if item
+    ]
+    note = _search_constraint_note(state["query_text"])
+    if note:
+        messages.append(SystemMessage(content=note))
+    messages.append(HumanMessage(content=state["query_text"]))
+    result = _web_search_agent.invoke(
+        {
+            "messages": messages,
+            "blocked_domains": blocked_domains,
+            "blocked_urls": blocked_urls,
+            "blocked_source_types": blocked_source_types,
+        }
+    )
     last_msg = result["messages"][-1]
     search_output: str = last_msg.content if hasattr(last_msg, "content") else str(last_msg)
 
@@ -180,7 +364,7 @@ def extract_evidence_package_node(state: SearcherState) -> dict:
     response = config.searcher_model.invoke(msgs)
     text: str = response.content if hasattr(response, "content") else str(response)
 
-    ep = _parse_evidence_package(text)
+    ep = _sanitize_evidence_package(_parse_evidence_package(text), state.get("query_text") or "")
     return {"evidence_package": ep, "messages": [response]}
 
 
@@ -197,16 +381,31 @@ def _parse_evidence_package(text: str) -> dict:
         stripped = re.sub(r"^```(?:json)?\s*", "", stripped)
         stripped = re.sub(r"\s*```$", "", stripped)
 
-    try:
-        data = json.loads(stripped)
-    except (json.JSONDecodeError, ValueError):
+    candidates = [stripped]
+    repaired = _repair_json_text(stripped)
+    if repaired != stripped:
+        candidates.append(repaired)
+
+    data = None
+    for candidate in candidates:
+        try:
+            data = json.loads(candidate)
+            break
+        except (json.JSONDecodeError, ValueError):
+            continue
+    if data is None:
         # Try to find a JSON object anywhere in the text.
         m = re.search(r"\{.*\}", stripped, re.DOTALL)
         if m:
+            candidate = m.group(0)
+            repaired = _repair_json_text(candidate)
             try:
-                data = json.loads(m.group(0))
+                data = json.loads(candidate)
             except (json.JSONDecodeError, ValueError):
-                return dict(_EMPTY_PACKAGE)
+                try:
+                    data = json.loads(repaired)
+                except (json.JSONDecodeError, ValueError):
+                    return dict(_EMPTY_PACKAGE)
         else:
             return dict(_EMPTY_PACKAGE)
 

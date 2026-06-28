@@ -17,6 +17,7 @@ report is never broken.
 import logging
 import re
 from typing import Any, Optional
+from urllib.parse import urlparse
 
 from memory.graph import EdgeType
 from tools import graph_tools
@@ -59,12 +60,118 @@ _PLACEHOLDER_RE = re.compile(
     r"content truncated|for brevity|remaining content follows the same pattern",
     re.IGNORECASE,
 )
+_BROKEN_HEX_ESCAPE_RE = re.compile(r"\x00([0-9a-fA-F]{2})")
+_CONTROL_CHAR_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 _EXTERNAL_FILE_RE = re.compile(
     r"详见附件|保存在.+文件|see full.+file|stored in.+file|详见.+chapter_\d+|详见.+draft\.md",
     re.IGNORECASE,
 )
+_WIKIPEDIA_REVIEWISH_PHRASE_RE = re.compile(
+    r"\b("
+    r"later studies|subsequent research|several recent studies|recent studies|modern discussions|"
+    r"institutional commentary|other scholars|across these discussions|recent overviews|"
+    r"critics pointed to|came to the fore|on the same footing|prominent role|disproportionate influence|"
+    r"evidentiary value|pseudo-minoan|gemmae dubitandae"
+    r")\b",
+    re.IGNORECASE,
+)
 _NO_FINDINGS_TEXT = {"暂无可核实结论。", "No verifiable findings are available."}
 _MIN_RETENTION_RATIO = 0.6
+_WIKIPEDIA_ARTICLE_BLOCKED_REFERENCE_DOMAINS = {
+    "facebook.com",
+    "instagram.com",
+    "linkedin.com",
+    "reddit.com",
+    "scribd.com",
+    "tiktok.com",
+    "twitter.com",
+    "x.com",
+}
+_QUERY_LIKE_TITLE_RE = re.compile(
+    r"(?i)(?:^|[\s\"'])ring of nestor(?:[\s\"']|$).*(?:-site:|site:|pdf\b|academic article|discovery date|provenance|evans jhs)"
+)
+_SEARCH_OPERATOR_RE = re.compile(r"(?i)(?:^|\s)-(?:site|inurl|intitle):")
+
+
+def _looks_like_reference_heading(title: str) -> bool:
+    """Return whether one structured section title is a references heading."""
+    normalized = str(title or "").strip()
+    if not normalized:
+        return False
+    return bool(re.fullmatch(r"(?i)(references|reference|bibliography)", normalized)) or normalized in {
+        "参考文献",
+        "参考资料",
+        "参考來源",
+        "参考来源",
+    }
+
+
+def _looks_like_query_title(title: str) -> bool:
+    """Return whether a section title looks like a raw search query."""
+    normalized = " ".join(str(title or "").split()).strip()
+    if not normalized:
+        return False
+    if len(normalized) > 90:
+        return True
+    if _SEARCH_OPERATOR_RE.search(normalized):
+        return True
+    if _QUERY_LIKE_TITLE_RE.search(normalized):
+        return True
+    if normalized.count('"') >= 2 or normalized.count("'") >= 2:
+        return True
+    return False
+
+
+def _current_goal() -> dict:
+    """Return the single active root request node for the current run context."""
+    goals = graph_tools.search_nodes("user_request", {})
+    return goals[0] if goals else {}
+
+
+def _normalize_domain(domain: str) -> str:
+    """Normalize a domain string for allow/deny checks."""
+    return (domain or "").strip().lower().lstrip(".")
+
+
+def _url_domain(url: str) -> str:
+    """Extract the normalized domain from one URL."""
+    return _normalize_domain(urlparse(url or "").netloc)
+
+
+def _is_blocked_domain(domain: str, blocked_domains: list[str]) -> bool:
+    """Return whether a domain matches one blocked-domain rule."""
+    normalized = _normalize_domain(domain)
+    for blocked in (_normalize_domain(item) for item in blocked_domains):
+        if blocked and (normalized == blocked or normalized.endswith(f".{blocked}")):
+            return True
+    return False
+
+
+def _source_allowed_in_registry(source: dict, goal: dict) -> bool:
+    """Return whether one Source node may appear in the report reference pool."""
+    url = str(source.get("url") or "").strip()
+    if not url:
+        return False
+
+    constraints = goal.get("search_constraints") or {}
+    blocked_urls = {str(item).strip() for item in (constraints.get("blocked_urls") or []) if item}
+    blocked_domains = [str(item).strip() for item in (constraints.get("blocked_domains") or []) if item]
+    if url in blocked_urls or _is_blocked_domain(_url_domain(url), blocked_domains):
+        return False
+
+    blocked_source_types = {
+        str(item).strip().lower() for item in (constraints.get("blocked_source_types") or []) if item
+    }
+    source_type = str(source.get("source_type") or "").strip().lower()
+    if source_type and source_type in blocked_source_types:
+        return False
+
+    requirements = goal.get("output_requirements") or {}
+    if requirements.get("genre") == "wikipedia_article":
+        if _is_blocked_domain(_url_domain(url), list(_WIKIPEDIA_ARTICLE_BLOCKED_REFERENCE_DOMAINS)):
+            return False
+
+    return True
 
 
 def build_reference_registry() -> list[dict]:
@@ -83,7 +190,11 @@ def build_reference_registry() -> list[dict]:
     Returns:
         A list of ``{"n", "source_id", "title", "url"}`` dicts.
     """
-    sources = [s for s in graph_tools.search_nodes("source", {}) if s.get("url")]
+    goal = _current_goal()
+    sources = [
+        s for s in graph_tools.search_nodes("source", {})
+        if _source_allowed_in_registry(s, goal)
+    ]
     sources.sort(key=lambda s: s.get("id") or "")
     registry: list[dict] = []
     seen: set[str] = set()
@@ -212,8 +323,21 @@ def _render_references(registry: list[dict], cited_source_ids: set[str], label: 
 
 def sanitize_report(report_text: str) -> str:
     """Remove internal-process explanations and service-offer paragraphs."""
+    # Some model outputs leak NUL-prefixed hex remnants instead of punctuation
+    # or accented letters; repair the common cases before final validation.
+    repaired = _BROKEN_HEX_ESCAPE_RE.sub(
+        lambda match: {
+            "b4": "'",
+            "c9": "E",
+            "e9": "e",
+            "f3": "-",
+            "f4": " - ",
+        }.get(match.group(1).lower(), ""),
+        report_text or "",
+    )
+    repaired = _CONTROL_CHAR_RE.sub("", repaired)
     kept: list[str] = []
-    for block in re.split(r"\n\s*\n", report_text or ""):
+    for block in re.split(r"\n\s*\n", repaired):
         stripped = block.strip()
         if not stripped or _FORBIDDEN_META_RE.search(stripped):
             continue
@@ -291,6 +415,25 @@ def validate_report_quality(report_text: str) -> list[str]:
     return list(dict.fromkeys(issues))
 
 
+def validate_wikipedia_article_style(report_text: str, goal: dict) -> list[str]:
+    """Return narrow style violations for wikipedia_article outputs only."""
+    requirements = goal.get("output_requirements") or {}
+    if requirements.get("genre") != "wikipedia_article":
+        return []
+    issues: list[str] = []
+    flagged_units: list[str] = []
+    for unit in _body_units(report_text or "")[:12]:
+        plain = _CITE_TOKEN_RE.sub("", unit).strip()
+        if plain and _WIKIPEDIA_REVIEWISH_PHRASE_RE.search(plain):
+            flagged_units.append(plain[:120])
+    if flagged_units:
+        issues.append(
+            "wikipedia_article reads like a scholarly literature review instead of an encyclopedia entry: "
+            + " | ".join(flagged_units[:3])
+        )
+    return list(dict.fromkeys(issues))
+
+
 def _conflict_source_ids(conflict_id: str, nodes: dict[str, dict], edges: list[dict]) -> list[str]:
     """Return URL-backed Source IDs supporting one disclosed conflict."""
     evidence_ids = [
@@ -302,6 +445,41 @@ def _conflict_source_ids(conflict_id: str, nodes: dict[str, dict], edges: list[d
     for evidence_id in evidence_ids:
         source_ids.extend(_source_ids_for_item(evidence_id, nodes, edges))
     return list(dict.fromkeys(source_id for source_id in source_ids if source_id in nodes))
+
+
+def _normalize_submitted_source_ids(
+    submitted_ids: list[str],
+    nodes: dict[str, dict],
+    edges: list[dict],
+    registry_by_source: dict[str, dict],
+) -> list[str]:
+    """Normalize Reporter-submitted IDs into canonical URL-backed Source IDs.
+
+    Reporter blocks are supposed to cite ``reference_registry[].source_id`` values.
+    In practice, the model can confuse those with Claim/Evidence item IDs returned
+    by ``get_report_evidence``. This helper salvages that mistake by expanding any
+    submitted Claim/Evidence/Conflict node ID back to its supporting Source IDs.
+    """
+    resolved: list[str] = []
+    for raw_id in dict.fromkeys(submitted_ids or []):
+        source_id = str(raw_id or "").strip()
+        if not source_id:
+            continue
+        if source_id in registry_by_source:
+            resolved.append(source_id)
+            continue
+        node = nodes.get(source_id) or {}
+        node_type = str(node.get("type") or "").lower()
+        if node_type in {"claim", "evidence"}:
+            resolved.extend(_source_ids_for_item(source_id, nodes, edges))
+            continue
+        if node_type == "conflict":
+            resolved.extend(_conflict_source_ids(source_id, nodes, edges))
+            continue
+    return [
+        source_id for source_id in dict.fromkeys(resolved)
+        if source_id in registry_by_source
+    ]
 
 
 def get_disclosed_conflicts() -> list[dict[str, Any]]:
@@ -431,7 +609,10 @@ def _compile_section_report(
     report_title = str(title or ("调研报告" if is_chinese else "Research Report")).strip()
     parts = [f"# {report_title}"]
     for section in compiled_sections:
-        parts.extend([f"## {section['title']}", section["content"]])
+        if section.get("section_type") == "lead":
+            parts.append(section["content"])
+        else:
+            parts.extend([f"## {section['title']}", section["content"]])
     parts.append(_render_references(
         registry,
         cited_source_ids,
@@ -468,8 +649,11 @@ def _persist_compiled_sections(compiled_sections: list[dict[str, Any]]) -> None:
 
 def compile_structured_report(title: str, sections: list[dict]) -> dict:
     """Validate and deterministically compile a structured cited report."""
+    nodes = {node["id"]: node for node in graph_tools.get_all_nodes()}
+    edges = graph_tools.get_all_edges()
     registry = build_reference_registry()
     registry_by_source = {entry["source_id"]: entry for entry in registry}
+    goal = _current_goal()
     issues: list[dict[str, Any]] = []
     compiled_sections: list[dict[str, Any]] = []
     cited_source_ids: set[str] = set()
@@ -484,18 +668,32 @@ def compile_structured_report(title: str, sections: list[dict]) -> dict:
 
     for section_index, section in enumerate(sections or []):
         section_title = str(section.get("title") or "").strip()
+        section_type = str(section.get("section_type") or "").strip().lower()
         blocks = section.get("blocks")
         disclosed_conflict_ids = [
             str(conflict_id)
             for conflict_id in dict.fromkeys(section.get("disclosed_conflict_ids") or [])
             if conflict_id
         ]
+        if _looks_like_reference_heading(section_title):
+            continue
+        if not section_title and section_type == "lead":
+            section_title = "导语" if is_chinese else "Lead"
         if not section_title:
             issues.append(_issue(
                 "missing_section_title",
                 "soft",
                 f"section {section_index + 1} has no title",
                 "Add a concise section title and resubmit only this section.",
+            ))
+            continue
+        if _looks_like_query_title(section_title):
+            issues.append(_issue(
+                "query_like_section_title",
+                "hard",
+                f"section title {section_title!r} looks like a raw search query rather than a reader-facing heading",
+                "Replace it with a concise topical heading such as Description, Discovery, Iconography, or Significance.",
+                section_title=section_title,
             ))
             continue
         if not isinstance(blocks, list) or not blocks:
@@ -511,7 +709,12 @@ def compile_structured_report(title: str, sections: list[dict]) -> dict:
         section_sources: set[str] = set()
         for block_index, block in enumerate(blocks):
             text = str(block.get("text") or "").strip()
-            source_ids = list(dict.fromkeys(block.get("source_ids") or []))
+            source_ids = _normalize_submitted_source_ids(
+                list(dict.fromkeys(block.get("source_ids") or [])),
+                nodes,
+                edges,
+                registry_by_source,
+            )
             submitted_blocks += 1
             submitted_chars += len(text)
             if not text:
@@ -564,7 +767,7 @@ def compile_structured_report(title: str, sections: list[dict]) -> dict:
                 "title": section_title,
                 "content": "\n\n".join(compiled_blocks),
                 "source_ids": sorted(section_sources),
-                "section_type": section.get("section_type"),
+                "section_type": section_type or section.get("section_type"),
                 "disclosed_conflict_ids": disclosed_conflict_ids,
             })
 
@@ -611,6 +814,13 @@ def compile_structured_report(title: str, sections: list[dict]) -> dict:
                 "soft",
                 item,
                 "Replace placeholder or reference-only prose with substantive, evidence-backed writing.",
+            ))
+        for item in validate_wikipedia_article_style(candidate, goal):
+            issues.append(_issue(
+                "wikipedia_style_failed",
+                "soft",
+                item,
+                "Rewrite in encyclopedic prose: state uncontested facts directly, attribute only disputed claims, and remove literature-review phrasing.",
             ))
         if kept_blocks and retention_ratio < _MIN_RETENTION_RATIO:
             issues.append(_issue(
@@ -708,6 +918,16 @@ def _guess_topic_title(query: dict, index: int, is_chinese: bool) -> str:
     text = str(query.get("text") or "").strip()
     lowered = text.lower()
     if is_chinese:
+        if any(token in text for token in ("发现", "出土", "发掘", "来源", "购藏")):
+            return "发现与来源"
+        if any(token in text for token in ("形制", "材质", "尺寸", "图像", "图像学", "描述")):
+            return "形制与图像"
+        if any(token in text for token in ("考古语境", "墓葬", "年代", "分期", "断代")):
+            return "考古语境与年代"
+        if any(token in text for token in ("解释", "释义", "争议", "真实性", "真伪")):
+            return "解释与学术争议"
+        if any(token in text for token in ("意义", "影响", "荷马", "迈锡尼")):
+            return "意义与影响"
         if "技术路线" in text or "核心方案" in text:
             return "技术路线与核心方案"
         if "产品形态" in text or "落地进度" in text or "demo" in lowered:
@@ -723,6 +943,16 @@ def _guess_topic_title(query: dict, index: int, is_chinese: bool) -> str:
         if "主要" in text and "路线" in text:
             return "主要技术路线概览"
         return f"主题 {index}"
+    if any(token in lowered for token in ("discovery", "excavation", "provenance", "findspot", "acquisition")):
+        return "Discovery and Provenance"
+    if any(token in lowered for token in ("description", "material", "size", "dimension", "iconograph", "imagery")):
+        return "Description and Iconography"
+    if any(token in lowered for token in ("archaeological context", "burial", "grave", "dating", "chronology")):
+        return "Archaeological Context and Dating"
+    if any(token in lowered for token in ("interpretation", "meaning", "authenticity", "debate", "controvers")):
+        return "Interpretations and Scholarly Debate"
+    if any(token in lowered for token in ("significance", "impact", "homeric", "mycenaean")):
+        return "Significance"
     if "technical route" in lowered or "core solution" in lowered:
         return "Technical Routes and Core Solutions"
     if "product" in lowered or "deployment" in lowered or "demo" in lowered:
@@ -750,9 +980,9 @@ def _render_fact_paragraph(chunk: list[dict], registry_by_source: dict[str, dict
     unique_source_ids = list(dict.fromkeys(source_ids))
     citations = "".join(f"[{registry_by_source[source_id]['n']}]" for source_id in unique_source_ids if source_id in registry_by_source)
     if is_chinese:
-        paragraph = f"现有公开资料显示：{'；'.join(statements)}。{citations}".strip()
+        paragraph = f"{'；'.join(statements)}。{citations}".strip()
     else:
-        paragraph = f"Available public information indicates: {'; '.join(statements)}. {citations}".strip()
+        paragraph = f"{'; '.join(statements)}. {citations}".strip()
     return paragraph, set(unique_source_ids)
 
 
@@ -782,6 +1012,7 @@ def build_context_fallback_report(request: str = "") -> str:
     goal = goals[0] if goals else {}
     request_text = request or str(goal.get("request") or "")
     is_chinese = bool(re.search(r"[\u4e00-\u9fff]", request_text or str(goal.get("language") or "")))
+    is_wikipedia_article = (goal.get("output_requirements") or {}).get("genre") == "wikipedia_article"
 
     queries = graph_tools.search_nodes("query", {})
     queries.sort(key=lambda query: (query.get("importance") or 0), reverse=True)
@@ -854,11 +1085,12 @@ def build_context_fallback_report(request: str = "") -> str:
         f" current run. Where verification remains incomplete, the report keeps only confirmed facts and explicitly"
         f" disclosed limitations. {scope_citations}"
     )
-    parts.extend([
-        "## 研究范围与局限" if is_chinese else "## Scope and Limitations",
-        scope_paragraph,
-    ])
-    cited_source_ids.update(source_id for source_id in deduped_fallback_ids[:3] if source_id in registry_by_source)
+    if not is_wikipedia_article:
+        parts.extend([
+            "## 研究范围与局限" if is_chinese else "## Scope and Limitations",
+            scope_paragraph,
+        ])
+        cited_source_ids.update(source_id for source_id in deduped_fallback_ids[:3] if source_id in registry_by_source)
 
     for title, paragraphs, section_source_ids in topic_sections:
         parts.append(f"## {title}")

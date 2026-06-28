@@ -1,0 +1,57 @@
+# Ring of Nestor
+
+The Ring of Nestor is a large gold signet ring associated with a sepulchral treasure of gold signet-rings and bead-seals reportedly found in a tomb at Thisbê (Thísvi) in Boeotia, Greece, and traditionally linked to the Late Bronze Age cultures of the Aegean, especially the Minoan and Mycenaean worlds. Evans and subsequent scholars treated it as a famous Mycenaean signet ring, catalogued as CMS I, 179 in the Corpus der Minoischen und Mykenischen Siegel, and used it as a key piece of evidence for the study of Aegean religion and conceptions of the afterlife. Modern discussions often place the ring within a chronological framework spanning Late Helladic I (early Mycenaean) and the Neopalatial period of Minoan Crete, but its authenticity and precise dating have been the subject of sustained scholarly debate, with some researchers considering it a genuine Bronze Age work and others arguing that it is a modern or “pseudo-Minoan” creation. The ring’s elaborate miniature scene—featuring elements such as a female figure on a boat, altars, sacred trees, and standing sacred stones (baetyls)—has made it an influential and frequently cited object in studies of Aegean iconography. [1][2][3][4][5][6][7][8][9][10][11]
+
+## Discovery and provenance
+
+Arthur J. Evans’s monograph “The ring of Nestor. A glimpse into the Minoan after-world and a sepulchral treasure of gold signet-rings and bead-seals from Thisbê, Boeotia” presents the Ring of Nestor as part of a burial treasure of gold signet rings and bead seals discovered in a tomb at Thisbê (Thísvi) in Boeotia, central Greece. In this study, Evans devoted the first section, entitled “Sepulchral treasure of gold signet-rings and bead-seals from Thisbê, Boeotia” (pages 1–42), to the archaeological context and detailed description of the objects, and supported his account with five plates (I–V) illustrating the rings and bead seals, including the ring later identified as the Ring of Nestor. Library and digital-library metadata, such as those provided by the Heidelberg University Library and the Aegeus Society for Aegean Prehistory, consistently associate the monograph with keywords including Nestor, Ring, Minoan culture, Thísvi, and Kakóvatos, indicating that Evans’s account has become a standard reference for the ring’s reported discovery and cultural setting. [1][3][12][13][14]
+
+Later discussions of the object’s provenance have raised questions about the reliability of the traditional narrative. One synthesis of Mycenaean civilisation notes that the famous ring that Evans acquired, often referred to as the Ring of Nestor, is said to have come from a tholos tomb at Kakovatos in western Greece, but emphasizes that this attribution rests on statements made by intermediaries in the antiquities trade and is not supported by excavation records. Another study on authenticity evaluations in Aegean glyptic art highlights the Ring of Nestor among “gemmae dubitandae” and stresses that, once the archaeological properties of such objects are subjected to close scrutiny, doubts about their authenticity and reported findspots tend to resurface. Modern technological and stylistic comparisons with securely excavated gold rings from tholos tombs in the Volos and Dimini area further illustrate that the Ring of Nestor lacks the firm archaeological context that underpins the dating and cultural attribution of those other pieces. [8][9][10]
+
+A separate article on a Mycenaean bronze signet ring in the City Art Museum of St. Louis records that the ring it describes was presented to the museum by the dealer Kurt W. Bachstitz in 1924, documenting a transfer to that collection; however, the available summary does not identify this bronze ring with the gold Ring of Nestor, and the publication does not provide direct evidence linking the latter to the St. Louis museum. Other bibliographic entries refer to the Ring of Nestor in connection with an Ashmolean Museum display caption dating it to about 1500 BC, but the summarized material provides only the caption text and does not detail the path by which the ring entered that collection. [11][15][6]
+
+## Physical description
+
+Evans and later authors consistently describe the Ring of Nestor as a large gold signet ring with an exceptionally large oval bezel. Within the group of rings and bead seals from the Thisbê treasure, Evans distinguished a “large signet ring with an exceptionally large oval bezel” from three bead seals of flattened-cylinder type and from another, smaller ring, underscoring the object’s unusual size and form. A modern discussion in the context of authenticity debates likewise notes that the ring is a gold signet with a very large oval bezel and raises questions about whether the manner in which the gold was worked and the linear engraving of the design correspond to Bronze Age technical practices. [5][16][12][13]
+
+According to one detailed re-examination of the object’s material and dimensions, the Ring of Nestor measures approximately 3.29 by 2.18 centimetres, making it the fifth-largest gold signet ring known from the Aegean world. The same study situates the ring within a broader typology of Mycenaean and Minoan gold signet rings, emphasizing its substantial hoop and broad bezel as characteristic of a particular class of Aegean signet jewellery. [6][7]
+
+Evans classified the ring’s form as a “type IV” golden ring with a hoop shaped like a thick reed-hammered roll, a type that he associated with Mycenaean signet practice based on comparisons with other rings in the Corpus der Minoischen und Mykenischen Siegel. Later typological analysis remarks that this class of large gold rings seems to have continued in use into the historical period but had ceased to be worn after the Geometric era, suggesting a long but ultimately finite tradition of such signet forms. [2][16]
+
+## Iconography
+
+The bezel of the Ring of Nestor carries a densely composed scene that modern commentators interpret as a miniature ritual or religious tableau. One iconographic study describes the design as combining a female figure on a boat with architectural and natural elements, including one or more altars, sacred trees, and baetyls (upright sacred stones), arranged in a continuous frieze across the surface of the bezel. This combination of motifs has been compared with other Aegean signet rings that show complex ritual imagery, and the Ring of Nestor has been cited as an especially elaborate example in which human and divine figures, cult installations, and natural symbols are integrated into a single composition. [5][11][3][12]
+
+## References
+
+[1] The Ring of Nestor: A Glimpse into the Minoan After‑World and a Sepulchral Treasure of Gold Signet‑Rings and Bead‑Seals from Thisbê, Boeotia https://digi.ub.uni-heidelberg.de/diglit/evans1925?ui_lang=eng
+
+[2] ON THE FAMOUS MYCENAEAN SIGNET RING, CMS I, 179, OF THE TIRYNS TREASURE https://www.academia.edu/4389733/ON_THE_FAMOUS_MYCENAEAN_SIGNET_RING_CMS_I_179_OF_THE_TIRYNS_TREASURE
+
+[3] ‘The Ring of Nestor’: A Glimpse into the Minoan After-World and A Sepulchral Treasure of Gold Signet-Rings and Bead-Seals from Thisbê, Boeotia https://www.cambridge.org/core/journals/journal-of-hellenic-studies/article/ring-of-nestor-a-glimpse-into-the-minoan-afterworld-and-a-sepulchral-treasure-of-gold-signetrings-and-beadseals-from-thisbe-boeotia/5E465BD1031E9251C962E138498E6CFA
+
+[4] The Ring of Nestor: a Glimpse into the Minoan After-World ... https://www.nature.com/articles/116635a0
+
+[5] SOME OBSERVATIONS ON THE ICONOGRAPHY OF THE “RING OF NESTOR” https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_
+
+[6] The Ring of Nestor and the quest for authenticity https://www.academia.edu/43416584/_2020_A_G_Vlachopoulos_The_Ring_of_Nestor_and_the_quest_for_authenticity_in_F_Blakolmer_ed_Current_Approaches_and_New_Perspectives_in_Aegean_Iconography_Aegis_18_2020_pp_223_252
+
+[7] The Pseudo-Minoan Nestor Ring and Its Egyptian Iconography https://www.researchgate.net/publication/360816764_The_Pseudo-Minoan_Nestor_Ring_and_Its_Egyptian_Iconography
+
+[8] No (e)scape? E-scaping arguments and investigating new directions in support of authenticity evaluations for Aegean glyptic art https://archiv.ub.uni-heidelberg.de/propylaeumdok/4408/1/Hudler_E-scaping%20arguments_2019.pdf
+
+[9] Technological study of the gold objects from the four tholos tombs in the Volos and Dimini area (Thessaly, Greece) https://www.sciencedirect.com/science/article/abs/pii/S2352409X25001622
+
+[10] The Bronze Age Civilization of Greece (chapter of Mycenaean Civilization) https://www.cambridge.org/core/books/mycenaean-civilization/bronze-age-civilization-of-greece/B0182E1380FB4B64662C85160A655AF7/core-reader
+
+[11] A Signet-Ring in the City Art Museum of St. Louis https://www.jstor.org/stable/499871
+
+[12] “The ring of Nestor”. A glimpse into the Minoan after-world and a sepulchral treasure of gold signet-rings and bead-seals from Thisbê, Boeotia https://digi.ub.uni-heidelberg.de/diglit/evans1925/0014/scroll
+
+[13] ʻThe ring of Nestor;̓ a glimpse into the Minoan after-world, and a sepulchral treasure of gold signet-rings and bead-seals from Thisbê, Boeotia https://catalog.hathitrust.org/Record/000609034
+
+[14] Aegeus digital library entry for Arthur J. Evans, “The ring of Nestor”. A glimpse into the Minoan after-world and a sepulchral treasure of gold signet-rings and bead-seals from Thisbê, Boeotia https://www.aegeussociety.org/digital_library/the-ring-of-nestor-a-glimpse-into-the-minoan-after-world-and-a-sepulchral-treasure-of-gold-signet-rings-and-bead-seals-from-thisbe-boeotia
+
+[15] Pylos and Minoan Crete https://hellenic.ucla.edu/event/pylosandminoancrete/
+
+[16] The Ring of Nestor https://www.jstor.org/stable/pdf/624904.pdf

@@ -1,0 +1,21 @@
+{
+  "benchmark": "2025_Mar_Nov",
+  "sample_size": 1,
+  "metrics": {
+    "Overall": 0.0,
+    "Well-written": 0.0,
+    "Neutral": 0.0,
+    "Broad": 0.0,
+    "Cov. Wiki": 2.0618556701030926,
+    "Ref. Acc.": 60.0
+  },
+  "writing_results": [
+    "Ring_of_Nestor_writing.json"
+  ],
+  "verifiability_results": [
+    "Ring_of_Nestor_verifiability.json"
+  ],
+  "citation_results": [
+    "Ring_of_Nestor_citation.json"
+  ]
+}

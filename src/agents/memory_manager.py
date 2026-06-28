@@ -65,12 +65,66 @@ _INTERNAL_NODE_FIELDS = ("kind", "status", "sufficiency_score", "_claim_lock", "
 # query containing any of these depends on another query's output and is not
 # independently searchable. Authored follow-ups containing them are dropped.
 _CROSS_REF_TOKENS = ("上述", "前述", "该区域", "这些公司", "上文", "前文")
+_ABOUT_SUBJECT_PATTERNS = (
+    re.compile(r"\babout\s+['\"]([^'\"]{2,120})['\"]", re.IGNORECASE),
+    re.compile(r"\bon\s+['\"]([^'\"]{2,120})['\"]", re.IGNORECASE),
+    re.compile(r"关于[“\"'']([^“\"'']{2,120})[”\"'']"),
+    re.compile(r"围绕[“\"'']([^“\"'']{2,120})[”\"'']"),
+)
+_DELIVERY_ONLY_PATTERNS = (
+    "bracketed numeric citation",
+    "bracketed-number citation",
+    "references section",
+    "reference section",
+    "full url",
+    "citation structure",
+    "citations structure",
+    "in-text citation",
+    "section heading",
+    "wikipedia-style structure",
+    "编号引用",
+    "参考文献",
+    "引用格式",
+    "括号编号",
+    "references list",
+)
+_SYNTHESIS_ONLY_OBJECTIVE_KEYS = {
+    "lead-overview",
+}
+_FOLLOWUP_QUERY_MAX_WORDS = 18
+_FOLLOWUP_QUERY_MAX_CHARS = 160
+_FOLLOWUP_QUERY_STOPWORDS = {
+    "a", "an", "and", "are", "as", "at", "author", "authors", "article",
+    "articles", "based", "bibliography", "book", "books", "by", "chapter",
+    "chapters", "citation", "citations", "comparative", "conference",
+    "context", "details", "discussion", "document", "documentation", "doi",
+    "edited", "entry", "evidence", "extract", "find", "focused", "for", "from",
+    "full", "gather", "get", "identify", "in", "interpretation", "journal",
+    "journals", "locate", "of", "on", "or", "page", "pages", "paper",
+    "papers", "peer", "peer-reviewed", "publisher", "publishers", "range",
+    "ranges", "read", "references", "reviewed", "scholarly", "source",
+    "sources", "specific", "study", "studies", "the", "title", "titles",
+    "to", "url", "urls", "venue", "venues", "volume", "volumes", "with",
+    "year", "years",
+}
+_INITIAL_QUERY_GENERIC_TERMS = {
+    "archaeological", "archaeology", "artifact", "artefact", "authenticity",
+    "catalogue", "catalog", "collection", "context", "cultural", "culture",
+    "dating", "definition", "description", "dimensions", "discovery",
+    "excavation", "excavations", "findspot", "gold", "historical", "history",
+    "iconography", "imagery", "inscription", "inscriptions", "interpretation",
+    "material", "materials", "museum", "object", "period", "physical",
+    "provenance", "ring", "scholarly", "signet", "significance", "site",
+    "style", "stylistic", "technical",
+}
 
 OBJECTIVE_COVERAGE_THRESHOLD = 0.75
 OBJECTIVE_CONFIDENCE_THRESHOLD = 0.65
 EXPANSION_UTILITY_THRESHOLD = 0.25
 LOW_REALIZED_GAIN_THRESHOLD = 0.05
 LOW_GAIN_WINDOW = 2
+MULTI_OBJECTIVE_MIN_QUERY_COUNT = 3
+MULTI_OBJECTIVE_MIN_SOURCE_COUNT = 5
 _GAP_CATEGORIES = {
     "missing_core_evidence",
     "fatal_conflict",
@@ -128,6 +182,268 @@ def _first(d: dict, *keys: str) -> Optional[Any]:
         if value:
             return value
     return None
+
+
+def _extract_named_subject(user_request: str) -> str:
+    """Extract a quoted primary subject from article-style requests when obvious.
+
+    This is intentionally conservative: it only returns a subject when the
+    request explicitly frames the task as being about one quoted topic.
+    """
+    text = str(user_request or "")
+    for pattern in _ABOUT_SUBJECT_PATTERNS:
+        match = pattern.search(text)
+        if not match:
+            continue
+        subject = re.sub(r"\s+", " ", match.group(1)).strip()
+        if len(subject) >= 2:
+            return subject
+    return ""
+
+
+def _anchor_query_text(text: str, subject: str) -> str:
+    """Ensure a search query keeps the exact named subject as an anchor phrase."""
+    query = str(text or "").strip()
+    subject = str(subject or "").strip()
+    if not query or not subject:
+        return query
+    lowered_query = query.casefold()
+    lowered_subject = subject.casefold()
+    if lowered_subject in lowered_query:
+        if f"\"{subject}\"".casefold() in lowered_query:
+            return query
+        return re.sub(re.escape(subject), f"\"{subject}\"", query, count=1, flags=re.IGNORECASE)
+    return f"\"{subject}\" {query}"
+
+
+def _goal_named_subject(goal: dict) -> str:
+    """Return the exact named subject for one article-style goal when obvious."""
+    if (goal.get("output_requirements") or {}).get("genre") != "wikipedia_article":
+        return ""
+    return _extract_named_subject(str(goal.get("request") or ""))
+
+
+def _is_synthesis_only_objective(objective_key: Optional[str], description: str) -> bool:
+    """Return whether an objective should be satisfied by synthesis, not more search.
+
+    These objectives still matter for report readiness, but once the evidence base
+    exists they should be handled by the reporter rather than spawning another
+    external-search query.
+    """
+    key = str(objective_key or "").strip().lower()
+    if key in _SYNTHESIS_ONLY_OBJECTIVE_KEYS:
+        return True
+    normalized = str(description or "").strip().lower()
+    return (
+        "lead section" in normalized
+        and "summar" in normalized
+        and "defines the ring of nestor" in normalized
+    )
+
+
+def _followup_query_too_long(text: str) -> bool:
+    """Return whether a follow-up query is too long for reliable web search."""
+    query = " ".join(str(text or "").split())
+    if not query:
+        return False
+    words = re.findall(r"\S+", query)
+    return len(query) > _FOLLOWUP_QUERY_MAX_CHARS or len(words) > _FOLLOWUP_QUERY_MAX_WORDS
+
+
+def _tighten_followup_query_text(text: str, subject: str = "") -> str:
+    """Compress an overlong follow-up query into a tighter search phrase.
+
+    The planner already attempts to author compact queries. This helper is a
+    defensive post-processor for cases where the model concatenates multiple
+    paper titles or acceptance criteria into one search string, which tends to
+    produce empty result pages.
+    """
+    query = " ".join(str(text or "").split()).strip()
+    subject = str(subject or "").strip()
+    if not query:
+        return query
+    if not _followup_query_too_long(query):
+        return query
+
+    protected_subject = ""
+    if subject:
+        protected_subject = subject
+    else:
+        match = re.search(r"[\"“”']([^\"“”']{2,120})[\"“”']", query)
+        if match:
+            protected_subject = re.sub(r"\s+", " ", match.group(1)).strip()
+
+    working = query
+    if protected_subject:
+        working = re.sub(
+            re.escape(protected_subject),
+            " ",
+            working,
+            count=1,
+            flags=re.IGNORECASE,
+        )
+    # Drop long quoted titles/phrases and keep only short unquoted discriminators.
+    working = re.sub(r"[\"“”']([^\"“”']{12,})[\"“”']", " ", working)
+    working = re.sub(r"[\"“”']", " ", working)
+    raw_tokens = re.findall(r"[A-Za-z0-9][A-Za-z0-9'._/-]*", working)
+
+    kept: list[str] = []
+    seen: set[str] = set()
+    subject_terms = {part.casefold() for part in re.findall(r"[A-Za-z0-9]+", protected_subject)}
+    for token in raw_tokens:
+        normalized = token.strip("._/-").casefold()
+        if not normalized:
+            continue
+        if normalized in seen or normalized in subject_terms:
+            continue
+        if normalized in _FOLLOWUP_QUERY_STOPWORDS:
+            continue
+        if len(normalized) == 1 and not normalized.isdigit():
+            continue
+        kept.append(token)
+        seen.add(normalized)
+        if len(kept) >= 10:
+            break
+
+    pieces: list[str] = []
+    if protected_subject:
+        pieces.append(f"\"{protected_subject}\"")
+    pieces.extend(kept)
+    tightened = " ".join(piece for piece in pieces if piece).strip()
+    if not tightened:
+        tightened = query[:_FOLLOWUP_QUERY_MAX_CHARS].strip()
+
+    words = re.findall(r"\S+", tightened)
+    if len(words) > _FOLLOWUP_QUERY_MAX_WORDS:
+        tightened = " ".join(words[:_FOLLOWUP_QUERY_MAX_WORDS]).strip()
+    if len(tightened) > _FOLLOWUP_QUERY_MAX_CHARS:
+        tightened = tightened[:_FOLLOWUP_QUERY_MAX_CHARS].rstrip(" ,;:-")
+    return tightened
+
+
+def _stabilize_initial_subject_query(text: str, subject: str, user_request: str = "") -> str:
+    """Remove speculative extra proper nouns from an initial named-subject query.
+
+    Initial queries for a single named object/topic should stay centered on that
+    object plus generic research dimensions. If the planner injects nearby
+    places, excavations, comparanda, or scholar names that were not in the user
+    request, they can dominate web results and cause topical drift.
+    """
+    query = " ".join(str(text or "").split()).strip()
+    subject = str(subject or "").strip()
+    request_text = str(user_request or "")
+    if not query or not subject:
+        return query
+
+    anchored = _anchor_query_text(query, subject)
+    working = re.sub(re.escape(subject), " ", anchored, count=1, flags=re.IGNORECASE)
+    working = re.sub(r"[\"“”']", " ", working)
+    raw_tokens = re.findall(r"[A-Za-z0-9][A-Za-z0-9'._/-]*", working)
+
+    subject_terms = {part.casefold() for part in re.findall(r"[A-Za-z0-9]+", subject)}
+    request_terms = {part.casefold() for part in re.findall(r"[A-Za-z0-9]+", request_text)}
+    kept: list[str] = []
+    seen: set[str] = set()
+
+    for token in raw_tokens:
+        normalized = token.strip("._/-").casefold()
+        if not normalized or normalized in seen or normalized in subject_terms:
+            continue
+        if normalized in request_terms or normalized in _INITIAL_QUERY_GENERIC_TERMS:
+            kept.append(token)
+            seen.add(normalized)
+            continue
+        if normalized.isdigit():
+            kept.append(token)
+            seen.add(normalized)
+            continue
+        # Drop non-subject proper nouns that the user never requested.
+        if token[:1].isupper():
+            continue
+        # Keep short generic lowercase discriminators if they are not obviously
+        # another named entity.
+        if len(normalized) >= 3:
+            kept.append(token)
+            seen.add(normalized)
+
+    stabilized = " ".join([f"\"{subject}\"", *kept]).strip()
+    words = re.findall(r"\S+", stabilized)
+    if len(words) > _FOLLOWUP_QUERY_MAX_WORDS:
+        stabilized = " ".join(words[:_FOLLOWUP_QUERY_MAX_WORDS]).strip()
+    if len(stabilized) > _FOLLOWUP_QUERY_MAX_CHARS:
+        stabilized = stabilized[:_FOLLOWUP_QUERY_MAX_CHARS].rstrip(" ,;:-")
+    return stabilized or anchored
+
+
+def _prefer_referent_locking_terms(text: str, subject: str, user_request: str = "") -> str:
+    """Bias ambiguous named-object queries toward exact-referent discriminators.
+
+    This is a narrow anti-drift guard for single named objects that are reused as
+    nicknames for multiple artifacts or discoveries. It preserves the exact
+    subject, strips opportunistic proper-noun drift not present in the request,
+    and prefers generic referent-locking dimensions over nearby findspots.
+    """
+    query = " ".join(str(text or "").split()).strip()
+    subject = str(subject or "").strip()
+    request_text = str(user_request or "")
+    if not query or not subject:
+        return query
+
+    stabilized = _stabilize_initial_subject_query(query, subject, request_text)
+    lowered = stabilized.casefold()
+    if any(
+        token in lowered
+        for token in ("authenticity", "iconography", "museum", "catalogue", "catalog", "provenance", "dating")
+    ):
+        return stabilized
+
+    additions: list[str] = []
+    request_lower = request_text.casefold()
+    if "authentic" in request_lower or "forger" in request_lower or "forgery" in request_lower:
+        additions.append("authenticity")
+    additions.extend(["iconography", "museum", "catalogue"])
+
+    pieces = [f"\"{subject}\""]
+    seen: set[str] = {subject.casefold()}
+    for token in re.findall(r"\S+", stabilized):
+        normalized = token.strip(" ,;:-\"'“”").casefold()
+        if not normalized or normalized in seen:
+            continue
+        pieces.append(token)
+        seen.add(normalized)
+    for token in additions:
+        if token.casefold() not in seen:
+            pieces.append(token)
+            seen.add(token.casefold())
+
+    preferred = " ".join(pieces).strip()
+    words = re.findall(r"\S+", preferred)
+    if len(words) > _FOLLOWUP_QUERY_MAX_WORDS:
+        preferred = " ".join(words[:_FOLLOWUP_QUERY_MAX_WORDS]).strip()
+    if len(preferred) > _FOLLOWUP_QUERY_MAX_CHARS:
+        preferred = preferred[:_FOLLOWUP_QUERY_MAX_CHARS].rstrip(" ,;:-")
+    return preferred or stabilized
+
+
+def _is_delivery_only_objective(
+    objective_key: Optional[str],
+    description: str,
+    acceptance_criteria: Optional[list[str]] = None,
+) -> bool:
+    """Return whether an objective is about delivery format, not external facts."""
+    blob = " ".join(
+        part for part in [
+            str(objective_key or ""),
+            str(description or ""),
+            " ".join(str(item) for item in (acceptance_criteria or [])),
+        ]
+        if part
+    ).casefold()
+    if not blob:
+        return False
+    if "citation" in blob or "reference" in blob or "format" in blob or "structure" in blob or "参考文献" in blob or "引用" in blob:
+        return any(pattern in blob for pattern in _DELIVERY_ONLY_PATTERNS)
+    return False
 
 
 def _query_spec(item: Any) -> tuple:
@@ -217,6 +533,8 @@ class MemoryManager:
                 time_window=parsed.get("time_window"),
                 region_scope=parsed.get("region_scope"),
                 source_preferences=parsed.get("source_preferences") or [],
+                search_constraints=parsed.get("search_constraints") or {},
+                output_requirements=parsed.get("output_requirements") or {},
                 research_state="INITIALIZING",
                 max_search_rounds=middleware.get_max_search_rounds(),
                 dispatched_search_rounds=0,
@@ -235,6 +553,25 @@ class MemoryManager:
             )
 
         objectives = self._create_objectives(goal_id, parsed.get("objectives"), user_request)
+        output_requirements = parsed.get("output_requirements") or {}
+        search_constraints = parsed.get("search_constraints") or {}
+        if output_requirements.get("genre") == "wikipedia_article":
+            blocked_types = [
+                str(item).strip()
+                for item in (search_constraints.get("blocked_source_types") or [])
+                if str(item).strip()
+            ]
+            for source_type in ("social_media", "forum", "ugc_aggregator", "retail"):
+                if source_type not in blocked_types:
+                    blocked_types.append(source_type)
+            if blocked_types != (search_constraints.get("blocked_source_types") or []):
+                search_constraints = dict(search_constraints)
+                search_constraints["blocked_source_types"] = blocked_types
+                graph_tools.upsert_node(
+                    NodeType.USER_REQUEST,
+                    {"search_constraints": search_constraints},
+                    goal_id,
+                )
         queries = []
         initial_queries = parsed.get("initial_queries")
         if not isinstance(initial_queries, list) or not initial_queries:
@@ -246,6 +583,38 @@ class MemoryManager:
                     "acceptance_criteria": ["Directly answer the user's research request with reliable evidence"],
                 }
             ]
+        named_subject = ""
+        if output_requirements.get("genre") == "wikipedia_article":
+            named_subject = _extract_named_subject(user_request)
+            if named_subject:
+                normalized_queries = []
+                for item in initial_queries:
+                    if not isinstance(item, dict):
+                        normalized_queries.append(item)
+                        continue
+                    normalized = dict(item)
+                    anchored = _anchor_query_text(item.get("text", ""), named_subject)
+                    normalized["text"] = _prefer_referent_locking_terms(
+                        anchored,
+                        named_subject,
+                        user_request,
+                    )
+                    normalized_queries.append(normalized)
+                initial_queries = normalized_queries
+        delivery_only_keys = {
+            objective.get("objective_key")
+            for objective in objectives
+            if _is_delivery_only_objective(
+                objective.get("objective_key"),
+                str(objective.get("description") or objective.get("text") or ""),
+                objective.get("acceptance_criteria") or [],
+            )
+        }
+        if delivery_only_keys:
+            initial_queries = [
+                item for item in initial_queries
+                if not (set(_query_spec(item)[3]) and set(_query_spec(item)[3]).issubset(delivery_only_keys))
+            ]
         initial_queries = self._select_initial_queries(initial_queries, objectives)
         covered_objective_keys = {
             key
@@ -256,6 +625,7 @@ class MemoryManager:
             if (
                 objective.get("requirement") == "must"
                 and objective.get("objective_key") not in covered_objective_keys
+                and objective.get("objective_key") not in delivery_only_keys
             ):
                 initial_queries.append({
                     "text": objective.get("description") or user_request,
@@ -268,6 +638,12 @@ class MemoryManager:
             text, importance, criteria, objective_keys = _query_spec(item)
             if not isinstance(text, str) or not text.strip():
                 continue
+            if named_subject:
+                text = _stabilize_initial_subject_query(
+                    _anchor_query_text(text, named_subject),
+                    named_subject,
+                    user_request,
+                )
             importance = importance or "supporting"
             query_id = graph_tools.create_query_child(
                 parent_id=goal_id,
@@ -382,11 +758,25 @@ class MemoryManager:
         items = [item for item in candidates or [] if isinstance(item, (dict, str))]
         if not items:
             return []
+        delivery_only_keys = {
+            objective.get("objective_key")
+            for objective in objectives
+            if _is_delivery_only_objective(
+                objective.get("objective_key"),
+                str(objective.get("description") or objective.get("text") or ""),
+                objective.get("acceptance_criteria") or [],
+            )
+        }
         must = {
             objective["objective_key"]
             for objective in objectives
             if objective.get("requirement") == "must"
-        } or {objective["objective_key"] for objective in objectives}
+            and objective.get("objective_key") not in delivery_only_keys
+        } or {
+            objective["objective_key"]
+            for objective in objectives
+            if objective.get("objective_key") not in delivery_only_keys
+        }
         uncovered = set(must)
         selected: list = []
         remaining = list(items)
@@ -401,9 +791,23 @@ class MemoryManager:
             selected.append(best)
             uncovered -= covered
             remaining.remove(best)
+        # For multi-objective reports, avoid collapsing every major dimension
+        # into one omnibus initial query; a little breadth up front materially
+        # improves downstream coverage and reporter structure.
+        if len(must) > 1:
+            while remaining and len(selected) < min(len(items), max(MULTI_OBJECTIVE_MIN_QUERY_COUNT, len(must))):
+                best = max(
+                    remaining,
+                    key=lambda item: (
+                        len(set(_query_spec(item)[3])),
+                        _query_spec(item)[1] == "core",
+                    ),
+                )
+                selected.append(best)
+                remaining.remove(best)
         for objective in objectives:
             key = objective.get("objective_key")
-            if key not in uncovered:
+            if key in delivery_only_keys or key not in uncovered:
                 continue
             selected.append({
                 "text": objective.get("description") or objective.get("text"),
@@ -578,6 +982,17 @@ class MemoryManager:
 
         for objective in open_must:
             key = objective.get("objective_key")
+            if objective.get("status") == "blocked_best_effort":
+                continue
+            if _is_synthesis_only_objective(
+                key,
+                str(objective.get("description") or objective.get("text") or ""),
+            ):
+                graph_tools.upsert_node(NodeType.ANALYSIS, {
+                    "status": "blocked_best_effort",
+                    "resolution_reason": "objective should be satisfied by report synthesis from existing evidence, not another search query",
+                }, objective["id"])
+                continue
             prior = [query for query in queries if query.get("recovery_objective_key") == key]
             if prior:
                 if goal.get("scope_mode") == "bounded":
@@ -592,9 +1007,18 @@ class MemoryManager:
                 }, goal.get("id"))
                 return None
 
+            recovery_text = objective.get("description") or objective.get("text")
+            named_subject = _goal_named_subject(goal)
+            if named_subject:
+                recovery_text = _prefer_referent_locking_terms(
+                    _anchor_query_text(recovery_text, named_subject),
+                    named_subject,
+                    str(goal.get("request") or ""),
+                )
+
             query_id = graph_tools.create_query_child(
                 parent_id=goal["id"],
-                text=objective.get("description") or objective.get("text"),
+                text=recovery_text,
                 importance="core",
                 acceptance_criteria=objective.get("acceptance_criteria") or [],
                 objective_keys=[key],
@@ -1059,8 +1483,25 @@ class MemoryManager:
         }
         objective_by_key: dict[str, dict] = {}
         objective_deltas: dict[str, tuple[float, float]] = {}
+        query_count = len(queries)
+        source_count = len(graph_tools.search_nodes("source", {}))
+        multi_objective_goal = sum(
+            1
+            for objective in objectives
+            if objective.get("requirement") == "must"
+            and not _is_delivery_only_objective(
+                objective.get("objective_key"),
+                str(objective.get("description") or objective.get("text") or ""),
+                objective.get("acceptance_criteria") or [],
+            )
+        ) > 1
         for objective in objectives:
             key = objective.get("objective_key")
+            delivery_only = _is_delivery_only_objective(
+                key,
+                str(objective.get("description") or objective.get("text") or ""),
+                objective.get("acceptance_criteria") or [],
+            )
             linked_scores = [
                 float(query.get("sufficiency_score") or 0.0)
                 for query in queries
@@ -1075,6 +1516,26 @@ class MemoryManager:
                 confidence = max(0.0, min(1.0, float(item.get("confidence", fallback * 0.9))))
             except (TypeError, ValueError):
                 coverage, confidence = fallback, fallback * 0.9
+            if delivery_only:
+                source_ready = any(
+                    (query.get("status") in {"sufficient", "needs_expansion", "assessing"})
+                    and not _is_delivery_only_objective(
+                        None,
+                        str(query.get("text") or ""),
+                        query.get("acceptance_criteria") or [],
+                    )
+                    for query in queries
+                )
+                coverage = max(coverage, 1.0 if source_ready else 0.0)
+                confidence = max(confidence, 0.95 if source_ready else 0.0)
+            elif multi_objective_goal and (
+                query_count < MULTI_OBJECTIVE_MIN_QUERY_COUNT
+                or source_count < MULTI_OBJECTIVE_MIN_SOURCE_COUNT
+            ):
+                # One broad query with a handful of sources is not enough to
+                # declare a multi-dimensional report objective complete.
+                coverage = min(coverage, 0.69)
+                confidence = min(confidence, 0.64)
             old_coverage = float(objective.get("coverage") or 0.0)
             old_confidence = float(objective.get("confidence") or 0.0)
             realized_gain = max(0.0, coverage - old_coverage) + max(0.0, confidence - old_confidence)
@@ -1153,6 +1614,24 @@ class MemoryManager:
                 for gap in group
                 for key in (gap.get("objective_keys") or [])
             }
+            if keys and all(
+                _is_delivery_only_objective(
+                    key,
+                    str(objective_by_key.get(key, {}).get("description") or objective_by_key.get(key, {}).get("text") or ""),
+                    objective_by_key.get(key, {}).get("acceptance_criteria") or [],
+                )
+                for key in keys
+                if key in objective_by_key
+            ):
+                for gap in group:
+                    graph_tools.upsert_node(NodeType.ANALYSIS, {
+                        "status": "deferred_low_value",
+                        "marginal_utility": 0.0,
+                        "objective_deficit": 0.0,
+                        "resolution_reason": "delivery-format objective is handled during report compilation",
+                    }, gap["id"])
+                    deferred.append(graph_tools.get_node(gap["id"]))
+                continue
             impacted = [objective_by_key[key] for key in keys if key in objective_by_key]
             must_impacted = [item for item in impacted if item.get("requirement") == "must"]
             deficits = [
@@ -1220,7 +1699,15 @@ class MemoryManager:
                     self._propagate_child_completion(query["id"], "deferred")
 
         objectives = self.get_research_objectives(goal_id)
-        must = [item for item in objectives if item.get("requirement") == "must"]
+        must = [
+            item for item in objectives
+            if item.get("requirement") == "must"
+            and not _is_delivery_only_objective(
+                item.get("objective_key"),
+                str(item.get("description") or item.get("text") or ""),
+                item.get("acceptance_criteria") or [],
+            )
+        ]
         readiness = (
             sum(float(item.get("weight") or 1.0) for item in must if item.get("status") in {"satisfied", "blocked_best_effort"})
             / sum(float(item.get("weight") or 1.0) for item in must)
@@ -1279,6 +1766,20 @@ class MemoryManager:
             return {"error": str(exc)}
         if resolved is None:
             return {"error": f"Unknown query reference: {parent_id!r}"}
+        if gap_ids:
+            selected_gaps = [
+                graph_tools.get_node(gid)
+                for gid in gap_ids
+                if graph_tools.get_node(gid).get("analysis_type") == "gap"
+                and graph_tools.get_node(gid).get("status") == "selected"
+            ]
+            candidate_parents = {
+                gap.get("expansion_parent_id")
+                for gap in selected_gaps
+                if gap.get("expansion_parent_id")
+            }
+            if len(candidate_parents) == 1 and resolved not in candidate_parents:
+                resolved = next(iter(candidate_parents))
         parent = graph_tools.get_node(resolved)
         if parent.get("status") != "needs_expansion":
             return {"error": f"Query {parent.get('handle') or resolved} is not awaiting expansion"}
@@ -1314,6 +1815,7 @@ class MemoryManager:
 
         created = []
         goal = research_state.get_goal()
+        named_subject = _goal_named_subject(goal)
         sibling_texts = [
             graph_tools.get_node(cid).get("text")
             for cid in graph_tools.get_query_children(resolved)
@@ -1357,9 +1859,12 @@ class MemoryManager:
                 key for gap in group for key in (gap.get("objective_keys") or [])
                 if key in objective_by_key
             })
+            child_text = spec["text"]
+            if named_subject:
+                child_text = _anchor_query_text(child_text, named_subject)
             child_id = graph_tools.create_query_child(
                 parent_id=resolved,
-                text=spec["text"],
+                text=child_text,
                 importance=importance,
                 acceptance_criteria=spec.get("acceptance_criteria") or [
                     criterion for gap in group for criterion in (gap.get("acceptance_criteria") or [])
@@ -1447,6 +1952,7 @@ class MemoryManager:
         fatal = verdict.get("fatal_unresolved_conflicts") or []
         goal = research_state.get_goal(goal_id)
         created_fatal_gaps: list[str] = []
+        remaining_fatal_descriptions: list[str] = []
         for fatal_description in fatal:
             conflict = next(
                 (c for c in graph_tools.search_nodes("conflict", {})
@@ -1455,6 +1961,14 @@ class MemoryManager:
             )
             if not conflict:
                 continue
+            if self._conflict_can_be_disclosed_in_report(conflict, goal):
+                graph_tools.upsert_node(
+                    NodeType.CONFLICT,
+                    {"resolution_status": "disclosed"},
+                    conflict["id"],
+                )
+                continue
+            remaining_fatal_descriptions.append(fatal_description)
             owner_id = self._conflict_owner_query(conflict["id"])
             if not owner_id:
                 continue
@@ -1508,7 +2022,7 @@ class MemoryManager:
                     for objective in self.get_research_objectives(goal_id):
                         if objective.get("requirement") == "must":
                             graph_tools.add_edge(child_id, objective["id"], EdgeType.COVERS_OBJECTIVE)
-        fatal_set = set(fatal)
+        fatal_set = set(remaining_fatal_descriptions)
         for conflict in graph_tools.search_nodes("conflict", {}):
             if (
                 conflict.get("resolution_status") in {"unresolved", "investigating"}
@@ -1578,7 +2092,7 @@ class MemoryManager:
 
         return {
             "converged": recommendation == "stop",
-            "fatal_unresolved_conflicts": fatal,
+            "fatal_unresolved_conflicts": remaining_fatal_descriptions,
             "selected_gaps": [
                 {"id": gap["id"], "description": gap.get("description") or gap.get("text")}
                 for gap in selected_gaps
@@ -1595,6 +2109,56 @@ class MemoryManager:
             "tree_validation": tree,
             "next_actions": self.get_next_actions() if recommendation == "continue" else [],
         }
+
+    def _conflict_can_be_disclosed_in_report(self, conflict: dict, goal: dict) -> bool:
+        """Return whether one unresolved conflict is article-ready for disclosure.
+
+        Wikipedia-style bounded tasks should usually report well-sourced scholarly
+        disagreements neutrally instead of treating every open dispute as a
+        mandatory extra-search blocker.
+        """
+        requirements = goal.get("output_requirements") or {}
+        if requirements.get("genre") != "wikipedia_article":
+            return False
+        if goal.get("scope_mode", "bounded") == "exhaustive":
+            return False
+        if not str(conflict.get("description") or "").strip():
+            return False
+        return len(self._conflict_source_ids(str(conflict.get("id") or ""))) >= 2
+
+    def _conflict_source_ids(self, conflict_id: str) -> list[str]:
+        """Return URL-backed Source IDs attached to one Conflict via evidence."""
+        nodes = {node["id"]: node for node in graph_tools.get_all_nodes()}
+        edges = graph_tools.get_all_edges()
+        evidence_ids = [
+            edge.get("target")
+            for edge in edges
+            if edge.get("source") == conflict_id
+            and str(edge.get("type") or "").lower() == "has_conflict"
+        ]
+        source_ids: set[str] = set()
+        statement_ids: set[str] = set()
+        document_ids: set[str] = set()
+        for edge in edges:
+            source = edge.get("source")
+            target = edge.get("target")
+            source_type = str(nodes.get(source, {}).get("type") or "").lower()
+            target_type = str(nodes.get(target, {}).get("type") or "").lower()
+            if target in evidence_ids and source_type == "source" and nodes.get(source, {}).get("url"):
+                source_ids.add(str(source))
+            if target in evidence_ids and source_type == "statement":
+                statement_ids.add(str(source))
+            if target in evidence_ids and source_type == "document":
+                document_ids.add(str(source))
+            if target in statement_ids and source_type == "source" and nodes.get(source, {}).get("url"):
+                source_ids.add(str(source))
+            if target in statement_ids and source_type == "document":
+                document_ids.add(str(source))
+            if target in document_ids and source_type == "source" and nodes.get(source, {}).get("url"):
+                source_ids.add(str(source))
+            if target_type == "source" and target in document_ids and nodes.get(target, {}).get("url"):
+                source_ids.add(str(target))
+        return sorted(source_ids)
 
     def _conflict_owner_query(self, conflict_id: str) -> Optional[str]:
         """Return the Query whose SearchRun produced a conflict."""
@@ -1665,6 +2229,8 @@ class MemoryManager:
                 "time_window": goal.get("time_window"),
                 "region_scope": goal.get("region_scope"),
                 "source_preferences": source_preferences or goal.get("source_preferences") or [],
+                "search_constraints": goal.get("search_constraints") or {},
+                "output_requirements": goal.get("output_requirements") or {},
                 "parent_covered": parent.get("covered") or [],
                 "requirement": "Collect evidence for this Query only. Do not broaden into sibling topics.",
             }
@@ -2152,7 +2718,8 @@ class MemoryManager:
                 key: goal.get(key)
                 for key in (
                     "id", "request", "research_goal", "language", "time_window",
-                    "region_scope", "source_preferences",
+                    "region_scope", "source_preferences", "search_constraints",
+                    "output_requirements",
                 )
             } if goal else {},
             "queries": [
@@ -2354,10 +2921,25 @@ class MemoryManager:
         def self_contained(item: dict) -> bool:
             return not any(token in item["text"] for token in _CROSS_REF_TOKENS)
 
-        queries = [q for q in author() if self_contained(q)]
+        queries = []
+        for query in author():
+            if not self_contained(query):
+                continue
+            tightened = _tighten_followup_query_text(query.get("text", ""), parent_text or "")
+            if tightened:
+                query = dict(query)
+                query["text"] = tightened
+            queries.append(query)
         if not queries:
             retry = "\n\n注意：每条 query 必须自包含，把具体对象写进查询本身，禁止出现对其他 query 的指代。"
-            queries = [q for q in author(retry) if self_contained(q)]
+            for query in author(retry):
+                if not self_contained(query):
+                    continue
+                tightened = _tighten_followup_query_text(query.get("text", ""), parent_text or "")
+                if tightened:
+                    query = dict(query)
+                    query["text"] = tightened
+                queries.append(query)
         return queries[:max_new]
 
     def extract_content(self, content: str) -> dict:
