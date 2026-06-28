@@ -1,25 +1,26 @@
 
 ================================================================================
-[2026-06-28T19:20:07] cwd=/mnt/h/projects/Wiki_Live_Challenge
-$ python scripts/generate_json.py -i /mnt/h/DeepResearch/GraphResearcher/outputs/wlc_reports/_wlc_eval/md_data -o /mnt/h/DeepResearch/GraphResearcher/outputs/wlc_reports/_wlc_eval/json_data --steps extract,fetch
+[2026-06-28T21:24:37] cwd=/mnt/h/projects/Wiki_Live_Challenge
+$ /mnt/h/DeepResearch/GraphResearcher/.venv/bin/python3 scripts/generate_json.py -i /mnt/h/DeepResearch/GraphResearcher/outputs/wlc_reports/_wlc_eval/md_data -o /mnt/h/DeepResearch/GraphResearcher/outputs/wlc_reports/_wlc_eval/json_data --steps extract,fetch
 ================================================================================
 Statement extractor: gemini-2.5-flash
 Jina scraper initialized
 Processing 1 files with 10 workers
 Steps: {'fetch', 'extract'}
+Extraction error: HTTPSConnectionPool(host='yunwu.ai', port=443): Max retries exceeded with url: /v1/chat/completions 
 
 Progress: 1/1
 
 Completed:
   Success: 1
   Errors: 0
-  Total statements: 56
-  URLs fetched: 9
-  URLs failed: 0
+  Total statements: 0
+  URLs fetched: 24
+  URLs failed: 1
 
 ================================================================================
-[2026-06-28T19:20:34] cwd=/mnt/h/projects/Wiki_Live_Challenge
-$ python scripts/run_evaluation.py all -b 2025_Mar_Nov --gen-dir /mnt/h/DeepResearch/GraphResearcher/outputs/wlc_reports/_wlc_eval/json_data --gt-dir /mnt/h/projects/Wiki_Live_Challenge/data/2025_Mar_Nov/wiki_data/cleaned_data/article -o /mnt/h/DeepResearch/GraphResearcher/outputs/wlc_reports/_wlc_eval/results --max-workers 20 --top-k 10
+[2026-06-28T21:25:56] cwd=/mnt/h/projects/Wiki_Live_Challenge
+$ /mnt/h/DeepResearch/GraphResearcher/.venv/bin/python3 scripts/run_evaluation.py all -b 2025_Mar_Nov --gen-dir /mnt/h/DeepResearch/GraphResearcher/outputs/wlc_reports/_wlc_eval/json_data --gt-dir /mnt/h/projects/Wiki_Live_Challenge/data/2025_Mar_Nov/wiki_data/cleaned_data/article -o /mnt/h/DeepResearch/GraphResearcher/outputs/wlc_reports/_wlc_eval/results --max-workers 20 --top-k 10
 ================================================================================
 ============================================================
 WIKI LIVE CHALLENGE EVALUATION
@@ -29,50 +30,47 @@ Benchmark: 2025_Mar_Nov
 ============================================================
 WIKI WRITING EVALUATION
 ============================================================
-[WikiWriting] Evaluating: 2011_Sawyerville–Eoline_tornado.json
+[WikiWriting] Evaluating: Ring_of_Nestor.json
 [WikiWriting] Evaluating 3 categories, allow_tie=False
   [Parallel] Evaluating 'Well-written' (21 criteria)
   [Parallel] Evaluating 'Broad in its coverage' (8 criteria)
   [Parallel] Evaluating 'Neutral' (10 criteria)
-  [Done] Category 'Broad in its coverage' completed
+HTTPSConnectionPool(host='yunwu.ai', port=443): Max retries exceeded with url: /v1/chat/completions (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))
   [Done] Category 'Neutral' completed
+  [Done] Category 'Broad in its coverage' completed
   [Done] Category 'Well-written' completed
-  Gen win rate: 12.82%
+  Gen win rate: 0.00%
 
 [Summary] 1 articles evaluated
-  Total Gen wins: 5/39
-  Total GT wins:  34/39
-  Total Ties:     0/39
-  Overall Gen win rate: 12.82%
+  Total Gen wins: 0/39
+  Total GT wins:  29/39
+  Total Ties:     10/39
+  Overall Gen win rate: 0.00%
 
 ============================================================
 VERIFIABILITY EVALUATION
 ============================================================
-[Verifiability] Evaluating: 2011_Sawyerville–Eoline_tornado.json
-[Verifiability] Statements: GT=110, Gen=56, top_k=10
-[Verifiability] Verifying 166 alignments (max_workers=20)...
-  [Progress] 20/166
-  [Progress] 40/166
-  [Progress] 60/166
-  [Progress] 80/166
-  [Progress] 100/166
-  [Progress] 120/166
-  [Progress] 140/166
-  [Progress] 160/166
-  Gen supported: 35.71%
+[Verifiability] Evaluating: Ring_of_Nestor.json
+[Verifiability] Statements: GT=97, Gen=92, top_k=10
+[Verifiability] Verifying 189 alignments (max_workers=20)...
+  [Progress] 20/189
+  [Progress] 40/189
+  [Progress] 60/189
+  [Progress] 80/189
+  [Progress] 100/189
+  [Progress] 120/189
+  [Progress] 140/189
+  [Progress] 160/189
+  [Progress] 180/189
+  Gen supported: 27.17%
 
 [Summary] 1 articles evaluated
-  Avg Gen supported by Wiki: 35.71%
-  Avg Gen conflict with Wiki: 8.93%
-  Avg Wiki covered by Gen: 19.09%
+  Avg Gen supported by Wiki: 27.17%
+  Avg Gen conflict with Wiki: 5.43%
+  Avg Wiki covered by Gen: 15.46%
 
 ============================================================
 CITATION EVALUATION
 ============================================================
-[Citation] Evaluating: 2011_Sawyerville–Eoline_tornado.json
-[Citation] 56 statements, 9 valid citations
-  Support ratio: 87.50%
-
-[Summary] 1/1 articles evaluated
-  Average support ratio: 87.50%
-  Average conflict ratio: 0.00%
+[Citation] Evaluating: Ring_of_Nestor.json
+  Skipped: no_statements

@@ -2147,6 +2147,13 @@ class MemoryManager:
             if item.get("status") == "blocked_best_effort"
         ]
         limitations = [item for item in limitations if item]
+        request_text = str(goal.get("request") or goal.get("research_goal") or "")
+        is_wikipedia_task = "wikipedia" in request_text.lower()
+        sorted_queries = sorted(
+            graph_tools.search_nodes("query", {}),
+            key=lambda query: (query.get("importance") or 0, query.get("id") or ""),
+            reverse=True,
+        )
         return {
             "goal": {
                 key: goal.get(key)
@@ -2160,7 +2167,7 @@ class MemoryManager:
                     key: query.get(key)
                     for key in ("id", "handle", "text", "importance")
                 }
-                for query in graph_tools.search_nodes("query", {})
+                for query in sorted_queries
             ],
             "objectives": [
                 {
@@ -2175,6 +2182,14 @@ class MemoryManager:
             "limitations": limitations,
             "disclosed_conflicts": report_tools.get_disclosed_conflicts(),
             "reference_registry": report_tools.build_reference_registry(),
+            "writing_hints": {
+                "default_structure": (
+                    "lead + topic sections + conflict/limitation coverage + unified references"
+                ),
+                "prefer_paragraph_prose": True,
+                "avoid_references_as_section_title": True,
+                "task_style": "wikipedia_article" if is_wikipedia_task else "research_report",
+            },
         }
 
     def get_report_evidence(self, query_id: str, offset: int = 0, limit: int = 20) -> dict:

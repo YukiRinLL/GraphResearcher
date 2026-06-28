@@ -545,7 +545,7 @@ class ReporterRevisionMiddleware(AgentMiddleware):
         action = (
             "仅在没有可保留的 prose 报告、受影响 section 超过一半、或错误属于全局硬错误时，才允许较大范围重写。"
             if allow_rewrite else
-            "默认保留已通过的 section 与 block，只修复被点名的问题，不要从头重写整篇。"
+            "默认保留已通过的 section 与章节 prose，只修复被点名的问题，不要从头重写整篇。"
         )
         lines = [
             "submit_final_report 尚未达到可结束状态，请继续修订并重新提交。",
@@ -553,7 +553,8 @@ class ReporterRevisionMiddleware(AgentMiddleware):
             f"- revision_requested={bool(attempt.get('revision_requested'))}",
             f"- severity={attempt.get('severity') or 'unknown'}",
             f"- retention_ratio={attempt.get('retention_ratio')}",
-            f"- kept_blocks={attempt.get('kept_blocks')} / submitted_blocks={attempt.get('submitted_blocks')}",
+            f"- kept_sections={attempt.get('kept_sections')} / submitted_sections={attempt.get('submitted_sections')}",
+            f"- kept_paragraphs={attempt.get('kept_paragraphs')} / submitted_paragraphs={attempt.get('submitted_paragraphs')}",
             action,
             "按以下问题定点修复：",
         ]
@@ -565,7 +566,7 @@ class ReporterRevisionMiddleware(AgentMiddleware):
             if issue.get("section_title"):
                 location.append(f"section={issue['section_title']}")
             if issue.get("block_index"):
-                location.append(f"block={issue['block_index']}")
+                location.append(f"paragraph={issue['block_index']}")
             location_text = f" ({', '.join(location)})" if location else ""
             lines.append(
                 f"- [{issue.get('severity', 'soft')}] {issue.get('code', 'issue')}{location_text}: "

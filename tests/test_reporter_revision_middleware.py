@@ -35,8 +35,8 @@ def main():
             "retention_ratio": 0.5,
             "submitted_sections": 2,
             "dropped_sections": 0,
-            "submitted_blocks": 4,
-            "kept_blocks": 2,
+            "submitted_paragraphs": 4,
+            "kept_paragraphs": 2,
             "salvaged_report": "# Report\n\n## Section\n\nFact [1]\n\n## References\n\n[1] https://example.com\n",
             "issues": [{
                 "code": "forbidden_meta_prose",
@@ -69,7 +69,9 @@ def main():
         assert response.result[-1].content == "已重新提交"
         assert len(calls) == 2
         assert isinstance(calls[-1].messages[-1], HumanMessage)
-        assert "Section A" in str(calls[-1].messages[-1].content)
+        prompt = str(calls[-1].messages[-1].content)
+        assert "Section A" in prompt
+        assert "kept_paragraphs=2 / submitted_paragraphs=4" in prompt
     finally:
         graph_manager_tools.get_last_report_attempt = original
 

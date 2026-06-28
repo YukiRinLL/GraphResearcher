@@ -90,10 +90,9 @@ def main():
     )
     compiled = report_tools.compile_structured_report("具身智能报告", [{
         "title": "Findings",
-        "blocks": [{
-            "text": "A supported factual sentence. " * 5,
-            "source_ids": ["s1"],
-        }],
+        "content": ("A supported factual sentence. " * 5).strip(),
+        "source_ids": ["s1"],
+        "evidence_ids": ["e1"],
     }])
     assert compiled["accepted"] is True, compiled
     assert compiled["auto_appended_conflict_ids"] == ["conflict"], compiled
@@ -128,6 +127,13 @@ def main():
 
     uncited_unit = valid.replace("[1]", "", 1)
     assert any("uncited factual paragraph" in issue for issue in report_tools.validate_delivery_invariants(uncited_unit))
+
+    legacy = report_tools.compile_structured_report("具身智能报告", [{
+        "title": "Legacy",
+        "blocks": [{"text": "Old shape", "source_ids": ["s1"]}],
+    }])
+    assert legacy["accepted"] is False and legacy["severity"] == "hard", legacy
+    assert any(issue["code"] == "legacy_block_schema" for issue in legacy["issues"]), legacy["issues"]
     print("ALL REPORT VALIDATION CHECKS PASSED")
 
 

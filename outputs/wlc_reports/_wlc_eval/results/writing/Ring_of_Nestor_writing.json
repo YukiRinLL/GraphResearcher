@@ -1,0 +1,394 @@
+{
+  "topic": "Ring of Nestor",
+  "mode": "winrate",
+  "allow_tie": false,
+  "aggregate": {
+    "Neutral": {
+      "gen_wins": 0,
+      "gt_wins": 0,
+      "ties": 10,
+      "total": 10,
+      "gen_win_rate": 0.0
+    },
+    "Broad in its coverage": {
+      "gen_wins": 0,
+      "gt_wins": 8,
+      "ties": 0,
+      "total": 8,
+      "gen_win_rate": 0.0
+    },
+    "Well-written": {
+      "gen_wins": 0,
+      "gt_wins": 21,
+      "ties": 0,
+      "total": 21,
+      "gen_win_rate": 0.0
+    },
+    "overall": {
+      "gen_wins": 0,
+      "gt_wins": 29,
+      "ties": 10,
+      "total": 39,
+      "gen_win_rate": 0.0
+    }
+  },
+  "details": {
+    "Neutral": [
+      {
+        "criterion_id": "n_1",
+        "criterion_index": 29,
+        "criterion_text": "It represents viewpoints fairly and without editorial bias, giving due weight to each.",
+        "category": "Neutral",
+        "winner": "tie",
+        "winner_code": 0,
+        "reason": "Error: HTTPSConnectionPool(host='yunwu.ai', port=443): Max retries exceeded with url: /v1/chat/completions (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))"
+      },
+      {
+        "criterion_id": "n_2",
+        "criterion_index": 30,
+        "criterion_text": "Avoid stating opinions as facts. Opinions should be attributed in the text to particular sources, or where justified, described as widespread views, etc.",
+        "category": "Neutral",
+        "winner": "tie",
+        "winner_code": 0,
+        "reason": "Error: HTTPSConnectionPool(host='yunwu.ai', port=443): Max retries exceeded with url: /v1/chat/completions (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))"
+      },
+      {
+        "criterion_id": "n_3",
+        "criterion_index": 31,
+        "criterion_text": "Avoid stating seriously contested assertions as facts. If different reliable sources make conflicting assertions about a matter, treat these assertions as opinions rather than facts.",
+        "category": "Neutral",
+        "winner": "tie",
+        "winner_code": 0,
+        "reason": "Error: HTTPSConnectionPool(host='yunwu.ai', port=443): Max retries exceeded with url: /v1/chat/completions (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))"
+      },
+      {
+        "criterion_id": "n_4",
+        "criterion_index": 32,
+        "criterion_text": "Avoid stating facts as opinions. Uncontested and uncontroversial factual assertions made by reliable sources should normally be directly stated in Wikipedia's voice.",
+        "category": "Neutral",
+        "winner": "tie",
+        "winner_code": 0,
+        "reason": "Error: HTTPSConnectionPool(host='yunwu.ai', port=443): Max retries exceeded with url: /v1/chat/completions (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))"
+      },
+      {
+        "criterion_id": "n_5",
+        "criterion_index": 33,
+        "criterion_text": "Prefer nonjudgmental language. A neutral point of view neither sympathizes with nor disparages its subject. Present opinions and conflicting findings in a disinterested tone. Do not editorialize.",
+        "category": "Neutral",
+        "winner": "tie",
+        "winner_code": 0,
+        "reason": "Error: HTTPSConnectionPool(host='yunwu.ai', port=443): Max retries exceeded with url: /v1/chat/completions (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))"
+      },
+      {
+        "criterion_id": "n_6",
+        "criterion_index": 34,
+        "criterion_text": "Indicate the relative prominence of opposing views. Ensure that the reporting of different views on a subject adequately reflects the relative levels of support for those views and does not give a false impression of parity.",
+        "category": "Neutral",
+        "winner": "tie",
+        "winner_code": 0,
+        "reason": "Error: HTTPSConnectionPool(host='yunwu.ai', port=443): Max retries exceeded with url: /v1/chat/completions (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))"
+      },
+      {
+        "criterion_id": "n_7",
+        "criterion_index": 35,
+        "criterion_text": "An article should not give undue weight to minor aspects of its subject but should strive to treat each aspect with a weight proportional to its treatment in the body of reliable, published material on the subject.",
+        "category": "Neutral",
+        "winner": "tie",
+        "winner_code": 0,
+        "reason": "Error: HTTPSConnectionPool(host='yunwu.ai', port=443): Max retries exceeded with url: /v1/chat/completions (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))"
+      },
+      {
+        "criterion_id": "n_8",
+        "criterion_index": 36,
+        "criterion_text": "Any inclusion of fringe or pseudoscientific views should not give them undue weight. The fringe or pseudoscientific view should be clearly described as such.",
+        "category": "Neutral",
+        "winner": "tie",
+        "winner_code": 0,
+        "reason": "Error: HTTPSConnectionPool(host='yunwu.ai', port=443): Max retries exceeded with url: /v1/chat/completions (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))"
+      },
+      {
+        "criterion_id": "n_9",
+        "criterion_index": 37,
+        "criterion_text": "In the case of beliefs and practices, Wikipedia content should not only encompass what motivates individuals who hold these beliefs and practices but also account for how such beliefs and practices developed.",
+        "category": "Neutral",
+        "winner": "tie",
+        "winner_code": 0,
+        "reason": "Error: HTTPSConnectionPool(host='yunwu.ai', port=443): Max retries exceeded with url: /v1/chat/completions (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))"
+      },
+      {
+        "criterion_id": "n_10",
+        "criterion_index": 38,
+        "criterion_text": "Article titles that combine alternative names are discouraged. Alternative names should be given their due prominence within the article itself, and redirects created as appropriate.",
+        "category": "Neutral",
+        "winner": "tie",
+        "winner_code": 0,
+        "reason": "Error: HTTPSConnectionPool(host='yunwu.ai', port=443): Max retries exceeded with url: /v1/chat/completions (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))"
+      }
+    ],
+    "Broad in its coverage": [
+      {
+        "criterion_id": "bc_1",
+        "criterion_index": 21,
+        "criterion_text": "It addresses the main aspects of the topic.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 covers the main aspects of the ring (description, history, interpretation, authenticity) in a cohesive and structured manner, whereas Article 2 struggles with repetitive framing and meta-commentary."
+      },
+      {
+        "criterion_id": "bc_2",
+        "criterion_index": 22,
+        "criterion_text": "The lead, ideally the introductory sentence or at least introductory paragraph, of an article, should make clear what the scope of the article is.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1's introductory paragraph clearly outlines the scope of the article, providing a comprehensive overview of the ring, its discovery, and the surrounding debates. Article 2's lead is brief and primarily focuses only on provenance."
+      },
+      {
+        "criterion_id": "bc_3",
+        "criterion_index": 23,
+        "criterion_text": "All material that is notable, referenced, and that a reader would be likely to agree matches the specified scope must be covered (at least in a summarized fashion).",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 succinctly and completely summarizes the notable material regarding the ring's physical properties, iconography, and scholarly debate. Article 2 frequently dilutes the core material with repetitive references to secondary summaries."
+      },
+      {
+        "criterion_id": "bc_4",
+        "criterion_index": 24,
+        "criterion_text": "What reliable sources say about material that is out of scope for the decided-upon subject is largely irrelevant to that article and can be removed.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 excludes irrelevant out-of-scope material. Article 2 includes unnecessary commentary on social media posts (Facebook, Pinterest) and specific academic platforms (ResearchGate) which are not relevant to the encyclopedic subject."
+      },
+      {
+        "criterion_id": "bc_5",
+        "criterion_index": 25,
+        "criterion_text": "It stays focused on the topic without going into unnecessary detail.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 stays highly focused on the topic without getting bogged down in unnecessary detail, whereas Article 2 repeatedly mentions the exact same details across multiple sections and includes extraneous mentions of internet platforms."
+      },
+      {
+        "criterion_id": "bc_6",
+        "criterion_index": 26,
+        "criterion_text": "The lead contains a quick summary of the topic's most important points.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1's lead provides an excellent, well-rounded summary of the entire article's most important points. Article 2 lacks a true summary lead, instead using its first section mostly to discuss the object's cataloging and provenance."
+      },
+      {
+        "criterion_id": "bc_7",
+        "criterion_index": 27,
+        "criterion_text": "Each major subtopic is detailed in its own section of the article.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 logically divides the topic into distinct, well-organized major subtopics (Description, Interpretation, History, Debate over authenticity). Article 2 has overlapping sections (e.g., 'Discovery and provenance' vs 'Later history and reception' vs 'Notes on evidence conflicts')."
+      },
+      {
+        "criterion_id": "bc_8",
+        "criterion_index": 28,
+        "criterion_text": "It contains no irrelevant (nor only loosely relevant) information.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 contains no irrelevant information, keeping a strict encyclopedic tone. Article 2 includes loosely relevant or irrelevant information, such as descriptions of what is posted on Pinterest or Facebook."
+      }
+    ],
+    "Well-written": [
+      {
+        "criterion_id": "ww_cc_1",
+        "criterion_index": 0,
+        "criterion_text": "Articles should be written in encyclopedic style, which differs from the technically dense style found in scholarly writing aimed at specialists.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 is written in a highly professional, encyclopedic style. Article 2 references informal sources like Pinterest and Facebook, which detracts from an encyclopedic tone."
+      },
+      {
+        "criterion_id": "ww_cc_2",
+        "criterion_index": 1,
+        "criterion_text": "Articles should address the topic without twisting the truth or telling \"lies-to-children\", but should also minimize (unexplained) jargon and not take prior knowledge for granted.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 explains the historical context and terminology clearly to a general audience. Article 2 introduces concepts like 'CMS data' without prior explanation."
+      },
+      {
+        "criterion_id": "ww_cc_3",
+        "criterion_index": 2,
+        "criterion_text": "Articles should be self-contained as much as possible, rather than relying on excessive links to explain unfamiliar concepts.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 is very self-contained, explaining the mythology and historical figures mentioned. Article 2 requires external context for some of its scholarly references."
+      },
+      {
+        "criterion_id": "ww_ls_1",
+        "criterion_index": 3,
+        "criterion_text": "An article's content should begin with an introductory lead section – a concise summary of the article – which is never divided into sections. The remainder of the article is typically divided into sections.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 contains a properly formatted lead section before the first heading. Article 2 completely lacks a lead section, beginning immediately with a section heading."
+      },
+      {
+        "criterion_id": "ww_ls_2",
+        "criterion_index": 4,
+        "criterion_text": "The lead section gives the basics in a nutshell, introduces the article, and cultivates interest in reading on—though not by teasing the reader or hinting at what follows.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1's lead perfectly gives the basics in a nutshell and cultivates interest. Article 2 lacks a lead section entirely."
+      },
+      {
+        "criterion_id": "ww_ls_3",
+        "criterion_index": 5,
+        "criterion_text": "The lead section should be written in a clear, accessible style with a neutral point of view.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 features a clear, accessible, and neutral lead section. Article 2 has no lead."
+      },
+      {
+        "criterion_id": "ww_ls_4",
+        "criterion_index": 6,
+        "criterion_text": "The lead should stand on its own as a concise overview of the article's topic. It should identify the topic, establish context, explain why the topic is notable, and summarize the most important points, including any prominent controversies. The notability of the article's subject is usually established in the first few sentences.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1's lead stands on its own as a concise overview of the topic and establishes notability. Article 2 fails this by not having a lead."
+      },
+      {
+        "criterion_id": "ww_ls_5",
+        "criterion_index": 7,
+        "criterion_text": "As in the body of the article itself, the emphasis given to material in the lead should roughly reflect its importance to the topic, according to reliable, published sources. Apart from basic facts, significant information should not appear in the lead if it is not covered in the remainder of the article.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "The emphasis in Article 1's lead correctly reflects the most important parts of the topic covered in the body. Article 2 lacks a lead."
+      },
+      {
+        "criterion_id": "ww_ls_6",
+        "criterion_index": 8,
+        "criterion_text": "A lead section should be carefully sourced as appropriate, although it is common for citations to appear in the body and not the lead.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1's lead presents information appropriately for the introductory section. Article 2 fails this due to the absence of a lead."
+      },
+      {
+        "criterion_id": "ww_ls_7",
+        "criterion_index": 9,
+        "criterion_text": "Significant information should not appear in the lead, apart from basic facts, if it is not covered in the remainder of the article, although not everything in the lead must be repeated in the body of the text. Exceptions include specific facts such as quotations, examples, birth dates, taxonomic names and typological classifications, case numbers, and titles.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 ensures all significant information in the lead is expanded upon in the body. Article 2 has no lead to evaluate."
+      },
+      {
+        "criterion_id": "ww_wtw_1",
+        "criterion_index": 10,
+        "criterion_text": "Puffery: Words such as legendary, best, great, greatest, acclaimed, iconic, visionary, outstanding, leading, celebrated, popular, award-winning, landmark, cutting-edge, innovative, revolutionary, extraordinary, brilliant, hit, famous, renowned, remarkable, prestigious, world-class, respected, notable, virtuoso, honorable, awesome, unique, pioneering, phenomenal, prominent are often used without attribution to promote the subject of an article. Instead of making subjective proclamations about a subject's importance, use facts and attribution to demonstrate it.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 avoids puffery entirely. Article 2 uses terms like 'famous example' and quotes 'truly royal' without sufficient contextual distancing."
+      },
+      {
+        "criterion_id": "ww_wtw_2",
+        "criterion_index": 11,
+        "criterion_text": "Contentious labels: Value-laden labels – such as calling an organization a cult, an individual a racist, sexist, terrorist, or freedom fighter, or a sexual practice a perversion – may express contentious opinion and are best avoided unless widely used by reliable sources to describe the subject, in which case use in-text attribution.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 carefully attributes labels like 'forgery' to specific scholars. Article 2 uses 'pseudo-Minoan forgery' more loosely."
+      },
+      {
+        "criterion_id": "ww_wtw_3",
+        "criterion_index": 12,
+        "criterion_text": "Unsupported attributions: Words like \"some people say\", \"many scholars state\", \"it is believed/regarded/considered\", \"experts declare\", \"it is widely thought\", \"research has shown\" may disguise a biased view. Claims about what people say, think, feel, or believe should be clearly attributed.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 2 relies heavily on unsupported attributions such as 'Modern scholarship commonly treats' and 'Public descriptions sometimes state'. Article 1 attributes claims to specific named scholars."
+      },
+      {
+        "criterion_id": "ww_wtw_4",
+        "criterion_index": 13,
+        "criterion_text": "Expressions of doubt: When words like supposed, apparent, purported, alleged, accused, so-called are used, ensure that the source of the accusation is clear. Also avoid scare-quoting and undue emphasis.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 2 uses the expression 'so-called' repeatedly in a way that emphasizes doubt unnecessarily. Article 1 handles doubtful claims with clear, attributed language."
+      },
+      {
+        "criterion_id": "ww_wtw_5",
+        "criterion_index": 14,
+        "criterion_text": "Editorializing: Words like notably, it should be noted, arguably, interestingly, essentially, utterly, actually, only, clearly, absolutely, of course, without a doubt, indeed, happily, sadly, tragically, aptly, fortunately, unfortunately, untimely should usually be avoided to maintain an impartial tone.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 remains impartial and avoids editorializing, while Article 2 borders on editorializing when critiquing Evans's interpretations."
+      },
+      {
+        "criterion_id": "ww_wtw_6",
+        "criterion_index": 15,
+        "criterion_text": "Synonyms for said: Words like reveal, point out, clarify, expose, explain, find, note, observe, insist, speculate, surmise, claim, assert, admit, confess, deny, confirm may make undue implications. On Wikipedia, it is more important to avoid language that makes undue implications.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 uses neutral synonyms for 'said' (e.g., 'wrote', 'argued'). Article 2 uses loaded terms like 'highlights', 'stresses', and 'emphasizes' frequently."
+      },
+      {
+        "criterion_id": "ww_wtw_7",
+        "criterion_index": 16,
+        "criterion_text": "Euphemisms: Euphemisms like passed away, gave her life, eternal rest, make love, an issue with, collateral damage, differently abled should generally be avoided in favor of more neutral and precise terms.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 uses direct language regarding death and origins, avoiding euphemistic phrasing better than Article 2."
+      },
+      {
+        "criterion_id": "ww_wtw_8",
+        "criterion_index": 17,
+        "criterion_text": "Clichés and idioms: Clichés and idioms like lion's share, tip of the iceberg, white elephant, gild the lily, take the plunge, ace up the sleeve should generally be avoided in favor of direct, literal expressions.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 is free of clichés, while Article 2 uses slightly informal idiomatic phrasing like 'fed into' when discussing the psyche motif."
+      },
+      {
+        "criterion_id": "ww_wtw_9",
+        "criterion_index": 18,
+        "criterion_text": "Relative time references: Prefer specific statements to general ones. Words like recently, lately, currently, today, presently, to date, X years ago, formerly, in the past, traditionally should be avoided.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 uses specific dates and relative markers ('As of 2018'). Article 2 relies on general terms like 'Modern scholarship' and 'today'."
+      },
+      {
+        "criterion_id": "ww_wtw_10",
+        "criterion_index": 19,
+        "criterion_text": "Unspecified places or events: Prefer specific statements to general ones. Words like this country, here, there, somewhere, sometimes, often, occasionally, somehow should be avoided.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 2 references unspecified places like 'Blog and popular accounts', 'Pinterest', and 'a Facebook post'. Article 1 relies strictly on specific, published scholarly works."
+      },
+      {
+        "criterion_id": "ww_wtw_11",
+        "criterion_index": 20,
+        "criterion_text": "Survived by: Phrasing such as \"Smith died in 1982, survived by her husband Jack and two sons\" should be avoided; this information can be made more complete and spread out through the article.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "While neither article specifically violates the 'survived by' rule, Article 1 integrates biographical and historical lineage details (e.g., passing the ring to a son) more smoothly."
+      }
+    ]
+  }
+}

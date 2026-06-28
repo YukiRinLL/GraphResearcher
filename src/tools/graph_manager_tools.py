@@ -37,6 +37,16 @@ def configure(output_dir: Optional[str] = None) -> None:
             path = path_getter()
             if path and path.exists():
                 path.unlink()
+        for relative in (".report_outline.json", ".report_outline.md", ".report_draft.md"):
+            path = Path(_cache_dir) / relative if _cache_dir else None
+            if path and path.exists():
+                path.unlink()
+        chapter_dir = Path(_cache_dir) / ".report_chapters" if _cache_dir else None
+        if chapter_dir and chapter_dir.exists():
+            for child in chapter_dir.iterdir():
+                if child.is_file():
+                    child.unlink()
+            chapter_dir.rmdir()
     from tools import convergence, graph_tools
 
     run_context = output_dir or "default"
@@ -271,13 +281,62 @@ def get_reference_registry() -> list[dict]:
 
 
 @tool
-def submit_final_report(title: str, sections: list[dict]) -> dict:
-    """Validate and compile the canonical report from cited structured blocks.
+def commit_report_outline(title: str, chapters: list[dict]) -> dict:
+    """Persist the reporter's chapter-level outline for the current run."""
+    from tools import report_tools
 
-    Every section requires ``blocks``. Each block requires ``text`` and one or
-    more URL-backed ``source_ids``; set ``kind`` to ``list_item`` for bullets.
-    When a section discloses structured conflicts, pass
-    ``disclosed_conflict_ids`` and optionally ``section_type="conflict_disclosure"``.
+    return report_tools.commit_report_outline(_cache_dir, title, chapters)
+
+
+@tool
+def prepare_report_chapter_bundle(chapter_id: int, extra_query_ids: Optional[list[str]] = None) -> dict:
+    """Load one chapter plan together with its evidence bundle."""
+    from tools import report_tools
+
+    return report_tools.prepare_report_chapter_bundle(_cache_dir, chapter_id, extra_query_ids)
+
+
+@tool
+def commit_report_chapter(
+    chapter_id: int,
+    title: str,
+    content: str,
+    source_ids: list[str],
+    evidence_ids: Optional[list[str]] = None,
+    disclosed_conflict_ids: Optional[list[str]] = None,
+    section_type: Optional[str] = None,
+) -> dict:
+    """Persist one chapter draft and its source/evidence bindings."""
+    from tools import report_tools
+
+    return report_tools.commit_report_chapter(
+        _cache_dir,
+        chapter_id,
+        title,
+        content,
+        source_ids,
+        evidence_ids=evidence_ids,
+        disclosed_conflict_ids=disclosed_conflict_ids,
+        section_type=section_type,
+    )
+
+
+@tool
+def assemble_report_draft() -> dict:
+    """Assemble completed chapter drafts into one provisional report draft."""
+    from tools import report_tools
+
+    return report_tools.assemble_report_draft(_cache_dir)
+
+
+@tool
+def submit_final_report(title: str, sections: list[dict]) -> dict:
+    """Validate and compile the canonical report from cited chapter sections.
+
+    Every section requires ``title``, prose ``content``, and URL-backed
+    ``source_ids``. Optional ``evidence_ids`` and ``disclosed_conflict_ids``
+    preserve graph traceability. ``section_type="conflict_disclosure"`` marks
+    a dedicated conflict section.
     """
     global _best_report, _compiled_report, _last_report_attempt, _salvaged_report
     from tools import report_tools
@@ -322,5 +381,9 @@ REPORTER_TOOLS: list[Any] = [
     export_report_context,
     get_report_evidence,
     get_reference_registry,
+    commit_report_outline,
+    prepare_report_chapter_bundle,
+    commit_report_chapter,
+    assemble_report_draft,
     submit_final_report,
 ]

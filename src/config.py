@@ -99,6 +99,12 @@ def _shared_model() -> ChatOpenAI:
     return _model_cache["default"]
 
 
+def _reporter_model() -> ChatOpenAI:
+    if "reporter" not in _model_cache:
+        _model_cache["reporter"] = build_model(temperature=0.2)
+    return _model_cache["reporter"]
+
+
 def __getattr__(name: str) -> ChatOpenAI:
     """Lazily provide ``orchestrator_model`` / ``searcher_model`` / ``reporter_model``.
 
@@ -106,6 +112,8 @@ def __getattr__(name: str) -> ChatOpenAI:
     ``config`` (for prompt loading or assembly checks) does not require API
     credentials to be present.
     """
-    if name in ("orchestrator_model", "searcher_model", "reporter_model"):
+    if name in ("orchestrator_model", "searcher_model"):
         return _shared_model()
+    if name == "reporter_model":
+        return _reporter_model()
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

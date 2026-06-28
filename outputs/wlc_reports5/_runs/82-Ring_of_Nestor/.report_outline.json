@@ -1,0 +1,197 @@
+{
+  "title": "Ring of Nestor",
+  "chapters": [
+    {
+      "chapter_id": 1,
+      "title": "Overview",
+      "goals": [
+        "Summarize what the Ring of Nestor is, its main features, and the central authenticity debate."
+      ],
+      "query_ids": [
+        "q1",
+        "q2",
+        "q3",
+        "q1.1",
+        "q3.1"
+      ],
+      "section_plan": "Lead-style overview defining the Ring of Nestor, outlining its type, date and cultural attribution, key iconographic features, provenance issues, and the existence of an authenticity dispute.",
+      "status": "pending"
+    },
+    {
+      "chapter_id": 2,
+      "title": "Discovery and description",
+      "goals": [
+        "Present discovery history, early publication, and physical description of the ring."
+      ],
+      "query_ids": [
+        "q1",
+        "q2"
+      ],
+      "section_plan": "Narrative of how and when the ring entered scholarly record, including Evans's work; detailed description of material, measurements, engraving, and current museum catalog data.",
+      "status": "pending"
+    },
+    {
+      "chapter_id": 3,
+      "title": "Iconography and interpretations",
+      "goals": [
+        "Describe the imagery on the ring and summarize major interpretations over time."
+      ],
+      "query_ids": [
+        "q2",
+        "q3"
+      ],
+      "section_plan": "Systematic description of iconographic elements; early interpretations (Evans and contemporaries), followed by later critiques and alternative readings, including Vlachopoulos and recent iconography studies.",
+      "status": "completed",
+      "source_ids": [
+        "20260628214103104166_e4b97245",
+        "20260628213959105110_f988793a",
+        "20260628213959175179_85c40ba9",
+        "20260628213959305141_a044abf8",
+        "20260628214103199341_3942ae41",
+        "20260628214735641751_508e7722"
+      ],
+      "evidence_ids": [
+        "20260628214105543481_0d22bb99",
+        "20260628214738177309_f5c6b0b9",
+        "20260628214001475930_7c1280bc",
+        "20260628214001582957_4c464f42",
+        "20260628214001691686_35b88cb8",
+        "20260628214001785072_4cf2ec2d",
+        "20260628214001870160_7919f8fc",
+        "20260628214002303189_25ff7912",
+        "20260628214002394796_d1d18586",
+        "20260628214738940165_07cc9082",
+        "20260628214739023775_a92d2a8d"
+      ],
+      "disclosed_conflict_ids": [
+        "20260628214002467973_c16de41f",
+        "20260628214106737364_3aa80d0d"
+      ],
+      "section_type": "body"
+    },
+    {
+      "chapter_id": 4,
+      "title": "Authenticity and dating",
+      "goals": [
+        "Explain the competing views on authenticity, technical and stylistic analyses, and proposed dates."
+      ],
+      "query_ids": [
+        "q1",
+        "q1.1",
+        "q3.1"
+      ],
+      "section_plan": "Account of Evans's original dating and acceptance; later challenges (Pini, Fakes and Dubitanda); technical vs iconographic arguments; museum stance; range of proposed chronologies and cultural attributions.",
+      "status": "pending"
+    },
+    {
+      "chapter_id": 5,
+      "title": "Archaeological and historical significance",
+      "goals": [
+        "Situate the ring within Aegean Bronze Age art, religion, and Mycenaean studies."
+      ],
+      "query_ids": [
+        "q3",
+        "q2"
+      ],
+      "section_plan": "Discussion of how the ring has been used in reconstructions of Minoan-Mycenaean religion and elite display; comparison with other signet rings and with the Griffin Warrior finds; cautionary use in light of authenticity doubts.",
+      "status": "pending"
+    },
+    {
+      "chapter_id": 6,
+      "title": "Provenance and museum history",
+      "goals": [
+        "Trace ownership, acquisition, cataloguing, and public presentation of the ring."
+      ],
+      "query_ids": [
+        "q1",
+        "q3.1"
+      ],
+      "section_plan": "Summary of reported provenance, acquisition by the Ashmolean, catalog details, and later exhibition or digital representation; note uncertainties and public narratives about its origin.",
+      "status": "completed",
+      "source_ids": [
+        "20260628214103104166_e4b97245",
+        "20260628214103141988_dfc7706e",
+        "20260628214103199341_3942ae41",
+        "20260628214735574646_16aa9999",
+        "20260628214735605125_4d0fcc37",
+        "20260628214735766120_6b6b82f9",
+        "20260628214735796457_ea60f765"
+      ],
+      "evidence_ids": [
+        "20260628214105325354_544ee1f7",
+        "20260628214738407340_7afd66da",
+        "20260628214738560875_cb4bf520",
+        "20260628214738636255_4df96116",
+        "20260628214738712736_6e0e0120",
+        "20260628214738791284_32946354",
+        "20260628214738863727_3397980b",
+        "20260628214739565983_4839c83f",
+        "20260628214739642423_55ea1925"
+      ],
+      "disclosed_conflict_ids": [
+        "20260628214739860912_8fe5dffe",
+        "20260628214740138272_f3832601"
+      ],
+      "section_type": "body"
+    },
+    {
+      "chapter_id": 7,
+      "title": "Scholarly debate and recent research",
+      "goals": [
+        "Synthesize ongoing debates, recent publications, and unresolved issues, including disclosed conflicts."
+      ],
+      "query_ids": [
+        "q2",
+        "q3",
+        "q1.1",
+        "q3.1"
+      ],
+      "section_plan": "Overview of major lines of debate (iconography, authenticity, chronology, geographic attribution) with emphasis on post-2000 scholarship; explicit coverage of registered conflicts and methodological discussions.",
+      "status": "completed",
+      "source_ids": [
+        "20260628214103104166_e4b97245",
+        "20260628213959105110_f988793a",
+        "20260628213959175179_85c40ba9",
+        "20260628213959214181_6b3e1b85",
+        "20260628213959264075_6135b134",
+        "20260628214103199341_3942ae41",
+        "20260628214735574646_16aa9999",
+        "20260628214735641751_508e7722",
+        "20260628213959305141_a044abf8"
+      ],
+      "evidence_ids": [
+        "20260628214738177309_f5c6b0b9",
+        "20260628214001475930_7c1280bc",
+        "20260628214001582957_4c464f42",
+        "20260628214001691686_35b88cb8",
+        "20260628214001785072_4cf2ec2d",
+        "20260628214001870160_7919f8fc",
+        "20260628214105939314_a7d1e904",
+        "20260628214106023783_018e27cd",
+        "20260628214106097807_70b80784",
+        "20260628214001956359_cf6673c1",
+        "20260628214002050669_2de8453a",
+        "20260628214002135377_9c62746d",
+        "20260628214002218538_4b495e2b",
+        "20260628214130892361_b238beab",
+        "20260628214131707847_fe04915a",
+        "20260628214131907288_bca84ef9",
+        "20260628214738560875_cb4bf520",
+        "20260628214738636255_4df96116",
+        "20260628214738940165_07cc9082",
+        "20260628214739023775_a92d2a8d",
+        "20260628214002303189_25ff7912",
+        "20260628214002394796_d1d18586"
+      ],
+      "disclosed_conflict_ids": [
+        "20260628214002467973_c16de41f",
+        "20260628214002593900_f95e5b14",
+        "20260628214106602287_d78b1e4a",
+        "20260628214739860912_8fe5dffe",
+        "20260628214740138272_f3832601",
+        "20260628214740296960_642f1b4e"
+      ],
+      "section_type": "body"
+    }
+  ]
+}

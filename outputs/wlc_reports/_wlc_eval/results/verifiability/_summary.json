@@ -1,6 +1,6 @@
 {
   "total_articles": 1,
-  "avg_gen_supported_by_wiki": 0.35714285714285715,
-  "avg_gen_conflict_with_wiki": 0.08928571428571429,
-  "avg_wiki_covered_by_gen": 0.19090909090909092
+  "avg_gen_supported_by_wiki": 0.2717391304347826,
+  "avg_gen_conflict_with_wiki": 0.05434782608695652,
+  "avg_wiki_covered_by_gen": 0.15463917525773196
 }

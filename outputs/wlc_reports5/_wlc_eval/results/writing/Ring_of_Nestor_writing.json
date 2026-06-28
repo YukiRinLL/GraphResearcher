@@ -1,5 +1,5 @@
 {
-  "topic": "2011 Sawyerville–Eoline tornado",
+  "topic": "Ring of Nestor",
   "mode": "winrate",
   "allow_tie": false,
   "aggregate": {
@@ -18,18 +18,18 @@
       "gen_win_rate": 0.0
     },
     "Well-written": {
-      "gen_wins": 5,
-      "gt_wins": 16,
+      "gen_wins": 0,
+      "gt_wins": 21,
       "ties": 0,
       "total": 21,
-      "gen_win_rate": 0.23809523809523808
+      "gen_win_rate": 0.0
     },
     "overall": {
-      "gen_wins": 5,
-      "gt_wins": 34,
+      "gen_wins": 0,
+      "gt_wins": 39,
       "ties": 0,
       "total": 39,
-      "gen_win_rate": 0.1282051282051282
+      "gen_win_rate": 0.0
     }
   },
   "details": {
@@ -41,7 +41,7 @@
         "category": "Broad in its coverage",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Article 1 provides a much more comprehensive overview of the main aspects of the tornado, including a detailed meteorological setup, a step-by-step track summary, and concrete aftermath details, whereas Article 2 relies on generic summaries and database reporting conventions."
+        "reason": "Article 1 provides a much more concrete and detailed description of the ring's physical properties and iconography, whereas Article 2 speaks in generalities and repeats the same information across multiple sections."
       },
       {
         "criterion_id": "bc_2",
@@ -50,7 +50,7 @@
         "category": "Broad in its coverage",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Article 1's introductory paragraph clearly outlines the scope of the article without getting bogged down in administrative metadata, unlike Article 2's lead which ends with a lengthy explanation of database discrepancies."
+        "reason": "Article 1's lead concisely and effectively establishes the scope of the article, clearly defining the object, its origins, its location, and the controversy surrounding it in a standard encyclopedic format."
       },
       {
         "criterion_id": "bc_3",
@@ -59,7 +59,7 @@
         "category": "Broad in its coverage",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Article 1 covers notable and relevant details such as the kinetic energy study, specific shelter additions in 2024, and a detailed casualty table with circumstances of death, which Article 2 entirely omits."
+        "reason": "Article 1 covers all notable material, including precise measurements, a detailed breakdown of the four quadrants of the ring's design, and specific historical accounts, which Article 2 completely glosses over in favor of repetitive historiographical summaries."
       },
       {
         "criterion_id": "bc_4",
@@ -68,7 +68,7 @@
         "category": "Broad in its coverage",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Article 2 includes extensive, repetitive meta-commentary regarding the discrepancies between NCEI and NWS reporting practices across multiple sections, which detracts from the actual subject. Article 1 avoids this."
+        "reason": "Article 2 includes out-of-scope and poorly formatted material, notably an essay-like 'Disclosed conflicts' section that ends with an unresolved note in Chinese. Article 1 adheres strictly to the topic."
       },
       {
         "criterion_id": "bc_5",
@@ -77,7 +77,7 @@
         "category": "Broad in its coverage",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Article 1 stays focused on the tornado event itself and its direct impacts. Article 2 loses focus by repeatedly explaining database structure and reporting practices in almost every section."
+        "reason": "Article 1 stays highly focused without unnecessary repetition. Article 2 is highly repetitive, bringing up the Ashmolean catalog number (AN1938.1130) and the Griffin Warrior comparisons in multiple redundant sections."
       },
       {
         "criterion_id": "bc_6",
@@ -86,7 +86,7 @@
         "category": "Broad in its coverage",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Article 1's lead provides a concise, effective summary of the tornado's path, intensity, and impact. Article 2's lead devotes too much space to explaining NCEI segmented reporting practices rather than summarizing the event."
+        "reason": "Article 1 has a standard, concise lead that perfectly summarizes the most important points (description, history, debate). Article 2's 'Overview' is bloated and reads more like a literature review introduction."
       },
       {
         "criterion_id": "bc_7",
@@ -95,7 +95,7 @@
         "category": "Broad in its coverage",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Article 1 effectively uses hierarchical sub-sections (e.g., Setup, Forecast, Track near Sawyerville, Damage in Eoline, Casualties) to neatly separate major subtopics. Article 2's sections blend together and repeat the same database discrepancy points."
+        "reason": "Article 1 structures its major subtopics perfectly (Description, History, Debate). Article 2 fails to separate its subtopics cleanly, with authenticity and scholarly debate blending together across almost every section."
       },
       {
         "criterion_id": "bc_8",
@@ -104,7 +104,7 @@
         "category": "Broad in its coverage",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Article 2 contains loosely relevant information by heavily focusing on the differences in agency database catalogs (NCEI vs NWS). Article 1 keeps all information strictly relevant to the tornado event, its meteorology, and its aftermath."
+        "reason": "Article 2 contains irrelevant and strangely formatted text, including a final paragraph in Chinese and meta-commentary about 'public sources.' Article 1 contains zero irrelevant information."
       }
     ],
     "Neutral": [
@@ -115,7 +115,7 @@
         "category": "Neutral",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Article 1 represents the information fairly and proportionately, whereas Article 2 excessively focuses on data reporting discrepancies rather than the event itself."
+        "reason": "Article 1 seamlessly integrates different scholarly viewpoints on the ring's authenticity and interpretation into the text, giving due weight to both sides natively. Article 2 relies on repetitive summaries and a bizarre meta-commentary section at the end."
       },
       {
         "criterion_id": "n_2",
@@ -124,7 +124,7 @@
         "category": "Neutral",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Neither article states opinions as facts, but Article 1 handles the attribution of specific statements (like quotes from officials) more smoothly."
+        "reason": "Article 1 properly attributes interpretations (e.g., Evans's view of the underworld, Vlachopoulos's scorpion) to specific scholars in the text. Article 2 sometimes uses vague attribution like 'later scholarship has scrutinized' before eventually naming scholars, and its final section breaks encyclopedic tone."
       },
       {
         "criterion_id": "n_3",
@@ -133,7 +133,7 @@
         "category": "Neutral",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Article 1 naturally integrates damage reports and ratings, whereas Article 2 treats minor database formatting differences (NCEI vs NWS) as if they were contested assertions."
+        "reason": "Article 1 expertly navigates the highly contested authenticity debate by structuring arguments for and against with clear attribution, rather than stating the ring's status as a definitive fact either way."
       },
       {
         "criterion_id": "n_4",
@@ -142,7 +142,7 @@
         "category": "Neutral",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Article 2 frequently attributes uncontroversial factual assertions (like the tornado touching down) to specific reports (e.g., 'According to the NWS Birmingham event review...'), failing to state facts in Wikipedia's voice. Article 1 correctly uses Wikipedia's voice for uncontested facts."
+        "reason": "Article 1 presents uncontested physical dimensions, weight, and material composition of the ring in a straightforward factual manner in the 'Description' section. Article 2 is less detailed in factual description."
       },
       {
         "criterion_id": "n_5",
@@ -151,7 +151,7 @@
         "category": "Neutral",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Article 1 presents a disinterested, nonjudgmental tone throughout its detailed meteorological and damage summaries, whereas Article 2's repetitive focus on source attribution disrupts the neutral narrative flow."
+        "reason": "Article 1 maintains a strictly disinterested, nonjudgmental tone throughout. Article 2 includes a highly non-standard 'Disclosed conflicts' section that breaks the fourth wall and even includes un-translated Chinese text, violating neutral encyclopedic style."
       },
       {
         "criterion_id": "n_6",
@@ -160,7 +160,7 @@
         "category": "Neutral",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Article 2 gives undue prominence to the administrative differences in how NWS and NCEI log tornado tracks, which gives a false impression of a meaningful scientific debate. Article 1 avoids this."
+        "reason": "Article 1 accurately reflects the historical shift in consensus regarding the ring's authenticity, detailing early doubts and modern reassessments proportionately. Article 2 repeats the same points about authenticity across multiple sections."
       },
       {
         "criterion_id": "n_7",
@@ -169,7 +169,7 @@
         "category": "Neutral",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Article 2 gives undue weight to minor aspects of the subject, specifically dedicating an entire section and multiple paragraphs to explaining NWS vs. NCEI database logging conventions. Article 1 balances the weight much better."
+        "reason": "Article 1 balances the physical description, history, iconographic interpretation, and authenticity debate proportionately. Article 2 is highly repetitive, repeatedly mentioning the Ashmolean inventory number and the Griffin Warrior tomb across different sections."
       },
       {
         "criterion_id": "n_8",
@@ -178,7 +178,7 @@
         "category": "Neutral",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Neither article includes fringe or pseudoscientific views, but Article 1's scientific inclusion of kinetic energy studies is well-integrated and properly contextualized."
+        "reason": "Article 1 clearly contextualizes the forgery claims and the theories surrounding the Gilliérons, treating them not as fringe but as significant historical scholarly debates, handled with proper weight."
       },
       {
         "criterion_id": "n_9",
@@ -187,7 +187,7 @@
         "category": "Neutral",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "This criterion is not strictly applicable to a tornado article, but Article 1 better explains the meteorological mechanisms (setup) that motivated the event's development."
+        "reason": "Article 1 delves into how Evans's beliefs about the ring were motivated by James Frazer's 'The Golden Bough' and Egyptian mythology, providing excellent context for the development of his interpretations."
       },
       {
         "criterion_id": "n_10",
@@ -196,7 +196,7 @@
         "category": "Neutral",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Both articles use the same title, but Article 1 provides a more comprehensive structural breakdown consistent with Wikipedia's neutral style guidelines."
+        "reason": "Both articles use the same title, but Article 1 avoids unnecessary alternative naming issues in the lead and provides a more direct, encyclopedic introduction to the subject's known moniker."
       }
     ],
     "Well-written": [
@@ -207,16 +207,16 @@
         "category": "Well-written",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Article 1 uses a standard encyclopedic narrative style, whereas Article 2 reads awkwardly like a literature review or meta-analysis of data sources."
+        "reason": "Article 1 is written in a clear, standard encyclopedic style, whereas Article 2 is highly repetitive, includes a bizarre 'Disclosed conflicts' section, and awkwardly contains untranslated Chinese text."
       },
       {
         "criterion_id": "ww_cc_2",
         "criterion_index": 1,
         "criterion_text": "Articles should address the topic without twisting the truth or telling \"lies-to-children\", but should also minimize (unexplained) jargon and not take prior knowledge for granted.",
         "category": "Well-written",
-        "winner": "gen",
-        "winner_code": 2,
-        "reason": "Article 2 minimizes technical jargon, whereas Article 1 contains dense, unexplained meteorological jargon in the Setup section (e.g., 'ageostrophic flow', 'shortwave trough', 'storm-relative helicity')."
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 minimizes jargon and explains specific archaeological terms better than Article 2, which relies heavily on repeating academic generalizations."
       },
       {
         "criterion_id": "ww_cc_3",
@@ -225,7 +225,7 @@
         "category": "Well-written",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Article 1 is self-contained and explains the meteorological context directly, while Article 2 relies heavily on referencing external databases and reports to explain the event."
+        "reason": "Article 1 is highly self-contained, explaining the context of the ring's discovery and the debates around it without needing external context."
       },
       {
         "criterion_id": "ww_ls_1",
@@ -234,7 +234,7 @@
         "category": "Well-written",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Article 2 incorrectly includes a '## Lead' section header, explicitly violating the guideline that the introductory section is never divided by a header. Article 1 properly leaves the lead unheaded."
+        "reason": "Article 1 begins with a proper, unheaded lead section. Article 2 begins with an 'Overview' heading, violating standard lead section formatting."
       },
       {
         "criterion_id": "ww_ls_2",
@@ -243,7 +243,7 @@
         "category": "Well-written",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Article 1's lead gives a concise, engaging overview of the tornado's basics, whereas Article 2's lead gets bogged down in explaining database reporting discrepancies."
+        "reason": "Article 1's lead concisely introduces the basics and cultivates interest, whereas Article 2's overview is overly lengthy and repetitive."
       },
       {
         "criterion_id": "ww_ls_3",
@@ -252,7 +252,7 @@
         "category": "Well-written",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Article 1's lead is clear and accessible, while Article 2's lead is convoluted and interrupted by constant in-text source attributions."
+        "reason": "Article 1 is written in a clear, accessible, and neutral style, avoiding the repetitive robotic phrasing found in Article 2."
       },
       {
         "criterion_id": "ww_ls_4",
@@ -261,7 +261,7 @@
         "category": "Well-written",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Article 1's lead stands on its own as a complete summary of the event's track, strength, and context, while Article 2 focuses too heavily on administrative data differences."
+        "reason": "Article 1's lead excellently establishes context, notability, and summarizes controversies succinctly."
       },
       {
         "criterion_id": "ww_ls_5",
@@ -270,7 +270,7 @@
         "category": "Well-written",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Article 1 emphasizes the tornado's physical path and impact in the lead, properly reflecting importance, whereas Article 2 gives undue weight to data recording methods."
+        "reason": "Article 1 accurately balances the emphasis in the lead with the body. Article 2 repeats nearly identical sentences across the overview and body sections."
       },
       {
         "criterion_id": "ww_ls_6",
@@ -279,7 +279,7 @@
         "category": "Well-written",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Article 1 accurately summarizes facts from the body without awkward in-text sourcing in the lead, whereas Article 2 pedantically lists out specific reporting agencies."
+        "reason": "Article 1 follows standard practices for a well-summarized lead that reflects sourced body material, avoiding the strange metadata-like references in Article 2."
       },
       {
         "criterion_id": "ww_ls_7",
@@ -288,16 +288,16 @@
         "category": "Well-written",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Both articles appropriately keep non-body info out of the lead, but Article 1 does a much better job of seamlessly summarizing only the most significant details of the track and casualties."
+        "reason": "Article 1 ensures all significant information in the lead is expanded upon in the body without orphaned claims."
       },
       {
         "criterion_id": "ww_wtw_1",
         "criterion_index": 10,
         "criterion_text": "Puffery: Words such as legendary, best, great, greatest, acclaimed, iconic, visionary, outstanding, leading, celebrated, popular, award-winning, landmark, cutting-edge, innovative, revolutionary, extraordinary, brilliant, hit, famous, renowned, remarkable, prestigious, world-class, respected, notable, virtuoso, honorable, awesome, unique, pioneering, phenomenal, prominent are often used without attribution to promote the subject of an article. Instead of making subjective proclamations about a subject's importance, use facts and attribution to demonstrate it.",
         "category": "Well-written",
-        "winner": "gen",
-        "winner_code": 2,
-        "reason": "Article 1 includes slightly puffy descriptors like 'devastated' and 'largest ... in modern history', whereas Article 2 maintains a drier, more strictly objective tone throughout."
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 2 uses puffery such as 'the famous Ring of Nestor'. Article 1 maintains a neutral tone."
       },
       {
         "criterion_id": "ww_wtw_2",
@@ -306,16 +306,16 @@
         "category": "Well-written",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Neither article suffers from severe contentious labels, but Article 1 handles the description of the destructive event factually without value-laden judgments."
+        "reason": "Article 1 properly attributes labels like 'forger' to specific claims and scholars rather than presenting them as unquestioned fact."
       },
       {
         "criterion_id": "ww_wtw_3",
         "criterion_index": 12,
         "criterion_text": "Unsupported attributions: Words like \"some people say\", \"many scholars state\", \"it is believed/regarded/considered\", \"experts declare\", \"it is widely thought\", \"research has shown\" may disguise a biased view. Claims about what people say, think, feel, or believe should be clearly attributed.",
         "category": "Well-written",
-        "winner": "gen",
-        "winner_code": 2,
-        "reason": "Article 1 includes an unsupported attribution by quoting 'most conducive to violent tornadoes ever documented' without stating who said it. Article 2 meticulously attributes all its claims."
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 2 relies heavily on weasel words like 'Later scholarship has scrutinized' and 'Recent studies'. Article 1 attributes views to specific named scholars (e.g., Nilsson, Vlachopoulos)."
       },
       {
         "criterion_id": "ww_wtw_4",
@@ -324,7 +324,7 @@
         "category": "Well-written",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Article 1 avoids expressions of doubt and confidently states established facts, whereas Article 2 creates an atmosphere of doubt regarding casualty figures by overly emphasizing agency reporting differences."
+        "reason": "Article 2 inappropriately uses 'so-called' (e.g., 'so-called Ring of Minos'). Article 1 handles expressions of doubt much more professionally with clear attributions."
       },
       {
         "criterion_id": "ww_wtw_5",
@@ -333,7 +333,7 @@
         "category": "Well-written",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Article 2 editorializes slightly with phrases like 'underscoring the exceptional scale', whereas Article 1 avoids such commentary and maintains a neutral narrative."
+        "reason": "Article 1 avoids editorializing better than Article 2, which tries to artificially guide the reader's opinion through its 'Disclosed conflicts' section."
       },
       {
         "criterion_id": "ww_wtw_6",
@@ -342,7 +342,7 @@
         "category": "Well-written",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Article 2 frequently relies on synonyms for said (e.g., 'notes', 'states', 'describes', 'emphasizes'), whereas Article 1 simply states the objective facts without needing these verbs."
+        "reason": "Article 1 uses neutral verbs for attribution ('argued', 'suggested'), whereas Article 2 uses words like 'notes' and 'observes' which can imply truth."
       },
       {
         "criterion_id": "ww_wtw_7",
@@ -351,25 +351,25 @@
         "category": "Well-written",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Article 1 avoids euphemisms entirely, using precise and direct terms like 'killed', 'died', and 'fatalities' in its text and detailed casualty table."
+        "reason": "Article 1 uses direct language regarding death and other topics, avoiding euphemisms."
       },
       {
         "criterion_id": "ww_wtw_8",
         "criterion_index": 17,
         "criterion_text": "Clichés and idioms: Clichés and idioms like lion's share, tip of the iceberg, white elephant, gild the lily, take the plunge, ace up the sleeve should generally be avoided in favor of direct, literal expressions.",
         "category": "Well-written",
-        "winner": "gen",
-        "winner_code": 2,
-        "reason": "Article 1 uses minor idioms like 'in concert with', whereas Article 2 avoids clichés and idioms entirely in favor of literal language."
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 avoids clichés, relying on precise, literal descriptions of the artifact and its history."
       },
       {
         "criterion_id": "ww_wtw_9",
         "criterion_index": 18,
         "criterion_text": "Relative time references: Prefer specific statements to general ones. Words like recently, lately, currently, today, presently, to date, X years ago, formerly, in the past, traditionally should be avoided.",
         "category": "Well-written",
-        "winner": "gen",
-        "winner_code": 2,
-        "reason": "Article 1 relies on some relative time references like 'modern history' and 'previous evening', whereas Article 2 grounds events in specific dates and times."
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 2 uses relative time references extensively (e.g., 'Recent scholarship', 'up to December 15, 2025'). Article 1 uses specific years (e.g., 2015, 2021)."
       },
       {
         "criterion_id": "ww_wtw_10",
@@ -378,7 +378,7 @@
         "category": "Well-written",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Article 1 provides highly specific geographical details (e.g., naming specific county roads, creeks, and minor communities), whereas Article 2 generalizes the locations significantly."
+        "reason": "Article 1 specifies exact locations and events (e.g., 'Kakovatos in Messenia'), whereas Article 2 uses vaguer generalities."
       },
       {
         "criterion_id": "ww_wtw_11",
@@ -387,7 +387,7 @@
         "category": "Well-written",
         "winner": "gt",
         "winner_code": 1,
-        "reason": "Neither article uses the 'survived by' phrasing, but Article 1 excels by providing a dedicated table that explicitly details the circumstances of each casualty without relying on biographical filler."
+        "reason": "Article 1 integrates biographical details of the people involved smoothly into the text without awkward phrasing."
       }
     ]
   }

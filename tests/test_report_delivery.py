@@ -130,10 +130,9 @@ def main():
 
         compiled = report_tools.compile_structured_report("机器人公司研究", [{
             "title": "公司与融资",
-            "blocks": [
-                {"text": "公司未公开具体融资金额。", "source_ids": ["s1"]},
-                {"text": "该公司开发仓储机器人。", "source_ids": ["s1"], "kind": "list_item"},
-            ],
+            "content": "公司未公开具体融资金额。\n\n该公司开发仓储机器人。",
+            "source_ids": ["s1"],
+            "evidence_ids": ["e1", "c1"],
         }])
         assert compiled["accepted"] is True and compiled["revision_requested"] is False, compiled
         assert "公司未公开具体融资金额" in compiled["report"]
@@ -141,10 +140,9 @@ def main():
 
         soft_compiled = report_tools.compile_structured_report("机器人公司研究", [{
             "title": "公司与融资",
-            "blocks": [
-                {"text": "公司未公开具体融资金额。", "source_ids": ["s1"]},
-                {"text": "本次图谱证据更多集中在融资公开口径。", "source_ids": ["s1"]},
-            ],
+            "content": "公司未公开具体融资金额。\n\n本次图谱证据更多集中在融资公开口径。",
+            "source_ids": ["s1"],
+            "evidence_ids": ["e1"],
         }])
         assert soft_compiled["accepted"] is True and soft_compiled["revision_requested"] is True, soft_compiled
         assert soft_compiled["severity"] == "soft"
@@ -197,11 +195,42 @@ def main():
 
         with TemporaryDirectory() as temp_dir:
             graph_manager_tools.configure(temp_dir)
+            outline = graph_manager_tools.commit_report_outline.invoke({
+                "title": "机器人公司研究",
+                "chapters": [{
+                    "chapter_id": 1,
+                    "title": "公司与融资",
+                    "goals": ["概述公司能力与资本公开信息"],
+                    "query_ids": ["q1"],
+                    "section_plan": "1. 公司能力\n2. 资本公开信息",
+                }],
+            })
+            assert outline["status"] == "ok"
+            bundle = graph_manager_tools.prepare_report_chapter_bundle.invoke({"chapter_id": 1})
+            assert bundle["status"] == "ok" and bundle["chapter_title"] == "公司与融资"
+            assert {item["id"] for item in bundle["evidence_items"]} == {"e1", "c1"}
+            chapter = graph_manager_tools.commit_report_chapter.invoke({
+                "chapter_id": 1,
+                "title": "公司与融资",
+                "content": "公司未公开具体融资金额。\n\n该公司开发仓储机器人。",
+                "source_ids": ["s1"],
+                "evidence_ids": ["e1", "c1"],
+            })
+            assert chapter["status"] == "ok"
+            draft = graph_manager_tools.assemble_report_draft.invoke({})
+            assert draft["status"] == "ok"
+            assert "公司未公开具体融资金额" in draft["draft"]
+            assert Path(temp_dir, ".report_outline.json").exists()
+            assert Path(temp_dir, ".report_chapters", "chapter_01.md").exists()
+            assert Path(temp_dir, ".report_draft.md").exists()
+
             result = graph_manager_tools.submit_final_report.invoke({
                 "title": "机器人公司研究",
                 "sections": [{
                     "title": "公司与融资",
-                    "blocks": [{"text": "公司未公开具体融资金额。", "source_ids": ["s1"]}],
+                    "content": "公司未公开具体融资金额。",
+                    "source_ids": ["s1"],
+                    "evidence_ids": ["e1"],
                 }],
             })
             assert result["accepted"] is True and result["revision_requested"] is False
@@ -213,10 +242,9 @@ def main():
                 "title": "机器人公司研究",
                 "sections": [{
                     "title": "公司与融资",
-                    "blocks": [
-                        {"text": "公司未公开具体融资金额。", "source_ids": ["s1"]},
-                        {"text": "本次图谱证据更多集中在融资公开口径。", "source_ids": ["s1"]},
-                    ],
+                    "content": "公司未公开具体融资金额。\n\n本次图谱证据更多集中在融资公开口径。",
+                    "source_ids": ["s1"],
+                    "evidence_ids": ["e1"],
                 }],
             })
             assert soft_result["accepted"] is True and soft_result["revision_requested"] is True
@@ -225,6 +253,16 @@ def main():
             assert Path(temp_dir, ".report_attempt.json").exists()
             assert graph_manager_tools.get_last_report_attempt()["revision_requested"] is True
             assert "公司未公开具体融资金额" in graph_manager_tools.get_best_report()
+
+            legacy = graph_manager_tools.submit_final_report.invoke({
+                "title": "机器人公司研究",
+                "sections": [{
+                    "title": "公司与融资",
+                    "blocks": [{"text": "公司未公开具体融资金额。", "source_ids": ["s1"]}],
+                }],
+            })
+            assert legacy["accepted"] is False and legacy["severity"] == "hard", legacy
+            assert any(issue["code"] == "legacy_block_schema" for issue in legacy["issues"])
     finally:
         for name, original in originals.items():
             setattr(graph_tools, name, original)
