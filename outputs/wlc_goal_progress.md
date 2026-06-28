@@ -1,0 +1,1105 @@
+# WLC Goal Progress
+
+## Experiment 0: Baseline inspection
+
+- Output directory: `outputs/wlc_report5`
+- Code version / diff summary: no code changes; baseline inspection only
+- Hypothesis:
+  - Establish a real sample baseline before modifying prompts or flow.
+  - Inspect whether the main failure is writing quality, evidence coverage, citation support, instruction transfer, or report-delivery contract mismatch.
+- Run commands:
+  - `uv run python test_wlc.py --output-path outputs/wlc_report5 --sample-size 1 --seed 42 -r 50`
+  - `uv run python scripts/generate_json.py -i /mnt/h/DeepResearch/GraphResearcher/outputs/wlc_report5/Ring_of_Nestor.md -o /mnt/h/projects/Wiki_Live_Challenge/tmp/wlc_report5_baseline/Ring_of_Nestor.json --steps extract,fetch -v`
+  - `uv run python scripts/run_evaluation.py writing --gen /mnt/h/projects/Wiki_Live_Challenge/tmp/wlc_report5_baseline/Ring_of_Nestor.json --gt /mnt/h/projects/Wiki_Live_Challenge/data/2025_Mar_Nov/wiki_data/cleaned_data/article/Ring_of_Nestor.md -o /mnt/h/projects/Wiki_Live_Challenge/tmp/wlc_report5_baseline_eval/writing`
+  - `uv run python scripts/run_evaluation.py verifiability --gen /mnt/h/projects/Wiki_Live_Challenge/tmp/wlc_report5_baseline/Ring_of_Nestor.json --gt /mnt/h/projects/Wiki_Live_Challenge/data/2025_Mar_Nov/wiki_data/cleaned_data/article/Ring_of_Nestor.md -o /mnt/h/projects/Wiki_Live_Challenge/tmp/wlc_report5_baseline_eval/verifiability --max-workers 20`
+  - `uv run python scripts/run_evaluation.py citation --gen /mnt/h/projects/Wiki_Live_Challenge/tmp/wlc_report5_baseline/Ring_of_Nestor.json -o /mnt/h/projects/Wiki_Live_Challenge/tmp/wlc_report5_baseline_eval/citation --max-workers 10`
+- Scores:
+  - Writing overall: `0.00`
+  - Well-written: `0.00`
+  - Broad: `0.00`
+  - Neutral: `0.00`
+  - Gen supported by Wiki: `0.1250`
+  - Gen conflict with Wiki: `0.0750`
+  - Wiki covered by Gen: `0.0103`
+  - Citation support: `0.7250`
+  - Citation conflict: `0.0000`
+- Report quality / instruction-following observations:
+  - The saved report in `outputs/wlc_report5/_runs/82-Ring_of_Nestor/report.md` is coherent at paragraph level, but it is badly misaligned with the benchmark target article.
+  - The report mixes at least two object identities:
+    - the Evans / Thisbe / Boeotia artifact;
+    - separate Pylos / Griffin Warrior rings used as comparative material.
+  - `submit_final_report` accepted only a salvaged report and still flagged `revision_requested=true` because the report contains multiple references sections.
+  - The sample run saved `report.md`, `research_graph.jsonl`, and `run.log` under `_runs/82-Ring_of_Nestor/`; the top-level `outputs/wlc_report5/Ring_of_Nestor.md` was copied from the saved run artifact after the CLI stream was manually interrupted post-save.
+- Evidence for likely bottlenecks:
+  - Report-delivery contract mismatch:
+    - `src/prompts/reporter.md` tells Reporter to submit structured sections, but does not explicitly forbid a `References` section.
+    - `src/tools/report_tools.py` always compiles and appends a unified references block, then flags `report contains multiple or variant references sections`.
+  - Search constraint loss:
+    - Initial query preserved `-site:en.wikipedia.org`, but the recovery query did not.
+    - Recovery search results included `https://en.wikipedia.org/wiki/Ring_of_Nestor`, violating the task constraint.
+    - `_recover_unactionable_research()` in `src/agents/memory_manager.py` creates a recovery query directly from objective description, losing explicit search constraints from the original task.
+  - Query quality degradation:
+    - Recovery query text became a generic sentence like `Provide a concise, neutral overview...`, which is worse as a web query than the original tight search phrase.
+  - Cross-language intermediate representation:
+    - `src/prompts/searcher.md`, `src/prompts/analyzer.md`, and the extraction template in `src/agents/searcher.py` all bias the evidence package toward Chinese summaries and statements even when the requested report language is English.
+  - Premature convergence / bounded recovery:
+    - The state summary shows `artifact-overview` remained `blocked_best_effort` with only `0.7` coverage, yet the run stopped with `report_readiness_score=0.666...`.
+    - This suggests the portfolio / convergence logic is willing to stop before the core object identity and scope are adequately resolved.
+- Keep this change? baseline only, no code change
+- Next step plan:
+  - First experiment should target general instruction and constraint preservation, not WLC-specific prose style.
+  - Highest-value minimal bundle:
+    - keep task-level search prohibitions in all follow-up / recovery queries;
+    - make search extraction language-aware so English tasks produce English evidence summaries;
+    - stop Reporter/compiler reference-section duplication at the contract boundary.
+
+## Experiment 1: Task-constraint propagation and report contract alignment
+
+- Output directories:
+  - `outputs/wlc_report6`
+  - `outputs/wlc_report7`
+- Code version / diff summary:
+  - `src/agents/memory_manager.py`
+    - propagate `language` and `excluded_domains` into `prepare_search()`
+    - preserve site exclusions in recovery queries
+  - `src/agents/searcher.py`
+    - parse structured search task payload
+    - make extraction output language follow the task language
+    - compact search output around raw tool payloads instead of only free-form summaries
+  - `src/tools/search_tools.py`
+    - filter returned results against explicit `-site:...` query exclusions
+  - `src/prompts/reporter.md`
+    - explicitly forbid Reporter-authored `References` sections
+  - `src/tools/report_tools.py`
+    - ignore Reporter-authored `References` sections during structured compilation
+- Hypothesis:
+  - The current system is losing explicit task constraints between planning, search dispatch, and recovery.
+  - Reporter/compiler contract mismatch is causing avoidable `revision_requested=true` even when the prose itself is otherwise usable.
+  - English WLC tasks are being degraded by cross-language intermediate extraction.
+- Run commands:
+  - `uv run python test_wlc.py --output-path outputs/wlc_report6 --sample-size 1 --seed 42 -r 50`
+  - `uv run python test_wlc.py --output-path outputs/wlc_report7 --sample-size 1 --seed 42 -r 50`
+- Scores:
+  - No complete official WLC score recorded in this experiment stage.
+  - `wlc_report6` and `wlc_report7` were used as path/constraint diagnostics rather than stable end-to-end scoring runs.
+- Report quality / instruction-following observations:
+  - Positive signal:
+    - In `wlc_report6` and early `wlc_report7`, `prepare_search()` now emitted structured task payloads that explicitly carried:
+      - `language`
+      - `excluded_domains=["en.wikipedia.org"]`
+      - literal query strings with `-site:en.wikipedia.org`
+    - Serper calls in both runs used the literal excluded-domain query text.
+  - Positive signal:
+    - The Reporter/compiler duplicate-References failure path was removed at the contract layer, so future reporter submissions should no longer be soft-failed solely for adding a `References` section.
+  - Remaining failure:
+    - `wlc_report7` showed that the web-search LLM still reformulated some Tavily follow-up queries without the original `-site:` term.
+    - Once the LLM rewrote the query, Tavily returned `https://en.wikipedia.org/wiki/Ring_of_Nestor` again, despite the initial literal query being compliant.
+- Evidence for likely bottlenecks:
+  - The search-stage LLM remained able to violate hard search constraints by rewriting the query text before tool calls.
+  - Query exclusions embedded only in prompt instructions are not strong enough; they must survive as deterministic tool inputs.
+- Keep this change?
+  - Partially yes.
+  - Keep:
+    - task payload parsing
+    - language propagation
+    - structured exclusion metadata
+    - report References contract fix
+    - tool-level exclusion filtering
+  - Do not treat the search-stage prompt-only exclusion preservation as sufficient.
+- Next step plan:
+  - Remove the LLM’s ability to rewrite search queries inside `web_search`.
+  - Make the search stage deterministic and feed raw tool payloads directly to extraction.
+
+## Experiment 2: Deterministic search dispatch and URL-derived exclusions
+
+- Output directories:
+  - `outputs/wlc_report8`
+  - `outputs/wlc_report9`
+- Code version / diff summary:
+  - `src/agents/searcher.py`
+    - replaced LLM-mediated web search dispatch with deterministic direct calls to `serper_search` and `tavily_search`
+    - passed raw search tool payloads directly into the extraction step
+  - `src/agents/memory_manager.py`
+    - extended excluded-domain extraction to read domains from forbidden URLs in task text (e.g. `https://en.wikipedia.org/...`)
+- Hypothesis:
+  - Search constraints should be enforced as deterministic tool inputs, not delegated to a sub-agent prompt.
+  - Even when the planner rewrites a task from `-site:...` into natural-language prohibitions plus a forbidden URL, the system should recover the excluded domain and append it back into the actual search query.
+- Run commands:
+  - `uv run python test_wlc.py --output-path outputs/wlc_report8 --sample-size 1 --seed 42 -r 50`
+  - `uv run python test_wlc.py --output-path outputs/wlc_report9 --sample-size 1 --seed 42 -r 50`
+  - `uv run python - <<'PY' ... _extract_excluded_domains(\"Do not access https://en.wikipedia.org/wiki/Ring_of_Nestor ...\") ... PY`
+- Scores:
+  - No valid end-to-end score recorded yet.
+  - `wlc_report9` was interrupted after saving a fallback report and is not a meaningful quality measurement.
+- Report quality / instruction-following observations:
+  - `wlc_report8` provided the key negative evidence for this stage:
+    - once the planner paraphrased the prohibition into natural language and a forbidden URL, `excluded_domains` became empty, so actual search tool inputs lost `-site:en.wikipedia.org`
+    - raw Tavily payloads then clearly contained Wikipedia results
+  - After the URL-derived exclusion patch, direct unit-style verification returned:
+    - `_extract_excluded_domains("Do not access https://en.wikipedia.org/wiki/Ring_of_Nestor ...") == ["en.wikipedia.org"]`
+  - `wlc_report9` was interrupted too early for a meaningful report comparison, but it did confirm that interruption can force the run into a trivial fallback report (`No verifiable findings are available.`), so interrupted runs must not be scored.
+- Evidence for likely bottlenecks:
+  - The remaining issue is no longer “searcher prompt forgot the rule”; it is specifically that upstream paraphrases can strip executable exclusion syntax, so downstream must reconstruct it from task text.
+  - End-to-end validation is still expensive and easy to contaminate by manual interruption; next scoring run should be allowed to finish unattended or be instrumented with a shorter deterministic smoke test first.
+- Keep this change?
+  - Yes, keep the deterministic search dispatch and URL-derived domain extraction.
+- Next step plan:
+  - Re-run a clean unattended single-sample diagnostic after the URL-derived exclusion patch and confirm:
+    - actual Serper/Tavily tool inputs contain `-site:en.wikipedia.org`
+    - run logs contain no Wikipedia result URLs
+    - the report completes without fallback/interruption
+  - Only then resume score-based comparisons.
+
+## Experiment 3: Subject-resolution-first initial planning
+
+- Output directory:
+  - `outputs/wlc_report11`
+- Code version / diff summary:
+  - `src/prompts/memory_manager_prompts.py`
+    - planner prompt now tells the system to resolve the exact referent and scope of a quoted named subject before committing to one interpretation
+  - `src/agents/memory_manager.py`
+    - prepend a conservative subject-resolution query when the request centers on a quoted named subject and the research contract contains identity/scope objectives
+- Hypothesis:
+  - The planner is overcommitting too early to one candidate interpretation of `Ring of Nestor`, which causes retrieval to drift into Griffin Warrior / Pylos neighbor material before the system has firmly resolved which artifact the report is actually about.
+- Run command:
+  - `uv run python test_wlc.py --output-path outputs/wlc_report11 --sample-size 1 --seed 42 -r 50`
+- Scores:
+  - No complete official score recorded.
+  - This run was used as a diagnostic and intentionally stopped after the research-stage evidence was sufficient to identify the next bottleneck.
+- Report quality / instruction-following observations:
+  - Positive signal:
+    - `init_research` created an explicit identity/scope objective and started with a more conservative query (`q1`) focused on the named object itself rather than immediately assuming the Griffin Warrior / Pylos interpretation.
+    - Wikipedia exclusion remained present in actual search tool inputs.
+  - Negative signal:
+    - the planner still generated a `must` objective for article structure/citations and, because it was not covered by an initial research query, `init_research()` converted that writing constraint into a literal search query (`q4`)
+    - `q4` immediately produced an empty search result and returned to `pending`, proving the system was wasting search budget on non-research work
+  - Mid-run evidence:
+    - `q1` sufficiency reached `0.4`
+    - `identity-scope` objective reached roughly `coverage=0.4`, `confidence=0.6`
+    - this was a meaningful improvement over earlier runs where subject identity remained barely resolved
+- Evidence for likely bottlenecks:
+  - Subject-resolution-first helped, but the research loop still conflated:
+    - research objectives that require evidence gathering
+    - generation/review objectives that should be enforced during writing or final audit
+  - The system was still able to spend search rounds on article-format objectives, which would depress breadth and overall writing quality indirectly by reducing available budget for actual evidence gathering.
+- Keep this change?
+  - Yes.
+  - The subject-resolution-first behavior improved the early query mix and exposed the next bottleneck clearly.
+- Next step plan:
+  - Separate research objectives from generation/review objectives so article structure and citation-format constraints stop becoming search tasks.
+
+## Experiment 4: Separate research objectives from generation/review objectives
+
+- Output directories:
+  - `outputs/wlc_report12`
+  - `outputs/wlc_report13`
+- Code version / diff summary:
+  - `src/agents/memory_manager.py`
+    - added a heuristic distinction between:
+      - research objectives that should drive search / evidence collection
+      - generation/review objectives that should be enforced later during writing or audit
+    - excluded generation/review objectives from:
+      - initial coverage requirements
+      - auto-generated missing initial queries
+      - targeted recovery queries
+      - report-readiness gating based on research convergence
+- Hypothesis:
+  - The system should not search for article structure, references formatting, or neutral-style compliance; those are output constraints, not web-retrieval tasks.
+- Run commands:
+  - `uv run python test_wlc.py --output-path outputs/wlc_report12 --sample-size 1 --seed 42 -r 50`
+  - `uv run python test_wlc.py --output-path outputs/wlc_report13 --sample-size 1 --seed 42 -r 50`
+- Scores:
+  - No complete official score recorded.
+  - These were diagnostic runs focused on query selection and portfolio behavior.
+- Report quality / instruction-following observations:
+  - `wlc_report12`
+    - `init_research` created only three research queries (`q1`, `q2`, `q3`)
+    - the previous bogus article-structure search query disappeared
+    - first-pass sufficiency improved to approximately:
+      - `q1 = 0.8`
+      - `q2 = 0.7`
+      - `q3 = 0.6`
+    - this was materially healthier than the earlier run with an empty `q4`
+  - Remaining issue exposed by `wlc_report12`:
+    - `evaluate_research_portfolio` still returned `report_readiness_score = 0.0` in a state where one research objective was already marked `satisfied`
+    - this suggested that some downstream evaluation logic was still reading the wrong set of graph nodes
+  - `wlc_report13`
+    - after an initial attempt to scope objectives by node property, `evaluate_research_portfolio` returned `objectives: []` and `report_readiness_score = 1.0`
+    - that proved the objective-parenting assumption was wrong: objective ownership is carried by graph edges, not a stable `query_id` field on the node payload
+- Evidence for likely bottlenecks:
+  - The research-vs-generation split was directionally correct and removed wasted search work.
+  - But goal-scoped graph reads were still incorrect, so convergence and readiness could be silently computed from the wrong slice of the graph.
+- Keep this change?
+  - Yes, keep the research-vs-generation objective split.
+  - Do not keep the intermediate objective scoping by node property alone; it was incomplete and was superseded by the next patch.
+- Next step plan:
+  - Scope objectives, queries, gaps, and conflicts to the current `user_request` subgraph using graph edges, then verify that portfolio evaluation returns the correct current-goal objective list.
+
+## Experiment 5: Goal-scoped portfolio / convergence reads
+
+- Output directory:
+  - `outputs/wlc_report14`
+- Code version / diff summary:
+  - `src/agents/memory_manager.py`
+    - added current-goal helper views for:
+      - queries under the active `user_request`
+      - objectives attached by `HAS_OBJECTIVE`
+      - gaps owned by those queries
+      - conflicts produced by those queries
+    - switched `get_next_actions()`, `evaluate_research_portfolio()`, `assess_convergence()`, and report-context export to read from the current goal subgraph instead of broad global searches
+- Hypothesis:
+  - Convergence and report readiness were being distorted because key workflow stages were reading global graph state or incorrectly scoped objective sets instead of the active goal's subgraph.
+- Run command:
+  - `uv run python test_wlc.py --output-path outputs/wlc_report14 --sample-size 1 --seed 42 -r 50`
+- Scores:
+  - No complete official score recorded.
+  - This run was stopped after the goal-scoped portfolio behavior was confirmed.
+- Report quality / instruction-following observations:
+  - `evaluate_research_portfolio` now returned the actual current-goal objective list instead of `[]`
+  - selected/deferred gaps were also chosen from the current goal's query tree, confirming the subgraph scoping patch was taking effect
+  - the writing-style objective (`article-structure-style`) remained present as an objective, but it no longer produced a synthetic search query
+
+## Experiment 6: Expand first-pass subject coverage
+
+- Output directory:
+  - `outputs/wlc_report15`
+- Code version / diff summary:
+  - `src/prompts/memory_manager_prompts.py`
+    - initial planner prompt now explicitly says that a single named-subject article with multiple deliverables must not collapse all must-objectives into one generic catch-all query
+  - `src/agents/memory_manager.py`
+    - added fallback logic that detects single quoted-subject tasks and injects extra objective-specific initial queries when the planner returns too few
+    - kept the added queries focused on research objectives only, not writing/review objectives
+- Hypothesis:
+  - Even after subject-resolution-first planning, the first round was still too brittle because the planner often emitted only one broad search query.
+  - For named-subject article tasks, forcing multiple focused first-pass research queries should improve breadth and reduce early drift before recovery/gap expansion begins.
+- Run commands:
+  - `uv run python test_wlc.py --output-path outputs/wlc_report15 --sample-size 1 --seed 42 -r 50`
+  - `uv run python scripts/generate_json.py -i /mnt/h/DeepResearch/GraphResearcher/outputs/wlc_report15/Ring_of_Nestor.md -o /mnt/h/projects/Wiki_Live_Challenge/tmp/wlc_report15_eval_json/Ring_of_Nestor.json --steps extract,fetch -v`
+  - `uv run python scripts/run_evaluation.py writing --gen /mnt/h/projects/Wiki_Live_Challenge/tmp/wlc_report15_eval_json/Ring_of_Nestor.json --gt /mnt/h/projects/Wiki_Live_Challenge/data/2025_Mar_Nov/wiki_data/cleaned_data/article/Ring_of_Nestor.md -o /mnt/h/projects/Wiki_Live_Challenge/tmp/wlc_report15_eval/writing`
+  - `uv run python scripts/run_evaluation.py verifiability --gen /mnt/h/projects/Wiki_Live_Challenge/tmp/wlc_report15_eval_json/Ring_of_Nestor.json --gt /mnt/h/projects/Wiki_Live_Challenge/data/2025_Mar_Nov/wiki_data/cleaned_data/article/Ring_of_Nestor.md -o /mnt/h/projects/Wiki_Live_Challenge/tmp/wlc_report15_eval/verifiability --max-workers 20`
+  - `uv run python scripts/run_evaluation.py citation --gen /mnt/h/projects/Wiki_Live_Challenge/tmp/wlc_report15_eval_json/Ring_of_Nestor.json -o /mnt/h/projects/Wiki_Live_Challenge/tmp/wlc_report15_eval/citation --max-workers 10`
+- Scores:
+  - Writing overall: `0.00`
+  - Well-written: `0.00`
+  - Broad: `0.00`
+  - Neutral: `0.00`
+  - Gen supported by Wiki: `0.3333`
+  - Gen conflict with Wiki: `0.0000`
+  - Wiki covered by Gen: `0.0825`
+  - Citation support: `0.6667`
+  - Citation conflict: `0.0000`
+- Report quality / instruction-following observations:
+  - Positive signal:
+    - `init_research` now emitted three distinct first-pass queries instead of one umbrella query:
+      - a general scholarly query
+      - a physical-description query
+      - a discovery/provenance query
+    - all three were actually dispatched with `-site:en.wikipedia.org` preserved in the tool inputs
+  - Positive signal:
+    - compared with `wlc_report5`, the single-sample official verifiability metrics improved materially:
+      - `Gen supported by Wiki`: `0.1250 -> 0.3333`
+      - `Wiki covered by Gen`: `0.0103 -> 0.0825`
+      - `Gen conflict with Wiki`: `0.0750 -> 0.0000`
+  - Negative signal:
+    - writing stayed at `0` across all three writing categories
+    - the report became structurally fuller, but it was still judged worse than the benchmark article on every writing criterion
+  - Concrete evidence for the remaining bottleneck:
+    - the article heavily overuses weak or hard-to-verify sources in core sections:
+      - Facebook
+      - Reddit
+      - ResearchGate abstract pages
+      - Scribd
+    - the lead and several body sections cite too many sources at once and mix strong and weak evidence in the same paragraph
+    - the article gives too much space to meta-level uncertainty, social-media descriptions, and “popular accounts”, which harms:
+      - focus
+      - coverage of core topic details
+      - neutral encyclopedic tone
+      - citation support
+    - official citation evaluation confirms the problem:
+      - several citations were marked `not_support` simply because the fetched page was a login/security wrapper rather than the underlying content
+      - citation support fell from the baseline `0.7250` to `0.6667`
+  - Additional workflow issue exposed in logs:
+    - one `expand_gaps` call targeted a malformed parent query id and returned `Query q3 is not awaiting expansion`
+    - this did not prevent report completion in this run, but it is likely a separate correctness issue worth revisiting
+- Keep this change?
+  - Partially yes.
+  - Keep the multi-query initial coverage patch, because it improved first-pass breadth and official verifiability.
+  - Do not treat it as sufficient for WLC writing quality; the new bottleneck is source-quality-aware evidence selection and citation binding during report generation.
+- Next step plan:
+  - Add source-quality-aware report evidence selection so Reporter defaults to a small preferred subset of higher-value sources instead of inheriting every transitive source around a claim
+  - Update Reporter instructions to:
+    - prioritize `must` objectives and high-importance sections
+    - prefer scholarly / institutional / catalog sources for core factual paragraphs
+    - relegate weak public or social sources to explicitly limited uses
+    - keep citations concise per paragraph
+
+## Experiment 7: Report-source pruning attempt exposed runtime query-instability
+
+- Output directory:
+  - `outputs/wlc_report16`
+- Code version / diff summary:
+  - `src/tools/report_tools.py`
+    - added source-quality scoring and access-risk heuristics for report-time source ranking
+    - `get_report_evidence()` now returns a smaller default `source_ids` subset plus `all_source_ids` and `source_profiles`
+  - `src/prompts/reporter.md`
+    - instructed Reporter to:
+      - prioritize `must` objectives
+      - prefer stronger scholarly/institutional sources for core facts
+      - keep citations concise
+      - avoid expanding weakly supported side topics into standalone sections
+  - `src/agents/memory_manager.py`
+    - added explicit logging of `initial_queries` immediately before query-node creation:
+      - `[init_research selected_queries] ...`
+- Hypothesis:
+  - If Reporter sees a cleaner default citation subset and clearer source-priority rules, it should reduce login-gated/social citations and improve both writing quality and citation support.
+- Run command:
+  - `uv run python test_wlc.py --output-path outputs/wlc_report16 --sample-size 1 --seed 42 -r 50`
+- Scores:
+  - No valid official score recorded.
+  - This run was interrupted and must not be used for quality comparison.
+- Report quality / instruction-following observations:
+  - The run exposed a higher-priority runtime inconsistency before the Reporter-layer change could be evaluated fairly:
+    - `init_research result` created only one initial query:
+      - `"Ring of Nestor" museum collection current location catalog`
+    - the run then treated that single query as sufficient enough to keep cycling around convergence with many `must` objectives still barely covered
+    - after interruption, the system fell back to an evidence-style outline rather than a valid structured article
+  - The saved fallback report confirms this was not a comparable WLC article sample:
+    - it consists of one evidence section headed by the raw query text
+    - the state summary shows `report_delivery_mode = evidence_fallback`
+    - `report_validation_issues` include `Reporter submitted no valid structured report`
+- Evidence for the actual bottleneck:
+  - A direct no-DB monkeypatched reproduction of `MemoryManager.init_research()` with the same parsed objective shape created four queries, not one:
+    - identity/scope
+    - discovery/context
+    - description/iconography
+    - interpretation/significance
+  - Therefore:
+    - the Python selection logic itself is behaving as expected in isolation
+    - the real run is losing or bypassing the expanded initial query set somewhere in the runtime path
+  - This makes `wlc_report16` a diagnostic failure of the runtime workflow, not a valid measurement of the new reporter/source-pruning change.
+- Keep this change?
+  - Keep the source-pruning and reporter-priority changes for now.
+  - Do not draw any quality conclusion from `wlc_report16` until the runtime initial-query inconsistency is resolved.
+- Next step plan:
+  - Use the new `[init_research selected_queries]` log line on the next run to compare:
+    - planner raw output
+    - pre-creation selected query list
+    - final `init_research result`
+  - Identify where the extra initial queries disappear in the real run before resuming clean writing-quality comparisons.
+  - `report_readiness_score` remained `0.0` in this sample because none of the research objectives had yet crossed the satisfied threshold, so the zero value was at least structurally plausible again
+- Evidence for likely bottlenecks:
+  - The next most likely limiter is now upstream planning quality, not graph bookkeeping:
+    - in several runs the planner still collapsed too much of the task into only one broad initial query
+    - this under-seeds breadth and forces the system to recover coverage later through gap expansion
+  - The writing-style objective is still entering the research contract, even though it no longer drives search; that may still blur portfolio reasoning unless it is explicitly tagged or handled in a separate write-stage contract.
+- Keep this change?
+  - Yes.
+  - Goal-scoped graph reads are a general correctness improvement and reduce hidden cross-goal contamination risk.
+- Next step plan:
+  - Prioritize a planning-stage improvement so the initial candidate set more reliably covers multiple research objectives with distinct evidence intents, instead of starting from one overly broad query.
+  - Then add a later-stage write/review contract so article-style constraints remain enforceable without entering research coverage metrics.
+
+## Experiment 8: Preserve fuller task structure into `init_research`
+
+- Output directory:
+  - `outputs/wlc_report17`
+- Code version / diff summary:
+  - `src/prompts/orchestrator.md`
+    - strengthened instruction to pass the full substantive task into `init_research(user_request)` instead of compressing it to a generic topic request
+  - `src/tools/graph_manager_tools.py`
+    - updated `init_research` tool docstring to preserve rubric facets, banned sources, and citation/format constraints
+  - `src/prompts/memory_manager_prompts.py`
+    - clarified that explicit content facets and rubric headings should become distinct report-level research objectives when they require different evidence
+- Hypothesis:
+  - If the orchestrator preserves more of the WLC task contract, the planner should produce more realistic research objectives and broader initial query coverage.
+- Run command:
+  - `uv run python test_wlc.py --output-path outputs/wlc_report17 --sample-size 1 --seed 42 -r 1`
+- Scores:
+  - Not officially scored. This was a control-path diagnostic run.
+- Report quality / instruction-following observations:
+  - Positive:
+    - the `init_research` call no longer collapsed to a bare “write about Ring of Nestor” request
+    - the request preserved Wikipedia-style, neutrality, and citation constraints
+  - Negative:
+    - despite better upstream preservation, `init_research` still selected only one broad research query in that run
+    - the selected query still leaned toward Pylos / Griffin Warrior context too early
+- Evidence for bottleneck:
+  - The problem was no longer “orchestrator erased the task entirely”
+  - The next bottleneck moved into objective classification and initial-query selection inside `memory_manager`
+- Keep this change?
+  - Yes.
+  - It is a general task-contract preservation improvement and made later diagnostics much clearer.
+- Next step plan:
+  - Fix the planner’s tendency to misclassify research objectives as write-only constraints and under-seed multi-facet initial research.
+
+## Experiment 9: Repair research-vs-writing objective classification and initial query coverage
+
+- Output directory:
+  - `outputs/wlc_report19`
+- Code version / diff summary:
+  - `src/agents/memory_manager.py`
+    - `_is_generation_objective()` now classifies using objective key/description/text only, instead of treating citation-bearing acceptance criteria as evidence that an objective is “write-only”
+    - `_ensure_subject_query_coverage()` now prioritizes wholly uncovered research objectives before adding focused queries for already-covered umbrella objectives
+  - `tests/test_marginal_portfolio.py`
+    - added regression checks for:
+      - citation-bearing research objectives staying research objectives
+      - named-subject article tasks expanding beyond one broad initial query
+- Hypothesis:
+  - If research objectives mentioning citations are no longer misclassified as writing objectives, the planner will keep identity / interpretation / scope objectives in the search contract and seed multiple meaningful initial queries.
+- Run command:
+  - `uv run python test_wlc.py --output-path outputs/wlc_report19 --sample-size 1 --seed 42 -r 1`
+- Scores:
+  - Not officially scored. The run exposed a later control-flow defect before normal completion.
+- Report quality / instruction-following observations:
+  - Strong positive signal:
+    - `init_research` created a materially better contract:
+      - `identity-scope`
+      - `discovery-context`
+      - `description-imagery`
+      - `cultural-historical`
+      - `interpretation-debate`
+      - plus supporting `should` objectives
+    - initial query set widened from one broad query to three distinct entry points
+    - the first successful query finally hit actual Ring-of-Nestor scholarship, including authenticity and iconography papers, instead of drifting directly into Griffin Warrior / Pylos material
+  - New failure:
+    - after the improved research pass, the run hit a convergence/control-flow issue and did not cleanly finish the normal report path
+- Evidence for bottleneck:
+  - This experiment strongly supports the hypothesis that earlier low-quality reports were often about the wrong object because the planner never resolved topic identity first
+  - The remaining blocker shifted from research quality to convergence-state handling
+- Keep this change?
+  - Yes.
+  - It is a general capability improvement in instruction following and research planning, not a WLC-specific hardcode.
+- Next step plan:
+  - Fix the `goal_id=None` convergence path so improved multi-query research can actually reach Reporter reliably.
+
+## Experiment 10: Fix `assess_convergence(goal_id=None)` fallback to current goal
+
+- Output directory:
+  - `outputs/wlc_report19`
+- Code version / diff summary:
+  - `src/agents/memory_manager.py`
+    - `assess_convergence()` now resolves the current goal first when `goal_id` is omitted, then uses the resolved goal id consistently for query discovery, conflict reads, budget checks, and goal-state updates
+  - `tests/test_tree_state_machine.py`
+    - added a regression check that `mm.assess_convergence()` works with no explicit `goal_id` when a current goal exists
+- Hypothesis:
+  - If convergence resolves the active goal the same way other state helpers already do, improved research runs will no longer fail with a false `research has no Query nodes`.
+- Run commands:
+  - `PYTHONPATH=src uv run python tests/test_tree_state_machine.py`
+  - `PYTHONPATH=src uv run python tests/test_marginal_portfolio.py`
+- Scores:
+  - No benchmark score. Code-path regression repair only.
+- Report quality / instruction-following observations:
+  - The failure mode in `wlc_report19` was traced to a real bug, not noise:
+    - orchestrator called `assess_convergence({'goal_id': None})`
+    - `assess_convergence()` then called `_goal_queries(None)` and falsely concluded there were no queries
+  - Scripted regressions now pass for both:
+    - marginal portfolio helpers
+    - tree-state-machine convergence with and without explicit goal id
+- Keep this change?
+  - Yes.
+  - It is a correctness fix for the general state machine.
+- Next step plan:
+  - Re-run a fresh single-sample diagnostic to confirm the stronger research path now reaches Searcher and Reporter cleanly.
+
+## Experiment 11: Recover banned-source exclusions from raw task text
+
+- Output directory:
+  - `outputs/wlc_report21`
+- Code version / diff summary:
+  - `src/agents/memory_manager.py`
+    - `_extract_excluded_domains()` now:
+      - recognizes prohibition cues like `do not`, `must not`, `without consulting`, `without accessing`
+      - restores `wikipedia.org` when the task bans Wikipedia in natural language
+      - restores URL host exclusions from banned URLs even when the planner fails to preserve explicit `-site:` terms
+  - `tests/test_marginal_portfolio.py`
+    - added regression check that a banned Wikipedia URL in task text yields both `wikipedia.org` and `en.wikipedia.org` exclusions
+- Hypothesis:
+  - If domain exclusions are recovered from the raw user task instead of relying on the planner to preserve them perfectly, the search stage will remain compliant even when `init_research` paraphrases the request.
+- Run command:
+  - `uv run python test_wlc.py --output-path outputs/wlc_report21 --sample-size 1 --seed 42 -r 1`
+- Scores:
+  - Not officially scored. Constraint-propagation diagnostic only.
+- Report quality / instruction-following observations:
+  - Positive:
+    - the recovered exclusions now reach the real Searcher task
+    - observed Searcher input:
+      - query text included `-site:wikipedia.org -site:en.wikipedia.org`
+      - `excluded_domains` included both `wikipedia.org` and `en.wikipedia.org`
+    - the planner also produced a much stronger five-query initial research front:
+      - identity
+      - discovery/provenance
+      - physical description/dating
+      - cultural context/significance
+      - interpretations/debates
+  - Remaining issue:
+    - orchestrator-side compression is still somewhat stochastic across runs, even though downstream recovery is now noticeably more robust
+- Keep this change?
+  - Yes.
+  - This is a general instruction-following and safety/compliance improvement.
+- Next step plan:
+  - Run a fresh higher-budget single-sample article generation and official single-article WLC scoring on the new path
+  - If writing and coverage materially improve, promote to a larger-sample and then full official benchmark run
+
+## Experiment 12: Force a truly conservative named-subject disambiguation query
+
+- Output directory:
+  - `outputs/wlc_report23`
+- Code version / diff summary:
+  - `src/agents/memory_manager.py`
+    - `_subject_resolution_query()` no longer treats any existing query containing a loose identity keyword as “good enough”; it now adds the canonical conservative query unless that exact query text already exists
+    - `_ensure_subject_query_coverage()` now re-injects the conservative subject-resolution query after greedy initial-query selection, so a catch-all planner query cannot silently crowd it out
+    - added `_normalize_query_text()` helper for exact query dedupe
+  - `tests/test_subject_resolution_queries.py`
+    - new regression test proving that a misleading identity-flavored query like `"Ring of Nestor" gold ring Pylos ...` does not suppress the safer query `"Ring of Nestor" identity scope provenance discovery authenticity`
+- Hypothesis:
+  - The planner was still skipping the real disambiguation step because it mistook an already over-narrowed query for an adequate identity query.
+  - If the conservative title-first disambiguation query is always preserved, early research will establish which object the task is actually about before discovery/context/iconography branches start deepening, improving breadth, neutrality, and overall report coherence.
+- Verification commands:
+  - `python -m py_compile src/agents/memory_manager.py tests/test_subject_resolution_queries.py`
+  - `PYTHONPATH=src uv run python tests/test_subject_resolution_queries.py`
+  - `PYTHONPATH=src uv run python tests/test_tree_state_machine.py`
+  - `uv run python test_wlc.py --output-path outputs/wlc_report23 --sample-size 1 --seed 42 -r 50`
+- Scores:
+  - `wlc_report23` still running at the time of this entry; official single-article scoring pending.
+- Report quality / instruction-following observations:
+  - Strong positive signal:
+    - `init_research` now explicitly selects:
+      - `"Ring of Nestor" identity scope provenance discovery authenticity`
+    - that query is actually dispatched to Searcher with:
+      - `excluded_domains: ["wikipedia.org", "en.wikipedia.org"]`
+      - no pre-baked Griffin Warrior / Pylos / Mycenaean identity assumption
+    - compared with earlier runs, the system now surfaces mutually inconsistent provenance narratives as evidence to reconcile, instead of flattening them into one false object identity up front
+  - Mid-run portfolio signal:
+    - `identity-scope` and `authenticity-debate` rose to near-satisfied / satisfied states
+    - the remaining weak areas shifted to:
+      - `description-dating`
+      - `inscription-iconography`
+      - `significance-homeric`
+    - this is materially healthier than earlier “wrong object, wrong article” behavior
+  - New issue discovered:
+    - during convergence the orchestrator attempted `expand_gaps` on `q2` after it was no longer awaiting expansion, producing:
+      - `{"error": "Query q2 is not awaiting expansion"}`
+    - the run did continue afterward, so this looks like a state-transition/orchestration rough edge rather than a hard stop
+- Keep this change?
+  - Yes.
+  - It is a general named-subject instruction-following improvement, not a WLC-specific style hack.
+- Next step plan:
+  - Let `wlc_report23` finish and inspect the final article
+  - Run official single-article WLC scoring on the generated `Ring_of_Nestor.md`
+  - If the report is materially better but still bottlenecked, decide between:
+    - fixing the convergence/`expand_gaps` orchestration edge case
+    - improving how report-level “significance / broader context” objectives remain selected instead of being dropped as blocked-best-effort too early
+
+## Experiment 13: Tighten report-stage scope control, intro rendering, and citation compaction
+
+- Output directory:
+  - `outputs/wlc_report24`
+- Code version / diff summary:
+  - `src/tools/report_tools.py`
+    - render `section_type="intro"` as an unheaded lead instead of emitting `## Lead`
+    - compact each block’s citations to a preferred subset of submitted `source_ids` rather than preserving every cited source verbatim
+  - `src/prompts/reporter.md`
+    - require the article to stay centered on one primary named subject
+    - discourage standalone sections for homonymous / edge objects unless the task truly requires disambiguation coverage
+    - discourage methodology / meta sections unless explicitly requested
+    - push weak-source phrasing out of mainline prose unless the task is specifically about public reception or the weakness itself is what needs to be reported
+  - `tests/test_report_delivery.py`
+    - regression coverage for intro-without-heading and weak-source compaction
+- Hypothesis:
+  - Official `writing` failure on `wlc_report23` was dominated by report-stage issues:
+    - invalid headed lead
+    - scope drift into side objects
+    - literature-review / meta framing
+    - overlong mixed-quality citation tails
+- Verification commands:
+  - `python -m py_compile src/tools/report_tools.py tests/test_report_delivery.py`
+  - `PYTHONPATH=src uv run python tests/test_report_delivery.py`
+  - `PYTHONPATH=src uv run python tests/test_report_validation.py`
+  - `uv run python test_wlc.py --output-path outputs/wlc_report24 --sample-size 1 --seed 42 -r 50`
+- Scores:
+  - No completed benchmark score for `wlc_report24` in this work window.
+  - Upstream motivation came from completed official single-article scoring on `wlc_report23`:
+    - `writing`: `0/39`
+    - `citation` support ratio: `61.70%`
+    - `verifiability`:
+      - `Gen supported by Wiki: 35.42%`
+      - `Wiki covered by Gen: 9.28%`
+- Report quality / instruction-following observations:
+  - Local regressions passed:
+    - `ALL REPORT DELIVERY CHECKS PASSED`
+    - `ALL REPORT VALIDATION CHECKS PASSED`
+  - Official `writing` feedback on `wlc_report23` explicitly cited:
+    - `## Lead` being structurally wrong
+    - scope confusion in the lead
+    - undue weight for `Other objects called "Ring of Nestor"`
+    - repetitive / literature-review-like writing
+    - meta phrasing such as `A modern popular summary describes ...`
+  - `wlc_report24` did not reach accepted report generation before this log update, but it provided a new strong diagnosis:
+    - provenance / current-location subqueries still attracted too many weak or inaccessible sources (`facebook`, `academia`, `researchgate`, `scribd`, `pinterest`, `youtube`)
+    - `assess_convergence` stayed in `RESEARCHING` because those provenance / museum-status conflicts remained unresolved
+- Keep this change?
+  - Yes.
+  - It is a general report-quality and instruction-following improvement, not a WLC-only template hack.
+- Next step plan:
+  - Move source-quality control earlier into the search stage so weak provenance/location evidence stops dominating research convergence.
+
+## Experiment 14: Re-rank search results toward academic and institutional sources before extraction
+
+- Output directory:
+  - `outputs/wlc_report25`
+- Code version / diff summary:
+  - `src/tools/search_tools.py`
+    - added domain-quality scoring and stable reranking
+    - deprioritize `facebook`, `instagram`, `pinterest`, `reddit`, `researchgate`, `scribd`, `academia`, `youtube`
+    - boost `.edu`, `.ac.uk`, museum / academic domains, and direct PDFs
+    - Serper now requests a larger candidate pool before reranking and truncation
+  - `tests/test_search_tool_ranking.py`
+    - regression coverage for result reranking and existing `-site:` exclusion behavior
+- Hypothesis:
+  - `wlc_report24` showed that research was still stalling because provenance/location queries were being seeded with too many social reposts and access-risk mirrors.
+  - If better domains are promoted before extraction, the Searcher should converge on cleaner provenance/location evidence and spend less effort normalizing junk sources.
+- Verification commands:
+  - `python -m py_compile src/tools/search_tools.py tests/test_search_tool_ranking.py`
+  - `PYTHONPATH=src uv run python tests/test_search_tool_ranking.py`
+  - `PYTHONPATH=src uv run python tests/test_report_delivery.py`
+  - `uv run python test_wlc.py --output-path outputs/wlc_report25 --sample-size 1 --seed 42 -r 50`
+- Scores:
+  - No completed benchmark score for `wlc_report25` yet.
+- Report quality / instruction-following observations:
+  - Local regressions passed:
+    - `ALL SEARCH TOOL RANKING CHECKS PASSED`
+    - `ALL REPORT DELIVERY CHECKS PASSED`
+  - `wlc_report25` has been launched, but there is not yet a completed article or score that can be used to judge this change.
+- Keep this change?
+  - Provisionally yes.
+  - The change is generic source-quality prioritization rather than benchmark-specific behavior.
+- Next step plan:
+  - Let `wlc_report25` complete and inspect whether early search payloads now suppress weak domains in the top retained results.
+  - If research still stalls on provenance/location, add query-objective-aware source filtering for core factual objectives instead of relying only on generic domain heuristics.
+
+## Experiment 15: Prioritize direct evidence for reporting and reject weak public-discourse blocks in core sections
+
+- Output directory:
+  - `outputs/wlc_report26`
+- Code version / diff summary:
+  - `src/tools/report_tools.py`
+    - rank `get_report_evidence(...)` items so direct, higher-authority facts are shown before source-centric or public-discourse prose
+    - extend source accessibility penalties to `academia.edu`, `pinterest.com`, and `youtube.com`
+    - add block-level quality checks that soft-reject weak-source public/social-media prose in core sections
+    - keep lead-specific soft feedback when prose is written as source commentary rather than subject-first exposition
+  - `src/prompts/reporter.md`
+    - explicitly forbid strengthening a claim beyond what the cited source directly supports
+  - `tests/test_report_delivery.py`
+    - verify evidence ordering pushes public-discourse text behind core facts
+    - verify weak social/public-discourse blocks are removed from core sections but still allowed in an explicitly relevant reception section
+- Hypothesis:
+  - The main remaining `writing` bottleneck was that the article still read like a source review and still surfaced weak public-discourse material in core factual sections.
+  - If the reporter sees better evidence first and `submit_final_report` explicitly rejects weak-source public-discourse blocks in core sections, the final article should become more encyclopedic and less fragmented.
+- Verification commands:
+  - `python -m py_compile src/tools/report_tools.py tests/test_report_delivery.py`
+  - `PYTHONPATH=src uv run python tests/test_report_delivery.py`
+  - `PYTHONPATH=src uv run python tests/test_report_validation.py`
+  - `uv run python test_wlc.py --output-path outputs/wlc_report26 --sample-size 1 --seed 42 -r 50`
+  - `uv run python scripts/generate_json.py -i /mnt/h/DeepResearch/GraphResearcher/outputs/wlc_report26/_runs/82-Ring_of_Nestor/report.md -o /mnt/h/projects/Wiki_Live_Challenge/tmp/wlc_report26_eval_json_final/Ring_of_Nestor.json --steps extract,fetch -v`
+  - `uv run python scripts/run_evaluation.py writing --gen /mnt/h/projects/Wiki_Live_Challenge/tmp/wlc_report26_eval_json_final/Ring_of_Nestor.json --gt /mnt/h/projects/Wiki_Live_Challenge/data/2025_Mar_Nov/wiki_data/cleaned_data/article/Ring_of_Nestor.md -o /mnt/h/projects/Wiki_Live_Challenge/tmp/wlc_report26_eval_final/writing`
+  - `uv run python scripts/run_evaluation.py citation --gen /mnt/h/projects/Wiki_Live_Challenge/tmp/wlc_report26_eval_json_final/Ring_of_Nestor.json -o /mnt/h/projects/Wiki_Live_Challenge/tmp/wlc_report26_eval_final/citation --max-workers 10`
+  - `uv run python scripts/run_evaluation.py verifiability --gen /mnt/h/projects/Wiki_Live_Challenge/tmp/wlc_report26_eval_json_final/Ring_of_Nestor.json --gt /mnt/h/projects/Wiki_Live_Challenge/data/2025_Mar_Nov/wiki_data/cleaned_data/article/Ring_of_Nestor.md -o /mnt/h/projects/Wiki_Live_Challenge/tmp/wlc_report26_eval_final/verifiability --max-workers 20`
+- Scores:
+  - Final `report.md` official single-article scoring:
+    - `writing`: `3/39` (`7.69%`)
+    - `citation` support ratio: `38.10%`
+    - `verifiability`:
+      - `Gen supported by Wiki: 49.21%`
+      - `Gen conflict with Wiki: 1.59%`
+      - `Wiki covered by Gen: 9.28%`
+  - Compared with the last completed official single-article result (`wlc_report24`):
+    - `writing`: `0/39 -> 3/39`
+    - `citation` support ratio: `57.14% -> 38.10%`
+    - `Gen supported by Wiki`: `38.24% -> 49.21%`
+    - `Gen conflict with Wiki`: `4.41% -> 1.59%`
+    - `Wiki covered by Gen`: `9.28% -> 9.28%`
+  - Important diagnostic note:
+    - scoring the hidden accepted draft `.compiled_report.md` produced a better-but-still-diagnostic result (`writing 7/39`, `citation 58.33%`, `Gen supported by Wiki 52.78%`), indicating nontrivial evaluator variance or extraction sensitivity even when the final prose is nearly the same.
+- Report quality / instruction-following observations:
+  - Local regressions passed:
+    - `ALL REPORT DELIVERY CHECKS PASSED`
+    - `ALL REPORT VALIDATION CHECKS PASSED`
+  - The new report gate fired on the first reporter submission exactly as intended:
+    - `revision_requested=true`
+    - 3 dropped blocks
+    - all 3 issues were `weak_reception_block`
+  - The reporter then resubmitted a clean accepted report with:
+    - `revision_requested=false`
+    - `severity=clean`
+    - `kept_blocks=21`
+  - This is the first run where the system demonstrably used structured report feedback to remove weak public-discourse prose before final acceptance.
+  - `writing` improved materially, but the evaluator still describes the article as:
+    - more like a literature review than a direct encyclopedia entry
+    - too reliant on vague collective attributions such as `scholars have situated` / `later commentary has noted`
+    - weaker than the ground truth at presenting concrete object-level details and named scholarly positions
+  - `citation` failures are now dominated less by social-media prose itself and more by inaccessible or low-yield supporting sources:
+    - `archiv.ub.uni-heidelberg.de` returns an Anubis protection/error page to the evaluator and fails many claims
+    - `journals.librarypublishing.arizona.edu` also failed fetch/evidence checks for several claims
+    - the surviving weak-source claims still include `pinterest`, `facebook`, and `researchgate`
+  - Strong evidence for the next bottleneck:
+    - weak, inaccessible, or snippet-only sources are still entering the graph as if they were normal factual support
+    - the reporter can now remove some of the worst prose that depends on them, but it cannot fully compensate for a noisy evidence base
+- Keep this change?
+  - Yes.
+  - It is a general instruction-following/report-quality improvement and it created the first clear positive movement in official `writing` while also improving verifiability.
+- Next step plan:
+  - Move weak-source triage earlier into search/extraction:
+    - do not let login walls, error pages, search-result pages, snippet-only mirrors, or public/social reposts become normal core factual support
+    - allow them only as explicitly flagged reception/context evidence when the task actually asks for that
+  - Re-run with a fresh directory (`outputs/wlc_report27`) after that focused source-triage change.
+
+## Experiment 16: Fix search-result triage fallback so all-junk result sets do not leak into extraction
+
+- Output directory:
+  - Control run in progress: `outputs/wlc_report27`
+  - Next patched validation run reserved: `outputs/wlc_report28`
+- Code version / diff summary:
+  - `src/agents/searcher.py`
+    - fixed `_filter_search_payload(...)` so it always overwrites `results`, even when every candidate is dropped
+    - expanded low-utility page detection to catch more hosted-shell / platform-summary markers:
+      - `sparkles AI`
+      - `key takeaways`
+      - `related papers`
+      - `uploaded by`
+      - `share this document`
+      - `get our free apps`
+      - `outline`
+  - `tests/test_searcher_result_filtering.py`
+    - now verifies that:
+      - an all-junk payload collapses to `results: []` instead of silently falling back to the original dirty results
+      - Academia/Scribd shell pages are removed
+      - blank unusable payloads are also reduced to `results: []`
+- Hypothesis:
+  - `wlc_report27` logs showed that early source triage helped, but a boundary-condition bug still allowed fully weak result sets to leak unchanged into extraction.
+  - This bug explains why `researchgate`, `facebook`, and `scribd` could still appear in the raw materials even after the first triage patch.
+- Evidence / diagnosis before editing:
+  - In `wlc_report27`:
+    - `pinterest`, `substack`, and `Anubis` error pages no longer dominated the first visible result sets, which is a positive signal from the previous patch.
+    - but `facebook.com`, `researchgate.net`, and `scribd.com` still appeared in raw search payloads
+    - `dropped_results` was present in the same run, proving the filter was active
+  - Code inspection identified the precise leak:
+    - `_filter_search_payload(...)` only replaced `results` when `kept` was non-empty
+    - when every candidate was judged weak, the original dirty payload was returned unchanged
+- Verification commands:
+  - `python -m py_compile src/agents/searcher.py tests/test_searcher_result_filtering.py`
+  - `PYTHONPATH=src uv run python tests/test_searcher_result_filtering.py`
+  - `PYTHONPATH=src uv run python tests/test_report_delivery.py`
+  - `PYTHONPATH=src uv run python tests/test_report_validation.py`
+  - pending fresh sample run after current control run completes:
+    - `uv run python test_wlc.py --output-path outputs/wlc_report28 --sample-size 1 --seed 42 -r 50`
+- Scores:
+  - Control run `wlc_report27` official single-article scoring:
+    - `writing`: `2/39` (`5.13%`)
+    - `citation` support ratio: `36.11%`
+    - `citation` conflict ratio: `5.56%`
+    - `verifiability`:
+      - `Gen supported by Wiki: 30.91%`
+      - `Gen conflict with Wiki: 0.00%`
+      - `Wiki covered by Gen: 9.28%`
+  - Fresh post-patch validation run:
+    - `wlc_report28` launched and still running at the time of this update
+- Report quality / instruction-following observations:
+  - Local regressions passed:
+    - `ALL SEARCHER FILTER CHECKS PASSED`
+    - `ALL REPORT DELIVERY CHECKS PASSED`
+    - `ALL REPORT VALIDATION CHECKS PASSED`
+  - `wlc_report27` completed as the last control run using the older triage behavior.
+  - Official `wlc_report27` failures continue to match the diagnosis that motivated this fix:
+    - `writing` is still near-zero and described as too historiographical / repetitive
+    - `citation` failures are still dominated by inaccessible or over-inferred support, especially:
+      - bibliographic / viewer pages used as if they supported stronger historical conclusions
+      - Academia-hosted claims inferred beyond directly visible text
+  - Early `wlc_report28` run-log signals are encouraging:
+    - no visible `facebook.com`, `researchgate.net`, `scribd.com`, `pinterest.com`, or `substack.com` in the run log so far
+    - no visible `sparkles AI`, `key takeaways`, `Uploaded by`, or `Get our free apps`
+    - `dropped_results` appears in raw search payloads, confirming the stricter triage is active
+    - `academia.edu` still appears in the run log, so platform-hosted academic pages remain a likely next bottleneck even if the worst public/social sources are gone
+- The new patch is intentionally surgical:
+  - no benchmark logic changed
+  - no report-writing prompt changed
+  - no scoring code changed
+  - It directly targets a real observed leakage path rather than layering additional WLC-specific style guidance.
+- Keep this change?
+  - Provisionally yes.
+  - It is a generic evidence-quality and instruction-following fix, pending confirmation from the next fresh sample run.
+- Next step plan:
+  - Let `wlc_report28` finish as the first validation run for the corrected triage fallback.
+  - Score `wlc_report28` officially and compare against `wlc_report27`.
+  - If `academia.edu` still drives unsupported claims, add one more narrow post-extraction sanitizer that drops platform-hosted statements/evidence when the model itself marks them as AI-summary / snippet / full-text-not-visible derived.
+
+## Experiment 17: Prune platform-hosted statement/evidence items when the model itself flags them as summary/snippet-derived
+
+- Output directory:
+  - Existing validation run still in progress: `outputs/wlc_report28`
+  - Next fresh validation run reserved: `outputs/wlc_report29`
+- Code version / diff summary:
+  - `src/agents/searcher.py`
+    - added `_sanitize_evidence_package(...)` before `submit_search_result`
+    - drops extracted statements/evidence when:
+      - the source is still a weak public domain for a non-reception query; or
+      - the source is `academia.edu`, `researchgate.net`, or `scribd.com` and the model’s own limitations mention:
+        - `AI-generated`
+        - `key takeaways`
+        - `AI summary`
+        - `hosting platform`
+        - `full text not visible`
+        - `visible excerpt`
+        - `snippet`
+        - `platform-generated`
+    - prunes orphaned documents/sources and removes conflicts that no longer have at least two supporting evidence refs
+  - `tests/test_searcher_result_filtering.py`
+    - verifies that summary-derived Academia content is removed while clean museum-record content remains
+    - verifies that public-discourse queries can still keep social-post statements when the query is explicitly about reception
+- Hypothesis:
+  - Even after stricter search-result triage, the extraction model can still turn hosted academic shells or abstract-only pages into over-strong object-level claims.
+  - If we remove those items at the package level using the model’s own limitations as evidence, citation precision should improve without injecting WLC-specific style logic.
+- Evidence / diagnosis before editing:
+  - `wlc_report27` citation failures still included many claims supported only by:
+    - `academia.edu` pages whose visible content did not directly support the claim
+    - bibliographic / viewer pages used for stronger historical inferences than the visible page justified
+  - `wlc_report28` early run-log signals are better than `wlc_report27`, but `academia.edu` still appears repeatedly in the raw materials, so it remains a likely residual failure mode.
+- Verification commands:
+  - `python -m py_compile src/agents/searcher.py tests/test_searcher_result_filtering.py`
+  - `PYTHONPATH=src uv run python tests/test_searcher_result_filtering.py`
+  - `PYTHONPATH=src uv run python tests/test_report_delivery.py`
+  - `PYTHONPATH=src uv run python tests/test_report_validation.py`
+  - pending fresh validation run after `wlc_report28`:
+    - `uv run python test_wlc.py --output-path outputs/wlc_report29 --sample-size 1 --seed 42 -r 50`
+- Scores:
+  - Fresh post-patch sample score: pending
+- Report quality / instruction-following observations:
+  - Local regressions passed:
+    - `ALL SEARCHER FILTER CHECKS PASSED`
+    - `ALL REPORT DELIVERY CHECKS PASSED`
+    - `ALL REPORT VALIDATION CHECKS PASSED`
+  - This patch remains generic:
+    - it keys off source type, domain, and the model’s own limitations
+    - it does not mention WLC, Wikipedia style, or benchmark metrics
+    - it narrows the evidence base rather than hard-coding output form
+- Keep this change?
+  - Provisionally yes.
+  - It is a generic evidence-quality safeguard pending validation on a fresh sample run.
+- Next step plan:
+  - Finish and score `wlc_report28`.
+  - Launch `outputs/wlc_report29` with both the corrected triage fallback and the new package sanitizer.
+  - Compare whether:
+    - final references further reduce `academia.edu` dependence
+    - citation support improves without regressing writing/verifiability
+
+## Experiment 18: Preserve partially valid cited blocks and tighten per-block evidence coherence
+
+- Output directory:
+  - Diagnostic run analyzed: `outputs/wlc_report28`
+  - Next fresh validation run reserved: `outputs/wlc_report29`
+- Code version / diff summary:
+  - `src/tools/report_tools.py`
+    - changed `compile_structured_report(...)` so a block is dropped only when it has no valid URL-backed `source_ids`
+    - when a block mixes valid and invalid `source_ids`, it now:
+      - keeps the valid subset
+      - records a soft `invalid_source_ids` issue
+      - continues compiling the block instead of deleting the whole block
+  - `src/prompts/reporter.md`
+    - clarified that one content block may be a natural paragraph, but every sentence in that block must share the same small group of directly supporting sources
+    - explicitly instructs the reporter to split into a new block when provenance claims, scholar attributions, or supporting sources change
+    - reinforces that multiple provenance / attribution claims should usually be written as adjacent short blocks rather than one long paragraph with a citation bundle
+  - `tests/test_report_delivery.py`
+    - added regression coverage proving that a `Lead` block survives when it contains one invalid source id plus one valid source id
+- Hypothesis:
+  - `wlc_report28` revealed that the current report compiler can silently delete crucial sections, including the lead, when a block contains a mixed list of valid and invalid `source_ids`.
+  - The same run also showed many citation failures caused by overly broad mixed-source paragraphs, where multiple provenance or interpretation claims were bundled into one block and then validated against the wrong citation.
+  - Preserving valid blocks and forcing narrower per-block evidence coherence should improve `Well-written`, `Broad`, and `Ref. Acc.` without hard-coding any WLC-only style.
+- Evidence / diagnosis before editing:
+  - `wlc_report28` `submit_final_report` returned:
+    - `accepted: true`
+    - `revision_requested: true`
+    - `retention_ratio: 0.8865`
+    - `kept_sections: 6`
+    - `dropped_sections: 1`
+  - The dropped section was the `Lead`, with the explicit issue:
+    - `section 'Lead' block 1 requires valid URL-backed source_ids`
+  - The resulting `.best_report.md` started directly with `## Discovery and provenance`, so the article had no introductory lead at all.
+  - Diagnostic official single-article scoring on `outputs/wlc_report28/_runs/82-Ring_of_Nestor/.best_report.md` produced:
+    - `writing`: `6/39` (`15.38%`)
+    - `citation` support ratio: `27.91%`
+    - `citation` conflict ratio: `2.33%`
+    - `verifiability`:
+      - `Gen supported by Wiki: 29.79%`
+      - `Gen conflict with Wiki: 0.00%`
+      - `Wiki covered by Gen: 7.22%`
+  - The writing breakdown confirms the missing lead is a major driver:
+    - criteria `3`–`9` all lost because “Article 2 lacks a lead section”
+    - `Broad` stayed `0/8`
+    - judges also criticized:
+      - historiographical / literature-review framing
+      - repeated provenance detail
+      - loosely relevant background on Pylos projects and comparanda
+  - Citation failures further confirm block-level source mixing:
+    - several provenance sentences in one paragraph were all validated against citation `21` (Evans / Heidelberg title page), even when the sentence actually depended on a different thesis or later study
+    - many unsupported sentences were not false in intent, but were paired with the wrong supporting citation because the paragraph bundled multiple provenance claims under one shared citation set
+- Verification commands:
+  - `python -m py_compile src/tools/report_tools.py tests/test_report_delivery.py`
+  - `PYTHONPATH=src uv run python tests/test_report_delivery.py`
+  - `PYTHONPATH=src uv run python tests/test_report_validation.py`
+- Scores:
+  - Diagnostic `wlc_report28` score on `.best_report.md`:
+    - `writing`: `6/39` (`15.38%`)
+    - `citation` support ratio: `27.91%`
+    - `citation` conflict ratio: `2.33%`
+    - `verifiability`:
+      - `Gen supported by Wiki: 29.79%`
+      - `Gen conflict with Wiki: 0.00%`
+      - `Wiki covered by Gen: 7.22%`
+- Report quality / instruction-following observations:
+  - This experiment exposed a generic report-delivery bug, not a benchmark-specific preference:
+    - dropping a valid lead because one bad source id slipped into the block
+    - overloading one paragraph with claims that do not share the same direct evidence set
+  - The prompt change is intentionally general:
+    - it improves instruction following for any citation-sensitive task
+    - it does not tell the agent to imitate Wikipedia’s style beyond what the task itself already requested
+- Keep this change?
+  - Yes.
+  - The compiler-side fix is a robust correctness improvement.
+  - The prompt-side change is a generic citation-binding improvement aligned with the observed failure mode.
+- Next step plan:
+  - Launch `outputs/wlc_report29` as the first fresh sample run that includes:
+    - Experiment 17 evidence-package sanitization
+    - Experiment 18 lead-preservation and block-coherence changes
+  - Score `wlc_report29` officially and compare directly against:
+    - `wlc_report27` control
+    - `wlc_report28` diagnostic `.best_report.md`
+  - If citation failures are still dominated by bibliographic / title / viewer pages, add one more narrow generic safeguard that drops statement-level claims when the model itself marks the visible page as title-page / bibliographic / snippet-only evidence.
+
+## Experiment 19: Bound runtime search-query length before hitting search engines
+
+- Output directory:
+  - Failed diagnostic run: `outputs/wlc_report29`
+  - Next fresh validation run reserved: `outputs/wlc_report30`
+- Code version / diff summary:
+  - `src/agents/searcher.py`
+    - added `_compact_search_query(...)`
+    - enforces a runtime search-query cap of `380` characters before calling `serper_search` / `tavily_search`
+    - preserves `-site:` exclusions while trimming overly long narrative conflict queries to the earliest high-signal sentences
+  - `tests/test_searcher_result_filtering.py`
+    - added regression coverage for the exact long conflict-query shape that previously triggered the Tavily `400`-character limit
+- Hypothesis:
+  - `wlc_report29` did not fail because of report writing; it stalled in research because an expanded conflict query exceeded the search engine's length limit.
+  - A runtime cap at the search-entry point is more robust than patching only one query-generation branch, because it covers initial, expanded, and targeted-recovery queries uniformly.
+- Evidence / diagnosis before editing:
+  - `outputs/wlc_report29/_runs/82-Ring_of_Nestor/run.log` stopped growing without any reporter artifacts.
+  - The concrete failure in the run log was:
+    - `BadRequestError: Query is too long. Max query length is 400 characters.`
+  - The failing query was a long provenance-conflict sentence beginning:
+    - `Resolve conflict: There is an apparent tension between Evans's framing ...`
+  - The same run then fell back into a targeted recovery query for `history-discovery`, but never reached `REPORT_READY` or `submit_final_report`.
+- Verification commands:
+  - `PYTHONPATH=src uv run python tests/test_searcher_result_filtering.py`
+  - `PYTHONPATH=src uv run python tests/test_report_delivery.py`
+  - `PYTHONPATH=src uv run python tests/test_report_validation.py`
+- Scores:
+  - No new benchmark score yet.
+  - `wlc_report29` is treated as an aborted diagnostic run because it exposed a runtime query-length failure before report generation completed.
+- Report quality / instruction-following observations:
+  - This is a generic runtime reliability fix.
+  - It does not encode WLC-specific style or scoring behavior.
+  - It directly addresses a real operational failure that prevented the research loop from completing.
+- Keep this change?
+  - Yes.
+  - It is a low-risk runtime guardrail with direct evidence from `wlc_report29`.
+- Next step plan:
+  - Launch `outputs/wlc_report30` as the first fresh validation run after the runtime query-length cap.
+  - If `wlc_report30` completes, score it officially and compare against `wlc_report28` diagnostic `.best_report.md` and the `wlc_report27` control.
+  - If citation failures remain dominated by bibliographic/title/snippet pages, continue with a narrower statement-level evidence-strength filter rather than broader prompt rewrites.
+
+## Experiment 20: Keep identity objectives open while provenance/authenticity conflicts remain
+
+- Output directory:
+  - Diagnostic run analyzed: `outputs/wlc_report30`
+  - Next fresh validation run reserved: `outputs/wlc_report31`
+- Code version / diff summary:
+  - `src/agents/memory_manager.py`
+    - added identity-objective and identity-conflict detection helpers
+    - changed `evaluate_research_portfolio(...)` so an identity/scope objective cannot be marked `satisfied` while unresolved provenance/authenticity/referent conflicts still exist for the same goal
+    - caps such objective confidence below the normal satisfaction threshold and appends an explicit assessment reason
+  - `tests/test_marginal_portfolio.py`
+    - added regression coverage proving that a high model-reported coverage/confidence score does not satisfy `identity-scope` when an unresolved provenance/authenticity conflict remains
+  - `tests/test_report_delivery.py`
+    - updated the fake graph with `get_query_children(...)` so report-context export stays inside the in-memory test graph after the newer query-tree helpers
+- Hypothesis:
+  - `wlc_report30` proved the runtime search-query cap works, because the previous `Query is too long` failure did not recur.
+  - The run still failed to produce a report because convergence treated the subject identity/scope as satisfied even though fatal provenance/authenticity conflicts continued to block report readiness.
+  - Keeping identity/scope objectives open until those conflicts are resolved or explicitly disclosed should reduce wasted late-stage research loops and prevent the report planner from building on an unstable subject definition.
+- Evidence / diagnosis before editing:
+  - `outputs/wlc_report30/_runs/82-Ring_of_Nestor/run.log` contained no `Query is too long` / `BadRequestError` recurrence.
+  - No `report.md`, `.compiled_report.md`, `.salvaged_report.md`, or `.report_attempt.json` was produced.
+  - The run repeatedly reached `assess_convergence` with `converged=false`.
+  - The same log showed fatal unresolved conflicts about:
+    - whether the Ring of Nestor is disputed/possibly fake or proven authentic
+    - whether its provenance is Mycenae, Kakovatos, or a generic Pylos-area tholos context
+  - Despite those conflicts, the portfolio state still marked `identity-scope` and `terminology-clarity` as `satisfied`, which made the state machine chase lower-value details while the core subject identity remained unstable.
+- Verification commands:
+  - `PYTHONPATH=src uv run python tests/test_marginal_portfolio.py`
+  - `uv --cache-dir /tmp/uv-cache run python tests/test_tree_state_machine.py`
+  - `uv --cache-dir /tmp/uv-cache run python tests/test_report_delivery.py`
+  - `PYTHONPATH=src uv run python tests/test_report_validation.py`
+  - `PYTHONPATH=src uv run python tests/test_searcher_result_filtering.py`
+- Scores:
+  - No benchmark score.
+  - `wlc_report30` is treated as an aborted diagnostic run because it did not produce a report artifact.
+- Report quality / instruction-following observations:
+  - The change is a generic evidence/readiness correction for named-subject tasks.
+  - It does not encode Wikipedia style, WLC metrics, or the Ring of Nestor sample content.
+  - It makes the planner honor the task's own need to define the article subject before drafting.
+- Keep this change?
+  - Yes.
+  - It directly addresses the observed non-convergence failure and is covered by a focused unit regression.
+- Next step plan:
+  - Launch `outputs/wlc_report31` as the first fresh sample run after the identity-conflict readiness gate.
+  - If it produces a report, score it officially and inspect whether lead presence, breadth, and citation binding improve.
+  - If it still fails to converge, inspect whether fatal conflicts should be disclosed as best-effort limitations rather than endlessly retried after targeted resolution has already been attempted.
+
+## Experiment 21: Attempt fresh validation after identity-conflict gate; blocked by local Neo4j service
+
+- Output directory:
+  - Failed environment run: `outputs/wlc_report31`
+  - Next fresh validation run reserved: `outputs/wlc_report32`
+- Code version / diff summary:
+  - Same code as Experiment 20.
+  - No benchmark/scorer/data changes.
+- Hypothesis:
+  - After Experiment 20, a fresh sample run should test whether unresolved provenance/authenticity conflicts keep identity/scope objectives open and produce a cleaner convergence path.
+- Run command:
+  - `uv run python test_wlc.py --output-path outputs/wlc_report31 --sample-size 1 --seed 42 -r 50`
+- Result:
+  - The run failed before Agent execution.
+  - It did not enter research, did not call search/model tools, and produced no report artifact.
+- Failure evidence:
+  - `outputs/wlc_report31/_runs/82-Ring_of_Nestor/run.log` contains:
+    - `neo4j.exceptions.ServiceUnavailable`
+    - `Couldn't connect to localhost:7687`
+    - `Connect call failed ('127.0.0.1', 7687)`
+  - `neo4j status` reports:
+    - `Neo4j is not running`
+  - `/var/lib/neo4j`, `/var/log/neo4j`, and `/etc/neo4j` are owned by `nobody:nogroup`, so the normal user cannot safely start it directly.
+  - A request to run `neo4j start` with elevated permissions was rejected.
+- Verification commands completed before the failed run:
+  - `python -m py_compile src/agents/memory_manager.py src/agents/searcher.py tests/test_marginal_portfolio.py tests/test_report_delivery.py tests/test_searcher_result_filtering.py`
+  - `PYTHONPATH=src uv run python tests/test_marginal_portfolio.py`
+  - `uv --cache-dir /tmp/uv-cache run python tests/test_tree_state_machine.py`
+  - `uv --cache-dir /tmp/uv-cache run python tests/test_report_delivery.py`
+  - `PYTHONPATH=src uv run python tests/test_report_validation.py`
+  - `PYTHONPATH=src uv run python tests/test_searcher_result_filtering.py`
+- Scores:
+  - No benchmark score.
+  - `wlc_report31` is an environment failure, not a model/report-quality result.
+- Keep this change?
+  - Yes.
+  - All local regression tests listed above passed, and the benchmark failure occurred before any changed logic ran.
+- Next step plan:
+  - Restore/start Neo4j on `localhost:7687`.
+  - Launch the next fresh run as `outputs/wlc_report32`.
+  - If `wlc_report32` reaches reporting, score it officially; if it stalls again, diagnose convergence behavior under the new identity-conflict gate.

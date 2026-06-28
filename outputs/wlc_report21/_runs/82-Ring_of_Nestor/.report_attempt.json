@@ -1,0 +1,27 @@
+{
+  "accepted": false,
+  "revision_requested": false,
+  "severity": "hard",
+  "report": "",
+  "salvaged_report": "",
+  "issues": [
+    {
+      "code": "no_valid_sections",
+      "severity": "hard",
+      "section_title": "",
+      "block_index": null,
+      "message": "structured report contains no valid cited sections",
+      "repair_hint": "Rewrite the report with valid section titles and URL-backed citations."
+    }
+  ],
+  "retention_ratio": 0.0,
+  "submitted_sections": 0,
+  "kept_sections": 0,
+  "dropped_sections": 0,
+  "submitted_blocks": 0,
+  "kept_blocks": 0,
+  "dropped_blocks": 0,
+  "section_count": 0,
+  "source_count": 0,
+  "auto_appended_conflict_ids": []
+}

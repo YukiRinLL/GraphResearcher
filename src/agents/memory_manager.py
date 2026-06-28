@@ -18,6 +18,7 @@ import json
 import logging
 import re
 import threading
+from urllib.parse import urlparse
 from typing import Any, Optional
 
 import config
@@ -79,6 +80,26 @@ _GAP_CATEGORIES = {
     "verification",
     "detail",
 }
+_EXCLUDE_DOMAIN_RE = re.compile(
+    r"(?:^|\s)(?:exclude\s*:\s*|-site:|site\s*!=\s*)([A-Za-z0-9.-]+\.[A-Za-z]{2,})(?:\s|$)",
+    re.IGNORECASE,
+)
+_URL_RE = re.compile(r"https?://[^\s)>\]}]+", re.IGNORECASE)
+_QUOTED_SUBJECT_RE = re.compile(r"[\"'“‘]([^\"'”’\n]{2,120})[\"'”’]")
+_PROHIBITION_CUES = (
+    "avoid",
+    "ban",
+    "banned",
+    "do not",
+    "don't",
+    "must not",
+    "prohibit",
+    "prohibited",
+    "without using",
+    "without visiting",
+    "without consulting",
+    "without accessing",
+)
 
 
 class AmbiguousQueryReference(ValueError):
@@ -159,6 +180,404 @@ def _gap_key(description: str) -> str:
     """Return a stable normalized fingerprint for one atomic knowledge gap."""
     normalized = " ".join((description or "").lower().split())
     return hashlib.sha256(normalized.encode("utf-8")).hexdigest()[:20]
+
+
+def _iter_constraint_texts(*values: Any) -> list[str]:
+    """Flatten mixed scalar/list inputs into non-empty text snippets."""
+    texts: list[str] = []
+    for value in values:
+        if isinstance(value, str):
+            stripped = value.strip()
+            if stripped:
+                texts.append(stripped)
+        elif isinstance(value, list):
+            texts.extend(_iter_constraint_texts(*value))
+        elif isinstance(value, dict):
+            texts.extend(_iter_constraint_texts(*value.values()))
+    return texts
+
+
+def _normalize_domain(raw: str) -> str:
+    """Return a lowercase hostname/domain without scheme or path."""
+    text = str(raw or "").strip().lower()
+    if not text:
+        return ""
+    if "://" in text:
+        text = urlparse(text).netloc.lower()
+    text = text.strip().strip("/").split("/", 1)[0]
+    return text.lstrip(".")
+
+
+def _extract_excluded_domains(*values: Any) -> list[str]:
+    """Collect stable domain exclusions from free text and preference lists."""
+    domains: list[str] = []
+    for text in _iter_constraint_texts(*values):
+        lowered = text.lower()
+        for match in _EXCLUDE_DOMAIN_RE.finditer(text):
+            domain = _normalize_domain(match.group(1))
+            if domain and domain not in domains:
+                domains.append(domain)
+        if "wikipedia" in lowered and any(cue in lowered for cue in _PROHIBITION_CUES):
+            if "wikipedia.org" not in domains:
+                domains.append("wikipedia.org")
+        for raw_url in _URL_RE.findall(text):
+            domain = _normalize_domain(raw_url)
+            if not domain:
+                continue
+            url_index = lowered.find(raw_url.lower())
+            prefix = lowered[max(0, url_index - 160): url_index] if url_index != -1 else lowered
+            if any(cue in prefix for cue in _PROHIBITION_CUES) or any(cue in lowered for cue in _PROHIBITION_CUES):
+                if domain not in domains:
+                    domains.append(domain)
+    return domains
+
+
+def _apply_site_exclusions(query_text: str, excluded_domains: list[str]) -> str:
+    """Append missing ``-site:domain`` constraints to a search query."""
+    query = " ".join(str(query_text or "").split()).strip()
+    if not query:
+        return query
+    suffixes = [
+        f"-site:{domain}"
+        for domain in excluded_domains
+        if domain and f"-site:{domain}" not in query.lower()
+    ]
+    return " ".join([query, *suffixes]).strip()
+
+
+def _extract_named_subject(user_request: str) -> Optional[str]:
+    """Return the first quoted subject-like span from the request, if any."""
+    text = str(user_request or "")
+    lowered = text.lower()
+    if not any(token in lowered for token in (" about ", " article ", " report ", " write ", " on ")):
+        return None
+    match = _QUOTED_SUBJECT_RE.search(text)
+    if not match:
+        return None
+    subject = " ".join(match.group(1).split()).strip()
+    return subject or None
+
+
+def _identity_objective_keys(objectives: list[dict]) -> list[str]:
+    """Return objective keys related to subject identity, scope, or disambiguation."""
+    keys: list[str] = []
+    for objective in objectives:
+        haystack = " ".join(
+            str(objective.get(field) or "")
+            for field in ("objective_key", "description", "text")
+        ).lower()
+        if any(token in haystack for token in (
+            "ident", "scope", "referent", "disambigu", "what the",
+            "定义", "范围", "指代", "辨",
+        )):
+            key = objective.get("objective_key")
+            if key and key not in keys:
+                keys.append(key)
+    return keys
+
+
+def _is_identity_objective(objective: dict[str, Any]) -> bool:
+    """Return whether one objective is about subject identity, scope, or referent."""
+    return bool(_identity_objective_keys([objective]))
+
+
+def _is_identity_conflict(conflict: dict[str, Any]) -> bool:
+    """Return whether one unresolved conflict threatens subject identity or scope."""
+    haystack = " ".join(
+        str(conflict.get(field) or "")
+        for field in ("description", "conflict_type")
+    ).lower()
+    return any(token in haystack for token in (
+        "authentic",
+        "authenticity",
+        "fake",
+        "forg",
+        "genuine",
+        "identity",
+        "provenance",
+        "provenience",
+        "referent",
+        "scope",
+        "origin",
+        "mycenae",
+        "kakovatos",
+        "what the artifact is",
+        "where it comes from",
+        "真伪",
+        "来源",
+        "指代",
+        "范围",
+    ))
+
+
+def _looks_like_identity_query(text: str, subject: str) -> bool:
+    """Return whether a query already looks like a conservative subject-resolution query."""
+    lowered = str(text or "").lower()
+    subject_lower = str(subject or "").lower()
+    if subject_lower not in lowered:
+        return False
+    return any(token in lowered for token in (
+        "identity", "scope", "refer", "disambigu", "what is", "provenance", "authentic",
+        "是什么", "指代", "范围", "来源", "真伪",
+    ))
+
+
+def _subject_resolution_query(
+    user_request: str,
+    language: Optional[str],
+    objectives: list[dict],
+    initial_queries: list[Any],
+) -> Optional[dict[str, Any]]:
+    """Build one conservative subject-resolution query when the request centers on a named subject."""
+    subject = _extract_named_subject(user_request)
+    if not subject:
+        return None
+    objective_keys = _identity_objective_keys(objectives)
+    if not objective_keys:
+        return None
+    is_chinese = bool(re.search(r"[\u4e00-\u9fff]", str(language or user_request)))
+    query = {
+        "text": (
+        f"\"{subject}\" 是什么 指代 范围 来源 发现 真伪"
+        if is_chinese else
+        f"\"{subject}\" identity scope provenance discovery authenticity"
+        ),
+        "importance": "core",
+        "objective_keys": objective_keys,
+        "acceptance_criteria": (
+            [
+            "Resolve what the named subject primarily refers to in reliable sources",
+            "Distinguish alternate referents or usages before narrowing to one scope",
+            "Identify the core discovery/provenance context that belongs to the chosen scope",
+            ]
+            if not is_chinese else
+            [
+            "先确认该命名主题在可靠来源中主要指什么",
+            "在缩小范围前区分可能的不同指代或用法",
+            "确认被选定范围对应的核心发现与来源背景",
+            ]
+        ),
+    }
+    normalized = _normalize_query_text(query["text"])
+    if any(_normalize_query_text(_query_spec(item)[0]) == normalized for item in initial_queries):
+        return None
+    return query
+
+
+def _objective_text_blob(objective: dict, include_criteria: bool = True) -> str:
+    """Flatten objective text fields into one lowercase blob for heuristics."""
+    parts: list[str] = []
+    for field in ("objective_key", "description", "text"):
+        value = objective.get(field)
+        if isinstance(value, str) and value.strip():
+            parts.append(value.strip())
+    if include_criteria:
+        criteria = objective.get("acceptance_criteria")
+        if isinstance(criteria, list):
+            parts.extend(str(item).strip() for item in criteria if str(item).strip())
+    return " ".join(parts).lower()
+
+
+def _is_generation_objective(objective: dict) -> bool:
+    """Return whether an objective is primarily about final writing/review constraints."""
+    text = _objective_text_blob(objective, include_criteria=False)
+    if not text:
+        return False
+    direct_phrases = (
+        "inline citation",
+        "inline citations",
+        "references section",
+        "reference section",
+        "reference list",
+        "full url",
+        "full urls",
+        "final article",
+        "final report",
+        "article includes sections",
+        "wikipedia-style article",
+        "lead section",
+        "numbered references",
+        "参考文献",
+        "内联引用",
+        "完整 url",
+        "全文链接",
+    )
+    if any(phrase in text for phrase in direct_phrases):
+        return True
+    tokens = {
+        "article", "report", "writing", "written", "structure", "section", "sections",
+        "heading", "headings", "lead", "style", "tone", "prose", "citation",
+        "citations", "reference", "references", "format", "formatting", "url",
+        "urls", "draft", "editorial", "审校", "写作", "文风", "语气", "结构", "章节",
+        "标题", "引用", "格式",
+    }
+    matched = sum(1 for token in tokens if token in text)
+    return matched >= 2
+
+
+def _is_research_objective(objective: dict) -> bool:
+    """Return whether an objective should drive evidence collection/search."""
+    return not _is_generation_objective(objective)
+
+
+_EN_QUERY_BOILERPLATE = {
+    "a", "an", "and", "any", "article", "as", "at", "be", "by", "can", "context",
+    "current", "date", "describe", "description", "detailed", "determine", "document",
+    "ensure", "establish", "explain", "final", "for", "from", "historical", "how",
+    "identify", "including", "its", "known", "major", "must", "neutral", "of", "or",
+    "outline", "provide", "report", "referred", "relevant", "ring", "scope", "style",
+    "subject", "summarize", "summary", "that", "the", "their", "this", "to", "what",
+    "where", "which", "with", "write", "written",
+}
+_ZH_QUERY_BOILERPLATE = (
+    "说明", "总结", "提供", "整理", "确保", "相关", "当前", "最终", "文章", "报告",
+    "主题", "对象", "内容", "需要", "要求", "包括", "以及", "并且", "其中", "有关",
+)
+
+
+def _dedupe_preserve_order(values: list[str]) -> list[str]:
+    """Return non-empty strings with stable order and no duplicates."""
+    seen: set[str] = set()
+    result: list[str] = []
+    for value in values:
+        item = " ".join(str(value or "").split()).strip()
+        if not item:
+            continue
+        key = item.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        result.append(item)
+    return result
+
+
+def _normalize_query_text(text: Any) -> str:
+    """Return a whitespace-normalized lowercase query string for exact dedupe."""
+    return " ".join(str(text or "").lower().split())
+
+
+def _english_query_tail(text: str, subject: str = "", limit: int = 10) -> list[str]:
+    """Extract concise English search terms from an objective description."""
+    subject_terms = {
+        token.lower()
+        for token in re.findall(r"[A-Za-z][A-Za-z0-9'-]{1,}", str(subject or ""))
+    }
+    terms: list[str] = []
+    for token in re.findall(r"[A-Za-z][A-Za-z0-9'-]{1,}", str(text or "")):
+        lowered = token.lower()
+        if lowered in _EN_QUERY_BOILERPLATE or lowered in subject_terms:
+            continue
+        if len(lowered) <= 2:
+            continue
+        terms.append(token)
+    return _dedupe_preserve_order(terms)[:limit]
+
+
+def _chinese_query_tail(text: str, subject: str = "", limit: int = 8) -> str:
+    """Extract a compact Chinese query tail from an objective description."""
+    compact = str(text or "").strip().replace(str(subject or ""), "")
+    compact = re.sub(r"[，。；：、“”‘’（）()\[\]{}<>]", " ", compact)
+    for token in _ZH_QUERY_BOILERPLATE:
+        compact = compact.replace(token, " ")
+    terms = _dedupe_preserve_order([part for part in compact.split() if part])
+    return " ".join(terms[:limit])
+
+
+def _objective_seed_query(
+    objective: dict,
+    subject: str,
+    language: Optional[str],
+) -> Optional[dict[str, Any]]:
+    """Build one focused fallback query from a research objective."""
+    key = str(objective.get("objective_key") or "").strip()
+    if not key:
+        return None
+    desc = str(objective.get("description") or objective.get("text") or "").strip()
+    if not desc:
+        return None
+    is_chinese = bool(re.search(r"[\u4e00-\u9fff]", str(language or subject or desc)))
+    if is_chinese:
+        tail = _chinese_query_tail(desc, subject)
+        text = " ".join(part for part in (f"\"{subject}\"" if subject else "", tail) if part).strip()
+    else:
+        tail_terms = _english_query_tail(desc, subject)
+        text = " ".join(part for part in (f"\"{subject}\"" if subject else "", " ".join(tail_terms)) if part).strip()
+    if not text:
+        return None
+    return {
+        "text": text,
+        "importance": "core" if objective.get("requirement") == "must" else "supporting",
+        "objective_keys": [key],
+        "acceptance_criteria": objective.get("acceptance_criteria") or [],
+    }
+
+
+def _ensure_subject_query_coverage(
+    user_request: str,
+    language: Optional[str],
+    objectives: list[dict],
+    selected_queries: list[Any],
+) -> list[Any]:
+    """Ensure single-subject article/report tasks start with several distinct research queries."""
+    subject = _extract_named_subject(user_request)
+    if not subject:
+        return selected_queries
+    research_must = [
+        objective
+        for objective in objectives
+        if objective.get("requirement") == "must" and _is_research_objective(objective)
+    ]
+    if len(research_must) < 2:
+        return selected_queries
+    desired_min = min(3, len(research_must))
+    queries = list(selected_queries)
+    identity_query = _subject_resolution_query(user_request, language, objectives, [])
+    existing_texts = {
+        _normalize_query_text(_query_spec(item)[0])
+        for item in queries
+    }
+    if identity_query:
+        normalized_identity = _normalize_query_text(identity_query["text"])
+        if normalized_identity not in existing_texts:
+            queries = [identity_query, *queries]
+            existing_texts.add(normalized_identity)
+    if len(queries) >= desired_min:
+        return queries
+    represented_keys = {
+        key
+        for item in queries
+        for key in _query_spec(item)[3]
+        if isinstance(key, str)
+    }
+    def _append_seed(objective: dict) -> None:
+        key = str(objective.get("objective_key") or "")
+        if not key or len(queries) >= desired_min:
+            return
+        seeded = _objective_seed_query(objective, subject, language)
+        if not seeded:
+            return
+        normalized = _normalize_query_text(seeded["text"])
+        if normalized in existing_texts:
+            return
+        queries.append(seeded)
+        existing_texts.add(normalized)
+        represented_keys.add(key)
+
+    for objective in research_must:
+        key = str(objective.get("objective_key") or "")
+        if not key or key in represented_keys:
+            continue
+        _append_seed(objective)
+
+    for objective in research_must:
+        key = str(objective.get("objective_key") or "")
+        if not key or len(queries) >= desired_min:
+            break
+        focused_present = any(_query_spec(item)[3] == [key] for item in queries)
+        if focused_present:
+            continue
+        _append_seed(objective)
+    return queries
 
 
 class MemoryManager:
@@ -246,13 +665,28 @@ class MemoryManager:
                     "acceptance_criteria": ["Directly answer the user's research request with reliable evidence"],
                 }
             ]
+        identity_query = _subject_resolution_query(
+            user_request,
+            parsed.get("language"),
+            objectives,
+            initial_queries,
+        )
+        if identity_query:
+            initial_queries = [identity_query, *initial_queries]
         initial_queries = self._select_initial_queries(initial_queries, objectives)
+        initial_queries = _ensure_subject_query_coverage(
+            user_request,
+            parsed.get("language"),
+            objectives,
+            initial_queries,
+        )
+        research_objectives = [objective for objective in objectives if _is_research_objective(objective)]
         covered_objective_keys = {
             key
             for item in initial_queries
             for key in _query_spec(item)[3]
         }
-        for objective in objectives:
+        for objective in research_objectives:
             if (
                 objective.get("requirement") == "must"
                 and objective.get("objective_key") not in covered_objective_keys
@@ -263,6 +697,10 @@ class MemoryManager:
                     "objective_keys": [objective["objective_key"]],
                     "acceptance_criteria": objective.get("acceptance_criteria") or [],
                 })
+        logger.info(
+            "[init_research selected_queries] %s",
+            json.dumps(initial_queries, ensure_ascii=False),
+        )
         objective_by_key = {o["objective_key"]: o for o in objectives}
         for item in initial_queries:
             text, importance, criteria, objective_keys = _query_spec(item)
@@ -382,11 +820,12 @@ class MemoryManager:
         items = [item for item in candidates or [] if isinstance(item, (dict, str))]
         if not items:
             return []
+        coverage_objectives = [objective for objective in objectives if _is_research_objective(objective)] or objectives
         must = {
             objective["objective_key"]
-            for objective in objectives
+            for objective in coverage_objectives
             if objective.get("requirement") == "must"
-        } or {objective["objective_key"] for objective in objectives}
+        } or {objective["objective_key"] for objective in coverage_objectives}
         uncovered = set(must)
         selected: list = []
         remaining = list(items)
@@ -401,7 +840,7 @@ class MemoryManager:
             selected.append(best)
             uncovered -= covered
             remaining.remove(best)
-        for objective in objectives:
+        for objective in coverage_objectives:
             key = objective.get("objective_key")
             if key not in uncovered:
                 continue
@@ -413,9 +852,74 @@ class MemoryManager:
             })
         return selected or items[:1]
 
+    @staticmethod
+    def _goal_query_ids(goal_id: str) -> list[str]:
+        """Return all query IDs reachable from one user_request goal."""
+        if not goal_id:
+            return []
+        seen: set[str] = set()
+        ordered: list[str] = []
+        stack = list(graph_tools.get_query_children(goal_id))
+        while stack:
+            query_id = stack.pop()
+            if not query_id or query_id in seen:
+                continue
+            seen.add(query_id)
+            node = graph_tools.get_node(query_id)
+            if node.get("type") != NodeType.QUERY.value:
+                continue
+            ordered.append(query_id)
+            stack.extend(graph_tools.get_query_children(query_id))
+        return ordered
+
+    def _goal_queries(self, goal_id: str) -> list[dict]:
+        """Return query nodes that belong to one user_request goal."""
+        return [graph_tools.get_node(query_id) for query_id in self._goal_query_ids(goal_id)]
+
+    @staticmethod
+    def _goal_objective_ids(goal_id: str) -> list[str]:
+        """Return objective analysis IDs attached directly to one user_request goal."""
+        if not goal_id:
+            return []
+        return [
+            edge.get("target")
+            for edge in graph_tools.get_node_edges(goal_id, direction="out")
+            if str(edge.get("type", "")).lower() == "has_objective"
+        ]
+
+    def _goal_gaps(self, goal_id: str) -> list[dict]:
+        """Return gap analyses owned by queries in one user_request goal."""
+        query_ids = set(self._goal_query_ids(goal_id))
+        return [
+            gap
+            for gap in graph_tools.search_nodes("analysis", {"analysis_type": "gap"})
+            if self._gap_owner_query_id(gap["id"]) in query_ids
+        ]
+
+    def _goal_conflicts(self, goal_id: str) -> list[dict]:
+        """Return conflicts produced by queries in one user_request goal."""
+        query_ids = set(self._goal_query_ids(goal_id))
+        return [
+            conflict
+            for conflict in graph_tools.search_nodes("conflict", {})
+            if self._conflict_owner_query(conflict["id"]) in query_ids
+        ]
+
     def get_research_objectives(self, goal_id: Optional[str] = None) -> list[dict]:
-        """Return report-level objectives ordered by requirement and weight."""
-        objectives = graph_tools.search_nodes("analysis", {"analysis_type": "objective"})
+        """Return current-goal report objectives ordered by requirement and weight."""
+        if goal_id is None:
+            try:
+                from tools import research_state
+
+                goal_id = research_state.get_goal().get("id")
+            except Exception:
+                goal_id = None
+        objective_ids = set(self._goal_objective_ids(goal_id)) if goal_id else set()
+        objectives = [
+            objective
+            for objective in graph_tools.search_nodes("analysis", {"analysis_type": "objective"})
+            if not goal_id or objective.get("id") in objective_ids
+        ]
         return sorted(
             objectives,
             key=lambda item: (
@@ -461,8 +965,9 @@ class MemoryManager:
             })
             return []
 
-        queries = graph_tools.search_nodes("query", {})
         goal = research_state.get_goal()
+        queries = self._goal_queries(goal.get("id"))
+        goal_gaps = self._goal_gaps(goal.get("id"))
         actions: list[dict] = []
         terminal = research_state.TERMINAL_QUERY_STATUSES
         for node in queries:
@@ -475,7 +980,7 @@ class MemoryManager:
             elif query_status == "needs_expansion":
                 gap_ids = [
                     gap["id"]
-                    for gap in graph_tools.search_nodes("analysis", {"analysis_type": "gap"})
+                    for gap in goal_gaps
                     if gap.get("status") == "selected"
                     and gap.get("expansion_parent_id") == node["id"]
                 ]
@@ -568,6 +1073,7 @@ class MemoryManager:
             objective
             for objective in self.get_research_objectives(goal.get("id"))
             if objective.get("requirement") == "must"
+            and _is_research_objective(objective)
             and objective.get("status") not in {"satisfied", "blocked_best_effort"}
         ]
         if not open_must:
@@ -592,9 +1098,25 @@ class MemoryManager:
                 }, goal.get("id"))
                 return None
 
+            excluded_domains = _extract_excluded_domains(
+                goal.get("request"),
+                goal.get("research_goal"),
+                goal.get("source_preferences") or [],
+            )
+            base_query = " ".join(
+                part.strip()
+                for part in (
+                    str(objective.get("description") or objective.get("text") or "").strip(),
+                    str(goal.get("region_scope") or "").strip(),
+                    str(goal.get("time_window") or "").strip(),
+                )
+                if part and part.strip()
+            )
+            recovery_query = _apply_site_exclusions(base_query, excluded_domains)
+
             query_id = graph_tools.create_query_child(
                 parent_id=goal["id"],
-                text=objective.get("description") or objective.get("text"),
+                text=recovery_query or objective.get("description") or objective.get("text"),
                 importance="core",
                 acceptance_criteria=objective.get("acceptance_criteria") or [],
                 objective_keys=[key],
@@ -1035,7 +1557,7 @@ class MemoryManager:
         if goal.get("research_state") != research_state.RESEARCHING:
             return {"error": "Portfolio evaluation is only allowed while researching"}
         objectives = self.get_research_objectives(goal_id)
-        queries = graph_tools.search_nodes("query", {})
+        queries = self._goal_queries(goal["id"])
         prompt = (
             mm_prompts.evaluate_portfolio
             .replace("{objectives}", json.dumps(objectives, ensure_ascii=False))
@@ -1057,6 +1579,12 @@ class MemoryManager:
             for item in verdict.get("objectives", [])
             if isinstance(item, dict) and item.get("objective_key")
         }
+        unresolved_identity_conflicts = [
+            conflict
+            for conflict in self._goal_conflicts(goal["id"])
+            if conflict.get("resolution_status") not in {"resolved", "disclosed"}
+            and _is_identity_conflict(conflict)
+        ]
         objective_by_key: dict[str, dict] = {}
         objective_deltas: dict[str, tuple[float, float]] = {}
         for objective in objectives:
@@ -1079,6 +1607,9 @@ class MemoryManager:
             old_confidence = float(objective.get("confidence") or 0.0)
             realized_gain = max(0.0, coverage - old_coverage) + max(0.0, confidence - old_confidence)
             meets = coverage >= OBJECTIVE_COVERAGE_THRESHOLD and confidence >= OBJECTIVE_CONFIDENCE_THRESHOLD
+            if meets and _is_identity_objective(objective) and unresolved_identity_conflicts:
+                meets = False
+                confidence = min(confidence, OBJECTIVE_CONFIDENCE_THRESHOLD - 0.01)
             successful_rounds = int(goal.get("successful_search_rounds") or 0)
             last_evaluated_rounds = int(objective.get("last_evaluated_successful_rounds") or 0)
             streak = int(objective.get("low_gain_streak") or 0)
@@ -1103,7 +1634,14 @@ class MemoryManager:
                 "low_gain_streak": streak,
                 "last_realized_gain": realized_gain,
                 "last_evaluated_successful_rounds": successful_rounds,
-                "assessment_reason": item.get("reason") or "",
+                "assessment_reason": (
+                    ((item.get("reason") or "").strip() + " " if str(item.get("reason") or "").strip() else "")
+                    + (
+                        "Unresolved provenance/authenticity conflicts still block subject identity from being treated as settled."
+                        if _is_identity_objective(objective) and unresolved_identity_conflicts
+                        else ""
+                    )
+                ).strip(),
             }, objective["id"])
             objective_deltas[key] = (coverage - old_coverage, confidence - old_confidence)
             objective_by_key[key] = graph_tools.get_node(objective["id"])
@@ -1133,7 +1671,7 @@ class MemoryManager:
                         graph_tools.upsert_node(NodeType.SEARCH_RUN, gain_attributes, edge["target"])
 
         candidates = [
-            gap for gap in graph_tools.search_nodes("analysis", {"analysis_type": "gap"})
+            gap for gap in self._goal_gaps(goal["id"])
             if gap.get("status") in {"candidate", "selected"}
         ]
         selected: list[dict] = []
@@ -1220,7 +1758,11 @@ class MemoryManager:
                     self._propagate_child_completion(query["id"], "deferred")
 
         objectives = self.get_research_objectives(goal_id)
-        must = [item for item in objectives if item.get("requirement") == "must"]
+        must = [
+            item
+            for item in objectives
+            if item.get("requirement") == "must" and _is_research_objective(item)
+        ]
         readiness = (
             sum(float(item.get("weight") or 1.0) for item in must if item.get("status") in {"satisfied", "blocked_best_effort"})
             / sum(float(item.get("weight") or 1.0) for item in must)
@@ -1397,7 +1939,9 @@ class MemoryManager:
         """Authorize reporting after Objective-level marginal-utility convergence."""
         from tools import research_state
 
-        current_state = research_state.get_status(goal_id).get("research_state")
+        resolved_goal = research_state.get_goal(goal_id)
+        resolved_goal_id = resolved_goal.get("id") or goal_id
+        current_state = research_state.get_status(resolved_goal_id).get("research_state")
         if current_state != research_state.RESEARCHING:
             return {
                 "converged": current_state in {research_state.REPORT_READY, research_state.BUDGET_EXHAUSTED},
@@ -1406,14 +1950,14 @@ class MemoryManager:
                 "next_actions": [],
             }
         tree = graph_tools.validate_query_tree()
-        all_queries = graph_tools.search_nodes("query", {})
+        all_queries = self._goal_queries(resolved_goal_id)
         if not tree.get("valid") or not all_queries:
             reason = "invalid Query tree" if not tree.get("valid") else "research has no Query nodes"
             research_state.update_goal({
                 "research_state": research_state.FAILED,
                 "last_convergence_recommendation": "continue",
                 "last_error": reason,
-            }, goal_id)
+            }, resolved_goal_id)
             return {
                 "converged": False,
                 "fatal_unresolved_conflicts": [],
@@ -1425,13 +1969,14 @@ class MemoryManager:
                 "tree_validation": tree,
                 "next_actions": [],
             }
+        goal_conflicts = self._goal_conflicts(resolved_goal_id)
         conflicts = [
             {
                 "id": c.get("id"),
                 "description": c.get("description"),
                 "conflict_type": c.get("conflict_type"),
             }
-            for c in graph_tools.search_nodes("conflict", {})
+            for c in goal_conflicts
             if c.get("resolution_status") not in {"resolved", "disclosed"}
         ]
         prompt = (
@@ -1449,7 +1994,7 @@ class MemoryManager:
         created_fatal_gaps: list[str] = []
         for fatal_description in fatal:
             conflict = next(
-                (c for c in graph_tools.search_nodes("conflict", {})
+                (c for c in goal_conflicts
                  if c.get("description") == fatal_description),
                 None,
             )
@@ -1477,7 +2022,7 @@ class MemoryManager:
                     objective_keys=[
                         objective.get("objective_key")
                         for objective in self.get_research_objectives(goal_id)
-                        if objective.get("requirement") == "must"
+                        if objective.get("requirement") == "must" and _is_research_objective(objective)
                     ],
                     search_subject_key=f"fatal-conflict-{conflict['id']}",
                     decision_impact=1.0,
@@ -1500,16 +2045,16 @@ class MemoryManager:
                         objective_keys=[
                             objective.get("objective_key")
                             for objective in self.get_research_objectives(goal_id)
-                            if objective.get("requirement") == "must"
+                            if objective.get("requirement") == "must" and _is_research_objective(objective)
                         ],
                         required_for_parent=False,
                         search_subject_key=f"fatal-conflict-{conflict['id']}",
                     )
                     for objective in self.get_research_objectives(goal_id):
-                        if objective.get("requirement") == "must":
+                        if objective.get("requirement") == "must" and _is_research_objective(objective):
                             graph_tools.add_edge(child_id, objective["id"], EdgeType.COVERS_OBJECTIVE)
         fatal_set = set(fatal)
-        for conflict in graph_tools.search_nodes("conflict", {}):
+        for conflict in goal_conflicts:
             if (
                 conflict.get("resolution_status") in {"unresolved", "investigating"}
                 and conflict.get("description") not in fatal_set
@@ -1522,9 +2067,13 @@ class MemoryManager:
         if created_fatal_gaps:
             self._bump_portfolio_revision()
 
-        goal = research_state.get_goal(goal_id)
-        objectives = self.get_research_objectives(goal_id)
-        must = [item for item in objectives if item.get("requirement") == "must"]
+        goal = research_state.get_goal(resolved_goal_id)
+        objectives = self.get_research_objectives(resolved_goal_id)
+        must = [
+            item
+            for item in objectives
+            if item.get("requirement") == "must" and _is_research_objective(item)
+        ]
         objectives_ready = bool(must) and all(
             item.get("status") in {"satisfied", "blocked_best_effort"}
             for item in must
@@ -1534,7 +2083,7 @@ class MemoryManager:
             if query.get("status") in {"searching", "assessing"}
         ]
         selected_gaps = [
-            gap for gap in graph_tools.search_nodes("analysis", {"analysis_type": "gap"})
+            gap for gap in self._goal_gaps(goal_id)
             if gap.get("status") in {"selected", "assigned"}
         ]
         portfolio_current = int(goal.get("evaluated_portfolio_revision") or 0) >= int(goal.get("portfolio_revision") or 0)
@@ -1542,9 +2091,9 @@ class MemoryManager:
             query for query in all_queries
             if query.get("status") not in research_state.TERMINAL_QUERY_STATUSES
         ] if goal.get("scope_mode") == "exhaustive" else []
-        remaining = research_state.remaining_budget(goal_id)
+        remaining = research_state.remaining_budget(resolved_goal_id)
         if remaining == 0 and (active or selected_gaps or not objectives_ready or exhaustive_open):
-            research_state.mark_budget_exhausted(goal_id)
+            research_state.mark_budget_exhausted(resolved_goal_id)
             recommendation = "stop"
             state = research_state.BUDGET_EXHAUSTED
         elif (
@@ -1564,7 +2113,7 @@ class MemoryManager:
                 "research_state": research_state.REPORT_READY,
                 "last_convergence_recommendation": "stop",
                 "report_authorized_reason": "report-level objectives reached marginal-utility convergence",
-            }, goal_id)
+            }, resolved_goal_id)
             recommendation = "stop"
             state = research_state.REPORT_READY
         else:
@@ -1572,7 +2121,7 @@ class MemoryManager:
                 "research_state": research_state.RESEARCHING,
                 "last_convergence_recommendation": "continue",
                 "report_authorized_reason": None,
-            }, goal_id)
+            }, resolved_goal_id)
             recommendation = "continue"
             state = research_state.RESEARCHING
 
@@ -1651,8 +2200,19 @@ class MemoryManager:
 
             gaps = [graph_tools.get_node(gid) for gid in self._addressed_gap_ids(resolved)]
             parent = graph_tools.get_node(graph_tools.get_query_parent(resolved) or "")
+            effective_preferences = source_preferences or goal.get("source_preferences") or []
+            excluded_domains = _extract_excluded_domains(
+                goal.get("request"),
+                goal.get("research_goal"),
+                effective_preferences,
+                query.get("text"),
+            )
+            normalized_query = _apply_site_exclusions(
+                str(query.get("text") or ""),
+                excluded_domains,
+            )
             task = {
-                "query": query.get("text"),
+                "query": normalized_query,
                 "acceptance_criteria": query.get("acceptance_criteria") or [],
                 "assigned_gaps": [
                     {
@@ -1662,9 +2222,11 @@ class MemoryManager:
                     for g in gaps
                 ],
                 "research_goal": goal.get("research_goal") or goal.get("request"),
+                "language": goal.get("language"),
                 "time_window": goal.get("time_window"),
                 "region_scope": goal.get("region_scope"),
-                "source_preferences": source_preferences or goal.get("source_preferences") or [],
+                "source_preferences": effective_preferences,
+                "excluded_domains": excluded_domains,
                 "parent_covered": parent.get("covered") or [],
                 "requirement": "Collect evidence for this Query only. Do not broaden into sibling topics.",
             }
@@ -2160,7 +2722,7 @@ class MemoryManager:
                     key: query.get(key)
                     for key in ("id", "handle", "text", "importance")
                 }
-                for query in graph_tools.search_nodes("query", {})
+                for query in self._goal_queries(goal_id) if goal_id
             ],
             "objectives": [
                 {

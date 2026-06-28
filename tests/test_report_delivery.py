@@ -30,10 +30,21 @@ def main():
             "title": "Company source",
             "url": "https://example.com/company",
         },
+        "s2": {
+            "id": "s2",
+            "type": "Source",
+            "title": "Weak social source",
+            "url": "https://facebook.com/company/post",
+        },
         "e1": {
             "id": "e1",
             "type": "Evidence",
             "claim": "公司未公开具体融资金额。",
+        },
+        "e2": {
+            "id": "e2",
+            "type": "Evidence",
+            "claim": "Popular accounts on social media often summarize the company as a warehouse robotics startup.",
         },
         "c1": {
             "id": "c1",
@@ -53,10 +64,15 @@ def main():
         {"source": "goal", "target": "q1", "type": "HAS_QUERY"},
         {"source": "q1", "target": "run1", "type": "SEARCHED_BY"},
         {"source": "run1", "target": "s1", "type": "FOUND_SOURCE"},
+        {"source": "run1", "target": "s2", "type": "FOUND_SOURCE"},
         {"source": "run1", "target": "e1", "type": "PRODUCED"},
+        {"source": "run1", "target": "e2", "type": "PRODUCED"},
         {"source": "run1", "target": "c1", "type": "PRODUCED"},
         {"source": "s1", "target": "e1", "type": "SUPPORTED_BY"},
+        {"source": "s2", "target": "e1", "type": "SUPPORTED_BY"},
+        {"source": "s2", "target": "e2", "type": "SUPPORTED_BY"},
         {"source": "s1", "target": "c1", "type": "SUPPORTED_BY"},
+        {"source": "s2", "target": "c1", "type": "SUPPORTED_BY"},
     ]
     created_sections = []
     created_edges = []
@@ -72,6 +88,7 @@ def main():
             "create_report_section",
             "add_edge",
             "get_node_edges",
+            "get_query_children",
             "clear_current_context",
         )
     }
@@ -90,7 +107,7 @@ def main():
     graph_tools.search_nodes = search_nodes
     graph_tools.get_query_evaluation_subgraph = lambda query_id: {
         "query": dict(nodes[query_id]),
-        "nodes": [dict(nodes["e1"]), dict(nodes["c1"])],
+        "nodes": [dict(nodes["e1"]), dict(nodes["e2"]), dict(nodes["c1"])],
         "edges": [dict(edge) for edge in edges],
         "children": [],
     }
@@ -110,6 +127,11 @@ def main():
         edge for edge in created_edges
         if direction == "out" and edge["source"] == node_id
     ]
+    graph_tools.get_query_children = lambda node_id: [
+        edge["target"]
+        for edge in edges + created_edges
+        if edge["source"] == node_id and str(edge["type"]).lower() in {"has_query", "parent_of"}
+    ]
     graph_tools.clear_current_context = lambda: None
 
     try:
@@ -121,12 +143,16 @@ def main():
         assert context["disclosed_conflicts"] == []
 
         first_page = mm.get_report_evidence("q1", offset=0, limit=1)
-        second_page = mm.get_report_evidence("q1", offset=1, limit=1)
-        assert first_page["total"] == 2 and first_page["next_offset"] == 1
+        second_page = mm.get_report_evidence("q1", offset=1, limit=2)
+        assert first_page["total"] == 3 and first_page["next_offset"] == 1
         assert second_page["next_offset"] is None
         assert all(item["source_ids"] == ["s1"] and item["citations"] == [1] for item in (
-            first_page["items"] + second_page["items"]
+            first_page["items"][:1] + second_page["items"][:1]
         ))
+        ordered_page = mm.get_report_evidence("q1", offset=0, limit=3)
+        ordered_texts = [item["text"] for item in ordered_page["items"]]
+        assert ordered_texts[0] != "Popular accounts on social media often summarize the company as a warehouse robotics startup.", ordered_texts
+        assert ordered_texts[-1].startswith("Popular accounts on social media"), ordered_texts
 
         compiled = report_tools.compile_structured_report("机器人公司研究", [{
             "title": "公司与融资",
@@ -138,6 +164,92 @@ def main():
         assert compiled["accepted"] is True and compiled["revision_requested"] is False, compiled
         assert "公司未公开具体融资金额" in compiled["report"]
         assert not report_tools.validate_delivery_invariants(compiled["report"])
+
+        intro_compiled = report_tools.compile_structured_report("机器人公司研究", [
+            {
+                "title": "Lead",
+                "section_type": "intro",
+                "blocks": [{
+                    "text": "该公司开发仓储机器人并服务仓储场景。",
+                    "source_ids": ["s1", "s2"],
+                }],
+            },
+            {
+                "title": "公司与融资",
+                "blocks": [{"text": "公司未公开具体融资金额。", "source_ids": ["s1", "s2"]}],
+            },
+        ])
+        assert intro_compiled["accepted"] is True and intro_compiled["revision_requested"] is False, intro_compiled
+        assert "\n## Lead\n" not in intro_compiled["report"], intro_compiled["report"]
+        assert intro_compiled["report"].startswith("# 机器人公司研究\n\n该公司开发仓储机器人并服务仓储场景。 [1]"), intro_compiled["report"]
+        assert "facebook.com/company/post" not in intro_compiled["report"], intro_compiled["report"]
+
+        compat_intro = report_tools.compile_structured_report("机器人公司研究", [
+            {
+                "title": "Lead",
+                "section_type": "section",
+                "blocks": [{
+                    "text": "该公司是一家仓储机器人企业。",
+                    "source_ids": ["s1", "s2"],
+                }],
+            },
+            {
+                "title": "公司与融资",
+                "blocks": [{"text": "公司未公开具体融资金额。", "source_ids": ["s1"]}],
+            },
+        ])
+        assert compat_intro["accepted"] is True and compat_intro["revision_requested"] is False, compat_intro
+        assert "\n## Lead\n" not in compat_intro["report"], compat_intro["report"]
+        assert compat_intro["report"].startswith("# 机器人公司研究\n\n该公司是一家仓储机器人企业。 [1]"), compat_intro["report"]
+
+        mixed_source_intro = report_tools.compile_structured_report("机器人公司研究", [
+            {
+                "title": "Lead",
+                "section_type": "intro",
+                "blocks": [{
+                    "text": "该公司是一家仓储机器人企业。",
+                    "source_ids": ["missing-source", "s1"],
+                }],
+            },
+            {
+                "title": "公司与融资",
+                "blocks": [{"text": "公司未公开具体融资金额。", "source_ids": ["s1"]}],
+            },
+        ])
+        assert mixed_source_intro["accepted"] is True, mixed_source_intro
+        repaired_text = mixed_source_intro["report"] or mixed_source_intro["salvaged_report"]
+        assert repaired_text.startswith("# 机器人公司研究\n\n该公司是一家仓储机器人企业。 [1]"), repaired_text
+        assert any(
+            issue["code"] == "invalid_source_ids" and issue["section_title"] == "Lead"
+            for issue in mixed_source_intro["issues"]
+        ), mixed_source_intro["issues"]
+
+        weak_reception = report_tools.compile_structured_report("机器人公司研究", [{
+            "title": "公司与融资",
+            "blocks": [
+                {
+                    "text": "Popular accounts on social media often summarize the company as a warehouse robotics startup.",
+                    "source_ids": ["s2"],
+                },
+                {"text": "该公司开发仓储机器人。", "source_ids": ["s1"]},
+            ],
+        }])
+        assert weak_reception["accepted"] is True and weak_reception["revision_requested"] is True, weak_reception
+        assert "Popular accounts on social media" not in weak_reception["salvaged_report"]
+        assert "该公司开发仓储机器人" in weak_reception["salvaged_report"]
+        assert any(issue["code"] == "weak_reception_block" for issue in weak_reception["issues"])
+
+        allowed_reception = report_tools.compile_structured_report("机器人公司研究", [{
+            "title": "Public reception",
+            "blocks": [
+                {
+                    "text": "Popular accounts on social media often summarize the company as a warehouse robotics startup.",
+                    "source_ids": ["s2"],
+                },
+            ],
+        }])
+        assert allowed_reception["accepted"] is True, allowed_reception
+        assert "Popular accounts on social media" in (allowed_reception["report"] or allowed_reception["salvaged_report"])
 
         soft_compiled = report_tools.compile_structured_report("机器人公司研究", [{
             "title": "公司与融资",

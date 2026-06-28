@@ -16,6 +16,7 @@ report is never broken.
 
 import logging
 import re
+from urllib.parse import urlparse
 from typing import Any, Optional
 
 from memory.graph import EdgeType
@@ -65,6 +66,171 @@ _EXTERNAL_FILE_RE = re.compile(
 )
 _NO_FINDINGS_TEXT = {"暂无可核实结论。", "No verifiable findings are available."}
 _MIN_RETENTION_RATIO = 0.6
+_ACCESS_RISK_DOMAINS = {
+    "academia.edu",
+    "facebook.com",
+    "instagram.com",
+    "pinterest.com",
+    "researchgate.net",
+    "scribd.com",
+    "youtube.com",
+}
+_LOW_AUTHORITY_DOMAINS = {
+    "reddit.com",
+    "substack.com",
+}
+_SOURCE_CENTRIC_TEXT_RE = re.compile(
+    r"\b(?:scholarly|academic|popular|online|modern|later)\s+"
+    r"(?:accounts|summaries|discussions|literature|surveys|essays|chapters)\b|"
+    r"\b(?:a|an)\s+(?:chapter|essay|survey|discussion)\b|"
+    r"\b(?:studies|scholarship|scholars|literature|summaries|accounts|discussions)\s+"
+    r"(?:describe|discuss|frame|identify|note|present|state|suggest|treat)\b|"
+    r"\b(?:is|are|was|were)\s+(?:described|discussed|framed|identified|noted|presented|treated)\b",
+    re.IGNORECASE,
+)
+_RECEPTION_HINT_RE = re.compile(
+    r"\b(?:reception|legacy|influence|public|popular|social media|online|media|coverage|discourse)\b|"
+    r"公众|传播|舆论|社交媒体|接受史|影响",
+    re.IGNORECASE,
+)
+_WEAK_RECEPTION_TEXT_RE = re.compile(
+    r"\b(?:popular accounts?|popular summaries|online discussions?|social[- ]media|facebook|youtube|reddit|instagram)\b|"
+    r"流行说法|社交媒体|公众传播",
+    re.IGNORECASE,
+)
+
+
+def _is_references_section_title(title: str) -> bool:
+    """Return whether a submitted section title is just a references heading."""
+    return bool(_REF_HEADING_RE.match(f"## {str(title or '').strip()}"))
+
+
+def _normalize_domain(url: str) -> str:
+    """Return a lowercase hostname without a leading www."""
+    host = urlparse(str(url or "")).netloc.lower()
+    if host.startswith("www."):
+        host = host[4:]
+    return host
+
+
+def _source_quality_score(source: dict[str, Any]) -> tuple[int, int, str]:
+    """Return a sortable source-quality score for reporting and citation use.
+
+    Higher scores mean "prefer this source for core factual paragraphs".
+    The first element is authority, the second is accessibility.
+    """
+    source_type = str(source.get("source_type") or source.get("type") or "").lower()
+    domain = _normalize_domain(str(source.get("url") or ""))
+    authority = 0
+    accessibility = 0
+
+    if source_type == "paper":
+        authority += 5
+    elif source_type == "report":
+        authority += 4
+    elif source_type in {"book", "thesis"}:
+        authority += 3
+    elif source_type == "blog":
+        authority -= 2
+    elif source_type == "other":
+        authority -= 1
+
+    if domain.endswith(".edu") or domain.endswith(".ac.uk"):
+        authority += 2
+    if any(token in domain for token in ("museum", "cambridge.org", "uchicago.edu", "heidelberg.de")):
+        authority += 2
+    if domain in _LOW_AUTHORITY_DOMAINS:
+        authority -= 2
+    if domain in _ACCESS_RISK_DOMAINS:
+        accessibility -= 3
+    if domain.endswith(".pdf"):
+        accessibility += 1
+    return authority, accessibility, domain
+
+
+def _preferred_source_ids(source_ids: list[str], nodes: dict[str, dict], max_keep: int = 3) -> list[str]:
+    """Return a concise, higher-quality subset of source IDs for one item."""
+    unique = [source_id for source_id in dict.fromkeys(source_ids) if source_id in nodes]
+    if not unique:
+        return []
+    ranked = sorted(
+        unique,
+        key=lambda source_id: (
+            -_source_quality_score(nodes[source_id])[0],
+            -_source_quality_score(nodes[source_id])[1],
+            source_id,
+        ),
+    )
+    best_authority, best_accessibility, _ = _source_quality_score(nodes[ranked[0]])
+    filtered = [
+        source_id
+        for source_id in ranked
+        if _source_quality_score(nodes[source_id])[0] >= best_authority - 1
+        and _source_quality_score(nodes[source_id])[1] >= best_accessibility - 1
+    ]
+    return (filtered or ranked)[:max_keep]
+
+
+def _section_allows_reception(section_title: str, section_type: str = "") -> bool:
+    """Return whether a section is explicitly about public reception or legacy."""
+    return bool(_RECEPTION_HINT_RE.search(f"{section_title} {section_type}".strip()))
+
+
+def _evidence_item_priority(item: dict[str, Any], query_text: str = "") -> tuple[int, int, str]:
+    """Prefer direct, high-authority facts before source-centric or reception prose."""
+    text = str(item.get("text") or "")
+    profiles = item.get("source_profiles") or []
+    authority = max((int(profile.get("quality_score") or 0) for profile in profiles), default=0)
+    accessibility = max((int(profile.get("access_score") or 0) for profile in profiles), default=0)
+    score = authority * 10 + accessibility * 3
+    if _SOURCE_CENTRIC_TEXT_RE.search(text):
+        score -= 12
+    query_allows_reception = bool(_RECEPTION_HINT_RE.search(query_text or ""))
+    if _WEAK_RECEPTION_TEXT_RE.search(text):
+        score -= 25 if query_allows_reception else 60
+    return score, len(text), str(item.get("id") or "")
+
+
+def _block_uses_only_weak_sources(source_ids: list[str], nodes: dict[str, dict]) -> bool:
+    """Return whether every cited source is weak for core factual prose."""
+    if not source_ids:
+        return True
+    for source_id in source_ids:
+        authority, accessibility, domain = _source_quality_score(nodes.get(source_id, {}))
+        if authority >= 4 and accessibility >= -1 and domain not in _ACCESS_RISK_DOMAINS:
+            return False
+    return True
+
+
+def _block_quality_issues(
+    text: str,
+    source_ids: list[str],
+    nodes: dict[str, dict],
+    section_title: str,
+    section_type: str = "",
+) -> list[tuple[str, str]]:
+    """Return soft block-level quality issues that should trigger local revision."""
+    issues: list[tuple[str, str]] = []
+    allows_reception = _section_allows_reception(section_title, section_type)
+    uses_only_weak_sources = _block_uses_only_weak_sources(source_ids, nodes)
+    if (
+        _WEAK_RECEPTION_TEXT_RE.search(text)
+        and not allows_reception
+        and uses_only_weak_sources
+    ):
+        issues.append((
+            "weak_reception_block",
+            "Move public/popular-discourse material into an explicitly relevant reception section, or replace it with directly supported core facts from stronger sources.",
+        ))
+    if (
+        _SOURCE_CENTRIC_TEXT_RE.search(text)
+        and ("lead" in section_title.lower() or "introduction" in section_title.lower() or section_type.lower() == "intro")
+    ):
+        issues.append((
+            "source_centric_lead",
+            "Rewrite the lead in direct reader-facing prose about the subject itself; keep source-layer commentary for contested or reception-specific sections only.",
+        ))
+    return issues
 
 
 def build_reference_registry() -> list[dict]:
@@ -170,6 +336,7 @@ def get_report_evidence(query_id: str, offset: int = 0, limit: int = 20) -> dict
         ]
         if not source_ids:
             continue
+        preferred_source_ids = _preferred_source_ids(source_ids, nodes)
         text = node.get("statement") or node.get("claim") or node.get("text")
         if not str(text or "").strip():
             continue
@@ -177,10 +344,29 @@ def get_report_evidence(query_id: str, offset: int = 0, limit: int = 20) -> dict
             "id": node["id"],
             "type": node["type"],
             "text": str(text).strip(),
-            "source_ids": source_ids,
-            "citations": [registry_by_source[source_id]["n"] for source_id in source_ids],
+            "source_ids": preferred_source_ids,
+            "all_source_ids": source_ids,
+            "citations": [registry_by_source[source_id]["n"] for source_id in preferred_source_ids],
+            "source_profiles": [
+                {
+                    "source_id": source_id,
+                    "title": registry_by_source[source_id]["title"],
+                    "url": registry_by_source[source_id]["url"],
+                    "source_type": nodes.get(source_id, {}).get("source_type"),
+                    "quality_score": _source_quality_score(nodes.get(source_id, {}))[0],
+                    "access_score": _source_quality_score(nodes.get(source_id, {}))[1],
+                }
+                for source_id in source_ids
+            ],
         })
-    items.sort(key=lambda item: item["id"])
+    query_text = str(evaluation.get("query", {}).get("text") or "")
+    items.sort(
+        key=lambda item: (
+            -_evidence_item_priority(item, query_text)[0],
+            -_evidence_item_priority(item, query_text)[1],
+            _evidence_item_priority(item, query_text)[2],
+        )
+    )
     page = items[offset : offset + limit]
     next_offset = offset + len(page)
     return {
@@ -430,7 +616,14 @@ def _compile_section_report(
     is_chinese = bool(re.search(r"[\u4e00-\u9fff]", title or ""))
     report_title = str(title or ("调研报告" if is_chinese else "Research Report")).strip()
     parts = [f"# {report_title}"]
-    for section in compiled_sections:
+    for index, section in enumerate(compiled_sections):
+        section_type = str(section.get("section_type") or "").lower()
+        section_title = str(section.get("title") or "").strip().lower()
+        if section_type == "intro" or (
+            index == 0 and section_title in {"lead", "introduction"}
+        ):
+            parts.append(section["content"])
+            continue
         parts.extend([f"## {section['title']}", section["content"]])
     parts.append(_render_references(
         registry,
@@ -468,6 +661,7 @@ def _persist_compiled_sections(compiled_sections: list[dict[str, Any]]) -> None:
 
 def compile_structured_report(title: str, sections: list[dict]) -> dict:
     """Validate and deterministically compile a structured cited report."""
+    nodes = {node["id"]: node for node in graph_tools.get_all_nodes()}
     registry = build_reference_registry()
     registry_by_source = {entry["source_id"]: entry for entry in registry}
     issues: list[dict[str, Any]] = []
@@ -490,6 +684,9 @@ def compile_structured_report(title: str, sections: list[dict]) -> dict:
             for conflict_id in dict.fromkeys(section.get("disclosed_conflict_ids") or [])
             if conflict_id
         ]
+        if _is_references_section_title(section_title):
+            logger.info("Ignoring Reporter-authored references section: %s", section_title)
+            continue
         if not section_title:
             issues.append(_issue(
                 "missing_section_title",
@@ -509,6 +706,7 @@ def compile_structured_report(title: str, sections: list[dict]) -> dict:
             continue
         compiled_blocks: list[str] = []
         section_sources: set[str] = set()
+        section_type = str(section.get("section_type") or "")
         for block_index, block in enumerate(blocks):
             text = str(block.get("text") or "").strip()
             source_ids = list(dict.fromkeys(block.get("source_ids") or []))
@@ -536,8 +734,9 @@ def compile_structured_report(title: str, sections: list[dict]) -> dict:
                     block_index=block_index + 1,
                 ))
                 continue
+            valid_source_ids = [source_id for source_id in source_ids if source_id in registry_by_source]
             invalid = [source_id for source_id in source_ids if source_id not in registry_by_source]
-            if not source_ids or invalid:
+            if not valid_source_ids:
                 dropped_blocks += 1
                 issues.append(_issue(
                     "invalid_source_ids",
@@ -548,15 +747,53 @@ def compile_structured_report(title: str, sections: list[dict]) -> dict:
                     block_index=block_index + 1,
                 ))
                 continue
+            if invalid:
+                issues.append(_issue(
+                    "invalid_source_ids",
+                    "soft",
+                    f"section {section_title!r} block {block_index + 1} included invalid source_ids that were discarded",
+                    "Keep only valid URL-backed source_ids for this block, and re-check whether the surviving citations still directly support every sentence.",
+                    section_title=section_title,
+                    block_index=block_index + 1,
+                ))
+            preferred_source_ids = _preferred_source_ids(valid_source_ids, nodes) or valid_source_ids[:3]
+            block_issues = _block_quality_issues(
+                text,
+                preferred_source_ids,
+                nodes,
+                section_title,
+                section_type,
+            )
+            if any(code == "weak_reception_block" for code, _ in block_issues):
+                dropped_blocks += 1
+                for code, repair_hint in block_issues:
+                    issues.append(_issue(
+                        code,
+                        "soft",
+                        f"section {section_title!r} block {block_index + 1} relies on source-centric or public-discourse prose that is unsupported for a core section",
+                        repair_hint,
+                        section_title=section_title,
+                        block_index=block_index + 1,
+                    ))
+                continue
+            for code, repair_hint in block_issues:
+                issues.append(_issue(
+                    code,
+                    "soft",
+                    f"section {section_title!r} block {block_index + 1} should be rewritten for direct, reader-facing prose",
+                    repair_hint,
+                    section_title=section_title,
+                    block_index=block_index + 1,
+                ))
             clean_text = _CITE_TOKEN_RE.sub("", text).strip()
             citations = "".join(
-                f"[{registry_by_source[source_id]['n']}]" for source_id in source_ids
+                f"[{registry_by_source[source_id]['n']}]" for source_id in preferred_source_ids
             )
             kind = block.get("kind")
             prefix = "- " if kind == "list_item" else ""
             compiled_blocks.append(f"{prefix}{clean_text} {citations}".strip())
-            section_sources.update(source_ids)
-            cited_source_ids.update(source_ids)
+            section_sources.update(preferred_source_ids)
+            cited_source_ids.update(preferred_source_ids)
             kept_blocks += 1
             kept_chars += len(clean_text)
         if compiled_blocks:
@@ -564,7 +801,7 @@ def compile_structured_report(title: str, sections: list[dict]) -> dict:
                 "title": section_title,
                 "content": "\n\n".join(compiled_blocks),
                 "source_ids": sorted(section_sources),
-                "section_type": section.get("section_type"),
+                "section_type": section_type,
                 "disclosed_conflict_ids": disclosed_conflict_ids,
             })
 

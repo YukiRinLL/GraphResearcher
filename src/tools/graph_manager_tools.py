@@ -144,7 +144,14 @@ def set_research_state(state: str, **attributes: Any) -> dict:
 
 @tool
 def init_research(user_request: str) -> dict:
-    """Initialize a strict Query tree and persistent research state."""
+    """Initialize research from the FULL user task, not a narrowed paraphrase.
+
+    Pass the user's research request through with its substantive constraints
+    preserved: explicit subtopics, numbered deliverables, rubric items, banned
+    sources, scope limits, tone/format requirements, and citation expectations.
+    Remove only conversational filler. Do not collapse multiple required facets
+    into a shorter generic summary before calling this tool.
+    """
     return _mm().init_research(user_request)
 
 

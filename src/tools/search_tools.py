@@ -6,6 +6,8 @@ this module does not require any API key until a search actually runs.
 """
 
 import os
+import re
+from urllib.parse import urlparse
 from typing import Literal, Optional
 
 import requests
@@ -25,6 +27,87 @@ SERPER_ENDPOINTS = {
 
 # Timeout configuration (seconds)
 SEARCH_TIMEOUT = int(os.environ.get("SEARCH_TIMEOUT", "30"))
+_SITE_EXCLUSION_RE = re.compile(r"-site:([A-Za-z0-9.-]+\.[A-Za-z]{2,})", re.IGNORECASE)
+_DEPRIORITIZED_DOMAINS = {
+    "academia.edu",
+    "facebook.com",
+    "instagram.com",
+    "pinterest.com",
+    "reddit.com",
+    "researchgate.net",
+    "scribd.com",
+    "youtube.com",
+}
+_PREFERRED_DOMAIN_TOKENS = (
+    "ashmolean.org",
+    "cambridge.org",
+    "heidelberg.de",
+    "jstor.org",
+    "museum",
+    "ox.ac.uk",
+    "uchicago.edu",
+)
+
+
+def _excluded_domains_from_query(query: str) -> list[str]:
+    """Parse domain exclusions already embedded in the literal query text."""
+    domains: list[str] = []
+    for match in _SITE_EXCLUSION_RE.finditer(str(query or "")):
+        domain = match.group(1).lower().strip().lstrip(".")
+        if domain and domain not in domains:
+            domains.append(domain)
+    return domains
+
+
+def _host(url: str) -> str:
+    """Return the lowercase hostname for a URL-like string."""
+    try:
+        return (urlparse(url).netloc or "").lower().lstrip(".")
+    except Exception:  # noqa: BLE001 - a malformed URL should simply skip filtering
+        return ""
+
+
+def _is_excluded_result(url: str, excluded_domains: list[str]) -> bool:
+    """Return whether the URL falls under any excluded domain."""
+    host = _host(url)
+    if not host:
+        return False
+    return any(host == domain or host.endswith(f".{domain}") for domain in excluded_domains)
+
+
+def _filter_excluded_results(query: str, results: list[dict]) -> list[dict]:
+    """Drop results whose domains contradict explicit ``-site:...`` query terms."""
+    excluded_domains = _excluded_domains_from_query(query)
+    if not excluded_domains:
+        return results
+    return [
+        item for item in results
+        if not _is_excluded_result(str(item.get("url") or ""), excluded_domains)
+    ]
+
+
+def _result_quality_score(item: dict) -> int:
+    """Prefer institutional/academic pages over social reposts and gateways."""
+    url = str(item.get("url") or "")
+    host = _host(url).lstrip(".")
+    host_no_www = host[4:] if host.startswith("www.") else host
+    score = 0
+    if host_no_www.endswith(".edu") or host_no_www.endswith(".ac.uk"):
+        score += 3
+    if any(token in host_no_www for token in _PREFERRED_DOMAIN_TOKENS):
+        score += 2
+    if url.lower().endswith(".pdf"):
+        score += 1
+    if any(host_no_www == domain or host_no_www.endswith(f".{domain}") for domain in _DEPRIORITIZED_DOMAINS):
+        score -= 4
+    return score
+
+
+def _rerank_results(results: list[dict]) -> list[dict]:
+    """Return results with better-source domains first, preserving stable ties."""
+    indexed = list(enumerate(results))
+    indexed.sort(key=lambda pair: (-_result_quality_score(pair[1]), pair[0]))
+    return [item for _, item in indexed]
 
 
 def _client() -> TavilyClient:
@@ -69,7 +152,7 @@ def serper_search(
         response = requests.post(
             endpoint,
             headers={"X-API-KEY": os.environ["SERPER_API_KEY"], "Content-Type": "application/json"},
-            json={"q": query, "num": max_results},
+            json={"q": query, "num": min(20, max(max_results * 2, max_results))},
             timeout=SEARCH_TIMEOUT,
         )
         if response.status_code >= 400:
@@ -89,8 +172,10 @@ def serper_search(
                 "content": item.get("snippet"),
                 "date": item.get("date"),
             }
-            for item in (items or [])[:max_results]
+            for item in (items or [])
         ]
+        results = _filter_excluded_results(query, results)
+        results = _rerank_results(results)[:max_results]
         # Return only the normalized results; echoing the full raw Serper
         # response back into the conversation bloats context and enlarges the
         # surface that the proxy's content filter can trip on.
@@ -138,6 +223,10 @@ def tavily_search(
                 raw = item.get("raw_content")
                 if isinstance(raw, str) and len(raw) > _MAX_RAW_CONTENT_CHARS:
                     item["raw_content"] = raw[:_MAX_RAW_CONTENT_CHARS] + "…(truncated)"
+        if isinstance(response, dict):
+            response["results"] = _rerank_results(
+                _filter_excluded_results(query, response.get("results", []) or [])
+            )
         return response
     except Exception as e:  # noqa: BLE001 — surface any search failure as data, not a crash
         return {

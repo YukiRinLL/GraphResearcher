@@ -1,0 +1,1938 @@
+Request: Write a Wikipedia article about 'Ring of Nestor' based on the following
+rubric. You need to directly research the relevant information and complete the 
+article; you do not need to confirm with the user.
+The current date is `December 15, 2025`.
+
+Rubric:
+---
+Well-written:
+- Clear & Concise: The prose is clear, concise, and understandable to an 
+appropriately broad audience; spelling and grammar are correct.
+1. Articles should be written in encyclopedic style, which differs from the 
+technically dense style found in scholarly writing aimed at specialists. 
+2. Articles should address the topic without twisting the truth or telling 
+"lies-to-children", but should also minimize (unexplained) jargon and not take 
+prior knowledge for granted. 
+3. Articles should be self-contained as much as possible, rather than relying on
+excessive links to explain unfamiliar concepts.
+- Lead section: In Wikipedia, the lead section is an introduction to an article 
+and a summary of its most important contents. It is located at the beginning of 
+the article, before the first heading. It is not a news-style lead or "lede" 
+paragraph.
+4. An article's content should begin with an introductory lead section – a 
+concise summary of the article – which is never divided into sections. The 
+remainder of the article is typically divided into sections.
+5. The lead section gives the basics in a nutshell, introduces the article, and 
+cultivates interest in reading on—though not by teasing the reader or hinting at
+what follows.
+6. The lead section should be written in a clear, accessible style with a 
+neutral point of view.
+7. The lead should stand on its own as a concise overview of the article's 
+topic. It should identify the topic, establish context, explain why the topic is
+notable, and summarize the most important points, including any prominent 
+controversies. The notability of the article's subject is usually established in
+the first few sentences.
+8. As in the body of the article itself, the emphasis given to material in the 
+lead should roughly reflect its importance to the topic, according to reliable, 
+published sources. Apart from basic facts, significant information should not 
+appear in the lead if it is not covered in the remainder of the article.
+9. A lead section should be carefully sourced as appropriate, although it is 
+common for citations to appear in the body and not the lead.
+10. Significant information should not appear in the lead, apart from basic 
+facts, if it is not covered in the remainder of the article, although not 
+everything in the lead must be repeated in the body of the text. Exceptions 
+include specific facts such as quotations, examples, birth dates, taxonomic 
+names and typological classifications, case numbers, and titles.
+- Words to Watch: There are no forbidden words or expressions on Wikipedia, but 
+certain expressions should be used with caution because they may introduce bias 
+or imprecise meaning. Strive to eliminate expressions that are flattering, 
+disparaging, vague, clichéd, or endorsing of a particular viewpoint.
+11. Puffery: Words such as these are often used without attribution to promote 
+the subject of an article, while neither imparting nor plainly summarizing 
+verifiable information. They are known as "peacock terms" by Wikipedia 
+contributors. Instead of making subjective proclamations about a subject's 
+importance, use facts and attribution to demonstrate it.Words to Watch: 
+legendary, best, great, greatest, acclaimed, iconic, visionary, outstanding, 
+leading, celebrated, popular, award-winning, landmark, cutting-edge, innovative,
+revolutionary, extraordinary, brilliant, hit, famous, renowned, remarkable, 
+prestigious, world-class, respected, notable, virtuoso, honorable, awesome, 
+unique, pioneering, phenomenal, prominent. 
+12. Contentious labels: Value-laden labels – such as calling an organization a 
+cult, an individual a racist, sexist, terrorist, or freedom fighter, or a sexual
+practice a perversion – may express contentious opinion and are best avoided 
+unless widely used by reliable sources to describe the subject, in which case 
+use in-text attribution. Avoid myth in its informal sense, and establish the 
+scholarly context for any formal use of the term.Words to Watch: cult, racist, 
+perverted, sexist, homophobic, transphobic, misogynistic, sect, fundamentalist, 
+heretic, extremist, denialist, terrorist, freedom fighter, bigot, myth, 
+neo-Nazi, -gate, pseudo-, controversial. 
+13. Unsupported attributions: These words may disguise a biased view. Claims 
+about what people say, think, feel, or believe, and what has been shown, 
+demonstrated, or proved should be clearly attributed.Words to Watch: ​some people
+say, many people remember, many scholars state, it is 
+believed/regarded/considered, many are of the opinion, most feel, experts 
+declare, it is often reported, it is widely thought, research has shown, science
+says, scientists claim, it is often said, officially, is widely regarded as, X 
+has been described as Y.
+14. Expressions of doubt: When these are used, ensure that the source of the 
+accusation is clear. Words to Watch: supposed, apparent, purported, alleged, 
+accused, so-called ...   Also, scare-quoting: a Yale "report"; undue emphasis: 
+"... a Baptist church".
+15. Editorializing: These words should usually be avoided so as to maintain an 
+impartial tone.​Words to Watch: notably, it should be noted, arguably, 
+interestingly, essentially, utterly, actually, only, clearly, absolutely, of 
+course, without a doubt, indeed, happily, sadly, tragically, aptly, fortunately,
+unfortunately, untimely.
+16. Synonyms for said: In some types of writing, repeated use of said is 
+considered tedious, and writers are encouraged to employ synonyms. On Wikipedia,
+it is more important to avoid language that makes undue implications.Words to 
+Watch: reveal, point out, clarify, expose, explain, find, note, observe, insist,
+speculate, surmise, claim, assert, admit, confess, deny, confirm ...
+17. Euphemisms: Euphemisms should generally be avoided in favor of more neutral 
+and precise terms.​Words to Watch: passed away, gave her life, eternal rest, make
+love, an issue with, collateral damage, differently abled.
+18. Clichés and idioms: Clichés and idioms should generally be avoided in favor 
+of direct, literal expressions.Words to watch: lion's share, tip of the iceberg,
+white elephant, gild the lily, take the plunge, ace up the sleeve, bird in the 
+hand, twist of fate, at the end of the day.
+19. Relative time references: Prefer specific statements to general ones.Words 
+to watch: recently, lately, currently, today, presently, to date, X years ago, 
+formerly, in the past, traditionally, this/last/next 
+(year/month/winter/spring/summer/fall/autumn), yesterday, tomorrow, in the 
+future, now, to this day, soon, since.
+20. Unspecified places or events: Prefer specific statements to general 
+ones.Words to watch: this country, here, there, somewhere, sometimes, often, 
+occasionally, somehow.
+21. Survived by: Phrasing such as "Smith died in 1982, survived by her husband 
+Jack and two sons" should be avoided; this information can be made more complete
+and spread out through the article.Words to watch: is/was survived by, [Name]'s 
+survivors include.
+---
+Broad in its coverage:
+1. It addresses the main aspects of the topic.
+2. The lead, ideally the introductory sentence or at least introductory 
+paragraph, of an article, should make clear what the scope of the article is.
+3. All material that is notable, referenced, and that a reader would be likely 
+to agree matches the specified scope must be covered (at least in a summarized 
+fashion).
+4. What reliable sources say about material that is out of scope for the 
+decided-upon subject is largely irrelevant to that article and can be removed.
+5. It stays focused on the topic without going into unnecessary detail.
+6. The lead contains a quick summary of the topic's most important points.
+7. Each major subtopic is detailed in its own section of the article.
+8. It contains no irrelevant (nor only loosely relevant) information.
+---
+Neutral:
+Achieving what the Wikipedia community understands as neutrality means carefully
+and critically analyzing a variety of reliable sources and then attempting to 
+convey to the reader the information contained in them fairly, proportionately, 
+and as far as possible without editorial bias. Wikipedia aims to describe 
+disputes, but not engage in them. The aim is to inform, not influence. Editors, 
+while naturally having their own points of view, should strive in good faith to 
+provide complete information and not to promote one particular point of view 
+over another. The neutral point of view does not mean the exclusion of certain 
+points of view; rather, it means including all verifiable points of view which 
+have sufficient due weight. Observe the following principles to help achieve the
+level of neutrality that is appropriate for an encyclopedia:
+1. It represents viewpoints fairly and without editorial bias, giving due weight
+to each.
+2. Avoid stating opinions as facts. Usually, articles will contain information 
+about the significant opinions that have been expressed about their subjects. 
+However, these opinions should not be stated in Wikipedia's voice. Rather, they 
+should be attributed in the text to particular sources, or where justified, 
+described as widespread views, etc. For example, an article should not state 
+that genocide is an evil action but may state that genocide has been described 
+by John So-and-so as the epitome of human evil.
+3. Avoid stating seriously contested assertions as facts. If different reliable 
+sources make conflicting assertions about a matter, treat these assertions as 
+opinions rather than facts, and do not present them as direct statements.
+4. Avoid stating facts as opinions. Uncontested and uncontroversial factual 
+assertions made by reliable sources should normally be directly stated in 
+Wikipedia's voice, for example the sky is blue not [name of source] believes the
+sky is blue. Unless a topic specifically deals with a disagreement over 
+otherwise uncontested information, there is no need for specific attribution for
+the assertion, although it is helpful to add a reference link to the source in 
+support of verifiability. Further, the passage should not be worded in any way 
+that makes it appear to be contested.
+5. Prefer nonjudgmental language. A neutral point of view neither sympathizes 
+with nor disparages its subject (or what reliable sources say about the 
+subject), although this must sometimes be balanced against clarity. Present 
+opinions and conflicting findings in a disinterested tone. Do not editorialize. 
+When editorial bias towards one particular point of view can be detected the 
+article needs to be fixed. The only bias that should be evident is the bias 
+attributed to the source.
+6. Indicate the relative prominence of opposing views. Ensure that the reporting
+of different views on a subject adequately reflects the relative levels of 
+support for those views and that it does not give a false impression of parity, 
+or give undue weight to a particular view. For example, to state that According 
+to Simon Wiesenthal, the Holocaust was a program of extermination of the Jewish 
+people in Germany, but David Irving disputes this analysis would be to give 
+apparent parity between the supermajority view and a tiny minority view by 
+assigning each to a single activist in the field.
+7. An article should not give undue weight to minor aspects of its subject but 
+should strive to treat each aspect with a weight proportional to its treatment 
+in the body of reliable, published material on the subject.
+8. Any inclusion of fringe or pseudoscientific views should not give them undue 
+weight. The fringe or pseudoscientific view should be clearly described as such.
+An explanation of how experts in the relevant field have reacted to such views 
+should be prominently included. 
+9. In the case of beliefs and practices, Wikipedia content should not only 
+encompass what motivates individuals who hold these beliefs and practices but 
+also account for how such beliefs and practices developed. Wikipedia articles on
+history and religion draw from religion's sacred texts as primary sources and 
+modern archaeological, historical, and scientific works as secondary and 
+tertiary sources.
+10. Article titles that combine alternative names are discouraged. For example, 
+names such as "Derry/Londonderry", "Aluminium/Aluminum", and "Flat Earth (Round 
+Earth)" should not be used. Instead, alternative names should be given their due
+prominence within the article itself, and redirects created as appropriate.
+---
+IMPORTANT:
+1. You are prohibited from searching any Wikipedia pages (always use 
+-site:en.wikipedia.org when searching); otherwise, it will be considered 
+cheating.
+2. You are prohibited from reading the webpage at 
+https://en.wikipedia.org/wiki/Ring_of_Nestor. If this page appears in your 
+references, it will be regarded as invalid research.
+3. Ensure all factual claims are backed by citations. Use bracketed numbers 
+(e.g., [1], [2]) for in-text citations. At the very end of the article, include 
+a dedicated 'References' section that lists the corresponding full URLs for each
+number.
+Output dir: outputs/wlc_report21/_runs/82-Ring_of_Nestor | max search rounds: 1
+
+[HumanMessage] Write a Wikipedia article about 'Ring of Nestor' based on the 
+following rubric. You need to directly research the relevant information and 
+complete the article; you do not need to confirm with the user.
+The current date is `December 15, 2025`.
+
+Rubric:
+---
+Well-written:
+- Clear & Concise: The prose is clear, concise, and understandable to an 
+appropriately broad audience; spelling and grammar are correct.
+1. Articles should be written in encyclopedic style, which differs from the 
+technically dense style found in scholarly writing aimed at specialists. 
+2. Articles should address the topic without twisting the truth or telling 
+"lies-to-children", but should also minimize (unexplained) jargon and not take 
+prior knowledge for granted. 
+3. Articles should be self-contained as much as possible, rather than relying on
+excessive links to explain unfamiliar concepts.
+- Lead section: In Wikipedia, the lead section is an introduction to an article 
+and a summary of its most important contents. It is located at the beginning of 
+the article, before the first heading. It is not a news-style lead or "lede" 
+paragraph.
+4. An article's content should begin with an introductory lead section – a 
+concise summary of the article – which is never divided into sections. The 
+remainder of the article is typically divided into sections.
+5. The lead section gives the basics in a nutshell, introduces the article, and 
+cultivates interest in reading on—though not by teasing the reader or hinting at
+what follows.
+6. The lead section should be written in a clear, accessible style with a 
+neutral point of view.
+7. The lead should stand on its own as a concise overview of the article's 
+topic. It should identify the topic, establish context, explain why the topic is
+notable, and summarize the most important points, including any prominent 
+controversies. The notability of the article's subject is usually established in
+the first few sentences.
+8. As in the body of the article itself, the emphasis given to material in the 
+lead should roughly reflect its importance to the topic, according to reliable, 
+published sources. Apart from basic facts, significant information should not 
+appear in the lead if it is not covered in the remainder of the article.
+9. A lead section should be carefully sourced as appropriate, although it is 
+common for citations to appear in the body and not the lead.
+10. Significant information should not appear in the lead, apart from basic 
+facts, if it is not covered in the remainder of the article, although not 
+everything in the lead must be repeated in the body of the text. Exceptions 
+include specific facts such as quotations, examples, birth dates, taxonomic 
+names and typological classifications, case numbers, and titles.
+- Words to Watch: There are no forbidden words or expressions on Wikipedia, but 
+certain expressions should be used with caution because they may introduce bias 
+or imprecise meaning. Strive to eliminate expressions that are flattering, 
+disparaging, vague, clichéd, or endorsing of a particular viewpoint.
+11. Puffery: Words such as these are often used without attribution to promote 
+the subject of an article, while neither imparting nor plainly summarizing 
+verifiable information. They are known as "peacock terms" by Wikipedia 
+contributors. Instead of making subjective proclamations about a subject's 
+importance, use facts and attribution to demonstrate it.Words to Watch: 
+legendary, best, great, greatest, acclaimed, iconic, visionary, outstanding, 
+leading, celebrated, popular, award-winning, landmark, cutting-edge, innovative,
+revolutionary, extraordinary, brilliant, hit, famous, renowned, remarkable, 
+prestigious, world-class, respected, notable, virtuoso, honorable, awesome, 
+unique, pioneering, phenomenal, prominent. 
+12. Contentious labels: Value-laden labels – such as calling an organization a 
+cult, an individual a racist, sexist, terrorist, or freedom fighter, or a sexual
+practice a perversion – may express contentious opinion and are best avoided 
+unless widely used by reliable sources to describe the subject, in which case 
+use in-text attribution. Avoid myth in its informal sense, and establish the 
+scholarly context for any formal use of the term.Words to Watch: cult, racist, 
+perverted, sexist, homophobic, transphobic, misogynistic, sect, fundamentalist, 
+heretic, extremist, denialist, terrorist, freedom fighter, bigot, myth, 
+neo-Nazi, -gate, pseudo-, controversial. 
+13. Unsupported attributions: These words may disguise a biased view. Claims 
+about what people say, think, feel, or believe, and what has been shown, 
+demonstrated, or proved should be clearly attributed.Words to Watch: ​some people
+say, many people remember, many scholars state, it is 
+believed/regarded/considered, many are of the opinion, most feel, experts 
+declare, it is often reported, it is widely thought, research has shown, science
+says, scientists claim, it is often said, officially, is widely regarded as, X 
+has been described as Y.
+14. Expressions of doubt: When these are used, ensure that the source of the 
+accusation is clear. Words to Watch: supposed, apparent, purported, alleged, 
+accused, so-called ...   Also, scare-quoting: a Yale "report"; undue emphasis: 
+"... a Baptist church".
+15. Editorializing: These words should usually be avoided so as to maintain an 
+impartial tone.​Words to Watch: notably, it should be noted, arguably, 
+interestingly, essentially, utterly, actually, only, clearly, absolutely, of 
+course, without a doubt, indeed, happily, sadly, tragically, aptly, fortunately,
+unfortunately, untimely.
+16. Synonyms for said: In some types of writing, repeated use of said is 
+considered tedious, and writers are encouraged to employ synonyms. On Wikipedia,
+it is more important to avoid language that makes undue implications.Words to 
+Watch: reveal, point out, clarify, expose, explain, find, note, observe, insist,
+speculate, surmise, claim, assert, admit, confess, deny, confirm ...
+17. Euphemisms: Euphemisms should generally be avoided in favor of more neutral 
+and precise terms.​Words to Watch: passed away, gave her life, eternal rest, make
+love, an issue with, collateral damage, differently abled.
+18. Clichés and idioms: Clichés and idioms should generally be avoided in favor 
+of direct, literal expressions.Words to watch: lion's share, tip of the iceberg,
+white elephant, gild the lily, take the plunge, ace up the sleeve, bird in the 
+hand, twist of fate, at the end of the day.
+19. Relative time references: Prefer specific statements to general ones.Words 
+to watch: recently, lately, currently, today, presently, to date, X years ago, 
+formerly, in the past, traditionally, this/last/next 
+(year/month/winter/spring/summer/fall/autumn), yesterday, tomorrow, in the 
+future, now, to this day, soon, since.
+20. Unspecified places or events: Prefer specific statements to general 
+ones.Words to watch: this country, here, there, somewhere, sometimes, often, 
+occasionally, somehow.
+21. Survived by: Phrasing such as "Smith died in 1982, survived by her husband 
+Jack and two sons" should be avoided; this information can be made more complete
+and spread out through the article.Words to watch: is/was survived by, [Name]'s 
+survivors include.
+---
+Broad in its coverage:
+1. It addresses the main aspects of the topic.
+2. The lead, ideally the introductory sentence or at least introductory 
+paragraph, of an article, should make clear what the scope of the article is.
+3. All material that is notable, referenced, and that a reader would be likely 
+to agree matches the specified scope must be covered (at least in a summarized 
+fashion).
+4. What reliable sources say about material that is out of scope for the 
+decided-upon subject is largely irrelevant to that article and can be removed.
+5. It stays focused on the topic without going into unnecessary detail.
+6. The lead contains a quick summary of the topic's most important points.
+7. Each major subtopic is detailed in its own section of the article.
+8. It contains no irrelevant (nor only loosely relevant) information.
+---
+Neutral:
+Achieving what the Wikipedia community understands as neutrality means carefully
+and critically analyzing a variety of reliable sources and then attempting to 
+convey to the reader the information contained in them fairly, proportionately, 
+and as far as possible without editorial bias. Wikipedia aims to describe 
+disputes, but not engage in them. The aim is to inform, not influence. Editors, 
+while naturally having their own points of view, should strive in good faith to 
+provide complete information and not to promote one particular point of view 
+over another. The neutral point of view does not mean the exclusion of certain 
+points of view; rather, it means including all verifiable points of view which 
+have sufficient due weight. Observe the following principles to help achieve the
+level of neutrality that is appropriate for an encyclopedia:
+1. It represents viewpoints fairly and without editorial bias, giving due weight
+to each.
+2. Avoid stating opinions as facts. Usually, articles will contain information 
+about the significant opinions that have been expressed about their subjects. 
+However, these opinions should not be stated in Wikipedia's voice. Rather, they 
+should be attributed in the text to particular sources, or where justified, 
+described as widespread views, etc. For example, an article should not state 
+that genocide is an evil action but may state that genocide has been described 
+by John So-and-so as the epitome of human evil.
+3. Avoid stating seriously contested assertions as facts. If different reliable 
+sources make conflicting assertions about a matter, treat these assertions as 
+opinions rather than facts, and do not present them as direct statements.
+4. Avoid stating facts as opinions. Uncontested and uncontroversial factual 
+assertions made by reliable sources should normally be directly stated in 
+Wikipedia's voice, for example the sky is blue not [name of source] believes the
+sky is blue. Unless a topic specifically deals with a disagreement over 
+otherwise uncontested information, there is no need for specific attribution for
+the assertion, although it is helpful to add a reference link to the source in 
+support of verifiability. Further, the passage should not be worded in any way 
+that makes it appear to be contested.
+5. Prefer nonjudgmental language. A neutral point of view neither sympathizes 
+with nor disparages its subject (or what reliable sources say about the 
+subject), although this must sometimes be balanced against clarity. Present 
+opinions and conflicting findings in a disinterested tone. Do not editorialize. 
+When editorial bias towards one particular point of view can be detected the 
+article needs to be fixed. The only bias that should be evident is the bias 
+attributed to the source.
+6. Indicate the relative prominence of opposing views. Ensure that the reporting
+of different views on a subject adequately reflects the relative levels of 
+support for those views and that it does not give a false impression of parity, 
+or give undue weight to a particular view. For example, to state that According 
+to Simon Wiesenthal, the Holocaust was a program of extermination of the Jewish 
+people in Germany, but David Irving disputes this analysis would be to give 
+apparent parity between the supermajority view and a tiny minority view by 
+assigning each to a single activist in the field.
+7. An article should not give undue weight to minor aspects of its subject but 
+should strive to treat each aspect with a weight proportional to its treatment 
+in the body of reliable, published material on the subject.
+8. Any inclusion of fringe or pseudoscientific views should not give them undue 
+weight. The fringe or pseudoscientific view should be clearly described as such.
+An explanation of how experts in the relevant field have reacted to such views 
+should be prominently included. 
+9. In the case of beliefs and practices, Wikipedia content should not only 
+encompass what motivates individuals who hold these beliefs and practices but 
+also account for how such beliefs and practices developed. Wikipedia articles on
+history and religion draw from religion's sacred texts as primary sources and 
+modern archaeological, historical, and scientific works as secondary and 
+tertiary sources.
+10. Article titles that combine alternative names are discouraged. For example, 
+names such as "Derry/Londonderry", "Aluminium/Aluminum", and "Flat Earth (Round 
+Earth)" should not be used. Instead, alternative names should be given their due
+prominence within the article itself, and redirects created as appropriate.
+---
+IMPORTANT:
+1. You are prohibited from searching any Wikipedia pages (always use 
+-site:en.wikipedia.org when searching); otherwise, it will be considered 
+cheating.
+2. You are prohibited from reading the webpage at 
+https://en.wikipedia.org/wiki/Ring_of_Nestor. If this page appears in your 
+references, it will be regarded as invalid research.
+3. Ensure all factual claims are backed by citations. Use bracketed numbers 
+(e.g., [1], [2]) for in-text citations. At the very end of the article, include 
+a dedicated 'References' section that lists the corresponding full URLs for each
+number.
+INFO:httpx:HTTP Request: POST https://yunwu.ai/v1/chat/completions "HTTP/1.1 200 OK"
+[AIMessage → tool] init_research({'user_request': "Write a Wikipedia-style 
+article about 'Ring of Nestor', following the provided rubric on writing 
+quality, neutrality, and coverage. Do not consult any Wikipedia pages or the 
+existing 'Ring_of_Nestor' article. Use external reliable sources (excluding 
+Wikipedia) and ensure every factual claim is backed by citations with bracketed 
+numbers [1], [2], etc., and a final 'References' section listing full URLs for 
+each numbered citation. The topic likely concerns the archaeological artifact 
+known as the Ring of Nestor (or so-called Nestor's Ring), including its 
+discovery, description, dating, cultural context, interpretations, scholarly 
+debates, and significance in archaeology and Aegean prehistory."})
+INFO:httpx:HTTP Request: POST https://yunwu.ai/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:agents.memory_manager:[init_research selected_queries] [{"text": "“Ring of Nestor” Nestor's Ring archaeological artifact identity material Mycenaean Aegean", "importance": "core", "objective_keys": ["identity-scope"], "acceptance_criteria": ["Locate non-Wikipedia sources that explicitly name the artifact as 'Ring of Nestor' or 'Nestor's Ring' and describe what it is.", "Determine whether multiple artifacts or concepts share this name and identify the specific object relevant to Aegean archaeology."]}, {"text": "“Ring of Nestor” discovery excavation date location archaeologist provenance museum", "importance": "core", "objective_keys": ["discovery-context"], "acceptance_criteria": ["Find sources detailing the original discovery of the Ring of Nestor, including excavation site and date.", "Identify the archaeologists or institutions associated with the find.", "Confirm current ownership or museum collection and provenance information."]}, {"text": "“Ring of Nestor” gold ring description dimensions iconography dating Late Bronze Age Mycenaean", "importance": "core", "objective_keys": ["physical-description-dating"], "acceptance_criteria": ["Obtain technical descriptions of the ring's material, size, and decorative motifs from scholarly or museum sources.", "Gather scholarly statements on the ring's chronological placement in the Aegean Bronze Age.", "Identify any alternative dating proposals or ranges mentioned in the literature."]}, {"text": "“Ring of Nestor” cultural context burial grave circle A Mycenae Minoan influence significance Aegean prehistory", "importance": "core", "objective_keys": ["cultural-context-significance"], "acceptance_criteria": ["Find sources that situate the Ring of Nestor within a specific archaeological context (such as a tomb or grave circle) if applicable.", "Collect discussions of the ring's importance for understanding Mycenaean or Minoan religious practices, social hierarchy, or art.", "Identify statements by scholars on why the artifact is significant in Aegean prehistory."]}, {"text": "“Ring of Nestor” iconography interpretation religious scene function scholarly debate", "importance": "core", "objective_keys": ["interpretations-debates"], "acceptance_criteria": ["Locate analyses of the imagery or possible inscriptions on the Ring of Nestor and what they are thought to represent.", "Identify differing scholarly interpretations about the ring's function (e.g., signet ring, ritual object).", "Document any notable debates or shifts in scholarly consensus regarding the ring's meaning or attribution."]}]
+[init_research result] {"goal_id": "20260627193446755397_4afd6132", 
+"research_goal": "Produce a Wikipedia-style, neutrally written, well-cited 
+article about the archaeological artifact known as the Ring of Nestor (Nestor's 
+Ring), covering its identity, discovery, description, dating, cultural context, 
+interpretations, scholarly debates, and significance in archaeology and Aegean 
+prehistory, without using Wikipedia as a source.", "language": "English", 
+"scope_mode": "bounded", "objectives": [{"id": "20260627193446768904_362fdda6", 
+"type": "Analysis", "coverage": 0.0, "analysis_type": "objective", "confidence":
+0.0, "description": "Establish the identity, basic definition, and scope of the 
+artifact referred to as the Ring of Nestor or Nestor's Ring, including its 
+classification, general period, and association with Nestor in tradition or 
+scholarship.", "weight": 1.0, "requirement": "must", "low_gain_streak": 0, 
+"last_evaluated_successful_rounds": 0, "objective_key": "identity-scope", 
+"text": "Establish the identity, basic definition, and scope of the artifact 
+referred to as the Ring of Nestor or Nestor's Ring, including its 
+classification, general period, and association with Nestor in tradition or 
+scholarship.", "acceptance_criteria": ["Clearly states what the Ring of Nestor 
+is (artifact type, material, general era).", "Clarifies whether there are 
+multiple objects or uses of the name and which one the article focuses on.", 
+"Provides at least one reliable non-Wikipedia source confirming the artifact's 
+name and basic identity."], "status": "open"}, {"id": 
+"20260627193446792381_be50af48", "type": "Analysis", "coverage": 0.0, 
+"analysis_type": "objective", "confidence": 0.0, "description": "Document the 
+circumstances of discovery of the Ring of Nestor, including location, date of 
+discovery, excavators, and subsequent ownership or museum collection history.", 
+"weight": 1.0, "requirement": "must", "low_gain_streak": 0, 
+"last_evaluated_successful_rounds": 0, "objective_key": "discovery-context", 
+"text": "Document the circumstances of discovery of the Ring of Nestor, 
+including location, date of discovery, excavators, and subsequent ownership or 
+museum collection history.", "acceptance_criteria": ["Identifies where and when 
+the Ring of Nestor was discovered, with dates or approximate periods.", "Names 
+the excavation project or archaeologists involved, where available.", "Describes
+the artifact's provenance and current repository (e.g., museum or collection), 
+with at least one reliable source."], "status": "open"}, {"id": 
+"20260627193446821497_368ecd59", "type": "Analysis", "coverage": 0.0, 
+"analysis_type": "objective", "confidence": 0.0, "description": "Provide a 
+detailed physical description and dating of the Ring of Nestor, including 
+materials, dimensions, iconography, inscriptions if any, stylistic features, and
+scholarly estimates of its chronological placement.", "weight": 1.0, 
+"requirement": "must", "low_gain_streak": 0, "last_evaluated_successful_rounds":
+0, "objective_key": "physical-description-dating", "text": "Provide a detailed 
+physical description and dating of the Ring of Nestor, including materials, 
+dimensions, iconography, inscriptions if any, stylistic features, and scholarly 
+estimates of its chronological placement.", "acceptance_criteria": ["Describes 
+the ring's material, size, and decorative features in concrete terms sourced 
+from specialist descriptions.", "Summarizes scholarly dating (e.g., Late Bronze 
+Age, Mycenaean, Minoan) with approximate centuries or phases.", "Notes any 
+disagreements or ranges in dating supported by sources."], "status": "open"}, 
+{"id": "20260627193446857148_7fb86517", "type": "Analysis", "coverage": 0.0, 
+"analysis_type": "objective", "confidence": 0.0, "description": "Explain the 
+cultural and archaeological context of the Ring of Nestor, including its 
+relation to Mycenaean or Minoan culture, associated burial or architectural 
+contexts, and its significance in the study of Aegean prehistory.", "weight": 
+1.0, "requirement": "must", "low_gain_streak": 0, 
+"last_evaluated_successful_rounds": 0, "objective_key": 
+"cultural-context-significance", "text": "Explain the cultural and 
+archaeological context of the Ring of Nestor, including its relation to 
+Mycenaean or Minoan culture, associated burial or architectural contexts, and 
+its significance in the study of Aegean prehistory.", "acceptance_criteria": 
+["Places the artifact within a broader cultural framework (e.g., Mycenaean 
+palace culture, elite burial practices).", "Connects the ring to relevant 
+archaeological sites or assemblages (such as a specific tomb or grave circle) 
+where supported.", "Summarizes how specialists regard its importance for 
+understanding Aegean religion, art, or social structure, with citations."], 
+"status": "open"}, {"id": "20260627193446883404_542c54e8", "type": "Analysis", 
+"coverage": 0.0, "analysis_type": "objective", "confidence": 0.0, "description":
+"Survey major scholarly interpretations and debates about the Ring of Nestor, 
+including readings of its imagery or inscriptions, its possible religious or 
+political functions, and any contested issues in attribution, dating, or 
+meaning.", "weight": 1.0, "requirement": "must", "low_gain_streak": 0, 
+"last_evaluated_successful_rounds": 0, "objective_key": 
+"interpretations-debates", "text": "Survey major scholarly interpretations and 
+debates about the Ring of Nestor, including readings of its imagery or 
+inscriptions, its possible religious or political functions, and any contested 
+issues in attribution, dating, or meaning.", "acceptance_criteria": ["Identifies
+at least two distinct scholarly interpretations of the ring's imagery, function,
+or cultural meaning.", "Describes any noted controversies or revisions in 
+scholarly understanding (e.g., reinterpretation of iconography, new dating 
+evidence).", "Supports each interpretation or debate point with specific 
+citations to scholarly or expert sources."], "status": "open"}, {"id": 
+"20260627193446913605_99d22ec1", "type": "Analysis", "coverage": 0.0, 
+"analysis_type": "objective", "confidence": 0.0, "description": "Trace the 
+history of scholarly and public reception of the Ring of Nestor, including major
+publications, changing views over time, and its role in broader discussions of 
+Homeric archaeology or Nestor-related traditions.", "weight": 0.6, 
+"requirement": "should", "low_gain_streak": 0, 
+"last_evaluated_successful_rounds": 0, "objective_key": 
+"reception-scholarship-history", "text": "Trace the history of scholarly and 
+public reception of the Ring of Nestor, including major publications, changing 
+views over time, and its role in broader discussions of Homeric archaeology or 
+Nestor-related traditions.", "acceptance_criteria": ["Mentions key academic 
+works or landmark studies that shaped understanding of the Ring of Nestor.", 
+"Notes any connections made between the ring and Homeric Nestor or other 
+literary traditions, where documented.", "Indicates how perceptions of the 
+ring's significance have evolved across different phases of Aegean 
+archaeological research."], "status": "open"}], "queries": [{"handle": "q1", 
+"id": "20260627193446949858_73d82819", "text": "“Ring of Nestor” Nestor's Ring 
+archaeological artifact identity material Mycenaean Aegean", "priority_tier": 
+"high", "acceptance_criteria": ["Locate non-Wikipedia sources that explicitly 
+name the artifact as 'Ring of Nestor' or 'Nestor's Ring' and describe what it 
+is.", "Determine whether multiple artifacts or concepts share this name and 
+identify the specific object relevant to Aegean archaeology."], 
+"objective_keys": ["identity-scope"]}, {"handle": "q2", "id": 
+"20260627193446999674_650e6e3b", "text": "“Ring of Nestor” discovery excavation 
+date location archaeologist provenance museum", "priority_tier": "high", 
+"acceptance_criteria": ["Find sources detailing the original discovery of the 
+Ring of Nestor, including excavation site and date.", "Identify the 
+archaeologists or institutions associated with the find.", "Confirm current 
+ownership or museum collection and provenance information."], "objective_keys": 
+["discovery-context"]}, {"handle": "q3", "id": "20260627193447052448_cf9a891f", 
+"text": "“Ring of Nestor” gold ring description dimensions iconography dating 
+Late Bronze Age Mycenaean", "priority_tier": "high", "acceptance_criteria": 
+["Obtain technical descriptions of the ring's material, size, and decorative 
+motifs from scholarly or museum sources.", "Gather scholarly statements on the 
+ring's chronological placement in the Aegean Bronze Age.", "Identify any 
+alternative dating proposals or ranges mentioned in the literature."], 
+"objective_keys": ["physical-description-dating"]}, {"handle": "q4", "id": 
+"20260627193447100261_d6c0ba2e", "text": "“Ring of Nestor” cultural context 
+burial grave circle A Mycenae Minoan influence significance Aegean prehistory", 
+"priority_tier": "high", "acceptance_criteria": ["Find sources that situate the 
+Ring of Nestor within a specific archaeological context (such as a tomb or grave
+circle) if applicable.", "Collect discussions of the ring's importance for 
+understanding Mycenaean or Minoan religious practices, social hierarchy, or 
+art.", "Identify statements by scholars on why the artifact is significant in 
+Aegean prehistory."], "objective_keys": ["cultural-context-significance"]}, 
+{"handle": "q5", "id": "20260627193447146837_4a4a11fa", "text": "“Ring of 
+Nestor” iconography interpretation religious scene function scholarly debate", 
+"priority_tier": "high", "acceptance_criteria": ["Locate analyses of the imagery
+or possible inscriptions on the Ring of Nestor and what they are thought to 
+represent.", "Identify differing scholarly interpretations about the ring's 
+function (e.g., signet ring, ritual object).", "Document any notable debates or 
+shifts in scholarly consensus regarding the ring's meaning or attribution."], 
+"objective_keys": ["interpretations-debates"]}]}
+INFO:httpx:HTTP Request: POST https://yunwu.ai/v1/chat/completions "HTTP/1.1 200 OK"
+[AIMessage → tool] get_next_actions({'limit': 4})
+[get_next_actions result] [{"action": "dispatch_searcher", "query_id": 
+"20260627193446949858_73d82819", "query_handle": "q1", "priority": 1.0, 
+"required_for_parent": false, "required_path": false, "semantic_importance": 
+1.0, "gap_ids": [], "reason": "query awaits its first successful search"}, 
+{"action": "dispatch_searcher", "query_id": "20260627193446999674_650e6e3b", 
+"query_handle": "q2", "priority": 1.0, "required_for_parent": false, 
+"required_path": false, "semantic_importance": 1.0, "gap_ids": [], "reason": 
+"query awaits its first successful search"}, {"action": "dispatch_searcher", 
+"query_id": "20260627193447052448_cf9a891f", "query_handle": "q3", "priority": 
+1.0, "required_for_parent": false, "required_path": false, 
+"semantic_importance": 1.0, "gap_ids": [], "reason": "query awaits its first 
+successful search"}, {"action": "dispatch_searcher", "query_id": 
+"20260627193447100261_d6c0ba2e", "query_handle": "q4", "priority": 1.0, 
+"required_for_parent": false, "required_path": false, "semantic_importance": 
+1.0, "gap_ids": [], "reason": "query awaits its first successful search"}]
+INFO:httpx:HTTP Request: POST https://yunwu.ai/v1/chat/completions "HTTP/1.1 200 OK"
+[AIMessage → tool] dispatch_searcher({'query_id': 
+'20260627193446949858_73d82819', 'source_preferences': 
+['-site:en.wikipedia.org']})
+[AIMessage → tool] dispatch_searcher({'query_id': 
+'20260627193446999674_650e6e3b', 'source_preferences': 
+['-site:en.wikipedia.org']})
+[AIMessage → tool] dispatch_searcher({'query_id': 
+'20260627193447052448_cf9a891f', 'source_preferences': 
+['-site:en.wikipedia.org']})
+[AIMessage → tool] dispatch_searcher({'query_id': 
+'20260627193447100261_d6c0ba2e', 'source_preferences': 
+['-site:en.wikipedia.org']})
+INFO:neo4j.notifications:Received notification from DBMS server: <GqlStatusObject gql_status='03N90', status_description="info: cartesian product. The disconnected pattern '(q:Query {id: $query_id}), (g:UserRequest {id: $goal_id})' builds a cartesian product. A cartesian product may produce a large amount of data and slow down query processing.", position=<SummaryInputPosition line=2, column=13, offset=13>, raw_classification='PERFORMANCE', classification=<NotificationClassification.PERFORMANCE: 'PERFORMANCE'>, raw_severity='INFORMATION', severity=<NotificationSeverity.INFORMATION: 'INFORMATION'>, diagnostic_record={'_classification': 'PERFORMANCE', '_severity': 'INFORMATION', '_position': {'offset': 13, 'line': 2, 'column': 13}, 'OPERATION': '', 'OPERATION_CODE': '0', 'CURRENT_SCHEMA': '/'}> for query: "\n            MATCH (q:Query {id: $query_id}), (g:UserRequest {id: $goal_id})\n            SET q._claim_lock = coalesce(q._claim_lock, 0) + 1,\n                g._budget_lock = coalesce(g._budget_lock, 0) + 1\n            WITH q, g\n            WHERE q.status = 'pending'\n              AND coalesce(q.successful_search_runs, 0) = 0\n              AND (\n                coalesce(g.max_search_rounds, 0) <= 0\n                OR coalesce(g.dispatched_search_rounds, 0) < g.max_search_rounds\n              )\n            SET q.status = 'searching',\n                q.search_attempts = coalesce(q.search_attempts, 0) + 1,\n                g.dispatched_search_rounds = coalesce(g.dispatched_search_rounds, 0) + 1\n            CREATE (r:SearchRun {\n                id: $run_id,\n                context: $context,\n                query_id: $query_id,\n                status: 'running',\n                attempt: q.search_attempts\n            })\n            MERGE (q)-[:SEARCHED_BY]->(r)\n            RETURN r.id AS search_run_id,\n                   q.search_attempts AS attempt,\n                   g.dispatched_search_rounds AS dispatched_search_rounds\n            "
+[tools:7656987b-59bd-8066-27be-ea21f89f6257] [HumanMessage] {"query": "“Ring of 
+Nestor” Nestor's Ring archaeological artifact identity material Mycenaean Aegean
+-site:wikipedia.org -site:en.wikipedia.org", "acceptance_criteria": ["Locate 
+non-Wikipedia sources that explicitly name the artifact as 'Ring of Nestor' or 
+'Nestor's Ring' and describe what it is.", "Determine whether multiple artifacts
+or concepts share this name and identify the specific object relevant to Aegean 
+archaeology."], "assigned_gaps": [], "research_goal": "Produce a 
+Wikipedia-style, neutrally written, well-cited article about the archaeological 
+artifact known as the Ring of Nestor (Nestor's Ring), covering its identity, 
+discovery, description, dating, cultural context, interpretations, scholarly 
+debates, and significance in archaeology and Aegean prehistory, without using 
+Wikipedia as a source.", "language": "English", "time_window": "to present", 
+"region_scope": "Aegean region, Mycenaean Greece, relevant discovery locations 
+and museum holdings", "source_preferences": ["-site:en.wikipedia.org"], 
+"excluded_domains": ["wikipedia.org", "en.wikipedia.org"], "parent_covered": [],
+"requirement": "Collect evidence for this Query only. Do not broaden into 
+sibling topics."}
+[tools:7656987b-59bd-8066-27be-ea21f89f6257] [AIMessage] [
+  {
+    "tool": "serper_search",
+    "payload": {
+      "query": "“Ring of Nestor” Nestor's Ring archaeological artifact identity 
+material Mycenaean Aegean -site:wikipedia.org -site:en.wikipedia.org",
+      "results": [
+        {
+          "title": "(PDF) (2020) A. G. Vlachopoulos, “The Ring of Nestor and the
+quest ...",
+          "url": 
+"https://www.academia.edu/43416584/_2020_A_G_Vlachopoulos_The_Ring_of_Nestor_and
+_the_quest_for_authenticity_in_F_Blakolmer_ed_Current_Approaches_and_New_Perspec
+tives_in_Aegean_Iconography_Aegis_18_2020_pp_223_252",
+          "content": "The study shows that the Ring of Nestor possesses 97% gold
+content, indicating high-quality Ancient Aegean craftsmanship comparable to 
+notable pieces like the ...",
+          "date": null
+        },
+        {
+          "title": "[PDF] Nestor Bibliography of Aegean and Related Areas 2020 -
+UC Classics",
+          "url": 
+"https://classics.uc.edu/nestor/images/stories/annual_issues/nestor_2020.pdf",
+          "content": "“The Ring of Nestor and the Quest for. Authenticity.” Pp. 
+223-252 in Current Approaches and New Perspectives in. Aegean Iconography. 
+(Abstract, p. 223 ...",
+          "date": null
+        },
+        {
+          "title": "Lesson 24: Bibliography – Aegean Prehistoric Archaeology",
+          "url": 
+"https://sites.dartmouth.edu/aegean-prehistory/lessons/lesson-24-narrative/lesso
+n-24-bibliography/",
+          "content": "Mossman, “Mycenaean Lead: A Fresh Look at an Old 
+Material,” in C. ... Pini, \"The 'Ring of Nestor',\" OJA 17(1998) 1-13. I. Pini,
+\"Further Research ...",
+          "date": null
+        },
+        {
+          "title": "3700-year-old gold signet ring from Crete, Late Minoan 
+Period, (c ...",
+          "url": 
+"https://www.facebook.com/ArchaeologyandAncientWorld9/posts/ring-of-nestor-a-370
+0-year-old-gold-signet-ring-from-crete-late-minoan-period-c-/1401558432013893/",
+          "content": "The authenticity of the Ring of Nestor is disputed. It was
+first described by the archaeologist Arthur Evans in 1925. Its detailed design— 
+...",
+          "date": "Apr 13, 2026"
+        },
+        {
+          "title": "Treasures of Mycenaean Pylos | PDF - Scribd",
+          "url": "https://www.scribd.com/document/936835546/Princes-of-Pylos",
+          "content": "FIGURE 11 Signet ring (the “Ring of Nestor”). Minoan, 
+about 1500 BCE. Gold ... Painting the Palace of Nestor. Aegean Legacies, 
+Mycenaean Colors and Iconographies",
+          "date": null
+        },
+        {
+          "title": "(PDF) Inventing the Minoans: Archaeology, Modernity and the 
+Quest ...",
+          "url": 
+"https://www.researchgate.net/publication/250014532_Inventing_the_Minoans_Archae
+ology_Modernity_and_the_Quest_for_European_Identity",
+          "content": "Neolithic and Early and Middle Minoan Ages. London: 
+Macmillan. 1925a 'The ring of Nestor': a glimpse into the. Minoan after- ...",
+          "date": null
+        },
+        {
+          "title": "[PDF] Knossos and the Prophets of Modernism",
+          "url": 
+"https://ndl.ethernet.edu.et/bitstream/123456789/42873/1/12..Cathy%20Gere.pdf",
+          "content": "The Ring of Nestor may be yet another forgery. Not only 
+does it em- ploy stylistic conventions found nowhere else in Minoan art, but in 
+the. 1930s Emile ...",
+          "date": null
+        },
+        {
+          "title": "Library Catalog - INSTAP Study Center for East Crete",
+          "url": "https://instapstudycenter.net/library-catalog/",
+          "content": "... Ring of Nestor, The'. A Glimpse into the Minoan 
+After-world, M-D0012. Evans, Arthur, 1929, The Shaft Graves and Bee-hive Tombs 
+Of Mycenae and their ...",
+          "date": null
+        },
+        {
+          "title": "Sir Arthur Evans and Minoan Crete: Creating the Vision of 
+Knossos ...",
+          "url": 
+"https://dokumen.pub/sir-arthur-evans-and-minoan-crete-creating-the-vision-of-kn
+ossos-9780755624102-9781780768113.html",
+          "content": "Ring of Nestor. Evans's drawing from his Knossos notebook,
+Ashmolean Museum ... Finally, all this material turned into a book on Minoan and
+Mycenaean Religion.",
+          "date": null
+        },
+        {
+          "title": "Knossos / 𐀒𐀜𐀰 — Crete / Κρήτη - Bob Cromwell",
+          "url": "https://cromwell-intl.com/travel/greece/crete/knossos/",
+          "content": "Doerpfeld's investigations, is conveniently described as 
+the \"Ring of Nestor\". And so there is no record of the object being found at 
+the cited location.",
+          "date": null
+        }
+      ]
+    }
+  },
+  {
+    "tool": "tavily_search",
+    "payload": {
+      "query": "“Ring of Nestor” Nestor's Ring archaeological artifact identity 
+material Mycenaean Aegean",
+      "follow_up_questions": null,
+      "answer": null,
+      "images": [],
+      "results": [
+        {
+          "url": 
+"https://www.facebook.com/ArchaeologyandAncientWorld9/posts/ring-of-nestor-a-370
+0-year-old-gold-signet-ring-from-crete-late-minoan-period-c-/1401558432013893",
+          "title": "3700-year-old gold signet ring from Crete, Late Minoan 
+Period, (c ...",
+          "content": "The authenticity of the Ring of Nestor is disputed. It was
+first described by the archaeologist Arthur Evans in 1925. Its detailed 
+design—",
+          "score": 0.45856747,
+          "raw_content": null
+        },
+        {
+          "url": "https://cromwell-intl.com/travel/greece/crete/knossos",
+          "title": "Knossos / 𐀒𐀜𐀰 — Crete / Κρήτη",
+          "content": "Doerpfeld's investigations, is conveniently described as 
+the \"Ring of Nestor\". And so there is no record of the object being found at 
+the cited location.",
+          "score": 0.45798564,
+          "raw_content": "![Minoan palace at 
+Knossos.](pictures/knossos-2022-0505-110929-4000x1498-0x635.jpg)\n\n# Knossos   
+—   𐀒𐀜𐀰\n\n## The Minoan Palace Complex at Knossos\n\n**Knossos** 
+or\n**Κνωσός**\nhas been called **the first European city** and\nthe home of 
+**the first European civilization.**\nThe site was settled around 7000 BCE in 
+the\nearly Neolithic period\nas a small settlement of 25–50 people.\nThat grew 
+to about 200–600 people by the\nEarly Neolithic of 6000–5000 BCE,\nand 500–1000 
+by the Middle Neolithic of\n5000–4000 BCE.\nBy about 2000 BCE it had become an 
+urban area of up to\n18,000 people.\nAt its peak shortly after 1700 BCE, the 
+population of the\ncomplex and the surrounding city had grown to about 
+100,000.\n  \n  \nThe first \"palace\" complexes were built soon after 
+roughly\n2000 BCE.\nThese were destroyed, almost certainly by 
+earthquakes,\nbefore roughly 1700 BCE.\n  \n  \nThe palace complexes were 
+rebuilt on a grander scale,\nleading to about 1650–1450 BCE being the\npeak of 
+Minoan prosperity and power.\nThe settlements of all these periods were built 
+on\ntop of each other.\n  \n  \nWe know very little about the people who lived 
+there.\nWe have no idea what they called themselves.\nWe call them 
+**\"Minoan\"** because of myths\nrecorded significantly later about a King 
+Minos.\nAn initial step in what became a\n**modernist interpretation and 
+re-creation**\nof the site was boldly saying that King Minos\nmust have been 
+real, and so this must have been his palace,\nand so these were \"the Minoan 
+people\".\n  \n  \nWe don't really know anything about what their language\nor 
+maybe languages were like.\nThey had a written language but they seem to have 
+only\nused it for business — listing inventory,\nmaking a receipt for a sale, 
+labeling the owner or\nthe contents of a clay container.\nNo history, no myths, 
+no religious texts, and no basic\n\"Here is what it was like to live in this 
+time and place.\"\n  \n  \nWhoever they were, they abandoned the Knossos palace 
+complex\nin the Late Bronze Age, around 1380–1100 BCE.\nThe Mycenaeans (the 
+Greeks in the story of the Trojan War)\nthen took control of this site and other
+former Minoan sites\nand trade routes.\n  \n  \nIn the mid 20th century we 
+finally figured out how to\nread its name in the Linear B syllabary script\nused
+for Mycenaean Greek:\n𐀒𐀜𐀰\nor *KO-NO-SO.*\n  \n  \nKnossos is great to see, but 
+to make sense of it\nand get a gnosis of Knossos,\nor at least to avoid making 
+nonsense of it, you have to\nbe aware of how much we really do not know about 
+it.\nAnd, how much of what we've been told is wrong.\nThis long page has almost 
+as much about the overly inventive\nre-imagination of the site and the Minoan 
+civilization as\nit has about what you see at Knossos.\nSee Sir Arthur John 
+Evans's\n[six-volume excavation report](#evansrefs)\nif that's what you're 
+looking for.\n  \n  \n**Know that we don't 
+know.**\nΈπιστήμη\n–\nλογία.\n**Epistemology.**\n  \n  \nYou can take bus #2 
+from central Heraklion to\nthe Knossos site for just €1.50.\nBuy your ticket at 
+the machine found at some of the stops\nor from a nearby kiosk,\notherwise you 
+must pay an extra Euro to buy your the ticket\non board the bus.\n\nI stayed at 
+the\n[**Intra Muros Hostel**](https://www.intramuroshostel.com/)\nwhich 
+is,\njust as its name says, within the massive Venetian-era walls\nof the old 
+city of Heraklion.\nOr Iraklion, or Iraklio, or Iraklia, or whatever.\nThe name 
+of the city is really\nΗράκλειο\nand there are various way to spell it in Latin 
+characters.\n\nThe Intra Muros is near\nΝαός\nΑγίου\nΜηνά\nor *Naos Ayiou 
+Mina,*\nthe Church of Saint Minas,\nwhich is on a major street that makes a 
+loop\nwithin the old walls while changing its name along the way.\nOn that 
+street, just up from the church and a few blocks from\nthe hostel on tiny 
+winding back streets, is a nice coffee shop.\nI got breakfast here every 
+day.\n\nHere I'm having a *tiropita* or cheese pie,\nand a double Greek 
+coffee.\n\n![Breakfast in Heraklion: Greek coffee and 
+tiropita.](pictures/heraklion-2021-0914-094243.jpg)\n\nThen a second double 
+Greek coffee as I beat down the jet lag\na…(truncated)"
+        },
+        {
+          "url": 
+"https://www.academia.edu/43416584/_2020_A_G_Vlachopoulos_The_Ring_of_Nestor_and
+_the_quest_for_authenticity_in_F_Blakolmer_ed_Current_Approaches_and_New_Perspec
+tives_in_Aegean_Iconography_Aegis_18_2020_pp_223_252",
+          "title": "(PDF) (2020) A. G. Vlachopoulos, “The Ring of Nestor and the
+quest ...",
+          "content": "G. Vlachopoulos, “The Ring of Nestor and the quest for 
+authenticity”, in F. This tendency, underpinned by the obscure – even legendary 
+– circumstances in which these rings were found, not only the Ring of Nestor but
+also the Ring of Minos, has been reassessed completely in favour of their 
+authenticity. This revision has been significantly reinforced by recent finds of
+iconographic subjects of comparable resonance (wall-paintings, gold rings, 
+figurines, ivories, and so on), as well as by more thorough study of the 
+techniques and craftsmanship of these unique signet rings of the first centuries
+of the Late Bronze Age (16th-15th century BC). The key pictorial unit of the 
+Ring of Nestor examined in this paper is Evans’s “watch-dog” or “dragon”, namely
+the guardian of the old “tree of the world”, whose branches host the most 
+populous scene in Aegean glyptic art. This motif is here identified as a 
+scorpion, a major apotropaic symbol in Bronze Αge Aegean iconography, which 
+kills the “Μinoan Dragon” of the ring and offers a sound interpretation of the 
+ring’s iconography.",
+          "score": 0.3895703,
+          "raw_content": 
+"[![Academia.edu](//a.academia-assets.com/images/academia-logo-redesign-2015-A.s
+vg)![Academia.edu](//a.academia-assets.com/images/academia-logo-redesign-2015.sv
+g)](https://www.academia.edu/)\n\n* [Log In](https://www.academia.edu/login)\n* 
+[Sign Up](https://www.academia.edu/signup)\n* + 
+[About](https://www.academia.edu/about)\n  + 
+[Press](https://www.academia.edu/press)\n  + 
+[Papers](https://www.academia.edu/documents)\n  + 
+[Terms](https://www.academia.edu/terms)\n  + 
+[Privacy](https://www.academia.edu/privacy)\n  + 
+[Copyright](https://www.academia.edu/copyright)\n  + [We're 
+Hiring!](https://www.academia.edu/hiring)\n  + [Help 
+Center](https://support.academia.edu/hc/en-us)\n\nOutline\n\n[Title](#title)\n\n
+[Abstract](#abstract)\n\n[Key 
+Takeaways](#key-takeaways)\n\n[References](#references)\n\n[FAQs](#faq)\n\n[All 
+Topics](https://www.academia.edu/topics)\n\n[Theology](https://www.academia.edu/
+Documents/in/Theology)\n\n[Religion](https://www.academia.edu/Documents/in/Relig
+ion)\n\n# (2020) A. G. Vlachopoulos, “The Ring of Nestor and the quest for 
+authenticity”, in F. Blakolmer (ed.) Current Approaches and New Perspectives in 
+Aegean Iconography, Aegis 18 (2020), pp. 223-252.\n\n[![Profile image of Andreas
+Vlachopoulos](https://0.academia-photos.com/6604287/2822507/71442157/tiny_andrea
+s.vlachopoulos.jpg)Andreas 
+Vlachopoulos](https://lastamp.academia.edu/AndreasVlachopoulos)\n\nvisibility\n\
+n2,611 views\n\ndescription\n\n36 
+pages\n\n![](//a.academia-assets.com/images/academia-logo-capital-white.svg)\n\n
+#### Sign up for access to the world's latest research\n\ncheckGet notified 
+about relevant papers\n\ncheckSave papers to use in your research\n\ncheckJoin 
+the discussion with peers\n\ncheckTrack your impact\n\n## Abstract\n\nThe many 
+years of research that led to the present paper on the so-called Ring of Nestor 
+(CMS VI, nο. 277), with the documentation of its authenticity, have offered me 
+the opportunity to discuss the cases of erroneous identifications of some 
+Creto-Mycenaean gold rings as fakes . This tendency, underpinned by the obscure 
+– even legendary – circumstances in which these rings were found, not only the 
+Ring of Nestor but also the Ring of Minos, has been reassessed completely in 
+favour of their authenticity. This revision has been significantly reinforced by
+recent finds of iconographic subjects of comparable resonance (wall-paintings, 
+gold rings, figurines, ivories, and so on), as well as by more thorough study of
+the techniques and craftsmanship of these unique signet rings of the first 
+centuries of the Late Bronze Age (16th-15th century BC). The key pictorial unit 
+of the Ring of Nestor examined in this paper is Evans’s “watch-dog” or “dragon”,
+namely the guardian of the old “tree of the world”, whose branches host the most
+populous scene in Aegean glyptic art. This motif is here identified as a 
+scorpion, a major apotropaic symbol in Bronze Αge Aegean iconography, which 
+kills the “Μinoan Dragon” of the ring and offers a sound interpretation of the 
+ring’s iconography.\n\n## Key takeaways sparkles AI\n\n1. The Ring of Nestor, 
+measuring 3.29 cm by 2.18 cm, is the fifth largest Aegean signet ring.\n2. 
+Research confirms its authenticity, contrasting earlier claims of forgery by 
+scholars in the 1920s.\n3. The scorpion, identified as a significant apotropaic 
+symbol, plays a crucial role in the ring's iconography.\n4. Recent findings 
+enhance the understanding of Aegean glyptic art from the Late Bronze Age 
+(16th-15th century BC).\n5. This text aims to document the authenticity of the 
+Ring of Nestor and reassess historical misconceptions.\n\n## Related 
+papers\n\n[The Ellipse and Minoan Miniature Art: Analysis of the 5-priestess 
+signet ring from the Mycenaean Griffin Warrior's tomb at Pylos. A new version of
+this paper is out 
+(12/13/17)](https://www.academia.edu/35317508/The_Ellipse_and_Minoan_Miniature_A
+rt_Analysis_of_the_5_priestess_signet_ring_from_the_Mycenaean_Griffin_Warriors_t
+omb_at_Pylos_A_new_version_of_this_paper_is_out_12_13_17_)\n\n[Dimitrios S 
+Dendrinos, Ph.D.](https://kansas.academia.e…(truncated)"
+        },
+        {
+          "url": "https://instapstudycenter.net/library-catalog",
+          "title": "Library Catalog - INSTAP Study Center for East Crete",
+          "content": "... Ring of Nestor, The'. A Glimpse into the Minoan 
+After-world, M-D0012. Evans, Arthur, 1929, The Shaft Graves and Bee-hive Tombs 
+Of Mycenae and their",
+          "score": 0.38428864,
+          "raw_content": "[Skip to content](#content)\n\n[Donate to Support the 
+Study Center](/giving/)\n\n[![INSTAP Study Center for East 
+Crete](data:image/gif;base64,R0lGODdhAQABAPAAAMPDwwAAACwAAAAAAQABAAACAkQBADs=)](
+https://instapstudycenter.net/)\n\n[Open mobile menuClose mobile 
+menu](#)\n\n\n\n\n# Library Catalog\n\n| **AUTHOR** | **PUBLICATION DATE** | 
+**TITLE** | **MATERIAL NUMBER** |\n| --- | --- | --- | --- |\n| Cahiers du 
+Centre d’Études Chypriotes |\n| Pelargos. Rivista di Studi Sul Mondo Classico 
+|\n| Notes on Human Bones and Recording Forms |\n| Archäologie in Deutschland 
+|\n| UISPP Journal: The Journal of the International Union of Prehistoric and 
+Protohistoric Sciences |\n| Journal of Archaeological Science |\n| Archeologia 
+delle Alpi |\n| Chronika (graduate student journal) |\n| Archaeologia kai texnes
+|\n| British School at Athens Newsletter (BSA Newsletter) |\n| Archaeologia 
+Austriaca. Zeitschrift zur Archaologie Europas – Journal on the Archaeology of 
+Europe |\n| Λεύκωμα της Εκατονταετηρίδος της εν Αθήναις Αρχαιολογικής Εταιρείας.
+1837-1937 |\n| ΤΑΛΩΣ. Περιοδική έκδοση του Ινστιτούτου κρητικού Δικαίου (TALOS) 
+|\n| Το Έργον της εν Αθήναις Αρχαιολογικής Εταιρείας κατά την Πρώτην Αυτής 
+Εκατονταετίαν 1837-1937. |\n| Τα Εκατόν Έτη της εν Αθήναις Αρχαιολογικπής 
+Εταιρείας. Λόγος Πανηγυρικός του Γραμματέως του Συμβουλίου. |\n| Heritage 
+Turkey. British Institute at Ankara Research Reports |\n| Petrographic Glossary 
+|\n| Αρχαιολογικό Έργο στην Άνω Μακεδονία, Το (Archaiologiko Ergo stin Ano 
+Makedonia, To) |\n| Kentro. The Newsletter of the INSTAP Study Center for East 
+Crete |\n| 1853 | Πρακτικά της επί του Ερεχθείου Επιτροπής. |\n| 1860 | 
+Επιγραφαί Ελληνικαί κατά το Πλείστον Ανέκδοτοι. |\n| 1905 | Comptes rendus du 
+Congres International de Archeologie. 1ere session |\n| 1906 | Μνημεία της 
+Ελλάδος. Γλυπτά εκ του Μουσείου της Ακροπόλεως. |\n| 1915 | Επιγραφαί της 
+Μακεδονίας. |\n| 1928-1941 | Clara Rhodos. Studi e materiali pubblicati a cura 
+dell' Istituto Storico-Archeologico di Rodi, vols. I-X, Istituto 
+Storico-Archeologico – Rodi, Bergamo 1928-1941 |\n| 1942 | Centenary Album of 
+the Archaeological Society at Athens, 1837-1937 1937-1952 |\n| 1966 | Prace I 
+Materiały. Muzeum Archeologicznego I ethograficznego W Łodzi, Seria 
+Archeologiczna, Łódź, Poland |\n| 1978 | The Relations between Cyprus and Crete 
+2000-500 B.C. List of participants and Summaries of Communications |\n| 1980 | 
+Metropolitan Museum Journal |\n| 1984 | Journal of Hellenic Studies, The |\n| 
+1985 | Conservation Notes. A Quarterly Publication of the Materials Conservation
+Laboratory Texas Memorial Museum, The University of Texas at Austin |\n| 
+1987-2006 | Αρχαιολογικό Έργο Μακεδονίας και Θράκης ΑΕΜΘ (Archaiologiko Ergo 
+Makedonias kai Thrakis, AEMTH) | M-D0028 |\n| 1991 | Chalcolithic Cyprus. A 
+symposium held at the J. Paul Getty Museum, February 22-24, 1990 | M-D0026 |\n| 
+1993-1997 | Journal of European Archaeology, Vols. 1-5 | M-D0026 |\n| 1995 | 
+Identificación y Significado de la Calcita Secundaria en Ceramicas 
+Arqueológicas. |\n| 1996 | Archaiologia kai Technes, Vol. 61 |\n| 1998 | Η 
+Καθημερινή - Επτά Ημέρες - 31 Μαΐου 1998 (E Kathimerini - Εpta Imeres - 31 May 
+1998 - Mycenae feature) |\n| 1999-2000 | Κρητολογικά Γράμματα (Kretologika 
+Grammata) |\n| 2000 | AJA, Vol. 104, No. 3 | M-D0017 |\n| 2002 | AJA, Vol. 106, 
+No. 4 | M-D0017 |\n| 2002 | AJA, Vol. 106, No. 2 | M-D0017 |\n| 2003 | Giant 
+Elephant Ancestor Found on Southern Greek Island |\n| 2003 | AJA, Vol. 107, No. 
+2 | M-D0017 |\n| 2003 | AJA, Vol. 107, No. 4 |\n| 2003 | AJA, Vol. 107, No. 3 | 
+M-D0017 |\n| 2004 | AJA, Vol. 108, No. 3 | M-D0018 |\n| 2004 | AJA, Vol. 108, 
+No. 1 |\n| 2005 | Field Guide to the Excavation of Human Inhumated Remains, A | 
+M-D0012 |\n| 2005 | AJA, Vol. 109, No. 1 | M-D0017 |\n| 2007 | British Museum 
+Technical Research Bulletin, The |\n| 2007 | Anodos. Studies in the Ancient 
+World |\n| 2008 | E\\_Conservation. The Online Magazine |\n| 2009 | Pasiphae. 
+Rivista di Filologia e Antichita Egee |\n| 2009 | Studia Hercynia |\n| 2009-2015
+| Ethnoarchaeology Journal, Vols. 1-7 | M…(truncated)"
+        },
+        {
+          "url": 
+"https://www.researchgate.net/publication/250014532_Inventing_the_Minoans_Archae
+ology_Modernity_and_the_Quest_for_European_Identity",
+          "title": "(PDF) Inventing the Minoans: Archaeology, Modernity and the 
+Quest ...",
+          "content": "Neolithic and Early and Middle Minoan Ages. London: 
+Macmillan. 1925a 'The ring of Nestor': a glimpse into the. Minoan after-",
+          "score": 0.32833612,
+          "raw_content": null
+        }
+      ],
+      "response_time": 5.48,
+      "request_id": "ec38f9ed-7508-4108-802a-95fc8c18cdb3"
+    }
+  }
+]
+INFO:httpx:HTTP Request: POST https://yunwu.ai/v1/chat/completions "HTTP/1.1 200 OK"
+[tools:7656987b-59bd-8066-27be-ea21f89f6257] [AIMessage] {
+  "sources": [
+    {
+      "local_ref": "s1",
+      "url": 
+"https://www.academia.edu/43416584/_2020_A_G_Vlachopoulos_The_Ring_of_Nestor_and
+_the_quest_for_authenticity_in_F_Blakolmer_ed_Current_Approaches_and_New_Perspec
+tives_in_Aegean_Iconography_Aegis_18_2020_pp_223_252",
+      "title": "(2020) A. G. Vlachopoulos, “The Ring of Nestor and the quest for
+authenticity”, in F. Blakolmer (ed.) Current Approaches and New Perspectives in 
+Aegean Iconography, Aegis 18 (2020), pp. 223-252.",
+      "source_type": "paper"
+    },
+    {
+      "local_ref": "s2",
+      "url": 
+"https://classics.uc.edu/nestor/images/stories/annual_issues/nestor_2020.pdf",
+      "title": "Nestor Bibliography of Aegean and Related Areas 2020",
+      "source_type": "report"
+    },
+    {
+      "local_ref": "s3",
+      "url": 
+"https://sites.dartmouth.edu/aegean-prehistory/lessons/lesson-24-narrative/lesso
+n-24-bibliography/",
+      "title": "Lesson 24: Bibliography – Aegean Prehistoric Archaeology",
+      "source_type": "other"
+    },
+    {
+      "local_ref": "s4",
+      "url": 
+"https://www.facebook.com/ArchaeologyandAncientWorld9/posts/ring-of-nestor-a-370
+0-year-old-gold-signet-ring-from-crete-late-minoan-period-c-/1401558432013893/",
+      "title": "3700-year-old gold signet ring from Crete, Late Minoan Period",
+      "source_type": "other"
+    },
+    {
+      "local_ref": "s5",
+      "url": "https://www.scribd.com/document/936835546/Princes-of-Pylos",
+      "title": "Princes of Pylos (Treasures of Mycenaean Pylos)",
+      "source_type": "other"
+    },
+    {
+      "local_ref": "s6",
+      "url": 
+"https://www.researchgate.net/publication/250014532_Inventing_the_Minoans_Archae
+ology_Modernity_and_the_Quest_for_European_Identity",
+      "title": "Inventing the Minoans: Archaeology, Modernity and the Quest for 
+European Identity",
+      "source_type": "paper"
+    },
+    {
+      "local_ref": "s7",
+      "url": 
+"https://ndl.ethernet.edu.et/bitstream/123456789/42873/1/12..Cathy%20Gere.pdf",
+      "title": "Knossos and the Prophets of Modernism (Cathy Gere)",
+      "source_type": "paper"
+    },
+    {
+      "local_ref": "s8",
+      "url": "https://instapstudycenter.net/library-catalog/",
+      "title": "Library Catalog - INSTAP Study Center for East Crete",
+      "source_type": "other"
+    },
+    {
+      "local_ref": "s9",
+      "url": 
+"https://dokumen.pub/sir-arthur-evans-and-minoan-crete-creating-the-vision-of-kn
+ossos-9780755624102-9781780768113.html",
+      "title": "Sir Arthur Evans and Minoan Crete: Creating the Vision of 
+Knossos",
+      "source_type": "other"
+    },
+    {
+      "local_ref": "s10",
+      "url": "https://cromwell-intl.com/travel/greece/crete/knossos/",
+      "title": "Knossos / 𐀒𐀜𐀰 — Crete / Κρήτη",
+      "source_type": "blog"
+    }
+  ],
+  "documents": [
+    {
+      "local_ref": "d1",
+      "document_summary": "Academic article by A. G. Vlachopoulos (Aegis 18, 
+2020) focused on the so‑called Ring of Nestor (CMS VI, no. 277). The abstract 
+and key‑takeaways state that years of research documented its authenticity and 
+reassessed earlier scholarly tendencies to treat certain Creto‑Mycenaean gold 
+rings, including the Ring of Nestor and the Ring of Minos, as forgeries. The 
+revision in favor of authenticity is said to be supported by recent finds of 
+comparable iconographic motifs (wall paintings, gold rings, figurines, ivories) 
+and detailed study of techniques and craftsmanship of signet rings from the 
+first centuries of the Late Bronze Age (16th–15th century BC). The ring is 
+described as the fifth‑largest Aegean signet ring, measuring 3.29 cm by 2.18 cm.
+The key pictorial motif examined is Evans’s so‑called watch‑dog or dragon 
+guarding a world tree whose branches host a populous scene in Aegean glyptic 
+art; Vlachopoulos argues this motif should be identified as a scorpion, a major 
+apotropaic symbol in Bronze Age Aegean iconography, which kills the \"Minoan 
+Dragon\" and provides an interpretive key to the ring’s imagery.",
+      "source_ref": "s1"
+    },
+    {
+      "local_ref": "d2",
+      "document_summary": "The Nestor Bibliography of Aegean and Related Areas 
+2020 PDF is an annual bibliographic compilation produced by UC Classics. In the 
+cited portion it lists Andreas G. Vlachopoulos’s article \"The Ring of Nestor 
+and the Quest for Authenticity\" (pages 223–252) in the volume Current 
+Approaches and New Perspectives in Aegean Iconography, noting that an abstract 
+appears on page 223. The document functions as a reference tool and confirms 
+publication details rather than providing substantive discussion of the ring 
+itself.",
+      "source_ref": "s2"
+    },
+    {
+      "local_ref": "d3",
+      "document_summary": "The Lesson 24 bibliography page for the Aegean 
+Prehistoric Archaeology course at Dartmouth is a curated list of scholarly works
+on Aegean prehistory. In the excerpt it cites I. Pini’s article \"The 'Ring of 
+Nestor'\" published in the Oxford Journal of Archaeology 17 (1998) 1–13, and 
+mentions further research by Pini. The page itself does not summarize the 
+content of Pini’s work but indicates that the Ring of Nestor is a recognized 
+topic in scholarly literature on Aegean archaeology and Mycenaean materials.",
+      "source_ref": "s3"
+    },
+    {
+      "local_ref": "d4",
+      "document_summary": "The Facebook post from \"Archaeology and Ancient 
+World\" describes the Ring of Nestor as a 3700‑year‑old gold signet ring from 
+Crete dating to the Late Minoan period (circa 1500 BCE). It notes that the 
+authenticity of the Ring of Nestor is disputed and that it was first described 
+by archaeologist Sir Arthur Evans in 1925. The post emphasizes the ring’s 
+detailed design and situates it within public‑facing narratives about Minoan and
+Mycenaean art, but does not provide technical analysis.",
+      "source_ref": "s4"
+    },
+    {
+      "local_ref": "d5",
+      "document_summary": "The Scribd document \"Princes of Pylos\" (Treasures 
+of Mycenaean Pylos) includes an illustrated figure caption referring to a signet
+ring identified as \"the Ring of Nestor.\" The caption describes it as a Minoan 
+gold signet ring dating to about 1500 BCE. The document appears to be a popular 
+or semi‑scholarly text on Mycenaean Pylos, mentioning related topics such as 
+\"Painting the Palace of Nestor\" and Aegean legacies, colors, and 
+iconographies, but the provided excerpt gives only brief descriptive information
+on the ring’s cultural attribution, date, and material.",
+      "source_ref": "s5"
+    },
+    {
+      "local_ref": "d6",
+      "document_summary": "The ResearchGate entry for \"Inventing the Minoans: 
+Archaeology, Modernity and the Quest for European Identity\" refers to a section
+that mentions \"'The ring of Nestor': a glimpse into the Minoan after‑world\" in
+the context of discussing Arthur Evans’s framing of Neolithic and Minoan ages. 
+The available snippet indicates that Evans used the Ring of Nestor as part of a 
+narrative about the Minoan afterlife or after‑world, but the excerpt does not 
+give further details on the ring’s material or authenticity.",
+      "source_ref": "s6"
+    },
+    {
+      "local_ref": "d7",
+      "document_summary": "The PDF \"Knossos and the Prophets of Modernism\" by 
+Cathy Gere discusses the historiography of Knossos and interpretations of Minoan
+archaeology. In the cited portion, Gere notes that the Ring of Nestor may be yet
+another forgery. She writes that it employs stylistic conventions found nowhere 
+else in Minoan art and mentions that by the 1930s Emile (presumably a scholar 
+such as Emile Gilliéron or similar) was involved, implying concerns about 
+authenticity and possible modern fabrication or alteration. The text situates 
+the ring within broader critiques of Evans’s reconstructions and modernist 
+inventions in Minoan archaeology.",
+      "source_ref": "s7"
+    },
+    {
+      "local_ref": "d8",
+      "document_summary": "The INSTAP Study Center for East Crete library 
+catalog is a tabular listing of authors, publication dates, titles, and internal
+material numbers for holdings. In the excerpt, one catalog entry lists Arthur 
+Evans’s work with a title containing \"Ring of Nestor, The. A Glimpse into the 
+Minoan After-world\" with a material number M‑D0012, and another Evans 
+publication \"The Shaft Graves and Bee-hive Tombs Of Mycenae and their ...\". 
+The catalog confirms the existence of Evans’s publication related to the Ring of
+Nestor but does not itself provide content about the ring.",
+      "source_ref": "s8"
+    },
+    {
+      "local_ref": "d9",
+      "document_summary": "The document \"Sir Arthur Evans and Minoan Crete: 
+Creating the Vision of Knossos\" (hosted on dokumen.pub) discusses Evans’s 
+excavation work and interpretive reconstructions. In the excerpt it refers to 
+\"Ring of Nestor\" and mentions Evans’s drawing of the ring from his Knossos 
+notebook housed in the Ashmolean Museum. It notes that this and related material
+eventually contributed to Evans’s book on Minoan and Mycenaean religion. The 
+provided text focuses on Evans’s documentation of the ring rather than on 
+technical evaluation of the artifact.",
+      "source_ref": "s9"
+    },
+    {
+      "local_ref": "d10",
+      "document_summary": "The blog post \"Knossos / Crete\" on 
+cromwell-intl.com is a long travelogue and critical reflection on the site of 
+Knossos and modern interpretations of Minoan civilization. In the cited segment 
+it recounts that an object described by Arthur Evans as the \"Ring of Nestor\" 
+was associated with Doerpfeld’s investigations, but the author notes that there 
+is no record of the object being found at the cited location. This comment 
+contributes to doubts about the provenance and documentation of the Ring of 
+Nestor, reinforcing a theme of skepticism toward some early 20th‑century 
+archaeological narratives.",
+      "source_ref": "s10"
+    }
+  ],
+  "statements": [
+    {
+      "local_ref": "st1",
+      "text": "The Ring of Nestor (CMS VI, no. 277) has been the subject of many
+years of research by Andreas G. Vlachopoulos aimed at documenting its 
+authenticity.",
+      "document_ref": "d1",
+      "source_ref": "s1",
+      "qualifiers": ["focuses on scholarly assessment of authenticity"],
+      "limitations": ["based on abstract and key-takeaways, not full article 
+text"],
+      "confidence": "high"
+    },
+    {
+      "local_ref": "st2",
+      "text": "Earlier scholarly tendencies to identify certain Creto-Mycenaean 
+gold rings, including the Ring of Nestor and the Ring of Minos, as fakes have 
+been reassessed in favor of their authenticity in Vlachopoulos’s study.",
+      "document_ref": "d1",
+      "source_ref": "s1",
+      "qualifiers": ["refers to scholarly debate in early 20th century versus 
+later reassessment"],
+      "limitations": ["summary-level description from abstract and 
+key-takeaways"],
+      "confidence": "high"
+    },
+    {
+      "local_ref": "st3",
+      "text": "According to Vlachopoulos, recent finds of iconographic subjects 
+in wall-paintings, gold rings, figurines, and ivories, along with technical 
+study of craftsmanship, support the authenticity of unique signet rings such as 
+the Ring of Nestor dating to the first centuries of the Late Bronze Age 
+(16th–15th century BC).",
+      "document_ref": "d1",
+      "source_ref": "s1",
+      "qualifiers": ["applies to Late Bronze Age Aegean glyptic art"],
+      "limitations": ["drawn from abstract; specific finds are not listed in the
+snippet"],
+      "confidence": "medium"
+    },
+    {
+      "local_ref": "st4",
+      "text": "The Ring of Nestor is described by Vlachopoulos as measuring 3.29
+cm by 2.18 cm and being the fifth largest Aegean signet ring.",
+      "document_ref": "d1",
+      "source_ref": "s1",
+      "qualifiers": ["dimensional data for the artifact"],
+      "limitations": ["size information derived from key-takeaways AI summary 
+rather than direct article text"],
+      "confidence": "medium"
+    },
+    {
+      "local_ref": "st5",
+      "text": "In Vlachopoulos’s interpretation, the key pictorial motif on the 
+Ring of Nestor, previously described by Arthur Evans as a watch-dog or dragon 
+guarding a tree of the world, is identified as a scorpion that functions as a 
+major apotropaic symbol in Bronze Age Aegean iconography.",
+      "document_ref": "d1",
+      "source_ref": "s1",
+      "qualifiers": ["interpretive iconographic identification"],
+      "limitations": ["based on abstract and summary; detailed iconographic 
+argument not visible"],
+      "confidence": "medium"
+    },
+    {
+      "local_ref": "st6",
+      "text": "The Nestor Bibliography of Aegean and Related Areas 2020 lists 
+A.G. Vlachopoulos’s article \"The Ring of Nestor and the Quest for 
+Authenticity\" as appearing on pages 223–252 in the volume Current Approaches 
+and New Perspectives in Aegean Iconography, with an abstract on page 223.",
+      "document_ref": "d2",
+      "source_ref": "s2",
+      "qualifiers": ["bibliographic citation only"],
+      "limitations": ["does not discuss artifact details or conclusions"],
+      "confidence": "high"
+    },
+    {
+      "local_ref": "st7",
+      "text": "The Aegean Prehistoric Archaeology Lesson 24 bibliography cites 
+I. Pini’s article \"The 'Ring of Nestor'\" published in Oxford Journal of 
+Archaeology 17 (1998) 1–13 and mentions further research by Pini on the same 
+topic.",
+      "document_ref": "d3",
+      "source_ref": "s3",
+      "qualifiers": ["indicates scholarly attention to the ring"],
+      "limitations": ["no content from Pini’s article is provided"],
+      "confidence": "high"
+    },
+    {
+      "local_ref": "st8",
+      "text": "A Facebook post describes the Ring of Nestor as a 3700-year-old 
+gold signet ring from Crete, assigned to the Late Minoan period around 1500 
+BCE.",
+      "document_ref": "d4",
+      "source_ref": "s4",
+      "qualifiers": ["popular description; approximate dating"],
+      "limitations": ["social media source; no supporting archaeological data 
+provided"],
+      "confidence": "medium"
+    },
+    {
+      "local_ref": "st9",
+      "text": "The same Facebook post states that the authenticity of the Ring 
+of Nestor is disputed and that it was first described by archaeologist Arthur 
+Evans in 1925.",
+      "document_ref": "d4",
+      "source_ref": "s4",
+      "qualifiers": ["summarizes perceived scholarly dispute and historical 
+description date"],
+      "limitations": ["social media source; not referencing specific scholarly 
+works"],
+      "confidence": "medium"
+    },
+    {
+      "local_ref": "st10",
+      "text": "In the \"Princes of Pylos\" document, a figure caption identifies
+a gold signet ring as the \"Ring of Nestor,\" describes it as Minoan, and dates 
+it to about 1500 BCE.",
+      "document_ref": "d5",
+      "source_ref": "s5",
+      "qualifiers": ["brief descriptive caption; cultural and chronological 
+attribution"],
+      "limitations": ["Scribd text; not necessarily peer-reviewed; minimal 
+context provided"],
+      "confidence": "medium"
+    },
+    {
+      "local_ref": "st11",
+      "text": "The book \"Inventing the Minoans\" notes Arthur Evans’s 
+discussion of \"the ring of Nestor\" as offering a glimpse into the Minoan 
+after-world, implying that Evans used the ring in constructing narratives about 
+Minoan religion and afterlife.",
+      "document_ref": "d6",
+      "source_ref": "s6",
+      "qualifiers": ["historiographical discussion of Evans’s interpretations"],
+      "limitations": ["only a short snippet visible; details of Evans’s argument
+not shown"],
+      "confidence": "medium"
+    },
+    {
+      "local_ref": "st12",
+      "text": "Cathy Gere’s \"Knossos and the Prophets of Modernism\" suggests 
+that the Ring of Nestor may be a forgery, arguing that it employs stylistic 
+conventions not found elsewhere in Minoan art.",
+      "document_ref": "d7",
+      "source_ref": "s7",
+      "qualifiers": ["critical historiographical perspective; addresses 
+stylistic anomalies"],
+      "limitations": ["exact wording partially truncated; underlying evidence 
+not fully visible"],
+      "confidence": "medium"
+    },
+    {
+      "local_ref": "st13",
+      "text": "Gere notes that by the 1930s Emile (likely a restorer or artist 
+associated with Evans’s projects) was involved in relation to the Ring of 
+Nestor, which is framed in the text as part of concerns about possible modern 
+fabrications and forgeries in Minoan art.",
+      "document_ref": "d7",
+      "source_ref": "s7",
+      "qualifiers": ["links involvement of a named individual to forgery 
+concerns"],
+      "limitations": ["context truncated; Emile’s full identity and role not 
+given in snippet"],
+      "confidence": "medium"
+    },
+    {
+      "local_ref": "st14",
+      "text": "The INSTAP Study Center library catalog lists an Arthur Evans 
+publication titled \"Ring of Nestor, The. A Glimpse into the Minoan 
+After-world\" with material number M-D0012.",
+      "document_ref": "d8",
+      "source_ref": "s8",
+      "qualifiers": ["catalog entry; confirms title and existence of Evans’s 
+work"],
+      "limitations": ["library catalog only; no content summary or authenticity 
+discussion"],
+      "confidence": "high"
+    },
+    {
+      "local_ref": "st15",
+      "text": "The same catalog also lists Evans’s work \"The Shaft Graves and 
+Bee-hive Tombs Of Mycenae and their ...\", indicating his broader involvement 
+with Mycenaean burial archaeology.",
+      "document_ref": "d8",
+      "source_ref": "s8",
+      "qualifiers": ["context for Evans’s research scope"],
+      "limitations": ["not directly about the Ring of Nestor’s material or 
+identity"],
+      "confidence": "high"
+    },
+    {
+      "local_ref": "st16",
+      "text": "The book \"Sir Arthur Evans and Minoan Crete: Creating the Vision
+of Knossos\" notes that Evans made a drawing of the Ring of Nestor in his 
+Knossos notebook housed at the Ashmolean Museum and that material related to 
+this ring contributed to his book on Minoan and Mycenaean religion.",
+      "document_ref": "d9",
+      "source_ref": "s9",
+      "qualifiers": ["historical documentation of Evans’s recording of the 
+ring"],
+      "limitations": ["excerpt does not detail the ring’s material composition 
+or later authenticity assessments"],
+      "confidence": "medium"
+    },
+    {
+      "local_ref": "st17",
+      "text": "The Knossos travel blog states that there is no record of the 
+object described by Evans as the \"Ring of Nestor\" being found at the location 
+cited by Doerpfeld’s investigations, suggesting doubts about the provenance of 
+the ring.",
+      "document_ref": "d10",
+      "source_ref": "s10",
+      "qualifiers": ["author’s critical commentary on provenance 
+documentation"],
+      "limitations": ["blog source; not a primary excavation record; no detailed
+archival citations in snippet"],
+      "confidence": "medium"
+    }
+  ],
+  "evidence": [
+    {
+      "local_ref": "e1",
+      "text": "“The many years of research that led to the present paper on the 
+so-called Ring of Nestor (CMS VI, nο. 277), with the documentation of its 
+authenticity, have offered me the opportunity to discuss the cases of erroneous 
+identifications of some Creto-Mycenaean gold rings as fakes . This tendency, 
+underpinned by the obscure – even legendary – circumstances in which these rings
+were found, not only the Ring of Nestor but also the Ring of Minos, has been 
+reassessed completely in favour of their authenticity.”",
+      "document_ref": "d1",
+      "source_ref": "s1",
+      "evidence_type": "quote",
+      "locator": "Abstract section",
+      "qualifiers": ["refers to reassessment of authenticity of Creto-Mycenaean 
+gold rings"],
+      "limitations": ["drawn from abstract only; full methodological details not
+present"],
+      "confidence": "high"
+    },
+    {
+      "local_ref": "e2",
+      "text": "“This revision has been significantly reinforced by recent finds 
+of iconographic subjects of comparable resonance (wall-paintings, gold rings, 
+figurines, ivories, and so on), as well as by more thorough study of the 
+techniques and craftsmanship of these unique signet rings of the first centuries
+of the Late Bronze Age (16th-15th century BC).”",
+      "document_ref": "d1",
+      "source_ref": "s1",
+      "evidence_type": "quote",
+      "locator": "Abstract section",
+      "qualifiers": ["supports dating and authenticity through comparative 
+iconography and technical study"],
+      "limitations": ["specific finds and studies not enumerated in snippet"],
+      "confidence": "medium"
+    },
+    {
+      "local_ref": "e3",
+      "text": "“The Ring of Nestor, measuring 3.29 cm by 2.18 cm, is the fifth 
+largest Aegean signet ring.”",
+      "document_ref": "d1",
+      "source_ref": "s1",
+      "evidence_type": "data",
+      "locator": "Key takeaways section",
+      "qualifiers": ["dimensional data and relative size within Aegean signet 
+rings"],
+      "limitations": ["sourced from an AI-generated key takeaways summary, not 
+directly from article body"],
+      "confidence": "medium"
+    },
+    {
+      "local_ref": "e4",
+      "text": "“The key pictorial unit of the Ring of Nestor examined in this 
+paper is Evans’s ‘watch-dog’ or ‘dragon’, namely the guardian of the old ‘tree 
+of the world’, whose branches host the most populous scene in Aegean glyptic 
+art. This motif is here identified as a scorpion, a major apotropaic symbol in 
+Bronze Αge Aegean iconography, which kills the ‘Μinoan Dragon’ of the ring and 
+offers a sound interpretation of the ring’s iconography.”",
+      "document_ref": "d1",
+      "source_ref": "s1",
+      "evidence_type": "quote",
+      "locator": "Abstract section",
+      "qualifiers": ["iconographic interpretation of the main motif"],
+      "limitations": ["does not show supporting iconographic comparisons in 
+snippet"],
+      "confidence": "medium"
+    },
+    {
+      "local_ref": "e5",
+      "text": "“‘The Ring of Nestor and the Quest for. Authenticity.’ Pp. 
+223-252 in Current Approaches and New Perspectives in. Aegean Iconography. 
+(Abstract, p. 223 ...)”",
+      "document_ref": "d2",
+      "source_ref": "s2",
+      "evidence_type": "quote",
+      "locator": "Bibliography entry for 2020",
+      "qualifiers": ["confirms bibliographic details of Vlachopoulos’s study"],
+      "limitations": ["no substantive description of artifact or analysis"],
+      "confidence": "high"
+    },
+    {
+      "local_ref": "e6",
+      "text": "“Pini, \"The 'Ring of Nestor',\" OJA 17(1998) 1-13. I. Pini, 
+\"Further Research ...”",
+      "document_ref": "d3",
+      "source_ref": "s3",
+      "evidence_type": "quote",
+      "locator": "Lesson 24 bibliography list",
+      "qualifiers": ["indicates peer-reviewed article focused on the Ring of 
+Nestor"],
+      "limitations": ["no content from Pini’s research included"],
+      "confidence": "high"
+    },
+    {
+      "local_ref": "e7",
+      "text": "“Ring of Nestor. A 3700-year-old gold signet ring from Crete, 
+Late Minoan Period, (c. 1500 BCE). The authenticity of the Ring of Nestor is 
+disputed. It was first described by the archaeologist Arthur Evans in 1925.”",
+      "document_ref": "d4",
+      "source_ref": "s4",
+      "evidence_type": "quote",
+      "locator": "Facebook post main text",
+      "qualifiers": ["popular summary of age, material, period, and authenticity
+debate"],
+      "limitations": ["social media; not citing primary excavation records or 
+analytical studies"],
+      "confidence": "medium"
+    },
+    {
+      "local_ref": "e8",
+      "text": "“FIGURE 11 Signet ring (the ‘Ring of Nestor’). Minoan, about 1500
+BCE. Gold ...”",
+      "document_ref": "d5",
+      "source_ref": "s5",
+      "evidence_type": "quote",
+      "locator": "Figure caption for Figure 11",
+      "qualifiers": ["states cultural attribution, approximate date, and 
+material as gold"],
+      "limitations": ["caption only; underlying reasoning for attribution not 
+provided"],
+      "confidence": "medium"
+    },
+    {
+      "local_ref": "e9",
+      "text": ““1925a 'The ring of Nestor': a glimpse into the. Minoan after- 
+...”",
+      "document_ref": "d6",
+      "source_ref": "s6",
+      "evidence_type": "quote",
+      "locator": "Snippet from publication list or discussion of Evans’s works",
+      "qualifiers": ["associates Evans’s 1925a work on the Ring of Nestor with 
+Minoan after-world themes"],
+      "limitations": ["truncated; incomplete sentence; context missing"],
+      "confidence": "medium"
+    },
+    {
+      "local_ref": "e10",
+      "text": "“The Ring of Nestor may be yet another forgery. Not only does it 
+em- ploy stylistic conventions found nowhere else in Minoan art, but in the. 
+1930s Emile ...”",
+      "document_ref": "d7",
+      "source_ref": "s7",
+      "evidence_type": "quote",
+      "locator": "Discussion of forgeries in Knossos and Minoan art",
+      "qualifiers": ["explicit assertion of possible forgery based on stylistic 
+grounds"],
+      "limitations": ["text truncated; full argument and identity of Emile not 
+shown"],
+      "confidence": "medium"
+    },
+    {
+      "local_ref": "e11",
+      "text": "“... Ring of Nestor, The'. A Glimpse into the Minoan After-world,
+M-D0012. Evans, Arthur, 1929, The Shaft Graves and Bee-hive Tombs Of Mycenae and
+their ...”",
+      "document_ref": "d8",
+      "source_ref": "s8",
+      "evidence_type": "quote",
+      "locator": "Library catalog table entry",
+      "qualifiers": ["library record confirming Evans’s title and catalog 
+number"],
+      "limitations": ["no detailed content; catalog omits artifact description 
+or analysis"],
+      "confidence": "high"
+    },
+    {
+      "local_ref": "e12",
+      "text": "“Ring of Nestor. Evans's drawing from his Knossos notebook, 
+Ashmolean Museum ... Finally, all this material turned into a book on Minoan and
+Mycenaean Religion.”",
+      "document_ref": "d9",
+      "source_ref": "s9",
+      "evidence_type": "quote",
+      "locator": "Section discussing Evans’s documentation and publications",
+      "qualifiers": ["indicates surviving drawing of the ring and its role in 
+Evans’s synthesis"],
+      "limitations": ["does not specify any conclusions on authenticity or 
+material in the snippet"],
+      "confidence": "medium"
+    },
+    {
+      "local_ref": "e13",
+      "text": "“Doerpfeld's investigations, is conveniently described as the 
+\"Ring of Nestor\". And so there is no record of the object being found at the 
+cited location.”",
+      "document_ref": "d10",
+      "source_ref": "s10",
+      "evidence_type": "quote",
+      "locator": "Section critiquing provenance claims",
+      "qualifiers": ["author claims absence of documented find at stated 
+location"],
+      "limitations": ["blog, not a primary archival survey; may not exhaust all 
+records"],
+      "confidence": "medium"
+    }
+  ],
+  "conflicts": [
+    {
+      "local_ref": "x1",
+      "description": "There is a conflict over the authenticity of the Ring of 
+Nestor: Vlachopoulos’s 2020 study documents the ring’s authenticity and argues 
+that earlier identifications of it as a fake have been reassessed in favor of 
+authenticity, while Cathy Gere suggests that the Ring of Nestor may be a forgery
+employing stylistic conventions not found elsewhere in Minoan art, and the 
+Facebook post also states that its authenticity is disputed.",
+      "evidence_refs": ["e1", "e2", "e7", "e10"]
+    },
+    {
+      "local_ref": "x2",
+      "description": "There is tension regarding the provenance and 
+documentation of the Ring of Nestor: Evans’s publications and drawings, as cited
+in the INSTAP catalog and in the book on Evans, treat the ring as a documented 
+artifact from Knossos and Mycenaean contexts, while the Knossos travel blog 
+claims there is no record of the object being found at the cited location and 
+questions the provenance associated with Doerpfeld’s investigations.",
+      "evidence_refs": ["e11", "e12", "e13"]
+    },
+    {
+      "local_ref": "x3",
+      "description": "Different sources treat the Ring of Nestor’s cultural 
+attribution and chronology consistently as Minoan and around 1500 BCE, but 
+because these are presented in popular or semi-scholarly captions and social 
+media without explicit supporting data, whereas Vlachopoulos’s abstract situates
+the ring more broadly among Late Bronze Age Aegean signet rings (16th–15th 
+century BC), there is a minor discrepancy in the precision and evidential basis 
+for its dating and cultural labeling.",
+      "evidence_refs": ["e2", "e7", "e8"]
+    }
+  ]
+}
+[tools:7656987b-59bd-8066-27be-ea21f89f6257] [AIMessage] {"search_run_id": 
+"20260627193452003966_2d7f8936", "query_id": "20260627193446949858_73d82819", 
+"ref_map": {}, "written": {"sources": 0, "documents": 0, "statements": 0, 
+"claims": 0, "evidence": 0, "conflicts": 0}, "status": "empty", "query_status": 
+"pending", "novelty_score": null}
+[dispatch_searcher result] {"search_run_id": "20260627193452003966_2d7f8936", 
+"query_id": "20260627193446949858_73d82819", "ref_map": {}, "written": 
+{"sources": 0, "documents": 0, "statements": 0, "claims": 0, "evidence": 0, 
+"conflicts": 0}, "status": "empty", "query_status": "pending", "novelty_score": 
+null}
+[dispatch_searcher result] {"error": "Search budget exhausted", 
+"research_state": "RESEARCHING"}
+[dispatch_searcher result] {"error": "Search budget exhausted", 
+"research_state": "RESEARCHING"}
+[dispatch_searcher result] {"error": "Search budget exhausted", 
+"research_state": "RESEARCHING"}
+INFO:httpx:HTTP Request: POST https://yunwu.ai/v1/chat/completions "HTTP/1.1 200 OK"
+[AIMessage → tool] get_research_status({'goal_id': 
+'20260627193446755397_4afd6132'})
+[get_research_status result] {"goal_id": "20260627193446755397_4afd6132", 
+"research_state": "BUDGET_EXHAUSTED", "max_search_rounds": 1, 
+"dispatched_search_rounds": 1, "successful_search_rounds": 0, 
+"remaining_search_rounds": 0, "scope_mode": "bounded", "portfolio_revision": 1, 
+"evaluated_portfolio_revision": 1, "last_max_marginal_utility": 0.0, 
+"report_readiness_score": 0.0, "objectives": [{"objective_key": 
+"identity-scope", "requirement": "must", "status": "open", "coverage": 0.0, 
+"confidence": 0.0}, {"objective_key": "discovery-context", "requirement": 
+"must", "status": "open", "coverage": 0.0, "confidence": 0.0}, {"objective_key":
+"physical-description-dating", "requirement": "must", "status": "open", 
+"coverage": 0.0, "confidence": 0.0}, {"objective_key": 
+"cultural-context-significance", "requirement": "must", "status": "open", 
+"coverage": 0.0, "confidence": 0.0}, {"objective_key": 
+"interpretations-debates", "requirement": "must", "status": "open", "coverage": 
+0.0, "confidence": 0.0}, {"objective_key": "reception-scholarship-history", 
+"requirement": "should", "status": "open", "coverage": 0.0, "confidence": 0.0}],
+"query_status_counts": {"pending": 5}, "active_queries": [{"id": 
+"20260627193446949858_73d82819", "handle": "q1", "status": "pending", "text": 
+"“Ring of Nestor” Nestor's Ring archaeological artifact identity material 
+Mycenaean Aegean"}, {"id": "20260627193446999674_650e6e3b", "handle": "q2", 
+"status": "pending", "text": "“Ring of Nestor” discovery excavation date 
+location archaeologist provenance museum"}, {"id": 
+"20260627193447052448_cf9a891f", "handle": "q3", "status": "pending", "text": 
+"“Ring of Nestor” gold ring description dimensions iconography dating Late 
+Bronze Age Mycenaean"}, {"id": "20260627193447100261_d6c0ba2e", "handle": "q4", 
+"status": "pending", "text": "“Ring of Nestor” cultural context burial grave 
+circle A Mycenae Minoan influence significance Aegean prehistory"}, {"id": 
+"20260627193447146837_4a4a11fa", "handle": "q5", "status": "pending", "text": 
+"“Ring of Nestor” iconography interpretation religious scene function scholarly 
+debate"}], "selected_gaps": [], "last_convergence_recommendation": "stop", 
+"report_authorized_reason": "search budget exhausted", "reporting_from_state": 
+null, "report_delivery_mode": null, "report_validation_issues": [], 
+"report_attempt_summary": {}, "reporter_warnings": [], "last_error": null, 
+"tree_validation": {"valid": true, "orphans": [], "multi_parent_queries": [], 
+"cycles": [], "invalid_handles": [], "duplicate_handles": [], "multiple_goals": 
+[], "invalid_parent_edges": []}, "next_actions": []}
+INFO:httpx:HTTP Request: POST https://yunwu.ai/v1/chat/completions "HTTP/1.1 200 OK"
+[AIMessage → tool] task({'subagent_type': 'reporter', 'description': "Research 
+state is BUDGET_EXHAUSTED for goal 20260627193446755397_4afd6132 with no 
+successful searches recorded, so evidence in the Research Graph is effectively 
+empty. Please generate a Wikipedia-style article about the archaeological 
+artifact known as the Ring of Nestor (Nestor's Ring), following the user's 
+rubric on writing quality, neutrality, and coverage. You must strictly base any 
+factual claims on evidence present in the Research Graph; however, because no 
+successful searches occurred, there may be no direct artifact-specific evidence 
+nodes. In that case, you should:\n\n1. Be explicit in the article (where 
+appropriate) about the lack of available sourced detail within the current 
+research budget, avoiding fabrication of specific dates, locations, dimensions, 
+iconography, or scholarly attributions.\n2. Avoid inventing references or URLs; 
+every citation [1], [2], etc. must correspond to an actual evidence node in the 
+graph. If the graph contains no such nodes about the Ring of Nestor, you must 
+acknowledge this limitation and cannot provide a conventional fully factual 
+article.\n3. Within these constraints, structure the article with a lead section
+and logical headings (e.g., Identity and attribution, Discovery, Description, 
+Cultural context, Interpretations and debates, Reception), but you may need to 
+keep sections minimal or discuss only general methodological or contextual 
+points that are genuinely supported by graph evidence.\n4. Clearly disclose the 
+research limitations arising from budget exhaustion, in a way that would be 
+acceptable for a Wikipedia talk page or an explanatory note, while keeping the 
+main article prose neutral and avoiding unsourced specifics.\n5. Still follow 
+the words-to-watch guidance from the rubric (avoid puffery, vague attributions, 
+unspecific time/places, editorializing, etc.).\n\nReturn the final article text 
+with in-text bracketed citations and a terminal 'References' section listing 
+full URLs for each citation number, all backed by graph evidence. If no valid 
+references exist, you may include an empty 'References' section with a brief 
+note that no sources could be recorded within the exhausted budget, but do NOT 
+fabricate URLs or sources."})
+[tools:48ca9983-182b-a3c5-3c41-ae51404e6999] [HumanMessage] Research state is 
+BUDGET_EXHAUSTED for goal 20260627193446755397_4afd6132 with no successful 
+searches recorded, so evidence in the Research Graph is effectively empty. 
+Please generate a Wikipedia-style article about the archaeological artifact 
+known as the Ring of Nestor (Nestor's Ring), following the user's rubric on 
+writing quality, neutrality, and coverage. You must strictly base any factual 
+claims on evidence present in the Research Graph; however, because no successful
+searches occurred, there may be no direct artifact-specific evidence nodes. In 
+that case, you should:
+
+1. Be explicit in the article (where appropriate) about the lack of available 
+sourced detail within the current research budget, avoiding fabrication of 
+specific dates, locations, dimensions, iconography, or scholarly attributions.
+2. Avoid inventing references or URLs; every citation [1], [2], etc. must 
+correspond to an actual evidence node in the graph. If the graph contains no 
+such nodes about the Ring of Nestor, you must acknowledge this limitation and 
+cannot provide a conventional fully factual article.
+3. Within these constraints, structure the article with a lead section and 
+logical headings (e.g., Identity and attribution, Discovery, Description, 
+Cultural context, Interpretations and debates, Reception), but you may need to 
+keep sections minimal or discuss only general methodological or contextual 
+points that are genuinely supported by graph evidence.
+4. Clearly disclose the research limitations arising from budget exhaustion, in 
+a way that would be acceptable for a Wikipedia talk page or an explanatory note,
+while keeping the main article prose neutral and avoiding unsourced specifics.
+5. Still follow the words-to-watch guidance from the rubric (avoid puffery, 
+vague attributions, unspecific time/places, editorializing, etc.).
+
+Return the final article text with in-text bracketed citations and a terminal 
+'References' section listing full URLs for each citation number, all backed by 
+graph evidence. If no valid references exist, you may include an empty 
+'References' section with a brief note that no sources could be recorded within 
+the exhausted budget, but do NOT fabricate URLs or sources.
+INFO:httpx:HTTP Request: POST https://yunwu.ai/v1/chat/completions "HTTP/1.1 200 OK"
+[tools:48ca9983-182b-a3c5-3c41-ae51404e6999] [AIMessage → tool] 
+export_report_context({'goal_id': '20260627193446755397_4afd6132'})
+[tools:48ca9983-182b-a3c5-3c41-ae51404e6999] [export_report_context result] 
+{"goal": {"id": "20260627193446755397_4afd6132", "request": "Write a 
+Wikipedia-style article about 'Ring of Nestor', following the provided rubric on
+writing quality, neutrality, and coverage. Do not consult any Wikipedia pages or
+the existing 'Ring_of_Nestor' article. Use external reliable sources (excluding 
+Wikipedia) and ensure every factual claim is backed by citations with bracketed 
+numbers [1], [2], etc., and a final 'References' section listing full URLs for 
+each numbered citation. The topic likely concerns the archaeological artifact 
+known as the Ring of Nestor (or so-called Nestor's Ring), including its 
+discovery, description, dating, cultural context, interpretations, scholarly 
+debates, and significance in archaeology and Aegean prehistory.", 
+"research_goal": "Produce a Wikipedia-style, neutrally written, well-cited 
+article about the archaeological artifact known as the Ring of Nestor (Nestor's 
+Ring), covering its identity, discovery, description, dating, cultural context, 
+interpretations, scholarly debates, and significance in archaeology and Aegean 
+prehistory, without using Wikipedia as a source.", "language": "English", 
+"time_window": "to present", "region_scope": "Aegean region, Mycenaean Greece, 
+relevant discovery locations and museum holdings", "source_preferences": 
+["peer-reviewed archaeology and classics scholarship", "museum collection 
+records", "academic books and monographs", "reputable archaeology news outlets",
+"university and research institute publications"]}, "queries": [{"id": 
+"20260627193446949858_73d82819", "handle": "q1", "text": "“Ring of Nestor” 
+Nestor's Ring archaeological artifact identity material Mycenaean Aegean", 
+"importance": "core"}, {"id": "20260627193446999674_650e6e3b", "handle": "q2", 
+"text": "“Ring of Nestor” discovery excavation date location archaeologist 
+provenance museum", "importance": "core"}, {"id": 
+"20260627193447052448_cf9a891f", "handle": "q3", "text": "“Ring of Nestor” gold 
+ring description dimensions iconography dating Late Bronze Age Mycenaean", 
+"importance": "core"}, {"id": "20260627193447100261_d6c0ba2e", "handle": "q4", 
+"text": "“Ring of Nestor” cultural context burial grave circle A Mycenae Minoan 
+influence significance Aegean prehistory", "importance": "core"}, {"id": 
+"20260627193447146837_4a4a11fa", "handle": "q5", "text": "“Ring of Nestor” 
+iconography interpretation religious scene function scholarly debate", 
+"importance": "core"}], "objectives": [{"id": "20260627193446857148_7fb86517", 
+"objective_key": "cultural-context-significance", "description": "Explain the 
+cultural and archaeological context of the Ring of Nestor, including its 
+relation to Mycenaean or Minoan culture, associated burial or architectural 
+contexts, and its significance in the study of Aegean prehistory.", "text": 
+"Explain the cultural and archaeological context of the Ring of Nestor, 
+including its relation to Mycenaean or Minoan culture, associated burial or 
+architectural contexts, and its significance in the study of Aegean 
+prehistory.", "requirement": "must", "acceptance_criteria": ["Places the 
+artifact within a broader cultural framework (e.g., Mycenaean palace culture, 
+elite burial practices).", "Connects the ring to relevant archaeological sites 
+or assemblages (such as a specific tomb or grave circle) where supported.", 
+"Summarizes how specialists regard its importance for understanding Aegean 
+religion, art, or social structure, with citations."]}, {"id": 
+"20260627193446792381_be50af48", "objective_key": "discovery-context", 
+"description": "Document the circumstances of discovery of the Ring of Nestor, 
+including location, date of discovery, excavators, and subsequent ownership or 
+museum collection history.", "text": "Document the circumstances of discovery of
+the Ring of Nestor, including location, date of discovery, excavators, and 
+subsequent ownership or museum collection history.", "requirement": "must", 
+"acceptance_criteria": ["Identifies where and when the Ring of Nestor was 
+discovered, with dates or approximate periods.", "Names the excavation project 
+or archaeologists involved, where available.", "Describes the artifact's 
+provenance and current repository (e.g., museum or collection), with at least 
+one reliable source."]}, {"id": "20260627193446768904_362fdda6", 
+"objective_key": "identity-scope", "description": "Establish the identity, basic
+definition, and scope of the artifact referred to as the Ring of Nestor or 
+Nestor's Ring, including its classification, general period, and association 
+with Nestor in tradition or scholarship.", "text": "Establish the identity, 
+basic definition, and scope of the artifact referred to as the Ring of Nestor or
+Nestor's Ring, including its classification, general period, and association 
+with Nestor in tradition or scholarship.", "requirement": "must", 
+"acceptance_criteria": ["Clearly states what the Ring of Nestor is (artifact 
+type, material, general era).", "Clarifies whether there are multiple objects or
+uses of the name and which one the article focuses on.", "Provides at least one 
+reliable non-Wikipedia source confirming the artifact's name and basic 
+identity."]}, {"id": "20260627193446883404_542c54e8", "objective_key": 
+"interpretations-debates", "description": "Survey major scholarly 
+interpretations and debates about the Ring of Nestor, including readings of its 
+imagery or inscriptions, its possible religious or political functions, and any 
+contested issues in attribution, dating, or meaning.", "text": "Survey major 
+scholarly interpretations and debates about the Ring of Nestor, including 
+readings of its imagery or inscriptions, its possible religious or political 
+functions, and any contested issues in attribution, dating, or meaning.", 
+"requirement": "must", "acceptance_criteria": ["Identifies at least two distinct
+scholarly interpretations of the ring's imagery, function, or cultural 
+meaning.", "Describes any noted controversies or revisions in scholarly 
+understanding (e.g., reinterpretation of iconography, new dating evidence).", 
+"Supports each interpretation or debate point with specific citations to 
+scholarly or expert sources."]}, {"id": "20260627193446821497_368ecd59", 
+"objective_key": "physical-description-dating", "description": "Provide a 
+detailed physical description and dating of the Ring of Nestor, including 
+materials, dimensions, iconography, inscriptions if any, stylistic features, and
+scholarly estimates of its chronological placement.", "text": "Provide a 
+detailed physical description and dating of the Ring of Nestor, including 
+materials, dimensions, iconography, inscriptions if any, stylistic features, and
+scholarly estimates of its chronological placement.", "requirement": "must", 
+"acceptance_criteria": ["Describes the ring's material, size, and decorative 
+features in concrete terms sourced from specialist descriptions.", "Summarizes 
+scholarly dating (e.g., Late Bronze Age, Mycenaean, Minoan) with approximate 
+centuries or phases.", "Notes any disagreements or ranges in dating supported by
+sources."]}, {"id": "20260627193446913605_99d22ec1", "objective_key": 
+"reception-scholarship-history", "description": "Trace the history of scholarly 
+and public reception of the Ring of Nestor, including major publications, 
+changing views over time, and its role in broader discussions of Homeric 
+archaeology or Nestor-related traditions.", "text": "Trace the history of 
+scholarly and public reception of the Ring of Nestor, including major 
+publications, changing views over time, and its role in broader discussions of 
+Homeric archaeology or Nestor-related traditions.", "requirement": "should", 
+"acceptance_criteria": ["Mentions key academic works or landmark studies that 
+shaped understanding of the Ring of Nestor.", "Notes any connections made 
+between the ring and Homeric Nestor or other literary traditions, where 
+documented.", "Indicates how perceptions of the ring's significance have evolved
+across different phases of Aegean archaeological research."]}], "limitations": 
+[], "disclosed_conflicts": [], "reference_registry": []}
+INFO:httpx:HTTP Request: POST https://yunwu.ai/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST https://yunwu.ai/v1/chat/completions "HTTP/1.1 200 OK"
+[tools:48ca9983-182b-a3c5-3c41-ae51404e6999] [AIMessage → tool] 
+get_report_evidence({'query_id': '20260627193446949858_73d82819', 'offset': 0, 
+'limit': 20})
+[tools:48ca9983-182b-a3c5-3c41-ae51404e6999] [AIMessage → tool] 
+get_report_evidence({'query_id': '20260627193446999674_650e6e3b', 'offset': 0, 
+'limit': 20})
+[tools:48ca9983-182b-a3c5-3c41-ae51404e6999] [AIMessage → tool] 
+get_report_evidence({'query_id': '20260627193447052448_cf9a891f', 'offset': 0, 
+'limit': 20})
+[tools:48ca9983-182b-a3c5-3c41-ae51404e6999] [AIMessage → tool] 
+get_report_evidence({'query_id': '20260627193447100261_d6c0ba2e', 'offset': 0, 
+'limit': 20})
+[tools:48ca9983-182b-a3c5-3c41-ae51404e6999] [AIMessage → tool] 
+get_report_evidence({'query_id': '20260627193447146837_4a4a11fa', 'offset': 0, 
+'limit': 20})
+[tools:48ca9983-182b-a3c5-3c41-ae51404e6999] [get_report_evidence result] 
+{"query": {"id": "20260627193446949858_73d82819", "handle": "q1", "text": "“Ring
+of Nestor” Nestor's Ring archaeological artifact identity material Mycenaean 
+Aegean", "importance": "core"}, "items": [], "offset": 0, "limit": 20, "total": 
+0, "next_offset": null}
+[tools:48ca9983-182b-a3c5-3c41-ae51404e6999] [get_report_evidence result] 
+{"query": {"id": "20260627193446999674_650e6e3b", "handle": "q2", "text": "“Ring
+of Nestor” discovery excavation date location archaeologist provenance museum", 
+"importance": "core"}, "items": [], "offset": 0, "limit": 20, "total": 0, 
+"next_offset": null}
+[tools:48ca9983-182b-a3c5-3c41-ae51404e6999] [get_report_evidence result] 
+{"query": {"id": "20260627193447052448_cf9a891f", "handle": "q3", "text": "“Ring
+of Nestor” gold ring description dimensions iconography dating Late Bronze Age 
+Mycenaean", "importance": "core"}, "items": [], "offset": 0, "limit": 20, 
+"total": 0, "next_offset": null}
+[tools:48ca9983-182b-a3c5-3c41-ae51404e6999] [get_report_evidence result] 
+{"query": {"id": "20260627193447100261_d6c0ba2e", "handle": "q4", "text": "“Ring
+of Nestor” cultural context burial grave circle A Mycenae Minoan influence 
+significance Aegean prehistory", "importance": "core"}, "items": [], "offset": 
+0, "limit": 20, "total": 0, "next_offset": null}
+[tools:48ca9983-182b-a3c5-3c41-ae51404e6999] [get_report_evidence result] 
+{"query": {"id": "20260627193447146837_4a4a11fa", "handle": "q5", "text": "“Ring
+of Nestor” iconography interpretation religious scene function scholarly 
+debate", "importance": "core"}, "items": [], "offset": 0, "limit": 20, "total": 
+0, "next_offset": null}
+INFO:httpx:HTTP Request: POST https://yunwu.ai/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST https://yunwu.ai/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST https://yunwu.ai/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST https://yunwu.ai/v1/chat/completions "HTTP/1.1 200 OK"
+Report delivered with 1 validation warning(s).
+───────────────────────────────── Final Report ─────────────────────────────────
+                                Research Report                                 
+
+Conclusion                                                                      
+
+No verifiable findings are available.                                           
+
+State summary: {"goal_id": "20260627193446755397_4afd6132", "research_state": 
+"COMPLETED", "max_search_rounds": 1, "dispatched_search_rounds": 1, 
+"successful_search_rounds": 0, "remaining_search_rounds": 0, "scope_mode": 
+"bounded", "portfolio_revision": 1, "evaluated_portfolio_revision": 1, 
+"last_max_marginal_utility": 0.0, "report_readiness_score": 0.0, "objectives": 
+[{"objective_key": "identity-scope", "requirement": "must", "status": "open", 
+"coverage": 0.0, "confidence": 0.0}, {"objective_key": "discovery-context", 
+"requirement": "must", "status": "open", "coverage": 0.0, "confidence": 0.0}, 
+{"objective_key": "physical-description-dating", "requirement": "must", 
+"status": "open", "coverage": 0.0, "confidence": 0.0}, {"objective_key": 
+"cultural-context-significance", "requirement": "must", "status": "open", 
+"coverage": 0.0, "confidence": 0.0}, {"objective_key": 
+"interpretations-debates", "requirement": "must", "status": "open", "coverage": 
+0.0, "confidence": 0.0}, {"objective_key": "reception-scholarship-history", 
+"requirement": "should", "status": "open", "coverage": 0.0, "confidence": 0.0}],
+"query_status_counts": {"pending": 5}, "active_queries": [{"id": 
+"20260627193446949858_73d82819", "handle": "q1", "status": "pending", "text": 
+"“Ring of Nestor” Nestor's Ring archaeological artifact identity material 
+Mycenaean Aegean"}, {"id": "20260627193446999674_650e6e3b", "handle": "q2", 
+"status": "pending", "text": "“Ring of Nestor” discovery excavation date 
+location archaeologist provenance museum"}, {"id": 
+"20260627193447052448_cf9a891f", "handle": "q3", "status": "pending", "text": 
+"“Ring of Nestor” gold ring description dimensions iconography dating Late 
+Bronze Age Mycenaean"}, {"id": "20260627193447100261_d6c0ba2e", "handle": "q4", 
+"status": "pending", "text": "“Ring of Nestor” cultural context burial grave 
+circle A Mycenae Minoan influence significance Aegean prehistory"}, {"id": 
+"20260627193447146837_4a4a11fa", "handle": "q5", "status": "pending", "text": 
+"“Ring of Nestor” iconography interpretation religious scene function scholarly 
+debate"}], "selected_gaps": [], "last_convergence_recommendation": "stop", 
+"report_authorized_reason": "search budget exhausted", "reporting_from_state": 
+"BUDGET_EXHAUSTED", "report_delivery_mode": "evidence_fallback", 
+"report_validation_issues": ["report attempt: structured report contains no 
+valid cited sections"], "report_attempt_summary": {"accepted": false, 
+"auto_appended_conflict_ids": [], "dropped_blocks": 0, "dropped_sections": 0, 
+"issues": [{"block_index": null, "code": "no_valid_sections", "message": 
+"structured report contains no valid cited sections", "repair_hint": "Rewrite 
+the report with valid section titles and URL-backed citations.", 
+"section_title": "", "severity": "hard"}], "kept_blocks": 0, "kept_sections": 0,
+"retention_ratio": 0.0, "revision_requested": false, "section_count": 0, 
+"severity": "hard", "source_count": 0, "submitted_blocks": 0, 
+"submitted_sections": 0}, "reporter_warnings": [], "last_error": null}
+
+Saved: outputs/wlc_report21/_runs/82-Ring_of_Nestor/report.md, 
+outputs/wlc_report21/_runs/82-Ring_of_Nestor/research_graph.jsonl, 
+outputs/wlc_report21/_runs/82-Ring_of_Nestor/run.log

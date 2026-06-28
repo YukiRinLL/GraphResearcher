@@ -10,13 +10,19 @@ Extract:
 
 How to decompose (critical):
 - Split along the request's OWN thematic structure, NOT by geography/region. If the request enumerates dimensions (e.g. technology routes -> representative companies -> {tech path, product progress, commercialization, financing, team}), the top-level split follows that thematic spine. A scope word like "global" is only a qualifier, never a decomposition axis — do not split into North America / China / Europe.
+- If the request contains explicit numbered deliverables, rubric headings, required sections, or "cover A / B / C" style facets, convert the CONTENT-bearing facets into distinct report-level research objectives whenever they require materially different evidence.
+- Do not compress multiple explicit content requirements into one vague umbrella objective if doing so would make separate coverage, structure, or breadth impossible to verify later.
 - Objectives are report-level deliverables, never one company detail, parameter,
   extra example, source verification, or other leaf fact.
+- When the request asks for a report or article about one named subject (for example a quoted title, artifact, person, place, or event), resolve the subject's exact referent and scope BEFORE assuming one candidate interpretation. If the title may refer to multiple objects, uses, or traditions, include an explicit identity/scope objective and a conservative initial query centered on the exact title itself.
+- For a report or article about one named subject with multiple research deliverables, do NOT collapse all must objectives into one generic catch-all query. Return several candidate initial queries that each have a distinct evidence intent (for example: identity/scope, physical or historical context, interpretation/debate, provenance/current location) whenever the task requires those dimensions.
+- Keep writing/review constraints separate from research content objectives: tone, neutrality, section layout, and citation formatting inform generation and review, but explicit content facets still need their own research objectives and query coverage.
 - Default `scope_mode` to `bounded`. Use `exhaustive` only when the user
   explicitly asks for all items, a complete inventory, or exhaustive coverage.
 - Produce a compact candidate set of COARSE queries. The code will choose the
   smallest subset that covers every must objective.
 - Make every query SELF-CONTAINED: each stands on its own with no reference to any other query. Never use "上述/前述/该区域/这些公司/the above/aforementioned" or anything pointing at another query's output. Restate the topic, time window, and region (if any) inside each query.
+- For the first query about an ambiguous named subject, stay conservative: use the exact title plus identity/scope/discovery terms. Do not inject unverified location, chronology, or subtype assumptions from only one hypothesized interpretation.
 
 Query text format:
 - query.text is the literal string fed to a web search engine. Write a TIGHT natural-language search phrase: include the key entities and the time window, but no filler. Not a verbose question, not bare keywords.

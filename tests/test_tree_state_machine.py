@@ -223,6 +223,7 @@ def main():
             {"objective_key": "exhaustive-answer", "coverage": 0.1, "confidence": 0.1},
         ]},
         {"fatal_unresolved_conflicts": [], "reason": "done"},
+        {"fatal_unresolved_conflicts": [], "reason": "done"},
     ]))
     actions = mm.get_next_actions()
     assert actions[0]["action"] == "assess_query", actions
@@ -327,6 +328,9 @@ def main():
     NODES["goal"]["evaluated_portfolio_revision"] = NODES["goal"]["portfolio_revision"]
     converged = mm.assess_convergence("goal")
     assert converged["research_state"] == "REPORT_READY", converged
+    NODES["goal"]["research_state"] = "RESEARCHING"
+    converged_default = mm.assess_convergence()
+    assert converged_default["research_state"] == "REPORT_READY", converged_default
     original_validate_query_tree = graph_tools.validate_query_tree
     graph_tools.validate_query_tree = lambda: {"valid": False, "orphans": ["q1"]}
     allowed = ResearchStateMiddleware()._gate_reporter({

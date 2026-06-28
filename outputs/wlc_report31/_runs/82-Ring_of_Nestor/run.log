@@ -1,0 +1,107 @@
+Run failed with an exception (captured in run.log):
+Traceback (most recent call last):
+  File 
+"/mnt/h/DeepResearch/GraphResearcher/.venv/lib/python3.12/site-packages/neo4j/_a
+sync_compat/network/_bolt_socket.py", line 275, in _connect_secure
+    await wait_for(loop.sock_connect(s, resolved_address), timeout)
+  File "/data/anaconda3/lib/python3.12/asyncio/tasks.py", line 520, in wait_for
+    return await fut
+           ^^^^^^^^^
+  File "/data/anaconda3/lib/python3.12/asyncio/selector_events.py", line 651, in
+sock_connect
+    return await fut
+           ^^^^^^^^^
+  File "/data/anaconda3/lib/python3.12/asyncio/selector_events.py", line 691, in
+_sock_connect_cb
+    raise OSError(err, f'Connect call failed {address}')
+ConnectionRefusedError: [Errno 111] Connect call failed ('127.0.0.1', 7687)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File 
+"/mnt/h/DeepResearch/GraphResearcher/.venv/lib/python3.12/site-packages/neo4j/_a
+sync/io/_bolt_socket.py", line 329, in connect
+    s = await cls._connect_secure(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File 
+"/mnt/h/DeepResearch/GraphResearcher/.venv/lib/python3.12/site-packages/neo4j/_a
+sync_compat/network/_bolt_socket.py", line 357, in _connect_secure
+    raise ServiceUnavailable(
+neo4j.exceptions.ServiceUnavailable: Failed to establish connection to 
+ResolvedIPv4Address(('127.0.0.1', 7687)) (reason [Errno 111] Connect call failed
+('127.0.0.1', 7687))
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/mnt/h/DeepResearch/GraphResearcher/main.py", line 304, in run
+    graph_manager_tools.configure(output_dir=str(output_dir))
+  File "/mnt/h/DeepResearch/GraphResearcher/src/tools/graph_manager_tools.py", 
+line 44, in configure
+    graph_tools.clear_current_context()
+  File "/mnt/h/DeepResearch/GraphResearcher/src/tools/graph_tools.py", line 85, 
+in clear_current_context
+    _run_async(_get_manager().clear_context())
+  File "/mnt/h/DeepResearch/GraphResearcher/src/tools/graph_tools.py", line 44, 
+in _run_async
+    return asyncio.run_coroutine_threadsafe(coro, loop).result()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/anaconda3/lib/python3.12/concurrent/futures/_base.py", line 456, 
+in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/data/anaconda3/lib/python3.12/concurrent/futures/_base.py", line 401, 
+in __get_result
+    raise self._exception
+  File "/mnt/h/DeepResearch/GraphResearcher/src/memory/graph.py", line 533, in 
+clear_context
+    result = await session.run(query, context=self.context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File 
+"/mnt/h/DeepResearch/GraphResearcher/.venv/lib/python3.12/site-packages/neo4j/_a
+sync/work/session.py", line 318, in run
+    await self._connect(self._config.default_access_mode)
+  File 
+"/mnt/h/DeepResearch/GraphResearcher/.venv/lib/python3.12/site-packages/neo4j/_a
+sync/work/session.py", line 128, in _connect
+    await super()._connect(
+  File 
+"/mnt/h/DeepResearch/GraphResearcher/.venv/lib/python3.12/site-packages/neo4j/_a
+sync/work/workspace.py", line 184, in _connect
+    self._connection = await self._pool.acquire(**acquire_kwargs_)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File 
+"/mnt/h/DeepResearch/GraphResearcher/.venv/lib/python3.12/site-packages/neo4j/_a
+sync/io/_pool.py", line 681, in acquire
+    return await self._acquire(
+           ^^^^^^^^^^^^^^^^^^^^
+  File 
+"/mnt/h/DeepResearch/GraphResearcher/.venv/lib/python3.12/site-packages/neo4j/_a
+sync/io/_pool.py", line 421, in _acquire
+    return await connection_creator()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File 
+"/mnt/h/DeepResearch/GraphResearcher/.venv/lib/python3.12/site-packages/neo4j/_a
+sync/io/_pool.py", line 234, in connection_creator
+    connection = await self.opener(
+                 ^^^^^^^^^^^^^^^^^^
+  File 
+"/mnt/h/DeepResearch/GraphResearcher/.venv/lib/python3.12/site-packages/neo4j/_a
+sync/io/_pool.py", line 641, in opener
+    return await AsyncBolt.open(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File 
+"/mnt/h/DeepResearch/GraphResearcher/.venv/lib/python3.12/site-packages/neo4j/_a
+sync/io/_bolt.py", line 366, in open
+    s, protocol_version = await AsyncBoltSocket.connect(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File 
+"/mnt/h/DeepResearch/GraphResearcher/.venv/lib/python3.12/site-packages/neo4j/_a
+sync/io/_bolt_socket.py", line 380, in connect
+    raise ServiceUnavailable(
+neo4j.exceptions.ServiceUnavailable: Couldn't connect to localhost:7687 
+(resolved to ('127.0.0.1:7687',)):
+Failed to establish connection to ResolvedIPv4Address(('127.0.0.1', 7687)) 
+(reason [Errno 111] Connect call failed ('127.0.0.1', 7687))
+
