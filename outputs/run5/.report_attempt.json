@@ -1,0 +1,29 @@
+{
+  "accepted": false,
+  "revision_requested": false,
+  "severity": "hard",
+  "report": "",
+  "salvaged_report": "",
+  "issues": [
+    {
+      "code": "delivery_invariant_failed",
+      "severity": "hard",
+      "section_title": "",
+      "block_index": null,
+      "message": "uncited factual paragraph or list item: n 拓斯达的小拓人形机器人被视为工业应用落地的标杆之一。 才",
+      "repair_hint": "Fix missing citations, broken references, or forbidden process prose before resubmitting."
+    }
+  ],
+  "retention_ratio": 1.2096,
+  "submitted_sections": 4,
+  "kept_sections": 5,
+  "dropped_sections": 0,
+  "submitted_paragraphs": 103,
+  "kept_paragraphs": 103,
+  "dropped_paragraphs": 0,
+  "section_count": 5,
+  "source_count": 24,
+  "auto_appended_conflict_ids": [
+    "20260629140446379211_73bf379e"
+  ]
+}

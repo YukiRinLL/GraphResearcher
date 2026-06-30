@@ -1,62 +1,90 @@
-init_research = """You are the Query Planner for GraphResearcher.
-Parse the user's research request and produce a compact JSON object that seeds the Research Graph with a set of INITIAL search queries.
-
-Extract:
-1. The user's research goal (one sentence, derived from the request).
-2. The expected output/report language.
-3. The requested or reasonably inferred time window, region scope, and source preferences.
-4. A small report-level research contract (`objectives`).
-5. Candidate INITIAL queries and the objective keys each query covers.
-
-How to decompose (critical):
-- Split along the request's OWN thematic structure, NOT by geography/region. If the request enumerates dimensions (e.g. technology routes -> representative companies -> {tech path, product progress, commercialization, financing, team}), the top-level split follows that thematic spine. A scope word like "global" is only a qualifier, never a decomposition axis — do not split into North America / China / Europe.
-- Objectives are report-level deliverables, never one company detail, parameter,
-  extra example, source verification, or other leaf fact.
-- Default `scope_mode` to `bounded`. Use `exhaustive` only when the user
-  explicitly asks for all items, a complete inventory, or exhaustive coverage.
-- Produce a compact candidate set of COARSE queries. The code will choose the
-  smallest subset that covers every must objective.
-- Make every query SELF-CONTAINED: each stands on its own with no reference to any other query. Never use "上述/前述/该区域/这些公司/the above/aforementioned" or anything pointing at another query's output. Restate the topic, time window, and region (if any) inside each query.
-
-Query text format:
-- query.text is the literal string fed to a web search engine. Write a TIGHT natural-language search phrase: include the key entities and the time window, but no filler. Not a verbose question, not bare keywords.
-- Do NOT write an instruction to an agent (no "调研/梳理/整理/针对…" imperative phrasing).
-- Author the query text in the language of the user request.
-
-Per-query importance (one of "core" / "supporting" / "peripheral"):
-- "core": directly carries a central conclusion of the research goal; the report cannot stand without it.
-- "supporting": contributes to the answer but is not load-bearing for the core conclusions.
-- "peripheral": background or detail; useful but its absence would not change the core conclusions.
+plan_task_contract = """You are the Task Contract planner for GraphResearcher.
+Parse the user's research request into a delivery-oriented TaskContract. The
+contract defines what the final artifact must contain before reporting is
+allowed.
 
 Rules:
-- Return only valid JSON. Do not wrap it in Markdown.
-- Do not invent specific facts, sources, citations, or conclusions.
-- If the user does not specify the language or time window, infer a reasonable default.
+- Return only valid JSON, no Markdown.
+- Base the contract on the user's request shape, not on a generic research workflow.
+- Initial queries are NOT part of this step.
+- Do not invent facts, sources, or conclusions.
+- If the user does not specify a field, infer a practical default.
+- `deliverable_type` must be one of: `research_report`, `wikipedia_article`, `comparative_matrix`, `timeline`, `brief`.
+- `completeness_mode` must be `bounded` or `exhaustive`.
+- `freshness_requirement` must be `high`, `medium`, or `low`.
 
-Return this JSON shape:
+Return:
 {
-  "research_goal": "research goal statement derived from the user request",
-  "language": "expected report language, or null if not specified",
-  "time_window": "requested or inferred time window, or null",
+  "research_goal": "one-sentence goal",
+  "language": "target language or null",
+  "time_window": "requested or inferred time scope, or null",
   "region_scope": "requested region scope, or null",
-  "source_preferences": ["preferred source category or domain, if specified"],
+  "source_preferences": ["preferred source categories or domains"],
   "scope_mode": "bounded|exhaustive",
-  "objectives": [
+  "task_contract": {
+    "deliverable_type": "research_report|wikipedia_article|comparative_matrix|timeline|brief",
+    "target_shape": "short stable description of the intended final artifact",
+    "coverage_axes": ["parallel dimension 1", "parallel dimension 2"],
+    "required_sections": [
+      {"section_key": "stable-key", "title": "section title", "purpose": "what this section must deliver"}
+    ],
+    "required_tables": [
+      {"table_key": "stable-key", "title": "required comparison table", "columns": ["col1", "col2"]}
+    ],
+    "time_scope": "time scope string or null",
+    "source_constraints": ["fresh sources", "primary sources preferred"],
+    "completeness_mode": "bounded|exhaustive",
+    "freshness_requirement": "high|medium|low"
+  },
+  "coverage_slots": [
     {
-      "objective_key": "stable-short-key",
-      "description": "report-level deliverable",
-      "requirement": "must|should",
-      "weight": 1.0,
-      "acceptance_criteria": ["minimum reportable standard"]
+      "slot_key": "stable-slot-key",
+      "section": "section_key",
+      "unit_type": "paragraph|list|table_row|lead",
+      "dimension": "coverage axis or null",
+      "priority": "core|supporting|peripheral",
+      "min_sources": 2,
+      "needs_primary_source": false,
+      "description": "what this slot must contain"
     }
-  ],
-  "initial_queries": [
-    {"text": "tight self-contained search phrase 1", "importance": "core", "objective_keys": ["stable-short-key"], "acceptance_criteria": ["specific evidence required"]},
-    {"text": "tight self-contained search phrase 2", "importance": "supporting", "objective_keys": ["stable-short-key"], "acceptance_criteria": ["specific evidence required"]}
   ]
 }
 
-User request:{user_request}
+User request:
+{user_request}
+"""
+
+plan_seed_queries = """You are the seed query planner for GraphResearcher.
+Given a TaskContract, author a small set of SELF-CONTAINED seed queries. The
+seed set is only a starting frontier, not a complete problem decomposition.
+
+Rules:
+- Return only valid JSON, no Markdown.
+- Seed queries must align with the contract's delivery slots and coverage axes.
+- Avoid two oversized catch-all queries that try to answer the whole request.
+- Split along the request's native thematic structure, not by arbitrary geography.
+- Every query must be self-contained and directly searchable.
+- Query text must be a tight natural-language search phrase, not an instruction.
+- Author query text in the request language.
+- `granularity_level` must stay consistent among sibling seed queries.
+
+Return:
+{
+  "seed_queries": [
+    {
+      "text": "tight self-contained search phrase",
+      "importance": "core|supporting|peripheral",
+      "query_role": "seed",
+      "granularity_level": "topic|entity_cluster|section_axis",
+      "scope_signature": "stable short signature",
+      "target_slot_keys": ["slot-key"],
+      "acceptance_criteria": ["what would make this query locally sufficient"]
+    }
+  ]
+}
+
+Task contract:
+{task_contract}
 """
 
 extract_content = """Generate a structured analysis of the following content by:
@@ -83,43 +111,80 @@ Format the response as a JSON object:
 Content for analysis:
 """
 
-assess_query = """You are the Graph Manager for GraphResearcher. Assess exactly one Query from its OWN evidence and direct-child summaries. Do not infer evidence from parent or sibling branches.
+assess_query_frontiers = """You are the Graph Manager for GraphResearcher. Assess exactly one Query from its OWN evidence and direct-child summaries. Do not infer evidence from parent or sibling branches.
+
+This assessment has two jobs:
+1. Judge the query's local sufficiency.
+2. Discover new research frontiers from the evidence:
+   - horizontal frontiers: missing parallel dimensions at the same level
+   - vertical frontiers: deeper follow-ups that validate a claim, explain a conflict, or pursue a critical evidence lead
 
 Rules:
 - Return only valid JSON.
 - `sufficiency_score` is in [0, 1].
-- Return `recommendation="sufficient"` only when the Query's acceptance criteria are met with reliable evidence.
-- If more research may help, split the missing work into ATOMIC gaps. Gap
-  creation does not mean the gap will be searched; global portfolio evaluation
-  selects only work with enough report-level marginal value.
-- Each gap needs an importance, a generic gap category, affected objective keys,
-  a reusable search subject key, decision impact, expected confidence gain,
-  estimated search rounds, and concrete acceptance criteria.
-- Return `blocked` only when reliable evidence cannot reasonably be obtained.
+- `recommendation` must be one of `sufficient`, `continue`, `blocked`.
+- Horizontal frontiers must stay at the same granularity level as the current query.
+- Vertical frontiers must be more specific than the current query and must anchor at least one claim, conflict, or evidence item.
+- Do not create low-value trivia frontiers.
+- `filled_slot_keys` and `remaining_slot_keys` must use only slot keys from the provided registry.
 
 Return:
 {
   "sufficiency_score": 0.0,
   "covered": ["supported aspects"],
-  "gaps": [
+  "filled_slot_keys": ["slot-key"],
+  "remaining_slot_keys": ["slot-key"],
+  "horizontal_frontiers": [
     {
-      "description": "one atomic missing fact or analysis",
+      "description": "missing parallel dimension at the same level",
       "importance": "core|supporting|peripheral",
-      "gap_category": "missing_core_evidence|fatal_conflict|enrichment|additional_example|verification|detail",
-      "objective_keys": ["affected-report-objective-key"],
-      "search_subject_key": "stable-topic-key-for-grouping-related-gaps",
+      "granularity_level": "same as current query",
+      "scope_signature": "stable short signature",
+      "target_slot_keys": ["slot-key"],
       "decision_impact": 0.0,
       "confidence_gain": 0.0,
+      "novelty_score": 0.0,
+      "slot_blocking_score": 0.0,
+      "primary_source_need": 0.0,
       "estimated_search_rounds": 1,
-      "acceptance_criteria": ["what evidence closes this gap"]
+      "acceptance_criteria": ["what this frontier must establish"]
     }
   ],
-  "recommendation": "sufficient|needs_expansion|blocked",
+  "vertical_frontiers": [
+    {
+      "description": "deeper follow-up question",
+      "importance": "core|supporting|peripheral",
+      "granularity_level": "one level deeper than current query",
+      "scope_signature": "stable short signature",
+      "target_slot_keys": ["slot-key"],
+      "anchor_claim_ids": ["claim-id"],
+      "anchor_conflict_ids": ["conflict-id"],
+      "anchor_evidence_ids": ["evidence-id"],
+      "decision_impact": 0.0,
+      "confidence_gain": 0.0,
+      "novelty_score": 0.0,
+      "slot_blocking_score": 0.0,
+      "primary_source_need": 0.0,
+      "estimated_search_rounds": 1,
+      "acceptance_criteria": ["what this frontier must verify or explain"]
+    }
+  ],
+  "dimension_hypotheses": [
+    {
+      "dimension_label": "parallel dimension label",
+      "support_strength": 0.0,
+      "covered_by_scope_signatures": ["scope-a", "scope-b"]
+    }
+  ],
+  "recommendation": "sufficient|continue|blocked",
   "reason": "short justification"
 }
 
 Query:
 {query}
+
+Task contract and slot registry:
+{task_contract}
 
 Owned evaluation subgraph:
 {evaluation_subgraph}
@@ -165,26 +230,89 @@ Statements and evidence:
 {evidence_subgraph}
 """
 
-plan_followup_query = """You are the Query Planner for GraphResearcher.
-Author one self-contained child search query that jointly covers the assigned
-atomic gaps sharing one search subject.
+plan_horizontal_queries = """You are the horizontal frontier planner for GraphResearcher.
+Author up to {max_new} self-contained sibling queries that cover missing
+parallel dimensions at the SAME granularity level.
 
-Research goal: {research_goal}
-Parent topic (the subject to deepen, or the parent whose dimensions to complete): {parent_text}
-Existing sibling queries under the attach point (do NOT duplicate their coverage): {sibling_texts}
-Atomic gaps to cover: {gaps}
-Reason: {reason}
+Rules:
+- Return only valid JSON, no Markdown.
+- New queries must attach under the provided parent, so they are siblings of the current query.
+- Keep granularity equal to the current query's granularity.
+- Avoid overlap with existing sibling scope signatures and texts.
+- Query text must be self-contained and directly searchable.
+- Each query should target the assigned slots and dimension.
 
-Requirements:
-- Inline the parent's concrete subject BY VALUE into every new query (e.g. write "Figure AI 人形机器人 量产进度 2025", never "该公司的量产进度"). Never reference another query: no "上述/前述/该/这些/the above".
-- Each query must be SELF-CONTAINED and a TIGHT natural-language search phrase: key entities + time window, no filler, not a verbose question, not bare keywords, not an instruction to an agent.
-- Cover only the assigned related gaps; do not repeat what the existing siblings already cover.
-- Author the query text in the language of the research goal.
-- Tag each query with an importance ("core" / "supporting" / "peripheral") relative to the research goal's core conclusions, judged the same way as the parent's own role.
-- Include concrete acceptance_criteria copied or refined from the assigned atomic gap.
+Return:
+{
+  "queries": [
+    {
+      "frontier_description": "frontier description copied or tightened",
+      "text": "tight self-contained search phrase",
+      "importance": "core|supporting|peripheral",
+      "query_role": "horizontal",
+      "granularity_level": "same level as current query",
+      "scope_signature": "stable short signature",
+      "target_slot_keys": ["slot-key"],
+      "acceptance_criteria": ["what evidence makes this sibling locally sufficient"]
+    }
+  ]
+}
 
-Return only valid JSON, no Markdown, at most {max_new} queries:
-{"queries": [{"text": "...", "importance": "core|supporting|peripheral", "acceptance_criteria": ["..."]}]}
+Research goal:
+{research_goal}
+
+Attach parent:
+{attach_parent}
+
+Current query:
+{current_query}
+
+Existing siblings:
+{siblings}
+
+Selected horizontal frontiers:
+{frontiers}
+"""
+
+plan_vertical_queries = """You are the vertical frontier planner for GraphResearcher.
+Author up to {max_new} self-contained child queries that deepen the current
+query along its evidence chain.
+
+Rules:
+- Return only valid JSON, no Markdown.
+- Every query must be a child of the current query.
+- Each query must explicitly inherit the concrete parent context by value.
+- Each query must clearly state what it validates, explains, or resolves.
+- Do not broaden back into a catch-all topic.
+- Query text must be self-contained and directly searchable.
+
+Return:
+{
+  "queries": [
+    {
+      "frontier_description": "frontier description copied or tightened",
+      "text": "tight self-contained search phrase",
+      "importance": "core|supporting|peripheral",
+      "query_role": "vertical",
+      "granularity_level": "one level deeper than current query",
+      "scope_signature": "stable short signature",
+      "target_slot_keys": ["slot-key"],
+      "anchor_claim_ids": ["claim-id"],
+      "anchor_conflict_ids": ["conflict-id"],
+      "anchor_evidence_ids": ["evidence-id"],
+      "acceptance_criteria": ["what evidence makes this child locally sufficient"]
+    }
+  ]
+}
+
+Research goal:
+{research_goal}
+
+Current query:
+{current_query}
+
+Selected vertical frontiers:
+{frontiers}
 """
 
 assess_convergence = """You are the Graph Manager for GraphResearcher. Classify unresolved conflicts before the deterministic Objective-based convergence gate runs.
@@ -235,4 +363,31 @@ Research contract:
 
 Query summaries:
 {queries}
+"""
+
+assess_delivery_readiness = """You are the delivery readiness assessor for GraphResearcher.
+Judge whether the research graph is ready to hand off to the Reporter.
+
+Rules:
+- Return only valid JSON.
+- Base the judgment on slot completion, selected frontier backlog, horizontal closure, and unresolved core-claim risks.
+- `delivery_ready` may be true only when the required slots are sufficiently filled and the remaining frontiers are explicitly low-value or out of budget.
+- `missing_sections` and `missing_tables` must use only keys from the TaskContract.
+
+Return:
+{
+  "horizontal_closure_score": 0.0,
+  "core_claim_support_score": 0.0,
+  "slot_completion_score": 0.0,
+  "delivery_ready": false,
+  "missing_sections": ["section-key"],
+  "missing_tables": ["table-key"],
+  "reason": "short justification"
+}
+
+Task contract:
+{task_contract}
+
+Research portfolio snapshot:
+{portfolio}
 """

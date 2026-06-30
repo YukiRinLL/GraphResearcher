@@ -17,7 +17,7 @@ FAILED = "FAILED"
 
 REPORT_ALLOWED = {REPORT_READY, BUDGET_EXHAUSTED, REPORTING, COMPLETED}
 TERMINAL_QUERY_STATUSES = {"sufficient", "blocked", "failed", "deferred"}
-OPEN_GAP_STATUSES = {"candidate", "selected", "assigned"}
+OPEN_FRONTIER_STATUSES = {"candidate", "selected", "expanded"}
 _TRANSITIONS = {
     INITIALIZING: {INITIALIZING, RESEARCHING, FAILED},
     RESEARCHING: {RESEARCHING, REPORT_READY, BUDGET_EXHAUSTED, FAILED},
@@ -61,15 +61,15 @@ def remaining_budget(goal_id: Optional[str] = None) -> Optional[int]:
 
 
 def mark_budget_exhausted(goal_id: Optional[str] = None) -> dict[str, Any]:
-    """Authorize a limited report and defer every still-open gap."""
+    """Authorize a limited report and defer every still-open frontier."""
     if graph_tools.search_nodes("query", {"status": "searching"}):
         return get_goal(goal_id)
-    for gap in graph_tools.search_nodes("analysis", {"analysis_type": "gap"}):
-        if gap.get("status") in OPEN_GAP_STATUSES:
+    for frontier in graph_tools.search_nodes("research_frontier", {}):
+        if frontier.get("status") in OPEN_FRONTIER_STATUSES:
             graph_tools.upsert_node(
-                NodeType.ANALYSIS,
+                NodeType.RESEARCH_FRONTIER,
                 {"status": "deferred_budget", "resolution_reason": "search budget exhausted"},
-                gap["id"],
+                frontier["id"],
             )
     for conflict in graph_tools.search_nodes("conflict", {}):
         if conflict.get("resolution_status") in {"unresolved", "investigating"}:
@@ -113,8 +113,9 @@ def get_status(goal_id: Optional[str] = None) -> dict[str, Any]:
     """Return a compact persistent state summary."""
     goal = get_goal(goal_id)
     queries = graph_tools.search_nodes("query", {})
-    gaps = graph_tools.search_nodes("analysis", {"analysis_type": "gap"})
-    objectives = graph_tools.search_nodes("analysis", {"analysis_type": "objective"})
+    frontiers = graph_tools.search_nodes("research_frontier", {})
+    slots = graph_tools.get_coverage_slots(goal.get("id")) if goal else []
+    contract = graph_tools.get_task_contract(goal.get("id")) if goal else {}
     counts: dict[str, int] = {}
     for query in queries:
         status = query.get("status") or "unknown"
@@ -135,30 +136,35 @@ def get_status(goal_id: Optional[str] = None) -> dict[str, Any]:
         "evaluated_portfolio_revision": goal.get("evaluated_portfolio_revision", 0),
         "last_max_marginal_utility": goal.get("last_max_marginal_utility", 0.0),
         "report_readiness_score": goal.get("report_readiness_score", 0.0),
-        "objectives": [
-            {
-                "objective_key": objective.get("objective_key"),
-                "requirement": objective.get("requirement"),
-                "status": objective.get("status"),
-                "coverage": objective.get("coverage"),
-                "confidence": objective.get("confidence"),
-            }
-            for objective in objectives
-        ],
+        "deliverable_type": goal.get("deliverable_type") or (contract or {}).get("deliverable_type"),
+        "horizontal_closure_score": goal.get("horizontal_closure_score", 0.0),
+        "slot_completion_score": goal.get("slot_completion_score", 0.0),
+        "delivery_readiness": goal.get("delivery_readiness", False),
         "query_status_counts": counts,
         "active_queries": [
             {"id": q.get("id"), "handle": q.get("handle"), "status": q.get("status"), "text": q.get("text")}
             for q in active_queries
         ],
-        "selected_gaps": [
+        "frontier_backlog": [
             {
-                "id": g.get("id"),
-                "description": g.get("description") or g.get("text"),
-                "status": g.get("status"),
-                "marginal_utility": g.get("marginal_utility"),
+                "id": f.get("id"),
+                "frontier_type": f.get("frontier_type"),
+                "description": f.get("description"),
+                "status": f.get("status"),
+                "marginal_utility": f.get("marginal_utility"),
             }
-            for g in gaps
-            if g.get("status") in {"selected", "assigned"}
+            for f in frontiers
+            if f.get("status") in {"selected", "expanded"}
+        ],
+        "slot_registry": [
+            {
+                "id": slot.get("id"),
+                "slot_key": slot.get("slot_key"),
+                "section": slot.get("section"),
+                "status": slot.get("status"),
+                "completion_score": slot.get("completion_score"),
+            }
+            for slot in slots
         ],
         "last_convergence_recommendation": goal.get("last_convergence_recommendation"),
         "report_authorized_reason": goal.get("report_authorized_reason"),

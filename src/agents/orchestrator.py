@@ -33,7 +33,7 @@ def dispatch_searcher(query_id: str, source_preferences: list[str] | None = None
 
     Args:
         query_id: The exact Query node ID returned by ``get_next_actions`` or
-            ``expand_gaps``. Pass it through unchanged.
+            ``expand_horizontally`` / ``expand_vertically``. Pass it through unchanged.
         source_preferences: Optional preferred source categories or domains.
 
     Returns:

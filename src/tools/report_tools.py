@@ -145,6 +145,9 @@ def _render_outline_markdown(title: str, chapters: list[dict[str, Any]]) -> str:
         query_ids = [str(query_id).strip() for query_id in chapter.get("query_ids") or [] if str(query_id).strip()]
         if query_ids:
             lines.extend(["", f"Queries: {', '.join(query_ids)}"])
+        slot_keys = [str(slot_key).strip() for slot_key in chapter.get("slot_keys") or [] if str(slot_key).strip()]
+        if slot_keys:
+            lines.extend(["", f"Slots: {', '.join(slot_keys)}"])
         lines.append("")
     return "\n".join(lines).strip() + "\n"
 
@@ -309,6 +312,16 @@ def commit_report_outline(output_dir: Optional[str], title: str, chapters: list[
                 for query_id in chapter.get("query_ids") or []
                 if str(query_id).strip()
             ],
+            "slot_ids": [
+                str(slot_id).strip()
+                for slot_id in chapter.get("slot_ids") or []
+                if str(slot_id).strip()
+            ],
+            "slot_keys": [
+                str(slot_key).strip()
+                for slot_key in chapter.get("slot_keys") or []
+                if str(slot_key).strip()
+            ],
             "section_plan": str(chapter.get("section_plan") or "").strip(),
             "status": str(chapter.get("status") or "pending"),
         })
@@ -342,22 +355,72 @@ def prepare_report_chapter_bundle(
         *[str(query_id).strip() for query_id in chapter.get("query_ids") or [] if str(query_id).strip()],
         *[str(query_id).strip() for query_id in extra_query_ids or [] if str(query_id).strip()],
     ]))
+    slot_ids = [str(slot_id).strip() for slot_id in chapter.get("slot_ids") or [] if str(slot_id).strip()]
+    slot_keys = [str(slot_key).strip() for slot_key in chapter.get("slot_keys") or [] if str(slot_key).strip()]
+    if slot_keys and not slot_ids:
+        slot_by_key = {slot.get("slot_key"): slot for slot in graph_tools.get_coverage_slots(graph_tools.search_nodes("user_request", {})[0]["id"])}
+        slot_ids = [slot_by_key[key]["id"] for key in slot_keys if key in slot_by_key]
     evidence_items: list[dict[str, Any]] = []
     seen_items: set[str] = set()
-    for query_id in query_ids:
-        offset = 0
-        while True:
-            page = get_report_evidence(query_id, offset=offset, limit=100)
-            if page.get("error"):
-                return {"status": "error", "message": page["error"], "chapter_id": int(chapter_id)}
-            for item in page.get("items", []):
-                if item["id"] in seen_items:
+    nodes = {node["id"]: node for node in graph_tools.get_all_nodes()}
+    edges = graph_tools.get_all_edges()
+    registry = build_reference_registry()
+    registry_by_source = {entry["source_id"]: entry for entry in registry}
+    for slot_id in slot_ids:
+        fillers = graph_tools.get_slot_fillers(slot_id)
+        for items in (fillers.get("claims") or [], fillers.get("evidence") or []):
+            if not isinstance(items, list):
+                continue
+            for collection in items:
+                item_id = collection.get("id")
+                if item_id in seen_items:
                     continue
-                evidence_items.append(item)
-                seen_items.add(item["id"])
-            if page.get("next_offset") is None:
-                break
-            offset = int(page["next_offset"])
+                source_ids = [
+                    source_id for source_id in _source_ids_for_item(item_id, nodes, edges)
+                    if source_id in registry_by_source
+                ]
+                if not source_ids:
+                    continue
+                text = collection.get("statement") or collection.get("claim") or collection.get("text")
+                if not str(text or "").strip():
+                    continue
+                evidence_items.append({
+                    "id": item_id,
+                    "type": collection.get("type"),
+                    "text": str(text).strip(),
+                    "slot_id": slot_id,
+                    "source_ids": source_ids,
+                    "citations": [registry_by_source[source_id]["n"] for source_id in source_ids],
+                    "sources": [
+                        {
+                            "source_id": source_id,
+                            "title": registry_by_source[source_id]["title"],
+                            "url": registry_by_source[source_id]["url"],
+                            "source_type": nodes.get(source_id, {}).get("source_type"),
+                            "published_at": (
+                                nodes.get(source_id, {}).get("published_at")
+                                or nodes.get(source_id, {}).get("publication_date")
+                            ),
+                        }
+                        for source_id in source_ids
+                    ],
+                })
+                seen_items.add(item_id)
+    if not evidence_items:
+        for query_id in query_ids:
+            offset = 0
+            while True:
+                page = get_report_evidence(query_id, offset=offset, limit=100)
+                if page.get("error"):
+                    return {"status": "error", "message": page["error"], "chapter_id": int(chapter_id)}
+                for item in page.get("items", []):
+                    if item["id"] in seen_items:
+                        continue
+                    evidence_items.append(item)
+                    seen_items.add(item["id"])
+                if page.get("next_offset") is None:
+                    break
+                offset = int(page["next_offset"])
 
     source_ids = sorted({
         source_id
@@ -370,6 +433,8 @@ def prepare_report_chapter_bundle(
         "chapter_title": chapter.get("title"),
         "chapter_goals": chapter.get("goals") or [],
         "section_plan": chapter.get("section_plan") or "",
+        "slot_ids": slot_ids,
+        "slot_keys": slot_keys,
         "query_ids": query_ids,
         "evidence_items": evidence_items,
         "reference_registry_subset": [
@@ -385,6 +450,8 @@ def prepare_report_chapter_bundle(
     meta = {
         "chapter_id": int(chapter_id),
         "title": chapter.get("title"),
+        "slot_ids": slot_ids,
+        "slot_keys": slot_keys,
         "query_ids": query_ids,
         "source_ids": source_ids,
         "evidence_ids": [item["id"] for item in evidence_items],

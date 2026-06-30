@@ -1,195 +1,150 @@
-"""Standalone checks for priority-weighted convergence.
-
-Run directly (NOT pytest):  uv run python tests/test_convergence.py
-
-Stubs ``graph_tools`` reads so the deterministic logic is exercised without a
-live neo4j backend, and drives ``MemoryManager.assess_convergence`` with a fake
-model to check the recommendation is composed correctly.
-"""
-
 import json
 import sys
+import types
 from pathlib import Path
 
 src_dir = Path(__file__).parent.parent / "src"
 sys.path.insert(0, str(src_dir))
+sys.modules.setdefault("config", types.SimpleNamespace(build_model=lambda: None))
 
-from tools import convergence, graph_tools  # noqa: E402
-
-# Mutable fake graph the tests drive round by round.
-_FAKE = {"query": [], "source": [], "evidence": [], "conflict": [], "analysis": []}
-_NODES: dict = {}
-
-
-def _fake_search_nodes(node_type, _filter):
-    return list(_FAKE.get(node_type, []))
+from agents.memory_manager import MemoryManager  # noqa: E402
+from tools import graph_tools, research_state  # noqa: E402
+from tools.graph_manager_tools import ORCHESTRATOR_TOOLS  # noqa: E402
 
 
-def _fake_get_node(node_id):
-    return _NODES.get(node_id, {})
+def _manager():
+    mm = object.__new__(MemoryManager)
+    mm.cache_dir = None
+    mm.model = None
+    return mm
 
 
-graph_tools.search_nodes = _fake_search_nodes
-graph_tools.get_node = _fake_get_node
-graph_tools.get_query_parent = lambda query_id: "goal" if query_id != "goal" else None
+def test_orchestrator_tool_assembly():
+    names = {tool.name for tool in ORCHESTRATOR_TOOLS}
+    assert "expand_horizontally" in names
+    assert "expand_vertically" in names
+    assert "expand_gaps" not in names
 
 
-def _set(queries=None, sources=None, evidence=None, conflicts=None, objectives=None):
-    _FAKE["query"] = queries or []
-    _FAKE["source"] = sources or []
-    _FAKE["evidence"] = evidence or []
-    _FAKE["conflict"] = conflicts or []
-    _FAKE["analysis"] = objectives or []
-    for query in _FAKE["query"]:
-        _NODES[query["id"]] = query
-
-
-def ev(node_id, claim):
-    return {"id": node_id, "type": "evidence", "claim": claim}
-
-
-def src(node_id, url):
-    return {"id": node_id, "type": "source", "url": url}
-
-
-def q(node_id, status, score=None, tier=None, priority=None):
-    n = {"id": node_id, "type": "query", "status": status, "required_for_parent": True}
-    if score is not None:
-        n["sufficiency_score"] = score
-    if tier is not None:
-        n["priority_tier"] = tier
-    if priority is not None:
-        n["priority"] = priority
-    return n
-
-
-class FakeModel:
-    """Returns a fixed JSON payload from ``.invoke`` (the LLM verdict)."""
-
-    def __init__(self, payload):
-        self._payload = payload
-
-    def invoke(self, _prompt):
-        class _R:
-            content = json.dumps(self._payload)
-
-        return _R()
-
-
-def test_compute_priority():
-    convergence.reset()
-    _NODES.clear()
-    # Initial queries (parent = goal, no priority) -> struct = 1.0.
-    _NODES["goal"] = {"id": "goal", "type": "user_request"}
-    s_core, t_core, _ = convergence.compute_priority("core", "goal")
-    s_sup, t_sup, _ = convergence.compute_priority("supporting", "goal")
-    s_per, t_per, _ = convergence.compute_priority("peripheral", "goal")
-    assert round(s_core, 2) == 1.00 and t_core == "high", (s_core, t_core)
-    assert round(s_sup, 2) == 0.76 and t_sup == "high", (s_sup, t_sup)
-    assert round(s_per, 2) == 0.58 and t_per == "low", (s_per, t_per)
-    # Missing importance defaults to supporting -> high for an initial query.
-    s_def, t_def, _ = convergence.compute_priority(None, "goal")
-    assert round(s_def, 2) == 0.76 and t_def == "high"
-
-    # Vertical child of a core query inherits a decayed structural floor.
-    _NODES["qcore"] = {"id": "qcore", "type": "query", "priority": 1.0}
-    s_child, t_child, _ = convergence.compute_priority("supporting", "qcore")
-    assert round(s_child, 2) == 0.70 and t_child == "high", (s_child, t_child)
-    # Peripheral detail under a peripheral parent stays low.
-    _NODES["qper"] = {"id": "qper", "type": "query", "priority": 0.58}
-    s_pp, t_pp, _ = convergence.compute_priority("peripheral", "qper")
-    assert t_pp == "low", (s_pp, t_pp)
-    print("compute_priority OK")
-
-
-def test_structurally_converged():
-    _NODES.clear()
-    _NODES["goal"] = {"id": "goal", "type": "UserRequest"}
-    # Every required branch gates convergence regardless of scheduling tier.
-    _set(queries=[
-        q("h1", "sufficient", 0.8, tier="high"),
-        q("h2", "needs_expansion", 0.6, tier="high"),
-        q("l1", "needs_expansion", 0.3, tier="low"),
-    ])
-    assert convergence.structurally_converged() is False
-    # High below the score threshold -> not converged.
-    _set(queries=[q("h1", "sufficient", 0.65, tier="high")])
-    assert convergence.structurally_converged() is False
-    # A non-required low-priority detail never gates.
-    _set(queries=[
-        q("h1", "sufficient", 0.8, tier="high"),
-        {**q("l1", "pending", 0.2, tier="low"), "required_for_parent": False},
-    ])
-    assert convergence.structurally_converged() is True
-    # A blocked high counts as best-effort (termination guarantee).
-    _set(queries=[q("h1", "blocked", tier="high"), q("h2", "sufficient", 0.9, tier="high")])
-    assert convergence.structurally_converged() is True
-    # New graphs converge on must Objectives, independent of required-path flags.
-    _set(
-        queries=[q("h1", "pending", tier="high")],
-        objectives=[{
-            "id": "o1",
-            "type": "analysis",
-            "analysis_type": "objective",
-            "requirement": "must",
-            "status": "satisfied",
-        }],
+def test_assess_convergence_rejects_open_horizontal_space(monkeypatch):
+    mm = _manager()
+    monkeypatch.setattr(research_state, "REPORT_READY", "REPORT_READY")
+    monkeypatch.setattr(research_state, "BUDGET_EXHAUSTED", "BUDGET_EXHAUSTED")
+    monkeypatch.setattr(research_state, "RESEARCHING", "RESEARCHING")
+    monkeypatch.setattr(research_state, "REPORT_ALLOWED", {"REPORT_READY", "BUDGET_EXHAUSTED"})
+    monkeypatch.setattr(research_state, "get_status", lambda goal_id=None: {"research_state": "RESEARCHING"})
+    monkeypatch.setattr(research_state, "get_goal", lambda goal_id=None: {"id": "goal", "research_state": "RESEARCHING"})
+    updates = []
+    monkeypatch.setattr(research_state, "update_goal", lambda attrs, goal_id=None: updates.append(attrs) or attrs)
+    monkeypatch.setattr(research_state, "remaining_budget", lambda goal_id=None: 5)
+    monkeypatch.setattr(research_state, "mark_budget_exhausted", lambda goal_id=None: {"research_state": "BUDGET_EXHAUSTED"})
+    monkeypatch.setattr(graph_tools, "validate_query_tree", lambda: {"valid": True})
+    monkeypatch.setattr(graph_tools, "search_nodes", lambda kind, _filter=None: [{"id": "q1", "type": "Query", "status": "sufficient"}] if kind == "query" else [])
+    monkeypatch.setattr(graph_tools, "get_frontiers", lambda owner_id=None, statuses=None: [])
+    monkeypatch.setattr(graph_tools, "upsert_node", lambda node_type, attrs, dedupe_key=None: dedupe_key)
+    monkeypatch.setattr(
+        mm,
+        "_compute_research_metrics",
+        lambda goal_id: {
+            "horizontal_closure_score": 0.4,
+            "slot_completion_score": 0.95,
+            "core_claim_support_score": 0.9,
+            "selected_frontier_backlog": 0,
+            "delivery_readiness_score": 0.8,
+            "delivery_ready": False,
+            "slot_completion_threshold": 0.75,
+        },
     )
-    assert convergence.structurally_converged() is True
-    print("structurally_converged OK")
+    monkeypatch.setattr(mm, "_task_contract_snapshot", lambda goal_id=None: {"task_contract": {"deliverable_type": "research_report"}})
+    monkeypatch.setattr(mm, "_all_remaining_frontiers_low_value", lambda: False)
+    monkeypatch.setattr(mm, "_invoke_json", lambda prompt: {"delivery_ready": False, "reason": "horizontal space still open"})
+    monkeypatch.setattr(mm, "get_next_actions", lambda limit=4: [{"action": "expand_horizontally"}])
+
+    result = mm.assess_convergence("goal")
+
+    assert result["converged"] is False
+    assert result["research_state"] == "RESEARCHING"
+    assert result["horizontal_closure_score"] == 0.4
+    assert updates[-1]["research_state"] == "RESEARCHING"
 
 
-def test_novelty_advance_vs_snapshot():
-    convergence.reset()
-    # Cold start: a round with no evidence yet must NOT register as low novelty.
-    _set(evidence=[])
-    m = convergence.observe_round()
-    assert m["novelty"]["ratio"] is None and m["novelty"]["new_total"] == 0
-    m = convergence.observe_round()
-    assert m["novelty"]["diminishing"] is False, "empty rounds must not trigger diminishing"
+def test_assess_convergence_requires_zero_selected_frontier_backlog(monkeypatch):
+    mm = _manager()
+    monkeypatch.setattr(research_state, "REPORT_READY", "REPORT_READY")
+    monkeypatch.setattr(research_state, "BUDGET_EXHAUSTED", "BUDGET_EXHAUSTED")
+    monkeypatch.setattr(research_state, "RESEARCHING", "RESEARCHING")
+    monkeypatch.setattr(research_state, "REPORT_ALLOWED", {"REPORT_READY", "BUDGET_EXHAUSTED"})
+    monkeypatch.setattr(research_state, "get_status", lambda goal_id=None: {"research_state": "RESEARCHING"})
+    monkeypatch.setattr(research_state, "get_goal", lambda goal_id=None: {"id": "goal", "research_state": "RESEARCHING"})
+    updates = []
+    monkeypatch.setattr(research_state, "update_goal", lambda attrs, goal_id=None: updates.append(attrs) or attrs)
+    monkeypatch.setattr(research_state, "remaining_budget", lambda goal_id=None: 5)
+    monkeypatch.setattr(research_state, "mark_budget_exhausted", lambda goal_id=None: {"research_state": "BUDGET_EXHAUSTED"})
+    monkeypatch.setattr(graph_tools, "validate_query_tree", lambda: {"valid": True})
+    monkeypatch.setattr(graph_tools, "search_nodes", lambda kind, _filter=None: [{"id": "q1", "type": "Query", "status": "sufficient"}] if kind == "query" else [])
+    monkeypatch.setattr(graph_tools, "get_frontiers", lambda owner_id=None, statuses=None: [{"id": "f1"}] if statuses == {"selected"} else [])
+    monkeypatch.setattr(graph_tools, "upsert_node", lambda node_type, attrs, dedupe_key=None: dedupe_key)
+    monkeypatch.setattr(
+        mm,
+        "_compute_research_metrics",
+        lambda goal_id: {
+            "horizontal_closure_score": 0.95,
+            "slot_completion_score": 0.95,
+            "core_claim_support_score": 0.9,
+            "selected_frontier_backlog": 1,
+            "delivery_readiness_score": 0.8,
+            "delivery_ready": False,
+            "slot_completion_threshold": 0.75,
+        },
+    )
+    monkeypatch.setattr(mm, "_task_contract_snapshot", lambda goal_id=None: {"task_contract": {"deliverable_type": "research_report"}})
+    monkeypatch.setattr(mm, "_all_remaining_frontiers_low_value", lambda: False)
+    monkeypatch.setattr(mm, "_invoke_json", lambda prompt: {"delivery_ready": True, "reason": "selected backlog remains"})
+    monkeypatch.setattr(mm, "get_next_actions", lambda limit=4: [{"action": "expand_vertically"}])
 
-    _set(evidence=[ev("e1", "fact one"), ev("e2", "fact two")])
-    m = convergence.observe_round()  # advances
-    assert m["novelty"]["new_total"] == 2 and m["novelty"]["new_unique"] == 2
-    assert m["novelty"]["ratio"] == 1.0
-    # Read-only snapshot does not advance or change history.
-    snap = convergence.compute_metrics(advance_novelty=False)
-    assert snap["novelty"]["new_total"] is None
-    assert snap["novelty"]["ratio"] == 1.0  # last recorded
-    # Two duplicate-only rounds -> diminishing.
-    _FAKE["evidence"].append(ev("e3", "fact one"))
-    convergence.observe_round()
-    _FAKE["evidence"].append(ev("e4", "fact two"))
-    m = convergence.observe_round()
-    assert m["novelty"]["ratio"] == 0.0 and m["novelty"]["diminishing"] is True
-    # priority block present in metrics.
-    assert "priority" in m and "structurally_converged" in m["priority"]
-    print("novelty advance/snapshot OK")
+    result = mm.assess_convergence("goal")
 
-
-def test_assembly():
-    from tools.graph_manager_tools import ORCHESTRATOR_TOOLS
-
-    names = {t.name for t in ORCHESTRATOR_TOOLS}
-    assert {
-        "assess_convergence",
-        "assess_query",
-        "evaluate_research_portfolio",
-        "expand_gaps",
-        "get_next_actions",
-        "get_research_objectives",
-    } <= names, names
-    assert not {"mark_query", "analyze_subgraph", "expand_query", "export_report_context"} & names, names
-    print("assembly OK")
+    assert result["converged"] is False
+    assert result["selected_frontier_backlog"] == 1
+    assert updates[-1]["research_state"] == "RESEARCHING"
 
 
-def main():
-    test_compute_priority()
-    test_structurally_converged()
-    test_novelty_advance_vs_snapshot()
-    test_assembly()
-    print("\nALL CONVERGENCE CHECKS PASSED")
+def test_assess_convergence_allows_reporting_when_slots_and_frontiers_close(monkeypatch):
+    mm = _manager()
+    monkeypatch.setattr(research_state, "REPORT_READY", "REPORT_READY")
+    monkeypatch.setattr(research_state, "BUDGET_EXHAUSTED", "BUDGET_EXHAUSTED")
+    monkeypatch.setattr(research_state, "RESEARCHING", "RESEARCHING")
+    monkeypatch.setattr(research_state, "REPORT_ALLOWED", {"REPORT_READY", "BUDGET_EXHAUSTED"})
+    monkeypatch.setattr(research_state, "get_status", lambda goal_id=None: {"research_state": "RESEARCHING"})
+    monkeypatch.setattr(research_state, "get_goal", lambda goal_id=None: {"id": "goal", "research_state": "RESEARCHING"})
+    updates = []
+    monkeypatch.setattr(research_state, "update_goal", lambda attrs, goal_id=None: updates.append(attrs) or attrs)
+    monkeypatch.setattr(research_state, "remaining_budget", lambda goal_id=None: 5)
+    monkeypatch.setattr(research_state, "mark_budget_exhausted", lambda goal_id=None: {"research_state": "BUDGET_EXHAUSTED"})
+    monkeypatch.setattr(graph_tools, "validate_query_tree", lambda: {"valid": True})
+    monkeypatch.setattr(graph_tools, "search_nodes", lambda kind, _filter=None: [{"id": "q1", "type": "Query", "status": "sufficient"}] if kind == "query" else [])
+    monkeypatch.setattr(graph_tools, "get_frontiers", lambda owner_id=None, statuses=None: [])
+    monkeypatch.setattr(graph_tools, "upsert_node", lambda node_type, attrs, dedupe_key=None: dedupe_key)
+    monkeypatch.setattr(
+        mm,
+        "_compute_research_metrics",
+        lambda goal_id: {
+            "horizontal_closure_score": 0.95,
+            "slot_completion_score": 0.92,
+            "core_claim_support_score": 0.85,
+            "selected_frontier_backlog": 0,
+            "delivery_readiness_score": 0.88,
+            "delivery_ready": True,
+            "slot_completion_threshold": 0.75,
+        },
+    )
+    monkeypatch.setattr(mm, "_task_contract_snapshot", lambda goal_id=None: {"task_contract": {"deliverable_type": "research_report"}})
+    monkeypatch.setattr(mm, "_all_remaining_frontiers_low_value", lambda: True)
+    monkeypatch.setattr(mm, "_invoke_json", lambda prompt: {"delivery_ready": True, "slot_completion_score": 0.92, "reason": "ready"})
+    monkeypatch.setattr(mm, "get_next_actions", lambda limit=4: [])
 
+    result = mm.assess_convergence("goal")
 
-if __name__ == "__main__":
-    main()
+    assert result["converged"] is True
+    assert result["research_state"] == "REPORT_READY"
+    assert updates[-1]["research_state"] == "REPORT_READY"

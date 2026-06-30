@@ -10,15 +10,23 @@ from typing import Any, Optional
 from memory.graph import EdgeType, NodeType
 
 _QUERY_TRANSITIONS = {
-    "pending": {"searching", "deferred"},
+    "pending": {"searching", "deferred", "blocked", "failed"},
     "searching": {"assessing", "pending", "blocked", "failed"},
-    "assessing": {"sufficient", "needs_expansion", "blocked"},
-    "needs_expansion": {"waiting_children", "sufficient", "blocked"},
-    "waiting_children": {"assessing"},
+    "assessing": {"pending", "sufficient", "blocked", "failed", "deferred"},
     "sufficient": set(),
     "blocked": set(),
     "failed": set(),
     "deferred": set(),
+}
+
+_FRONTIER_STATUSES = {
+    "candidate",
+    "selected",
+    "expanded",
+    "deferred_low_value",
+    "deferred_budget",
+    "resolved",
+    "blocked",
 }
 
 # A single persistent background event loop runs every coroutine. The neo4j
@@ -252,8 +260,6 @@ def create_query_child(
     parent = get_node(parent_id)
     if parent.get("type") not in {NodeType.USER_REQUEST.value, NodeType.QUERY.value}:
         raise ValueError(f"Query parent must be UserRequest or Query: {parent_id!r}")
-    if parent.get("type") == NodeType.QUERY.value and not gap_ids:
-        raise ValueError("Non-root Query children must address at least one gap")
     validated_gaps = []
     for gap_id in gap_ids or []:
         gap = get_node(gap_id)
@@ -290,6 +296,158 @@ def create_query_child(
         add_edge(query_id, gap_id, EdgeType.ADDRESSES_GAP)
         upsert_node(NodeType.ANALYSIS, {"status": "assigned"}, gap_id)
     return query_id
+
+
+def create_task_contract(
+    goal_id: str,
+    deliverable_type: str,
+    target_shape: str,
+    **attributes: Any,
+) -> str:
+    goal = get_node(goal_id)
+    if goal.get("type") != NodeType.USER_REQUEST.value:
+        raise ValueError(f"TaskContract parent must be UserRequest: {goal_id!r}")
+    contract_id = add_node(
+        NodeType.TASK_CONTRACT,
+        {
+            "deliverable_type": deliverable_type,
+            "target_shape": target_shape,
+            **attributes,
+        },
+    )
+    add_edge(goal_id, contract_id, EdgeType.HAS_TASK_CONTRACT)
+    return contract_id
+
+
+def create_coverage_slot(
+    goal_id: str,
+    slot_key: str,
+    section: str,
+    unit_type: str = "paragraph",
+    status: str = "open",
+    task_contract_id: Optional[str] = None,
+    **attributes: Any,
+) -> str:
+    goal = get_node(goal_id)
+    if goal.get("type") != NodeType.USER_REQUEST.value:
+        raise ValueError(f"CoverageSlot parent must be UserRequest: {goal_id!r}")
+    slot_id = add_node(
+        NodeType.COVERAGE_SLOT,
+        {
+            "slot_key": slot_key,
+            "section": section,
+            "unit_type": unit_type,
+            "status": status,
+            "completion_score": float(attributes.pop("completion_score", 0.0) or 0.0),
+            **attributes,
+        },
+    )
+    add_edge(goal_id, slot_id, EdgeType.HAS_COVERAGE_SLOT)
+    if task_contract_id:
+        add_edge(task_contract_id, slot_id, EdgeType.HAS_COVERAGE_SLOT)
+    return slot_id
+
+
+def bind_slot_filler(
+    slot_id: str,
+    evidence_ids: Optional[list[str]] = None,
+    claim_ids: Optional[list[str]] = None,
+) -> None:
+    slot = get_node(slot_id)
+    if slot.get("type") != NodeType.COVERAGE_SLOT.value:
+        raise ValueError(f"FILLS_SLOT target must be CoverageSlot: {slot_id!r}")
+    for evidence_id in evidence_ids or []:
+        evidence = get_node(evidence_id)
+        if evidence.get("type") != NodeType.EVIDENCE.value:
+            raise ValueError(f"FILLS_SLOT evidence must be Evidence: {evidence_id!r}")
+        add_edge(evidence_id, slot_id, EdgeType.FILLS_SLOT)
+    for claim_id in claim_ids or []:
+        claim = get_node(claim_id)
+        if claim.get("type") != NodeType.CLAIM.value:
+            raise ValueError(f"FILLS_SLOT claim must be Claim: {claim_id!r}")
+        add_edge(claim_id, slot_id, EdgeType.FILLS_SLOT)
+
+
+def create_frontier(
+    owner_id: str,
+    frontier_type: str,
+    description: str,
+    status: str = "candidate",
+    slot_ids: Optional[list[str]] = None,
+    anchor_claim_ids: Optional[list[str]] = None,
+    anchor_conflict_ids: Optional[list[str]] = None,
+    anchor_evidence_ids: Optional[list[str]] = None,
+    **attributes: Any,
+) -> str:
+    owner = get_node(owner_id)
+    if owner.get("type") not in {NodeType.USER_REQUEST.value, NodeType.QUERY.value}:
+        raise ValueError(f"ResearchFrontier owner must be UserRequest or Query: {owner_id!r}")
+    if frontier_type not in {"horizontal", "vertical"}:
+        raise ValueError(f"Invalid frontier_type: {frontier_type!r}")
+    if status not in _FRONTIER_STATUSES:
+        raise ValueError(f"Invalid frontier status: {status!r}")
+    frontier_id = add_node(
+        NodeType.RESEARCH_FRONTIER,
+        {
+            "frontier_type": frontier_type,
+            "description": description,
+            "status": status,
+            **attributes,
+        },
+    )
+    add_edge(owner_id, frontier_id, EdgeType.HAS_FRONTIER)
+    for slot_id in slot_ids or []:
+        slot = get_node(slot_id)
+        if slot.get("type") != NodeType.COVERAGE_SLOT.value:
+            raise ValueError(f"TARGETS_SLOT target must be CoverageSlot: {slot_id!r}")
+        add_edge(frontier_id, slot_id, EdgeType.TARGETS_SLOT)
+    for claim_id in anchor_claim_ids or []:
+        claim = get_node(claim_id)
+        if claim.get("type") != NodeType.CLAIM.value:
+            raise ValueError(f"ANCHORS_CLAIM target must be Claim: {claim_id!r}")
+        add_edge(frontier_id, claim_id, EdgeType.ANCHORS_CLAIM)
+    for conflict_id in anchor_conflict_ids or []:
+        conflict = get_node(conflict_id)
+        if conflict.get("type") != NodeType.CONFLICT.value:
+            raise ValueError(f"ANCHORS_CONFLICT target must be Conflict: {conflict_id!r}")
+        add_edge(frontier_id, conflict_id, EdgeType.ANCHORS_CONFLICT)
+    for evidence_id in anchor_evidence_ids or []:
+        evidence = get_node(evidence_id)
+        if evidence.get("type") != NodeType.EVIDENCE.value:
+            raise ValueError(f"ANCHORS_EVIDENCE target must be Evidence: {evidence_id!r}")
+        add_edge(frontier_id, evidence_id, EdgeType.ANCHORS_EVIDENCE)
+    return frontier_id
+
+
+def create_dimension_hypothesis(
+    goal_id: str,
+    dimension_label: str,
+    parent_query_id: str,
+    support_strength: float = 0.0,
+    covered_by_query_ids: Optional[list[str]] = None,
+    **attributes: Any,
+) -> str:
+    goal = get_node(goal_id)
+    if goal.get("type") != NodeType.USER_REQUEST.value:
+        raise ValueError(f"DimensionHypothesis parent must be UserRequest: {goal_id!r}")
+    get_node(parent_query_id)
+    hypothesis_id = add_node(
+        NodeType.DIMENSION_HYPOTHESIS,
+        {
+            "dimension_label": dimension_label,
+            "parent_query_id": parent_query_id,
+            "support_strength": float(support_strength or 0.0),
+            "covered_by_query_ids": covered_by_query_ids or [],
+            **attributes,
+        },
+    )
+    add_edge(goal_id, hypothesis_id, EdgeType.HAS_ANALYSIS)
+    for query_id in covered_by_query_ids or []:
+        query = get_node(query_id)
+        if query.get("type") != NodeType.QUERY.value:
+            raise ValueError(f"COVERS_DIMENSION target must be Query: {query_id!r}")
+        add_edge(hypothesis_id, query_id, EdgeType.COVERS_DIMENSION)
+    return hypothesis_id
 
 
 def transition_query(query_id: str, status: str, **attributes: Any) -> str:
@@ -540,7 +698,8 @@ def create_report_section(
 def bind_evidence_to_section(
     section_id: str,
     evidence_ids: list[str],
-    claim_ids: Optional[list[str]] = None
+    claim_ids: Optional[list[str]] = None,
+    slot_ids: Optional[list[str]] = None,
 ) -> None:
     if get_node(section_id).get("type") != NodeType.REPORT_SECTION.value:
         raise ValueError(f"USES source must be a ReportSection: {section_id!r}")
@@ -554,6 +713,11 @@ def bind_evidence_to_section(
     if claim_ids:
         for claim_id in claim_ids:
             _run_async(manager.add_edge(section_id, claim_id, EdgeType.USES))
+    if slot_ids:
+        for slot_id in slot_ids:
+            if get_node(slot_id).get("type") != NodeType.COVERAGE_SLOT.value:
+                raise ValueError("DERIVES_FROM_SLOT targets must all be CoverageSlot nodes")
+            _run_async(manager.add_edge(section_id, slot_id, EdgeType.DERIVES_FROM_SLOT))
 
 
 def get_pending_queries() -> list[dict[str, Any]]:
@@ -564,6 +728,87 @@ def get_pending_queries() -> list[dict[str, Any]]:
 def get_query_subgraph(query_id: str, depth: int = 2) -> dict[str, Any]:
     manager = _get_manager()
     return _run_async(manager.get_subgraph(query_id, depth))
+
+
+def get_task_contract(goal_id: str) -> Optional[dict[str, Any]]:
+    for edge in get_node_edges(goal_id, direction="out"):
+        if str(edge.get("type", "")).lower() != "has_task_contract":
+            continue
+        node = get_node(edge["target"])
+        if node.get("type") == NodeType.TASK_CONTRACT.value:
+            return node
+    return None
+
+
+def get_coverage_slots(goal_id: str) -> list[dict[str, Any]]:
+    slots = []
+    for edge in get_node_edges(goal_id, direction="out"):
+        if str(edge.get("type", "")).lower() != "has_coverage_slot":
+            continue
+        node = get_node(edge["target"])
+        if node.get("type") == NodeType.COVERAGE_SLOT.value:
+            slots.append(node)
+    return slots
+
+
+def get_slot_fillers(slot_id: str) -> dict[str, list[dict[str, Any]]]:
+    evidence: list[dict[str, Any]] = []
+    claims: list[dict[str, Any]] = []
+    for edge in get_node_edges(slot_id, direction="in"):
+        if str(edge.get("type", "")).lower() != "fills_slot":
+            continue
+        node = get_node(edge["source"])
+        if node.get("type") == NodeType.EVIDENCE.value:
+            evidence.append(node)
+        elif node.get("type") == NodeType.CLAIM.value:
+            claims.append(node)
+    return {"evidence": evidence, "claims": claims}
+
+
+def get_frontiers(owner_id: Optional[str] = None, statuses: Optional[set[str]] = None) -> list[dict[str, Any]]:
+    frontiers = search_nodes("research_frontier", {})
+    if owner_id is None and statuses is None:
+        return frontiers
+    linked: list[dict[str, Any]] = []
+    frontier_ids = {item["id"] for item in frontiers}
+    by_id = {item["id"]: item for item in frontiers}
+    for edge in get_all_edges():
+        if str(edge.get("type", "")).lower() != "has_frontier":
+            continue
+        if edge.get("target") not in frontier_ids:
+            continue
+        if owner_id is not None and edge.get("source") != owner_id:
+            continue
+        frontier = by_id[edge["target"]]
+        if statuses is not None and frontier.get("status") not in statuses:
+            continue
+        linked.append(frontier)
+    return linked
+
+
+def get_frontier_slots(frontier_id: str) -> list[dict[str, Any]]:
+    slots: list[dict[str, Any]] = []
+    for edge in get_node_edges(frontier_id, direction="out"):
+        if str(edge.get("type", "")).lower() != "targets_slot":
+            continue
+        slot = get_node(edge["target"])
+        if slot.get("type") == NodeType.COVERAGE_SLOT.value:
+            slots.append(slot)
+    return slots
+
+
+def get_frontier_anchors(frontier_id: str) -> dict[str, list[dict[str, Any]]]:
+    anchors = {"claims": [], "conflicts": [], "evidence": []}
+    for edge in get_node_edges(frontier_id, direction="out"):
+        edge_type = str(edge.get("type", "")).lower()
+        target = get_node(edge["target"])
+        if edge_type == "anchors_claim" and target.get("type") == NodeType.CLAIM.value:
+            anchors["claims"].append(target)
+        elif edge_type == "anchors_conflict" and target.get("type") == NodeType.CONFLICT.value:
+            anchors["conflicts"].append(target)
+        elif edge_type == "anchors_evidence" and target.get("type") == NodeType.EVIDENCE.value:
+            anchors["evidence"].append(target)
+    return anchors
 
 
 # The query hierarchy uses two edge types: HAS_QUERY (user_request -> initial

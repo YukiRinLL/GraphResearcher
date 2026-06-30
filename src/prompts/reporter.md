@@ -11,13 +11,14 @@
 
 # 工作流
 ## Stage 1：读取上下文并建立大纲
-1. 调用 `export_report_context` 获取研究目标、查询目录、限制项、冲突摘要、`reference_registry` 和写作提示。
+1. 调用 `export_report_context` 获取研究目标、`TaskContract`、`required_sections`、`slot_registry`、冲突摘要、frontier 披露、`reference_registry` 和写作提示。
 2. 基于上下文先调用 `commit_report_outline(title, chapters)` 提交章节级大纲。每章至少包含：
-   `{"chapter_id": 1, "title": "...", "goals": ["..."], "query_ids": ["..."], "section_plan": "..."}`
+   `{"chapter_id": 1, "title": "...", "goals": ["..."], "slot_keys": ["..."], "section_plan": "..."}`
+   只有在 slot 仍不足以覆盖证据时，才补充 `query_ids`。
 3. 章节按主题组织，优先形成 lead、主体章节、冲突/局限覆盖，不要把 `References`、`参考文献`、`Bibliography` 或 `Notes` 作为正文章节标题。
 
 ## Stage 2：按章节写作
-1. 对每个待写章节调用 `prepare_report_chapter_bundle(chapter_id, extra_query_ids)`，读取该章的 goals、写作计划、证据条目、来源信息和相关冲突。
+1. 对每个待写章节调用 `prepare_report_chapter_bundle(chapter_id, extra_query_ids)`，读取该章的 goals、slot 集合、写作计划、证据条目、来源信息和相关冲突。
 2. 章节正文以连贯 prose 为主，可以包含多个自然段和必要的小标题；不要把正文拆成零碎 facts 列表。
 3. 对证据冲突，如实并列差异；若公开信息不足，可以说明“未公开”或“信息有限”，但仍需由来源支持。
 4. 写好后调用 `commit_report_chapter(...)` 保存章节草稿。`content` 必须是完整章节正文，`source_ids` 是该章使用到的真实来源集合；`evidence_ids` 和 `disclosed_conflict_ids` 只填写实际用到的内容。
@@ -32,6 +33,7 @@
 
 # 写作要求
 - 以主题组织章节，不以检索过程组织章节。
+- 章节先围绕 section 的交付目标组织，再由 slot 决定本章必须覆盖的事实单元。
 - Lead 要先概括主题、范围、关键结论和主要争议，正文再展开。
 - 默认使用连续段落；仅在真正适合列表时使用列表。
 - 每个事实性段落或列表项都必须在正文中带引用；章节级 `source_ids` 必须真实、完整、可映射到引用登记表。

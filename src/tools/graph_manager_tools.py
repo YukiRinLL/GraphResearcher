@@ -202,19 +202,25 @@ def assess_query(query_id: str) -> dict:
 
 @tool
 def evaluate_research_portfolio(goal_id: Optional[str] = None) -> dict:
-    """Select globally valuable candidate gaps and defer low-value work."""
+    """Select globally valuable frontier work and defer low-value branches."""
     return _mm().evaluate_research_portfolio(goal_id)
 
 
 @tool
-def expand_gaps(parent_id: str, gap_ids: Optional[list[str]] = None) -> dict:
-    """Group selected atomic gaps by search subject and create child Queries."""
-    return _mm().expand_gaps(parent_id, gap_ids)
+def expand_horizontally(parent_id: str, frontier_ids: Optional[list[str]] = None) -> dict:
+    """Create sibling queries from selected horizontal frontiers."""
+    return _mm().expand_horizontally(parent_id, frontier_ids)
+
+
+@tool
+def expand_vertically(query_id: str, frontier_ids: Optional[list[str]] = None) -> dict:
+    """Create child queries from selected vertical frontiers."""
+    return _mm().expand_vertically(query_id, frontier_ids)
 
 
 @tool
 def assess_convergence(goal_id: Optional[str] = None) -> dict:
-    """Authorize reporting after Objective convergence or budget exhaustion."""
+    """Authorize reporting after frontier closure and delivery readiness."""
     return _mm().assess_convergence(goal_id)
 
 
@@ -367,7 +373,8 @@ ORCHESTRATOR_TOOLS: list[Any] = [
     get_next_actions,
     assess_query,
     evaluate_research_portfolio,
-    expand_gaps,
+    expand_horizontally,
+    expand_vertically,
     assess_convergence,
     create_analysis,
     get_query_evaluation_subgraph,

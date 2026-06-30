@@ -40,7 +40,7 @@ class ResearchStateMiddleware(AgentMiddleware):
     _RESEARCH_NUDGE = (
         "研究状态仍为 RESEARCHING，禁止生成最终报告或结束流程。"
         "请调用 get_next_actions，并严格执行返回的 assess_query、evaluate_research_portfolio、"
-        "expand_gaps、dispatch_searcher 或 assess_convergence；"
+        "expand_horizontally、expand_vertically、dispatch_searcher 或 assess_convergence；"
         "完成动作后调用 assess_convergence。"
     )
     _REPORTER_NUDGE = (
@@ -110,7 +110,8 @@ class ResearchStateMiddleware(AgentMiddleware):
             "dispatch_searcher",
             "assess_query",
             "evaluate_research_portfolio",
-            "expand_gaps",
+            "expand_horizontally",
+            "expand_vertically",
             "assess_convergence",
         }:
             return result

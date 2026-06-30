@@ -1,78 +1,152 @@
-"""Standalone checks for marginal-utility portfolio helpers."""
-
 import sys
+import types
 from pathlib import Path
 
 src_dir = Path(__file__).parent.parent / "src"
 sys.path.insert(0, str(src_dir))
+sys.modules.setdefault("config", types.SimpleNamespace(build_model=lambda: None))
 
 from agents.memory_manager import MemoryManager  # noqa: E402
-from tools import graph_tools, report_tools  # noqa: E402
+from memory.graph import NodeType  # noqa: E402
+from tools import graph_tools  # noqa: E402
 
 
-def test_minimum_initial_query_cover():
-    objectives = [
-        {"objective_key": "a", "requirement": "must"},
-        {"objective_key": "b", "requirement": "must"},
-        {"objective_key": "c", "requirement": "must"},
-    ]
-    candidates = [
-        {"text": "one broad query", "objective_keys": ["a", "b", "c"]},
-        {"text": "only a", "objective_keys": ["a"]},
-        {"text": "only b", "objective_keys": ["b"]},
-        {"text": "only c", "objective_keys": ["c"]},
-    ]
-    selected = MemoryManager._select_initial_queries(candidates, objectives)
-    assert [item["text"] for item in selected] == ["one broad query"], selected
+def _manager():
+    mm = object.__new__(MemoryManager)
+    mm.cache_dir = None
+    mm.model = None
+    return mm
 
 
-def test_time_window_filter():
-    graph_tools.get_query_evaluation_subgraph = lambda _query_id: {
-        "nodes": [{"id": "s1", "type": "Source", "published_at": "2025-01-01"}],
+def test_horizontal_frontier_selected_when_problem_space_open(monkeypatch):
+    mm = _manager()
+    goal = {
+        "id": "goal",
+        "research_state": "RESEARCHING",
+        "portfolio_revision": 3,
+        "evaluated_portfolio_revision": 2,
+        "breadth_budget": 2,
+        "breadth_budget_used": 0,
+        "depth_budget": 0,
+        "depth_budget_used": 0,
+        "verification_budget": 0,
+        "verification_budget_used": 0,
     }
-    assert not MemoryManager._query_evidence_within_time_window("q1", "2018-2024")
-    assert MemoryManager._query_evidence_within_time_window("q1", None)
-    graph_tools.get_query_evaluation_subgraph = lambda _query_id: {
-        "nodes": [
-            {"id": "s1", "type": "Source", "published_at": "2024-01-01"},
-            {"id": "s2", "type": "Source", "published_at": "2025-01-01"},
-        ],
+    nodes = {
+        "goal": dict(goal),
+        "fh": {
+            "id": "fh",
+            "type": "ResearchFrontier",
+            "frontier_type": "horizontal",
+            "status": "candidate",
+            "description": "missing company cluster",
+            "decision_impact": 0.8,
+            "confidence_gain": 0.7,
+            "novelty_score": 0.7,
+            "slot_blocking_score": 0.9,
+            "primary_source_need": 0.2,
+            "estimated_search_rounds": 1,
+            "dimension": "company_cluster",
+        }
     }
-    assert not MemoryManager._query_evidence_within_time_window("q1", "2018-2024")
-
-
-def test_report_validation():
-    conflict = {
-        "id": "c1",
-        "type": "Conflict",
-        "resolution_status": "disclosed",
-        "description": "Optimus hand parameter differs across sources",
-    }
-    section = {"id": "r1", "type": "ReportSection", "title": "Findings", "content": "fact " * 30}
-    graph_tools.search_nodes = lambda kind, _filter: {
-        "conflict": [conflict],
-        "report_section": [section],
-    }.get(kind, [])
-    graph_tools.get_node_edges = lambda _node_id, direction="out": []
-    issues = report_tools.validate_final_report("Research Graph internal draft")
-    assert any("internal process term" in issue for issue in issues), issues
-    assert any("no evidence/source binding" in issue for issue in issues), issues
-
-    graph_tools.get_node_edges = lambda _node_id, direction="out": [
-        {"source": "r1", "target": "s1", "type": "USES"},
-    ]
-    clean = report_tools.validate_final_report(
-        "Optimus hand parameter differs across sources. This difference remains unresolved."
+    monkeypatch.setattr(graph_tools, "get_frontiers", lambda owner_id=None, statuses=None: [dict(nodes["fh"])] if statuses != {"selected"} else [])
+    monkeypatch.setattr(graph_tools, "search_nodes", lambda kind, _filter=None: [] if kind == "dimension_hypothesis" else [])
+    monkeypatch.setattr(graph_tools, "upsert_node", lambda node_type, attrs, dedupe_key=None: nodes[dedupe_key].update(attrs) or dedupe_key)
+    monkeypatch.setattr(
+        mm,
+        "_compute_research_metrics",
+        lambda goal_id: {
+            "horizontal_closure_score": 0.4,
+            "slot_completion_score": 0.3,
+            "core_claim_support_score": 0.4,
+            "selected_frontier_backlog": 0,
+            "delivery_readiness_score": 0.0,
+            "delivery_ready": False,
+            "slot_completion_threshold": 0.75,
+        },
     )
-    assert not clean, clean
+    monkeypatch.setattr(mm, "_remaining_frontier_budgets", lambda goal_node: {"breadth": 2, "depth": 0, "verification": 0})
+    monkeypatch.setattr(mm, "_frontier_redundancy", lambda frontier: 0.0)
+    monkeypatch.setattr(mm, "_is_verification_frontier", lambda frontier: False)
+
+    from tools import research_state
+
+    monkeypatch.setattr(research_state, "get_goal", lambda goal_id=None: dict(goal))
+    result = mm.evaluate_research_portfolio("goal")
+
+    assert result["selected_frontier_ids"] == ["fh"]
+    assert nodes["fh"]["status"] == "selected"
 
 
-def main():
-    test_minimum_initial_query_cover()
-    test_time_window_filter()
-    test_report_validation()
-    print("ALL MARGINAL PORTFOLIO CHECKS PASSED")
+def test_verification_vertical_frontier_beats_regular_horizontal(monkeypatch):
+    mm = _manager()
+    goal = {
+        "id": "goal",
+        "research_state": "RESEARCHING",
+        "portfolio_revision": 5,
+        "evaluated_portfolio_revision": 4,
+        "breadth_budget": 0,
+        "breadth_budget_used": 0,
+        "depth_budget": 0,
+        "depth_budget_used": 0,
+        "verification_budget": 1,
+        "verification_budget_used": 0,
+    }
+    nodes = {
+        "goal": dict(goal),
+        "fh": {
+            "id": "fh",
+            "type": "ResearchFrontier",
+            "frontier_type": "horizontal",
+            "status": "candidate",
+            "description": "extra vendor cluster",
+            "decision_impact": 0.5,
+            "confidence_gain": 0.5,
+            "novelty_score": 0.5,
+            "slot_blocking_score": 0.5,
+            "primary_source_need": 0.2,
+            "estimated_search_rounds": 1,
+        },
+        "fv": {
+            "id": "fv",
+            "type": "ResearchFrontier",
+            "frontier_type": "vertical",
+            "status": "candidate",
+            "description": "resolve conflicting shipment figure",
+            "decision_impact": 0.6,
+            "confidence_gain": 0.7,
+            "novelty_score": 0.4,
+            "slot_blocking_score": 0.8,
+            "primary_source_need": 0.9,
+            "estimated_search_rounds": 1,
+            "anchor_conflict_ids": ["conflict-1"],
+        },
+    }
+    monkeypatch.setattr(graph_tools, "get_frontiers", lambda owner_id=None, statuses=None: [dict(nodes["fh"]), dict(nodes["fv"])] if statuses != {"selected"} else [])
+    monkeypatch.setattr(graph_tools, "search_nodes", lambda kind, _filter=None: [] if kind == "dimension_hypothesis" else [])
+    monkeypatch.setattr(graph_tools, "upsert_node", lambda node_type, attrs, dedupe_key=None: nodes[dedupe_key].update(attrs) or dedupe_key)
+    monkeypatch.setattr(
+        mm,
+        "_compute_research_metrics",
+        lambda goal_id: {
+            "horizontal_closure_score": 0.95,
+            "slot_completion_score": 0.3,
+            "core_claim_support_score": 0.4,
+            "selected_frontier_backlog": 0,
+            "delivery_readiness_score": 0.0,
+            "delivery_ready": False,
+            "slot_completion_threshold": 0.75,
+        },
+    )
+    monkeypatch.setattr(mm, "_remaining_frontier_budgets", lambda goal_node: {"breadth": 0, "depth": 0, "verification": 1})
+    monkeypatch.setattr(mm, "_frontier_redundancy", lambda frontier: 0.0)
+    monkeypatch.setattr(mm, "_is_verification_frontier", lambda frontier: frontier["id"] == "fv")
 
+    from tools import research_state
 
-if __name__ == "__main__":
-    main()
+    monkeypatch.setattr(research_state, "get_goal", lambda goal_id=None: dict(goal))
+    result = mm.evaluate_research_portfolio("goal")
+
+    assert result["selected_frontier_ids"] == ["fv"]
+    assert nodes["fv"]["status"] == "selected"
+    assert nodes["fh"]["status"] != "selected"

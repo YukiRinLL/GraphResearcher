@@ -7,6 +7,10 @@ after historical runs and tests are migrated.
 """
 
 NODE_REQUIRED_FIELDS = {
+    "TaskContract": {"deliverable_type", "target_shape"},
+    "CoverageSlot": {"slot_key", "status"},
+    "ResearchFrontier": {"frontier_type", "status", "description"},
+    "DimensionHypothesis": {"dimension_label", "parent_query_id"},
     "Source": {"url"},
     "Document": {"text", "source_id"},
     "Statement": {"text", "document_id", "statement_key"},
@@ -15,6 +19,19 @@ NODE_REQUIRED_FIELDS = {
 }
 
 EVIDENCE_LAYER_EDGES = {
+    ("UserRequest", "HAS_TASK_CONTRACT", "TaskContract"),
+    ("TaskContract", "HAS_COVERAGE_SLOT", "CoverageSlot"),
+    ("UserRequest", "HAS_COVERAGE_SLOT", "CoverageSlot"),
+    ("Query", "HAS_FRONTIER", "ResearchFrontier"),
+    ("UserRequest", "HAS_FRONTIER", "ResearchFrontier"),
+    ("Query", "TARGETS_SLOT", "CoverageSlot"),
+    ("Evidence", "FILLS_SLOT", "CoverageSlot"),
+    ("Claim", "FILLS_SLOT", "CoverageSlot"),
+    ("ReportSection", "DERIVES_FROM_SLOT", "CoverageSlot"),
+    ("ResearchFrontier", "ANCHORS_CLAIM", "Claim"),
+    ("ResearchFrontier", "ANCHORS_CONFLICT", "Conflict"),
+    ("ResearchFrontier", "ANCHORS_EVIDENCE", "Evidence"),
+    ("DimensionHypothesis", "COVERS_DIMENSION", "Query"),
     ("Source", "HAS_DOCUMENT", "Document"),
     ("Document", "EXTRACTED_STATEMENT", "Statement"),
     ("Document", "HAS_EVIDENCE", "Evidence"),

@@ -187,18 +187,7 @@ class MemoryManager:
     # Orchestrator-facing
     # -----------------------------
     def init_research(self, user_request: str) -> dict:
-        """Parse the user request and seed the Research Graph.
-
-        Creates a ``user_request`` node and a set of parallel initial ``query``
-        nodes under it.
-
-        Args:
-            user_request: The original research request from the user.
-
-        Returns:
-            dict with ``goal_id``, ``research_goal``, ``language`` and the list
-            of created ``queries`` (each ``{id, text}``).
-        """
+        """Create a TaskContract, CoverageSlots and the initial seed frontier."""
         from tools import middleware, research_state
 
         with self._state_lock:
@@ -209,7 +198,17 @@ class MemoryManager:
                     "existing_goal_id": existing_goals[0]["id"],
                 }
 
-            parsed = self._plan_initial_queries(user_request)
+            parsed = self._plan_task_contract(user_request)
+            task_contract = parsed.get("task_contract") if isinstance(parsed.get("task_contract"), dict) else {}
+            deliverable_type = task_contract.get("deliverable_type") or "research_report"
+            target_shape = task_contract.get("target_shape") or user_request
+            max_rounds = middleware.get_max_search_rounds()
+            if max_rounds and max_rounds > 0:
+                breadth_budget = max(1, int(round(max_rounds * 0.4)))
+                verification_budget = max(1, int(round(max_rounds * 0.25)))
+                depth_budget = max(1, max_rounds - breadth_budget - verification_budget)
+            else:
+                breadth_budget = depth_budget = verification_budget = 0
             goal_id = graph_tools.create_user_request(
                 request=user_request,
                 research_goal=parsed.get("research_goal"),
@@ -218,7 +217,7 @@ class MemoryManager:
                 region_scope=parsed.get("region_scope"),
                 source_preferences=parsed.get("source_preferences") or [],
                 research_state="INITIALIZING",
-                max_search_rounds=middleware.get_max_search_rounds(),
+                max_search_rounds=max_rounds,
                 dispatched_search_rounds=0,
                 successful_search_rounds=0,
                 last_convergence_recommendation="continue",
@@ -232,40 +231,58 @@ class MemoryManager:
                 evaluated_portfolio_revision=1,
                 last_max_marginal_utility=0.0,
                 report_readiness_score=0.0,
+                deliverable_type=deliverable_type,
+                breadth_budget=breadth_budget,
+                depth_budget=depth_budget,
+                verification_budget=verification_budget,
+                breadth_budget_used=0,
+                depth_budget_used=0,
+                verification_budget_used=0,
+                horizontal_closure_score=0.0,
+                slot_completion_score=0.0,
+                delivery_readiness=False,
             )
 
-        objectives = self._create_objectives(goal_id, parsed.get("objectives"), user_request)
+        contract_id = graph_tools.create_task_contract(
+            goal_id=goal_id,
+            deliverable_type=deliverable_type,
+            target_shape=target_shape,
+            coverage_axes=task_contract.get("coverage_axes") or [],
+            required_sections=task_contract.get("required_sections") or [],
+            required_tables=task_contract.get("required_tables") or [],
+            time_scope=task_contract.get("time_scope") or parsed.get("time_window"),
+            source_constraints=task_contract.get("source_constraints") or [],
+            completeness_mode=task_contract.get("completeness_mode") or parsed.get("scope_mode") or "bounded",
+            freshness_requirement=task_contract.get("freshness_requirement") or "medium",
+        )
+        slot_specs = parsed.get("coverage_slots") if isinstance(parsed.get("coverage_slots"), list) else []
+        slots = self._create_coverage_slots(goal_id, contract_id, task_contract, slot_specs)
+        seed_plan = self._plan_seed_queries({
+            "goal_id": goal_id,
+            "research_goal": parsed.get("research_goal"),
+            "language": parsed.get("language"),
+            "task_contract": task_contract,
+            "coverage_slots": slots,
+        })
         queries = []
-        initial_queries = parsed.get("initial_queries")
-        if not isinstance(initial_queries, list) or not initial_queries:
-            initial_queries = [
+        seed_queries = seed_plan.get("seed_queries") if isinstance(seed_plan.get("seed_queries"), list) else []
+        if not seed_queries:
+            seed_queries = [
                 {
                     "text": user_request,
                     "importance": "core",
-                    "objective_keys": [objectives[0]["objective_key"]],
+                    "query_role": "seed",
+                    "granularity_level": "topic",
+                    "scope_signature": "answer-request",
+                    "target_slot_keys": [slot["slot_key"] for slot in slots[:3]],
                     "acceptance_criteria": ["Directly answer the user's research request with reliable evidence"],
                 }
             ]
-        initial_queries = self._select_initial_queries(initial_queries, objectives)
-        covered_objective_keys = {
-            key
-            for item in initial_queries
-            for key in _query_spec(item)[3]
-        }
-        for objective in objectives:
-            if (
-                objective.get("requirement") == "must"
-                and objective.get("objective_key") not in covered_objective_keys
-            ):
-                initial_queries.append({
-                    "text": objective.get("description") or user_request,
-                    "importance": "core",
-                    "objective_keys": [objective["objective_key"]],
-                    "acceptance_criteria": objective.get("acceptance_criteria") or [],
-                })
-        objective_by_key = {o["objective_key"]: o for o in objectives}
-        for item in initial_queries:
-            text, importance, criteria, objective_keys = _query_spec(item)
+        slot_by_key = {slot.get("slot_key"): slot for slot in slots}
+        for item in seed_queries:
+            text = item.get("text") if isinstance(item, dict) else item
+            importance = item.get("importance") if isinstance(item, dict) else "supporting"
+            criteria = item.get("acceptance_criteria") if isinstance(item, dict) else []
             if not isinstance(text, str) or not text.strip():
                 continue
             importance = importance or "supporting"
@@ -274,13 +291,19 @@ class MemoryManager:
                 text=text,
                 importance=importance,
                 acceptance_criteria=criteria,
-                objective_keys=[key for key in objective_keys if key in objective_by_key],
                 required_for_parent=False,
+                query_role=item.get("query_role") or "seed",
+                granularity_level=item.get("granularity_level") or "topic",
+                scope_signature=item.get("scope_signature") or _gap_key(text),
+                target_slot_keys=item.get("target_slot_keys") or [],
+                anchor_claim_ids=[],
+                anchor_conflict_ids=[],
+                anchor_evidence_ids=[],
             )
-            for key in objective_keys:
-                objective = objective_by_key.get(key)
-                if objective:
-                    graph_tools.add_edge(query_id, objective["id"], EdgeType.COVERS_OBJECTIVE)
+            for slot_key in item.get("target_slot_keys") or []:
+                slot = slot_by_key.get(slot_key)
+                if slot:
+                    graph_tools.add_edge(query_id, slot["id"], EdgeType.TARGETS_SLOT)
             query = graph_tools.get_node(query_id)
             queries.append({
                 "handle": query.get("handle"),
@@ -288,7 +311,9 @@ class MemoryManager:
                 "text": text,
                 "priority_tier": query.get("priority_tier"),
                 "acceptance_criteria": criteria,
-                "objective_keys": objective_keys,
+                "query_role": query.get("query_role"),
+                "granularity_level": query.get("granularity_level"),
+                "target_slot_keys": item.get("target_slot_keys") or [],
             })
         if not queries:
             query_id = graph_tools.create_query_child(
@@ -296,10 +321,17 @@ class MemoryManager:
                 text=user_request,
                 importance="core",
                 acceptance_criteria=["Directly answer the user's research request with reliable evidence"],
-                objective_keys=[objectives[0]["objective_key"]],
                 required_for_parent=False,
+                query_role="seed",
+                granularity_level="topic",
+                scope_signature="answer-request",
+                target_slot_keys=[slot["slot_key"] for slot in slots[:3]],
+                anchor_claim_ids=[],
+                anchor_conflict_ids=[],
+                anchor_evidence_ids=[],
             )
-            graph_tools.add_edge(query_id, objectives[0]["id"], EdgeType.COVERS_OBJECTIVE)
+            for slot in slots[:3]:
+                graph_tools.add_edge(query_id, slot["id"], EdgeType.TARGETS_SLOT)
             query = graph_tools.get_node(query_id)
             queries.append({
                 "handle": query.get("handle"),
@@ -307,6 +339,8 @@ class MemoryManager:
                 "text": user_request,
                 "priority_tier": query.get("priority_tier"),
                 "acceptance_criteria": query.get("acceptance_criteria") or [],
+                "query_role": query.get("query_role"),
+                "granularity_level": query.get("granularity_level"),
             })
 
         research_state.update_goal({"research_state": research_state.RESEARCHING}, goal_id)
@@ -316,7 +350,8 @@ class MemoryManager:
             "research_goal": parsed.get("research_goal", ""),
             "language": parsed.get("language"),
             "scope_mode": graph_tools.get_node(goal_id).get("scope_mode", "bounded"),
-            "objectives": objectives,
+            "task_contract": graph_tools.get_node(contract_id),
+            "coverage_slots": slots,
             "queries": queries,
         }
 
@@ -436,17 +471,7 @@ class MemoryManager:
         return revision
 
     def get_next_actions(self, limit: int = 4) -> list[dict]:
-        """Return the highest-priority deterministic workflow actions.
-
-        Advances existing work before dispatching new searches.
-
-        Args:
-            limit: Maximum number of queries to return.
-
-        Returns:
-            A list of ``{id, text, status, priority_tier, priority}`` dicts,
-            highest priority first.
-        """
+        """Return the next deterministic actions from the frontier backlog."""
         from tools import research_state
 
         status = research_state.get_status()
@@ -464,43 +489,35 @@ class MemoryManager:
         queries = graph_tools.search_nodes("query", {})
         goal = research_state.get_goal()
         actions: list[dict] = []
-        terminal = research_state.TERMINAL_QUERY_STATUSES
         for node in queries:
             query_status = node.get("status")
-            action = None
-            reason = ""
-            gap_ids: list[str] = []
             if query_status == "assessing":
-                action, reason = "assess_query", "successful search completed"
-            elif query_status == "needs_expansion":
-                gap_ids = [
-                    gap["id"]
-                    for gap in graph_tools.search_nodes("analysis", {"analysis_type": "gap"})
-                    if gap.get("status") == "selected"
-                    and gap.get("expansion_parent_id") == node["id"]
-                ]
-                if gap_ids:
-                    action, reason = "expand_gaps", "globally selected gaps await child queries"
-            elif query_status == "waiting_children":
-                children = [
-                    graph_tools.get_node(cid) for cid in graph_tools.get_query_children(node["id"])
-                ]
-                if children and all(c.get("status") in terminal for c in children):
-                    action, reason = "assess_query", "all selected child queries completed"
-            elif query_status == "pending":
-                action, reason = "dispatch_searcher", "query awaits its first successful search"
-            if action:
                 actions.append({
-                    "action": action,
+                    "action": "assess_query",
                     "query_id": node["id"],
                     "query_handle": node.get("handle"),
                     "priority": node.get("priority", 0.0),
                     "required_for_parent": node.get("required_for_parent", False),
                     "required_path": research_state.is_required_path(node["id"]),
                     "semantic_importance": node.get("sem", 0.0),
-                    "gap_ids": gap_ids,
-                    "reason": reason,
+                    "frontier_ids": [],
+                    "reason": "successful search completed",
                 })
+            elif query_status == "pending":
+                actions.append({
+                    "action": "dispatch_searcher",
+                    "query_id": node["id"],
+                    "query_handle": node.get("handle"),
+                    "priority": node.get("priority", 0.0),
+                    "required_for_parent": node.get("required_for_parent", False),
+                    "required_path": research_state.is_required_path(node["id"]),
+                    "semantic_importance": node.get("sem", 0.0),
+                    "frontier_ids": [],
+                    "reason": "query awaits its first successful search",
+                })
+
+        selected_frontiers = self._get_selected_frontier_actions()
+        actions.extend(selected_frontiers)
 
         if not any(action["action"] == "assess_query" for action in actions):
             if int(goal.get("evaluated_portfolio_revision") or 0) < int(goal.get("portfolio_revision") or 0):
@@ -512,7 +529,7 @@ class MemoryManager:
                     "required_for_parent": False,
                     "required_path": False,
                     "semantic_importance": 1.0,
-                    "gap_ids": [],
+                    "frontier_ids": [],
                     "reason": "research portfolio changed since the last global evaluation",
                 })
             elif not actions:
@@ -530,16 +547,17 @@ class MemoryManager:
                     "required_for_parent": False,
                     "required_path": False,
                     "semantic_importance": 0.0,
-                    "gap_ids": [],
+                    "frontier_ids": [],
                     "reason": "no higher-priority workflow action remains",
                 })
 
         action_rank = {
             "assess_query": 0,
             "evaluate_research_portfolio": 1,
-            "expand_gaps": 2,
-            "dispatch_searcher": 3,
-            "assess_convergence": 4,
+            "expand_vertically": 2,
+            "expand_horizontally": 3,
+            "dispatch_searcher": 4,
+            "assess_convergence": 5,
         }
         actions.sort(key=lambda a: (
             action_rank[a["action"]],
@@ -825,7 +843,7 @@ class MemoryManager:
         }
 
     def assess_query(self, query_id: str) -> dict:
-        """Assess one Query's owned evidence and automatically advance its state."""
+        """Assess one Query, update slots, and emit frontier candidates."""
         from tools import research_state
 
         if research_state.get_status().get("research_state") != research_state.RESEARCHING:
@@ -837,128 +855,58 @@ class MemoryManager:
         if resolved is None:
             return {"error": f"Unknown query reference: {query_id!r}"}
         query = graph_tools.get_node(resolved)
-        if query.get("status") not in {"assessing", "waiting_children"}:
+        if query.get("status") != "assessing":
             return {"error": f"Query {query.get('handle') or resolved} is not ready for assessment"}
-        if query.get("status") == "waiting_children":
-            children = [
-                graph_tools.get_node(cid)
-                for cid in graph_tools.get_query_children(resolved)
-            ]
-            if any(c.get("status") not in {"sufficient", "blocked", "failed", "deferred"} for c in children):
-                return {"error": f"Query {query.get('handle') or resolved} still has unfinished selected children"}
 
         normalization = self.normalize_claims(resolved)
         evaluation = graph_tools.get_query_evaluation_subgraph(resolved)
-        prompt = mm_prompts.assess_query.replace(
+        task_contract = self._task_contract_snapshot()
+        prompt = mm_prompts.assess_query_frontiers.replace(
             "{query}", json.dumps({
+                "id": query.get("id"),
+                "handle": query.get("handle"),
                 "text": query.get("text"),
+                "query_role": query.get("query_role"),
+                "granularity_level": query.get("granularity_level"),
+                "scope_signature": query.get("scope_signature"),
                 "acceptance_criteria": query.get("acceptance_criteria") or [],
+                "target_slot_keys": query.get("target_slot_keys") or [],
                 "normalized_claims": normalization,
             }, ensure_ascii=False)
-        ).replace("{evaluation_subgraph}", json.dumps(evaluation, ensure_ascii=False))
+        ).replace(
+            "{task_contract}",
+            json.dumps(task_contract, ensure_ascii=False),
+        ).replace(
+            "{evaluation_subgraph}",
+            json.dumps(evaluation, ensure_ascii=False),
+        )
         verdict = self._invoke_json(prompt)
         try:
             score = max(0.0, min(1.0, float(verdict.get("sufficiency_score", 0.0))))
         except (TypeError, ValueError):
             score = 0.0
+        filled_slot_keys = verdict.get("filled_slot_keys") if isinstance(verdict.get("filled_slot_keys"), list) else []
+        remaining_slot_keys = verdict.get("remaining_slot_keys") if isinstance(verdict.get("remaining_slot_keys"), list) else []
+        slot_update = self._apply_slot_fill_status(resolved, filled_slot_keys, remaining_slot_keys, evaluation)
+        created_horizontal = self._upsert_frontiers_from_specs(
+            owner_query_id=resolved,
+            frontier_specs=verdict.get("horizontal_frontiers") if isinstance(verdict.get("horizontal_frontiers"), list) else [],
+            frontier_type="horizontal",
+            default_parent_query_id=graph_tools.get_query_parent(resolved),
+        )
+        created_vertical = self._upsert_frontiers_from_specs(
+            owner_query_id=resolved,
+            frontier_specs=verdict.get("vertical_frontiers") if isinstance(verdict.get("vertical_frontiers"), list) else [],
+            frontier_type="vertical",
+            default_parent_query_id=resolved,
+        )
+        created_hypotheses = self._upsert_dimension_hypotheses(
+            resolved,
+            verdict.get("dimension_hypotheses") if isinstance(verdict.get("dimension_hypotheses"), list) else [],
+        )
 
-        created_gaps: list[str] = []
-        existing = {
-            graph_tools.get_node(gid).get("gap_key"): gid
-            for gid in self._query_gap_ids(resolved)
-        }
-        raw_gaps = verdict.get("gaps") or []
-        if not isinstance(raw_gaps, list):
-            raw_gaps = []
-        for raw in raw_gaps:
-            if isinstance(raw, str):
-                spec = {"description": raw, "importance": "supporting"}
-            elif isinstance(raw, dict):
-                spec = raw
-            else:
-                continue
-            description = str(spec.get("description") or "").strip()
-            if not description:
-                continue
-            key = _gap_key(description)
-            if key in existing or self._gap_key_in_ancestors(resolved, key):
-                continue
-            importance = spec.get("importance")
-            if importance not in {"core", "supporting", "peripheral"}:
-                importance = "supporting"
-            category = spec.get("gap_category")
-            if category not in _GAP_CATEGORIES:
-                category = "enrichment"
-            objective_keys = spec.get("objective_keys")
-            if not isinstance(objective_keys, list):
-                objective_keys = query.get("objective_keys") or []
-            try:
-                decision_impact = max(0.0, min(1.0, float(spec.get("decision_impact", 0.0))))
-                confidence_gain = max(0.0, min(1.0, float(spec.get("confidence_gain", 0.0))))
-                estimated_rounds = max(1, int(spec.get("estimated_search_rounds", 1)))
-            except (TypeError, ValueError):
-                decision_impact, confidence_gain, estimated_rounds = 0.0, 0.0, 1
-            gap_id = graph_tools.create_analysis(
-                text=description,
-                query_id=resolved,
-                analysis_type="gap",
-                description=description,
-                gap_key=key,
-                importance=importance,
-                required_for_parent=False,
-                status="candidate",
-                gap_category=category,
-                objective_keys=objective_keys,
-                search_subject_key=str(spec.get("search_subject_key") or key),
-                decision_impact=decision_impact,
-                confidence_gain=confidence_gain,
-                estimated_search_rounds=estimated_rounds,
-                acceptance_criteria=(
-                    spec.get("acceptance_criteria")
-                    if isinstance(spec.get("acceptance_criteria"), list)
-                    else []
-                ),
-            )
-            existing[key] = gap_id
-            created_gaps.append(gap_id)
-            for objective in self.get_research_objectives():
-                if objective.get("objective_key") in objective_keys:
-                    graph_tools.add_edge(gap_id, objective["id"], EdgeType.IMPACTS_OBJECTIVE)
-
-        recommendation = verdict.get("recommendation")
-        if recommendation == "blocked":
-            new_status = "blocked"
-        elif recommendation == "sufficient" and score >= 0.7 and not created_gaps:
-            new_status = "sufficient"
-        elif created_gaps or self._query_gap_ids(resolved, {"candidate", "selected"}):
-            new_status = "needs_expansion"
-        else:
-            # An insufficient assessment must always leave an actionable,
-            # atomic gap rather than sending the same Query back to search.
-            description = str(verdict.get("reason") or "Evidence remains insufficient for the query").strip()
-            key = _gap_key(description)
-            if key in existing or self._gap_key_in_ancestors(resolved, key):
-                new_status = "blocked"
-            else:
-                gap_id = graph_tools.create_analysis(
-                    text=description,
-                    query_id=resolved,
-                    analysis_type="gap",
-                    description=description,
-                    gap_key=key,
-                    importance="supporting",
-                    required_for_parent=False,
-                    status="candidate",
-                    gap_category="missing_core_evidence",
-                    objective_keys=query.get("objective_keys") or [],
-                    search_subject_key=key,
-                    decision_impact=0.7,
-                    confidence_gain=0.5,
-                    estimated_search_rounds=1,
-                    acceptance_criteria=[],
-                )
-                created_gaps.append(gap_id)
-                new_status = "needs_expansion"
+        recommendation = verdict.get("recommendation") or "continue"
+        new_status = "blocked" if recommendation == "blocked" else "sufficient"
 
         graph_tools.transition_query(
             resolved,
@@ -966,9 +914,10 @@ class MemoryManager:
             sufficiency_score=score,
             covered=verdict.get("covered") or [],
             assessment_reason=verdict.get("reason") or "",
+            local_recommendation=recommendation,
+            filled_slot_keys=filled_slot_keys,
+            remaining_slot_keys=remaining_slot_keys,
         )
-        if new_status in {"sufficient", "blocked"}:
-            self._propagate_child_completion(resolved, new_status)
         revision = self._bump_portfolio_revision()
         graph_tools.upsert_node(
             NodeType.QUERY,
@@ -980,8 +929,12 @@ class MemoryManager:
             "query_handle": query.get("handle"),
             "sufficiency_score": score,
             "status": new_status,
-            "created_gaps": created_gaps,
-            "next_action": "evaluate_research_portfolio" if new_status == "needs_expansion" else "get_next_actions",
+            "filled_slot_ids": slot_update.get("filled_slot_ids"),
+            "remaining_slot_ids": slot_update.get("remaining_slot_ids"),
+            "created_horizontal_frontier_ids": created_horizontal,
+            "created_vertical_frontier_ids": created_vertical,
+            "created_dimension_hypothesis_ids": created_hypotheses,
+            "next_action": "evaluate_research_portfolio",
         }
 
     def _gap_key_in_ancestors(self, query_id: str, gap_key: str) -> bool:
@@ -998,250 +951,125 @@ class MemoryManager:
         return False
 
     def _propagate_child_completion(self, query_id: str, child_status: str) -> None:
-        """Resolve assigned gaps and make a completed child's parent assessable."""
-        gap_status = {
+        """Resolve selected vertical frontiers once a child query finishes."""
+        frontier_status = {
             "sufficient": "resolved",
             "deferred": "deferred_low_value",
         }.get(child_status, "blocked")
-        for gap_id in self._addressed_gap_ids(query_id):
-            gap = graph_tools.get_node(gap_id)
-            graph_tools.upsert_node(NodeType.ANALYSIS, {
-                "status": gap_status,
-                "resolution_reason": f"child query finished as {child_status}",
-            }, gap_id)
-            conflict_id = gap.get("conflict_id")
-            if conflict_id:
-                graph_tools.upsert_node(NodeType.CONFLICT, {
-                    "resolution_status": "resolved" if child_status == "sufficient" else "disclosed",
-                }, conflict_id)
         parent_id = graph_tools.get_query_parent(query_id)
-        parent = graph_tools.get_node(parent_id) if parent_id else {}
-        if parent.get("type") != NodeType.QUERY.value or parent.get("status") != "waiting_children":
+        if not parent_id:
             return
-        children = [
-            graph_tools.get_node(cid) for cid in graph_tools.get_query_children(parent_id)
-        ]
-        if children and all(
-            c.get("status") in {"sufficient", "blocked", "failed", "deferred"}
-            for c in children
-        ):
-            graph_tools.transition_query(parent_id, "assessing")
+        child = graph_tools.get_node(query_id)
+        for frontier in graph_tools.get_frontiers(parent_id, {"selected", "expanded"}):
+            if frontier.get("frontier_type") != "vertical":
+                continue
+            if frontier.get("scope_signature") != child.get("scope_signature"):
+                continue
+            graph_tools.upsert_node(NodeType.RESEARCH_FRONTIER, {
+                "status": frontier_status,
+                "resolution_reason": f"child query finished as {child_status}",
+                "resolved_by_query_id": query_id,
+            }, frontier["id"])
 
     def evaluate_research_portfolio(self, goal_id: Optional[str] = None) -> dict:
-        """Select candidate gaps by report-level marginal utility."""
+        """Score frontier candidates and select the active expansion backlog."""
         from tools import research_state
 
         goal = research_state.get_goal(goal_id)
         if goal.get("research_state") != research_state.RESEARCHING:
             return {"error": "Portfolio evaluation is only allowed while researching"}
-        objectives = self.get_research_objectives(goal_id)
-        queries = graph_tools.search_nodes("query", {})
-        prompt = (
-            mm_prompts.evaluate_portfolio
-            .replace("{objectives}", json.dumps(objectives, ensure_ascii=False))
-            .replace("{queries}", json.dumps([
-                {
-                    "handle": q.get("handle"),
-                    "text": q.get("text"),
-                    "objective_keys": q.get("objective_keys") or [],
-                    "status": q.get("status"),
-                    "sufficiency_score": q.get("sufficiency_score"),
-                    "covered": q.get("covered") or [],
-                }
-                for q in queries
-            ], ensure_ascii=False))
-        )
-        verdict = self._invoke_json(prompt)
-        scored = {
-            item.get("objective_key"): item
-            for item in verdict.get("objectives", [])
-            if isinstance(item, dict) and item.get("objective_key")
-        }
-        objective_by_key: dict[str, dict] = {}
-        objective_deltas: dict[str, tuple[float, float]] = {}
-        for objective in objectives:
-            key = objective.get("objective_key")
-            linked_scores = [
-                float(query.get("sufficiency_score") or 0.0)
-                for query in queries
-                if key in (query.get("objective_keys") or [])
-                and query.get("sufficiency_score") is not None
-                and self._query_evidence_within_time_window(query["id"], goal.get("time_window"))
-            ]
-            fallback = max(linked_scores, default=0.0)
-            item = scored.get(key, {})
-            try:
-                coverage = max(0.0, min(1.0, float(item.get("coverage", fallback))))
-                confidence = max(0.0, min(1.0, float(item.get("confidence", fallback * 0.9))))
-            except (TypeError, ValueError):
-                coverage, confidence = fallback, fallback * 0.9
-            old_coverage = float(objective.get("coverage") or 0.0)
-            old_confidence = float(objective.get("confidence") or 0.0)
-            realized_gain = max(0.0, coverage - old_coverage) + max(0.0, confidence - old_confidence)
-            meets = coverage >= OBJECTIVE_COVERAGE_THRESHOLD and confidence >= OBJECTIVE_CONFIDENCE_THRESHOLD
-            successful_rounds = int(goal.get("successful_search_rounds") or 0)
-            last_evaluated_rounds = int(objective.get("last_evaluated_successful_rounds") or 0)
-            streak = int(objective.get("low_gain_streak") or 0)
-            new_successful_rounds = max(0, successful_rounds - last_evaluated_rounds)
-            if new_successful_rounds and not meets:
-                streak = streak + new_successful_rounds if realized_gain < LOW_REALIZED_GAIN_THRESHOLD else 0
-            status = "satisfied" if meets else (
-                "blocked_best_effort"
-                if objective.get("status") == "blocked_best_effort"
-                else "open"
-            )
-            if (
-                status != "satisfied"
-                and streak >= LOW_GAIN_WINDOW
-                and goal.get("scope_mode", "bounded") != "exhaustive"
-            ):
-                status = "blocked_best_effort"
-            graph_tools.upsert_node(NodeType.ANALYSIS, {
-                "coverage": coverage,
-                "confidence": confidence,
-                "status": status,
-                "low_gain_streak": streak,
-                "last_realized_gain": realized_gain,
-                "last_evaluated_successful_rounds": successful_rounds,
-                "assessment_reason": item.get("reason") or "",
-            }, objective["id"])
-            objective_deltas[key] = (coverage - old_coverage, confidence - old_confidence)
-            objective_by_key[key] = graph_tools.get_node(objective["id"])
-
-        old_evaluated_revision = int(goal.get("evaluated_portfolio_revision") or 0)
-        changed_queries = [
-            query for query in queries
-            if int(query.get("portfolio_revision_at_assessment") or 0) > old_evaluated_revision
-        ]
-        if changed_queries:
-            for query in changed_queries:
-                linked_deltas = [
-                    objective_deltas[key]
-                    for key in query.get("objective_keys") or []
-                    if key in objective_deltas
-                ]
-                coverage_delta = sum(delta[0] for delta in linked_deltas)
-                confidence_delta = sum(delta[1] for delta in linked_deltas)
-                gain_attributes = {
-                    "realized_marginal_gain": max(0.0, coverage_delta + confidence_delta),
-                    "objective_coverage_delta": coverage_delta,
-                    "objective_confidence_delta": confidence_delta,
-                }
-                graph_tools.upsert_node(NodeType.QUERY, gain_attributes, query["id"])
-                for edge in graph_tools.get_node_edges(query["id"], direction="out"):
-                    if str(edge.get("type", "")).lower() == "searched_by":
-                        graph_tools.upsert_node(NodeType.SEARCH_RUN, gain_attributes, edge["target"])
-
-        candidates = [
-            gap for gap in graph_tools.search_nodes("analysis", {"analysis_type": "gap"})
-            if gap.get("status") in {"candidate", "selected"}
-        ]
-        selected: list[dict] = []
-        deferred: list[dict] = []
-        existing_subjects = {
-            str(query.get("search_subject_key"))
-            for query in queries
-            if query.get("search_subject_key") and query.get("successful_search_runs")
-        }
-        grouped_candidates: dict[str, list[dict]] = {}
-        for gap in candidates:
-            subject = str(gap.get("search_subject_key") or gap.get("gap_key") or gap["id"])
-            grouped_candidates.setdefault(subject, []).append(gap)
-        for subject, group in grouped_candidates.items():
-            keys = {
-                key
-                for gap in group
-                for key in (gap.get("objective_keys") or [])
+        frontiers = [item for item in graph_tools.get_frontiers() if item.get("status") == "candidate"]
+        metrics = self._compute_research_metrics(goal["id"])
+        if not frontiers:
+            graph_tools.upsert_node(NodeType.USER_REQUEST, {
+                "evaluated_portfolio_revision": int(goal.get("portfolio_revision") or 0),
+                "last_max_marginal_utility": 0.0,
+                "horizontal_closure_score": metrics["horizontal_closure_score"],
+                "slot_completion_score": metrics["slot_completion_score"],
+                "report_readiness_score": metrics["delivery_readiness_score"],
+                "delivery_readiness": metrics["delivery_ready"],
+            }, goal["id"])
+            return {
+                "selected_frontier_ids": [],
+                "deferred_frontier_ids": [],
+                "last_max_marginal_utility": 0.0,
+                **metrics,
+                "next_action": "get_next_actions",
             }
-            impacted = [objective_by_key[key] for key in keys if key in objective_by_key]
-            must_impacted = [item for item in impacted if item.get("requirement") == "must"]
-            deficits = [
-                max(
-                    0.0,
-                    OBJECTIVE_COVERAGE_THRESHOLD - float(item.get("coverage") or 0.0),
-                    OBJECTIVE_CONFIDENCE_THRESHOLD - float(item.get("confidence") or 0.0),
-                )
-                for item in must_impacted
-                if item.get("status") not in {"satisfied", "blocked_best_effort"}
-            ]
-            deficit = max(deficits, default=0.0)
-            redundancy = 0.75 if subject in existing_subjects else 0.0
-            decision_impact = max(float(gap.get("decision_impact") or 0.0) for gap in group)
-            confidence_gain = max(float(gap.get("confidence_gain") or 0.0) for gap in group)
-            rounds = max(1, max(int(gap.get("estimated_search_rounds") or 1) for gap in group))
-            benefit = 0.5 * deficit + 0.3 * decision_impact + 0.2 * confidence_gain
-            utility = benefit * (1.0 - redundancy) / rounds
-            fatal = any(gap.get("gap_category") == "fatal_conflict" for gap in group)
-            choose = fatal or (
-                bool(deficits)
-                and utility >= EXPANSION_UTILITY_THRESHOLD
-            )
-            new_status = "selected" if choose else "deferred_low_value"
-            owners = [
-                graph_tools.get_node(owner_id)
-                for owner_id in {self._gap_owner_query_id(gap["id"]) for gap in group}
-                if owner_id
-            ]
-            expansion_parent_id = (
-                max(owners, key=lambda item: float(item.get("priority") or 0.0))["id"]
-                if choose and owners else None
-            )
-            for gap in group:
-                graph_tools.upsert_node(NodeType.ANALYSIS, {
-                    "status": new_status,
-                    "marginal_utility": utility,
-                    "objective_deficit": deficit,
-                    "expansion_parent_id": expansion_parent_id,
-                    "resolution_reason": None if choose else "global marginal utility below expansion threshold",
-                }, gap["id"])
-                (selected if choose else deferred).append(graph_tools.get_node(gap["id"]))
 
-        for query in queries:
-            if query.get("status") == "needs_expansion":
-                selected_for_query = [
-                    gap for gap in selected
-                    if gap.get("expansion_parent_id") == query["id"]
-                ]
-                if not selected_for_query:
-                    graph_tools.transition_query(
-                        query["id"],
-                        "sufficient",
-                        assessment_reason="remaining gaps deferred by global portfolio evaluation",
-                    )
-                    self._propagate_child_completion(query["id"], "sufficient")
-            elif query.get("status") == "pending" and query.get("objective_keys"):
-                linked = [
-                    objective_by_key[key]
-                    for key in query.get("objective_keys") or []
-                    if key in objective_by_key
-                ]
-                if linked and all(item.get("status") in {"satisfied", "blocked_best_effort"} for item in linked):
-                    graph_tools.transition_query(query["id"], "deferred")
-                    self._propagate_child_completion(query["id"], "deferred")
+        strong_dimensions = {
+            hypothesis.get("dimension_label")
+            for hypothesis in graph_tools.search_nodes("dimension_hypothesis", {})
+            if float(hypothesis.get("support_strength") or 0.0) >= 0.6
+            and not (hypothesis.get("covered_by_query_ids") or [])
+        }
+        budgets = self._remaining_frontier_budgets(goal)
+        horizontal_open = metrics["horizontal_closure_score"] < 0.85
+        ranked: list[tuple[float, dict[str, Any]]] = []
+        for frontier in frontiers:
+            slot_blocking = float(frontier.get("slot_blocking_score") or 0.0)
+            decision_impact = float(frontier.get("decision_impact") or 0.0)
+            confidence_gain = float(frontier.get("confidence_gain") or 0.0)
+            novelty_score = float(frontier.get("novelty_score") or 0.0)
+            primary_source_need = float(frontier.get("primary_source_need") or 0.0)
+            estimated_rounds = max(1, int(frontier.get("estimated_search_rounds") or 1))
+            redundancy = self._frontier_redundancy(frontier)
+            score = (
+                decision_impact * 0.30
+                + confidence_gain * 0.25
+                + novelty_score * 0.15
+                + slot_blocking * 0.20
+                + primary_source_need * 0.10
+                - redundancy * 0.25
+            ) / estimated_rounds
+            if frontier.get("frontier_type") == "vertical" and self._is_verification_frontier(frontier):
+                score += 0.6
+            if frontier.get("frontier_type") == "horizontal" and frontier.get("dimension") in strong_dimensions:
+                score += 0.3
+            ranked.append((score, frontier))
+        ranked.sort(key=lambda item: item[0], reverse=True)
 
-        objectives = self.get_research_objectives(goal_id)
-        must = [item for item in objectives if item.get("requirement") == "must"]
-        readiness = (
-            sum(float(item.get("weight") or 1.0) for item in must if item.get("status") in {"satisfied", "blocked_best_effort"})
-            / sum(float(item.get("weight") or 1.0) for item in must)
-            if must else 1.0
-        )
-        revision = int(goal.get("portfolio_revision") or 0)
-        max_utility = max(
-            (float(item.get("marginal_utility") or 0.0) for item in selected + deferred),
-            default=0.0,
-        )
+        selected_frontier_ids: list[str] = []
+        deferred_frontier_ids: list[str] = []
+        max_utility = ranked[0][0] if ranked else 0.0
+        for score, frontier in ranked:
+            frontier_type = frontier.get("frontier_type")
+            choose = False
+            if frontier_type == "vertical" and self._is_verification_frontier(frontier) and budgets["verification"] > 0:
+                budgets["verification"] -= 1
+                choose = True
+            elif horizontal_open and frontier_type == "horizontal" and budgets["breadth"] > 0:
+                budgets["breadth"] -= 1
+                choose = True
+            elif frontier_type == "vertical" and budgets["depth"] > 0:
+                budgets["depth"] -= 1
+                choose = True
+            elif frontier_type == "horizontal" and budgets["breadth"] > 0 and score >= 0.2:
+                budgets["breadth"] -= 1
+                choose = True
+            new_status = "selected" if choose else ("deferred_low_value" if score < 0.2 else "deferred_budget")
+            graph_tools.upsert_node(NodeType.RESEARCH_FRONTIER, {
+                "status": new_status,
+                "marginal_utility": score,
+            }, frontier["id"])
+            if choose:
+                selected_frontier_ids.append(frontier["id"])
+            else:
+                deferred_frontier_ids.append(frontier["id"])
+
         graph_tools.upsert_node(NodeType.USER_REQUEST, {
-            "evaluated_portfolio_revision": revision,
+            "evaluated_portfolio_revision": int(goal.get("portfolio_revision") or 0),
             "last_max_marginal_utility": max_utility,
-            "report_readiness_score": readiness,
+            "horizontal_closure_score": metrics["horizontal_closure_score"],
+            "slot_completion_score": metrics["slot_completion_score"],
+            "report_readiness_score": metrics["delivery_readiness_score"],
+            "delivery_readiness": metrics["delivery_ready"],
         }, goal["id"])
         return {
-            "selected_gap_ids": [item["id"] for item in selected],
-            "deferred_gap_ids": [item["id"] for item in deferred],
-            "objectives": objectives,
-            "report_readiness_score": readiness,
+            "selected_frontier_ids": selected_frontier_ids,
+            "deferred_frontier_ids": deferred_frontier_ids,
             "last_max_marginal_utility": max_utility,
+            **metrics,
             "next_action": "get_next_actions",
         }
 
@@ -1267,134 +1095,101 @@ class MemoryManager:
         # mixed dated set so out-of-window evidence cannot inflate coverage.
         return not dated or all(lower <= year <= upper for year in dated)
 
-    def expand_gaps(self, parent_id: str, gap_ids: Optional[list[str]] = None) -> dict:
-        """Create one child Query per selected search subject."""
+    def expand_horizontally(self, parent_id: str, frontier_ids: Optional[list[str]] = None) -> dict:
+        """Create sibling queries from selected horizontal frontiers."""
         from tools import research_state
 
         if research_state.get_status().get("research_state") != research_state.RESEARCHING:
-            return {"error": "Gap expansion is only allowed while research_state is RESEARCHING"}
+            return {"error": "Horizontal expansion is only allowed while research_state is RESEARCHING"}
         try:
             resolved = self._resolve_query_id(parent_id)
         except AmbiguousQueryReference as exc:
             return {"error": str(exc)}
         if resolved is None:
             return {"error": f"Unknown query reference: {parent_id!r}"}
-        parent = graph_tools.get_node(resolved)
-        if parent.get("status") != "needs_expansion":
-            return {"error": f"Query {parent.get('handle') or resolved} is not awaiting expansion"}
-        assigned_selected_gap_ids = {
-            gap["id"]
-            for gap in graph_tools.search_nodes("analysis", {"analysis_type": "gap"})
-            if gap.get("status") == "selected"
-            and gap.get("expansion_parent_id") == resolved
-        }
-        candidates = gap_ids or list(assigned_selected_gap_ids)
-        gaps = [
-            graph_tools.get_node(gid) for gid in candidates
-            if gid in assigned_selected_gap_ids
-            and graph_tools.get_node(gid).get("analysis_type") == "gap"
-            and graph_tools.get_node(gid).get("status") == "selected"
+        attach_parent = graph_tools.get_node(resolved)
+        if attach_parent.get("type") not in {NodeType.USER_REQUEST.value, NodeType.QUERY.value}:
+            return {"error": f"Invalid horizontal attach parent: {resolved!r}"}
+        candidate_frontiers = [
+            frontier for frontier in graph_tools.get_frontiers()
+            if frontier.get("status") == "selected"
+            and frontier.get("frontier_type") == "horizontal"
+            and frontier.get("parent_query_id") == resolved
         ]
-        grouped: dict[str, list[dict]] = {}
-        for gap in gaps:
-            subject = str(gap.get("search_subject_key") or gap.get("gap_key") or gap["id"])
-            grouped.setdefault(subject, []).append(gap)
-        remaining = research_state.remaining_budget()
-        deferred = []
-        if remaining is not None:
-            group_items = list(grouped.items())
-            deferred_groups = group_items[remaining:]
-            grouped = dict(group_items[:remaining])
-            deferred = [gap for _, group in deferred_groups for gap in group]
-            for gap in deferred:
-                graph_tools.upsert_node(NodeType.ANALYSIS, {
-                    "status": "deferred_budget",
-                    "resolution_reason": "insufficient remaining search budget",
-                }, gap["id"])
+        if frontier_ids:
+            candidate_frontiers = [frontier for frontier in candidate_frontiers if frontier["id"] in frontier_ids]
+        if not candidate_frontiers:
+            return {"parent_id": resolved, "created": [], "next_action": "get_next_actions"}
 
-        created = []
         goal = research_state.get_goal()
-        sibling_texts = [
-            graph_tools.get_node(cid).get("text")
-            for cid in graph_tools.get_query_children(resolved)
+        siblings = [graph_tools.get_node(cid) for cid in graph_tools.get_query_children(resolved)]
+        frontier_specs = [
+            {
+                "id": frontier["id"],
+                "description": frontier.get("description"),
+                "importance": frontier.get("importance"),
+                "granularity_level": frontier.get("granularity_level"),
+                "scope_signature": frontier.get("scope_signature"),
+                "target_slot_keys": frontier.get("target_slot_keys") or [],
+                "acceptance_criteria": frontier.get("acceptance_criteria") or [],
+            }
+            for frontier in candidate_frontiers
         ]
-        objective_by_key = {item["objective_key"]: item for item in self.get_research_objectives()}
-        for subject, group in grouped.items():
-            if any(gap.get("gap_key") and self._gap_key_in_ancestors(resolved, gap.get("gap_key")) for gap in group):
-                for gap in group:
-                    graph_tools.upsert_node(NodeType.ANALYSIS, {
-                        "status": "blocked",
-                        "resolution_reason": "duplicate gap_key already exists on the ancestor path",
-                    }, gap["id"])
-                continue
-            followups = self._plan_followup_queries(
-                research_goal=goal.get("research_goal") or goal.get("request") or "",
-                parent_text=parent.get("text") or "",
-                sibling_texts=sibling_texts,
-                gaps=[
-                    {
-                        "id": gap["id"],
-                        "description": gap.get("description") or gap.get("text"),
-                        "acceptance_criteria": gap.get("acceptance_criteria") or [],
-                    }
-                    for gap in group
-                ],
-                reason=f"Globally selected search subject: {subject}",
-                max_new=1,
-            )
-            if not followups:
-                for gap in group:
-                    graph_tools.upsert_node(NodeType.ANALYSIS, {
-                        "status": "blocked",
-                        "resolution_reason": "query planner could not author a self-contained child query",
-                    }, gap["id"])
-                continue
-            spec = followups[0]
-            importance = "core" if any(gap.get("importance") == "core" for gap in group) else (
-                "supporting" if any(gap.get("importance") == "supporting" for gap in group) else "peripheral"
-            )
-            objective_keys = sorted({
-                key for gap in group for key in (gap.get("objective_keys") or [])
-                if key in objective_by_key
-            })
-            child_id = graph_tools.create_query_child(
-                parent_id=resolved,
-                text=spec["text"],
-                importance=importance,
-                acceptance_criteria=spec.get("acceptance_criteria") or [
-                    criterion for gap in group for criterion in (gap.get("acceptance_criteria") or [])
-                ],
-                gap_ids=[gap["id"] for gap in group],
-                objective_keys=objective_keys,
-                required_for_parent=False,
-                search_subject_key=subject,
-            )
-            for key in objective_keys:
-                graph_tools.add_edge(child_id, objective_by_key[key]["id"], EdgeType.COVERS_OBJECTIVE)
-            child = graph_tools.get_node(child_id)
-            created.append({
-                "id": child_id,
-                "handle": child.get("handle"),
-                "text": child.get("text"),
-                "gap_ids": [gap["id"] for gap in group],
-            })
-            sibling_texts.append(child.get("text"))
-
-        next_status = "waiting_children" if created else "blocked"
-        graph_tools.transition_query(resolved, next_status)
-        if next_status == "blocked":
-            self._propagate_child_completion(resolved, "blocked")
+        planner_output = self._plan_horizontal_queries(
+            research_goal=goal.get("research_goal") or goal.get("request") or "",
+            attach_parent=attach_parent,
+            current_query=None,
+            siblings=siblings,
+            frontiers=frontier_specs,
+            max_new=min(3, len(frontier_specs)),
+        )
+        created = self._materialize_horizontal_queries(resolved, candidate_frontiers, planner_output.get("queries") or [])
         self._bump_portfolio_revision()
         return {
             "parent_id": resolved,
-            "parent_handle": parent.get("handle"),
+            "parent_handle": attach_parent.get("handle"),
             "created": created,
-            "deferred_gap_ids": [g["id"] for g in deferred],
+            "next_action": "get_next_actions",
+        }
+
+    def expand_vertically(self, query_id: str, frontier_ids: Optional[list[str]] = None) -> dict:
+        """Create child queries from selected vertical frontiers."""
+        from tools import research_state
+
+        if research_state.get_status().get("research_state") != research_state.RESEARCHING:
+            return {"error": "Vertical expansion is only allowed while research_state is RESEARCHING"}
+        try:
+            resolved = self._resolve_query_id(query_id)
+        except AmbiguousQueryReference as exc:
+            return {"error": str(exc)}
+        if resolved is None:
+            return {"error": f"Unknown query reference: {query_id!r}"}
+        parent = graph_tools.get_node(resolved)
+        frontiers = graph_tools.get_frontiers(resolved, {"selected"})
+        frontiers = [item for item in frontiers if item.get("frontier_type") == "vertical"]
+        if frontier_ids:
+            frontiers = [item for item in frontiers if item["id"] in frontier_ids]
+        if not frontiers:
+            return {"query_id": resolved, "created": [], "next_action": "get_next_actions"}
+
+        goal = research_state.get_goal()
+        planner_output = self._plan_vertical_queries(
+            research_goal=goal.get("research_goal") or goal.get("request") or "",
+            current_query=parent,
+            frontiers=frontiers,
+            max_new=min(3, len(frontiers)),
+        )
+        created = self._materialize_vertical_queries(resolved, frontiers, planner_output.get("queries") or [])
+        self._bump_portfolio_revision()
+        return {
+            "query_id": resolved,
+            "query_handle": parent.get("handle"),
+            "created": created,
             "next_action": "get_next_actions",
         }
 
     def assess_convergence(self, goal_id: Optional[str] = None) -> dict:
-        """Authorize reporting after Objective-level marginal-utility convergence."""
+        """Authorize reporting only when frontier closure and delivery slots are ready."""
         from tools import research_state
 
         current_state = research_state.get_status(goal_id).get("research_state")
@@ -1417,7 +1212,7 @@ class MemoryManager:
             return {
                 "converged": False,
                 "fatal_unresolved_conflicts": [],
-                "selected_gaps": [],
+                "selected_frontier_backlog": 0,
                 "active_queries": [],
                 "recommendation": "failed",
                 "reason": reason,
@@ -1425,148 +1220,58 @@ class MemoryManager:
                 "tree_validation": tree,
                 "next_actions": [],
             }
-        conflicts = [
-            {
-                "id": c.get("id"),
-                "description": c.get("description"),
-                "conflict_type": c.get("conflict_type"),
-            }
-            for c in graph_tools.search_nodes("conflict", {})
-            if c.get("resolution_status") not in {"resolved", "disclosed"}
-        ]
-        prompt = (
-            mm_prompts.assess_convergence
-            .replace("{core_queries}", json.dumps(all_queries, ensure_ascii=False))
-            .replace("{open_queries}", json.dumps([
-                query for query in all_queries
-                if query.get("status") not in research_state.TERMINAL_QUERY_STATUSES
-            ], ensure_ascii=False))
-            .replace("{conflicts}", json.dumps(conflicts, ensure_ascii=False))
-        )
-        verdict = self._invoke_json(prompt)
-        fatal = verdict.get("fatal_unresolved_conflicts") or []
         goal = research_state.get_goal(goal_id)
-        created_fatal_gaps: list[str] = []
-        for fatal_description in fatal:
-            conflict = next(
-                (c for c in graph_tools.search_nodes("conflict", {})
-                 if c.get("description") == fatal_description),
-                None,
-            )
-            if not conflict:
-                continue
-            owner_id = self._conflict_owner_query(conflict["id"])
-            if not owner_id:
-                continue
-            key = _gap_key(f"Resolve conflict: {fatal_description}")
-            owner = graph_tools.get_node(owner_id)
-            gap_parent_id = owner_id
-            if key not in {
-                graph_tools.get_node(gid).get("gap_key") for gid in self._query_gap_ids(gap_parent_id)
-            }:
-                gap_id = graph_tools.create_analysis(
-                    text=f"Resolve conflict: {fatal_description}",
-                    query_id=gap_parent_id,
-                    analysis_type="gap",
-                    description=f"Resolve conflict: {fatal_description}",
-                    gap_key=key,
-                    importance="core",
-                    required_for_parent=False,
-                    status="candidate",
-                    gap_category="fatal_conflict",
-                    objective_keys=[
-                        objective.get("objective_key")
-                        for objective in self.get_research_objectives(goal_id)
-                        if objective.get("requirement") == "must"
-                    ],
-                    search_subject_key=f"fatal-conflict-{conflict['id']}",
-                    decision_impact=1.0,
-                    confidence_gain=1.0,
-                    estimated_search_rounds=1,
-                    conflict_id=conflict["id"],
-                    acceptance_criteria=["Find independent evidence that resolves or clearly scopes the conflict"],
-                )
-                created_fatal_gaps.append(gap_id)
-                if owner.get("status") == "assessing":
-                    graph_tools.transition_query(owner_id, "needs_expansion")
-                elif owner.get("status") in research_state.TERMINAL_QUERY_STATUSES:
-                    graph_tools.upsert_node(NodeType.ANALYSIS, {"status": "selected"}, gap_id)
-                    child_id = graph_tools.create_query_child(
-                        parent_id=owner_id,
-                        text=f"Resolve conflict: {fatal_description}",
-                        importance="core",
-                        acceptance_criteria=["Find independent evidence that resolves or clearly scopes the conflict"],
-                        gap_ids=[gap_id],
-                        objective_keys=[
-                            objective.get("objective_key")
-                            for objective in self.get_research_objectives(goal_id)
-                            if objective.get("requirement") == "must"
-                        ],
-                        required_for_parent=False,
-                        search_subject_key=f"fatal-conflict-{conflict['id']}",
-                    )
-                    for objective in self.get_research_objectives(goal_id):
-                        if objective.get("requirement") == "must":
-                            graph_tools.add_edge(child_id, objective["id"], EdgeType.COVERS_OBJECTIVE)
-        fatal_set = set(fatal)
-        for conflict in graph_tools.search_nodes("conflict", {}):
-            if (
-                conflict.get("resolution_status") in {"unresolved", "investigating"}
-                and conflict.get("description") not in fatal_set
-            ):
-                graph_tools.upsert_node(
-                    NodeType.CONFLICT,
-                    {"resolution_status": "disclosed"},
-                    conflict["id"],
-                )
-        if created_fatal_gaps:
-            self._bump_portfolio_revision()
-
-        goal = research_state.get_goal(goal_id)
-        objectives = self.get_research_objectives(goal_id)
-        must = [item for item in objectives if item.get("requirement") == "must"]
-        objectives_ready = bool(must) and all(
-            item.get("status") in {"satisfied", "blocked_best_effort"}
-            for item in must
+        metrics = self._compute_research_metrics(goal.get("id"))
+        task_contract = self._task_contract_snapshot(goal.get("id"))
+        selected_frontiers = graph_tools.get_frontiers(statuses={"selected"})
+        active_queries = [
+            query for query in all_queries
+            if query.get("status") in {"pending", "searching", "assessing"}
+        ]
+        open_conflicts = [
+            conflict for conflict in graph_tools.search_nodes("conflict", {})
+            if conflict.get("resolution_status") in {"unresolved", "investigating"}
+        ]
+        readiness = self._invoke_json(
+            mm_prompts.assess_delivery_readiness
+            .replace("{task_contract}", json.dumps(task_contract, ensure_ascii=False))
+            .replace("{portfolio}", json.dumps({
+                "metrics": metrics,
+                "selected_frontiers": selected_frontiers,
+                "active_queries": active_queries,
+                "open_conflicts": open_conflicts,
+            }, ensure_ascii=False))
         )
-        active = [
-            query for query in all_queries
-            if query.get("status") in {"searching", "assessing"}
-        ]
-        selected_gaps = [
-            gap for gap in graph_tools.search_nodes("analysis", {"analysis_type": "gap"})
-            if gap.get("status") in {"selected", "assigned"}
-        ]
-        portfolio_current = int(goal.get("evaluated_portfolio_revision") or 0) >= int(goal.get("portfolio_revision") or 0)
-        exhaustive_open = [
-            query for query in all_queries
-            if query.get("status") not in research_state.TERMINAL_QUERY_STATUSES
-        ] if goal.get("scope_mode") == "exhaustive" else []
         remaining = research_state.remaining_budget(goal_id)
-        if remaining == 0 and (active or selected_gaps or not objectives_ready or exhaustive_open):
-            research_state.mark_budget_exhausted(goal_id)
-            recommendation = "stop"
-            state = research_state.BUDGET_EXHAUSTED
-        elif (
+        delivery_ready = bool(readiness.get("delivery_ready")) and metrics["selected_frontier_backlog"] == 0
+        low_value_open = self._all_remaining_frontiers_low_value()
+        if (
             tree["valid"]
-            and portfolio_current
-            and objectives_ready
-            and not active
-            and not selected_gaps
-            and not created_fatal_gaps
-            and not exhaustive_open
+            and delivery_ready
+            and metrics["horizontal_closure_score"] >= 0.85
+            and metrics["slot_completion_score"] >= metrics["slot_completion_threshold"]
+            and metrics["selected_frontier_backlog"] == 0
+            and metrics["core_claim_support_score"] >= 0.7
         ):
-            for query in all_queries:
-                if query.get("status") == "pending":
-                    graph_tools.transition_query(query["id"], "deferred")
-                    self._propagate_child_completion(query["id"], "deferred")
             research_state.update_goal({
                 "research_state": research_state.REPORT_READY,
                 "last_convergence_recommendation": "stop",
-                "report_authorized_reason": "report-level objectives reached marginal-utility convergence",
+                "report_authorized_reason": "frontier closure and delivery slots are ready",
             }, goal_id)
             recommendation = "stop"
             state = research_state.REPORT_READY
+        elif (
+            remaining == 0
+            and metrics["slot_completion_score"] >= metrics["slot_completion_threshold"]
+            and metrics["selected_frontier_backlog"] == 0
+            and low_value_open
+        ):
+            research_state.mark_budget_exhausted(goal_id)
+            research_state.update_goal({
+                "report_authorized_reason": "budget exhausted after delivery slots reached threshold and only low-value frontier remained",
+            }, goal_id)
+            recommendation = "stop"
+            state = research_state.BUDGET_EXHAUSTED
         else:
             research_state.update_goal({
                 "research_state": research_state.RESEARCHING,
@@ -1576,25 +1281,564 @@ class MemoryManager:
             recommendation = "continue"
             state = research_state.RESEARCHING
 
+        graph_tools.upsert_node(NodeType.USER_REQUEST, {
+            "horizontal_closure_score": metrics["horizontal_closure_score"],
+            "slot_completion_score": metrics["slot_completion_score"],
+            "report_readiness_score": max(
+                float(readiness.get("slot_completion_score") or 0.0),
+                metrics["delivery_readiness_score"],
+            ),
+            "delivery_readiness": delivery_ready,
+        }, goal["id"])
         return {
             "converged": recommendation == "stop",
-            "fatal_unresolved_conflicts": fatal,
-            "selected_gaps": [
-                {"id": gap["id"], "description": gap.get("description") or gap.get("text")}
-                for gap in selected_gaps
-            ],
-            "active_queries": [
-                {"id": query["id"], "handle": query.get("handle"), "status": query.get("status")}
-                for query in active + exhaustive_open
-            ],
-            "objectives": objectives,
-            "portfolio_current": portfolio_current,
+            "selected_frontier_backlog": metrics["selected_frontier_backlog"],
+            "horizontal_closure_score": metrics["horizontal_closure_score"],
+            "slot_completion_score": metrics["slot_completion_score"],
+            "core_claim_support_score": metrics["core_claim_support_score"],
+            "delivery_ready": delivery_ready,
+            "missing_sections": readiness.get("missing_sections") or [],
+            "missing_tables": readiness.get("missing_tables") or [],
             "recommendation": recommendation,
-            "reason": verdict.get("reason", ""),
+            "reason": readiness.get("reason", ""),
             "research_state": state,
             "tree_validation": tree,
             "next_actions": self.get_next_actions() if recommendation == "continue" else [],
         }
+
+    def _goal_node(self, goal_id: Optional[str] = None) -> dict:
+        from tools import research_state
+
+        return research_state.get_goal(goal_id)
+
+    def _task_contract_snapshot(self, goal_id: Optional[str] = None) -> dict:
+        goal = self._goal_node(goal_id)
+        contract = graph_tools.get_task_contract(goal.get("id")) if goal else None
+        slots = graph_tools.get_coverage_slots(goal.get("id")) if goal else []
+        return {
+            "goal": {
+                "id": goal.get("id"),
+                "request": goal.get("request"),
+                "research_goal": goal.get("research_goal"),
+                "language": goal.get("language"),
+                "deliverable_type": goal.get("deliverable_type"),
+            } if goal else {},
+            "task_contract": contract or {},
+            "slot_registry": [
+                {
+                    "id": slot.get("id"),
+                    "slot_key": slot.get("slot_key"),
+                    "section": slot.get("section"),
+                    "unit_type": slot.get("unit_type"),
+                    "dimension": slot.get("dimension"),
+                    "priority": slot.get("priority"),
+                    "status": slot.get("status"),
+                    "completion_score": slot.get("completion_score"),
+                    "description": slot.get("description"),
+                    "min_sources": slot.get("min_sources"),
+                    "needs_primary_source": slot.get("needs_primary_source"),
+                }
+                for slot in slots
+            ],
+        }
+
+    def _create_coverage_slots(
+        self,
+        goal_id: str,
+        contract_id: str,
+        task_contract: dict[str, Any],
+        slot_specs: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        required_sections = task_contract.get("required_sections") if isinstance(task_contract.get("required_sections"), list) else []
+        specs = [item for item in slot_specs if isinstance(item, dict)]
+        if not specs:
+            for section in required_sections:
+                section_key = str(section.get("section_key") or _gap_key(section.get("title") or "section"))[:48]
+                specs.append({
+                    "slot_key": f"{section_key}-core",
+                    "section": section_key,
+                    "unit_type": "paragraph",
+                    "dimension": None,
+                    "priority": "core",
+                    "min_sources": 2,
+                    "needs_primary_source": False,
+                    "description": section.get("purpose") or section.get("title") or section_key,
+                })
+        created: list[dict[str, Any]] = []
+        seen_keys: set[str] = set()
+        for spec in specs:
+            slot_key = str(spec.get("slot_key") or "").strip()
+            if not slot_key or slot_key in seen_keys:
+                continue
+            seen_keys.add(slot_key)
+            section = str(spec.get("section") or "").strip() or "body"
+            slot_id = graph_tools.create_coverage_slot(
+                goal_id=goal_id,
+                task_contract_id=contract_id,
+                slot_key=slot_key,
+                section=section,
+                unit_type=spec.get("unit_type") or "paragraph",
+                status="open",
+                dimension=spec.get("dimension"),
+                priority=spec.get("priority") or "supporting",
+                completion_score=0.0,
+                min_sources=max(1, int(spec.get("min_sources") or 1)),
+                needs_primary_source=bool(spec.get("needs_primary_source")),
+                description=spec.get("description") or slot_key,
+            )
+            created.append(graph_tools.get_node(slot_id))
+        return created
+
+    def _query_target_slots(self, query_id: str) -> list[dict[str, Any]]:
+        slots: list[dict[str, Any]] = []
+        for edge in graph_tools.get_node_edges(query_id, direction="out"):
+            if str(edge.get("type", "")).lower() != "targets_slot":
+                continue
+            slot = graph_tools.get_node(edge["target"])
+            if slot.get("type") == NodeType.COVERAGE_SLOT.value:
+                slots.append(slot)
+        if slots:
+            return slots
+        query = graph_tools.get_node(query_id)
+        slot_by_key = {slot.get("slot_key"): slot for slot in graph_tools.get_coverage_slots(self._goal_node().get("id"))}
+        return [
+            slot_by_key[key]
+            for key in query.get("target_slot_keys") or []
+            if key in slot_by_key
+        ]
+
+    def _apply_slot_fill_status(
+        self,
+        query_id: str,
+        filled_slot_keys: list[str],
+        remaining_slot_keys: list[str],
+        evaluation: dict[str, Any],
+    ) -> dict[str, list[str]]:
+        goal = self._goal_node()
+        slots = graph_tools.get_coverage_slots(goal.get("id"))
+        slot_by_key = {slot.get("slot_key"): slot for slot in slots}
+        evidence_ids = [node["id"] for node in evaluation.get("nodes", []) if node.get("type") == NodeType.EVIDENCE.value]
+        claim_ids = [node["id"] for node in evaluation.get("nodes", []) if node.get("type") == NodeType.CLAIM.value]
+        filled_slot_ids: list[str] = []
+        remaining_slot_ids: list[str] = []
+        for slot_key in filled_slot_keys:
+            slot = slot_by_key.get(slot_key)
+            if not slot:
+                continue
+            filled_slot_ids.append(slot["id"])
+            graph_tools.upsert_node(NodeType.COVERAGE_SLOT, {
+                "status": "filled" if evidence_ids else "partial",
+                "completion_score": 1.0 if evidence_ids else 0.6,
+                "last_filled_by_query_id": query_id,
+            }, slot["id"])
+            graph_tools.bind_slot_filler(slot["id"], evidence_ids=evidence_ids, claim_ids=claim_ids)
+        for slot_key in remaining_slot_keys:
+            slot = slot_by_key.get(slot_key)
+            if not slot:
+                continue
+            remaining_slot_ids.append(slot["id"])
+            if slot.get("status") != "filled":
+                graph_tools.upsert_node(NodeType.COVERAGE_SLOT, {
+                    "status": "partial" if slot.get("completion_score") else "open",
+                }, slot["id"])
+        return {"filled_slot_ids": filled_slot_ids, "remaining_slot_ids": remaining_slot_ids}
+
+    def _upsert_frontiers_from_specs(
+        self,
+        owner_query_id: str,
+        frontier_specs: list[dict[str, Any]],
+        frontier_type: str,
+        default_parent_query_id: Optional[str],
+    ) -> list[str]:
+        goal = self._goal_node()
+        slot_by_key = {slot.get("slot_key"): slot for slot in graph_tools.get_coverage_slots(goal.get("id"))}
+        existing = {
+            (item.get("frontier_type"), item.get("scope_signature") or item.get("description")): item["id"]
+            for item in graph_tools.get_frontiers(owner_query_id)
+        }
+        created: list[str] = []
+        for raw in frontier_specs:
+            if not isinstance(raw, dict):
+                continue
+            description = str(raw.get("description") or "").strip()
+            if not description:
+                continue
+            scope_signature = str(raw.get("scope_signature") or _gap_key(description))
+            dedupe_key = (frontier_type, scope_signature)
+            if dedupe_key in existing:
+                graph_tools.upsert_node(NodeType.RESEARCH_FRONTIER, {
+                    "description": description,
+                    "decision_impact": float(raw.get("decision_impact") or 0.0),
+                    "confidence_gain": float(raw.get("confidence_gain") or 0.0),
+                    "novelty_score": float(raw.get("novelty_score") or 0.0),
+                    "slot_blocking_score": float(raw.get("slot_blocking_score") or 0.0),
+                    "primary_source_need": float(raw.get("primary_source_need") or 0.0),
+                    "estimated_search_rounds": max(1, int(raw.get("estimated_search_rounds") or 1)),
+                }, existing[dedupe_key])
+                created.append(existing[dedupe_key])
+                continue
+            target_slot_keys = [key for key in (raw.get("target_slot_keys") or []) if key in slot_by_key]
+            frontier_id = graph_tools.create_frontier(
+                owner_id=owner_query_id,
+                frontier_type=frontier_type,
+                description=description,
+                status="candidate",
+                slot_ids=[slot_by_key[key]["id"] for key in target_slot_keys],
+                anchor_claim_ids=raw.get("anchor_claim_ids") if isinstance(raw.get("anchor_claim_ids"), list) else [],
+                anchor_conflict_ids=raw.get("anchor_conflict_ids") if isinstance(raw.get("anchor_conflict_ids"), list) else [],
+                anchor_evidence_ids=raw.get("anchor_evidence_ids") if isinstance(raw.get("anchor_evidence_ids"), list) else [],
+                parent_query_id=default_parent_query_id,
+                importance=raw.get("importance") or "supporting",
+                granularity_level=raw.get("granularity_level"),
+                scope_signature=scope_signature,
+                target_slot_keys=target_slot_keys,
+                decision_impact=float(raw.get("decision_impact") or 0.0),
+                confidence_gain=float(raw.get("confidence_gain") or 0.0),
+                novelty_score=float(raw.get("novelty_score") or 0.0),
+                slot_blocking_score=float(raw.get("slot_blocking_score") or 0.0),
+                primary_source_need=float(raw.get("primary_source_need") or 0.0),
+                estimated_search_rounds=max(1, int(raw.get("estimated_search_rounds") or 1)),
+                acceptance_criteria=raw.get("acceptance_criteria") if isinstance(raw.get("acceptance_criteria"), list) else [],
+                dimension=raw.get("dimension"),
+            )
+            created.append(frontier_id)
+        return created
+
+    def _upsert_dimension_hypotheses(self, owner_query_id: str, hypotheses: list[dict[str, Any]]) -> list[str]:
+        goal = self._goal_node()
+        queries = graph_tools.search_nodes("query", {})
+        created: list[str] = []
+        for raw in hypotheses:
+            if not isinstance(raw, dict):
+                continue
+            label = str(raw.get("dimension_label") or "").strip()
+            if not label:
+                continue
+            existing = [
+                node for node in graph_tools.search_nodes("dimension_hypothesis", {})
+                if node.get("dimension_label") == label and node.get("parent_query_id") == owner_query_id
+            ]
+            covered_signatures = set(raw.get("covered_by_scope_signatures") or [])
+            covered_query_ids = [
+                query["id"]
+                for query in queries
+                if query.get("scope_signature") in covered_signatures
+            ]
+            if existing:
+                graph_tools.upsert_node(NodeType.DIMENSION_HYPOTHESIS, {
+                    "support_strength": float(raw.get("support_strength") or 0.0),
+                    "covered_by_query_ids": covered_query_ids,
+                }, existing[0]["id"])
+                created.append(existing[0]["id"])
+            else:
+                created.append(graph_tools.create_dimension_hypothesis(
+                    goal_id=goal["id"],
+                    dimension_label=label,
+                    parent_query_id=owner_query_id,
+                    support_strength=float(raw.get("support_strength") or 0.0),
+                    covered_by_query_ids=covered_query_ids,
+                ))
+        return created
+
+    def _frontier_owner_id(self, frontier_id: str) -> Optional[str]:
+        for edge in graph_tools.get_node_edges(frontier_id, direction="in"):
+            if str(edge.get("type", "")).lower() != "has_frontier":
+                continue
+            return edge.get("source")
+        return None
+
+    def _is_verification_frontier(self, frontier: dict[str, Any]) -> bool:
+        return bool(
+            frontier.get("anchor_conflict_ids")
+            or frontier.get("anchor_claim_ids")
+            or float(frontier.get("primary_source_need") or 0.0) >= 0.7
+        )
+
+    def _frontier_redundancy(self, frontier: dict[str, Any]) -> float:
+        scope_signature = frontier.get("scope_signature")
+        if not scope_signature:
+            return 0.0
+        for query in graph_tools.search_nodes("query", {}):
+            if query.get("scope_signature") == scope_signature:
+                return 1.0
+        return 0.0
+
+    def _remaining_frontier_budgets(self, goal: dict[str, Any]) -> dict[str, int]:
+        def remaining(max_key: str, used_key: str) -> int:
+            limit = int(goal.get(max_key) or 0)
+            used = int(goal.get(used_key) or 0)
+            return 999 if limit <= 0 else max(0, limit - used)
+
+        return {
+            "breadth": remaining("breadth_budget", "breadth_budget_used"),
+            "depth": remaining("depth_budget", "depth_budget_used"),
+            "verification": remaining("verification_budget", "verification_budget_used"),
+        }
+
+    def _get_selected_frontier_actions(self) -> list[dict[str, Any]]:
+        actions: list[dict[str, Any]] = []
+        vertical: dict[str, list[dict[str, Any]]] = {}
+        horizontal: dict[str, list[dict[str, Any]]] = {}
+        for frontier in graph_tools.get_frontiers(statuses={"selected"}):
+            owner_id = self._frontier_owner_id(frontier["id"])
+            if frontier.get("frontier_type") == "vertical" and owner_id:
+                vertical.setdefault(owner_id, []).append(frontier)
+            elif frontier.get("frontier_type") == "horizontal":
+                attach_parent = frontier.get("parent_query_id")
+                if attach_parent:
+                    horizontal.setdefault(attach_parent, []).append(frontier)
+        for owner_id, items in vertical.items():
+            owner = graph_tools.get_node(owner_id)
+            actions.append({
+                "action": "expand_vertically",
+                "query_id": owner_id,
+                "query_handle": owner.get("handle"),
+                "priority": max(float(item.get("marginal_utility") or 0.0) for item in items),
+                "required_for_parent": False,
+                "required_path": False,
+                "semantic_importance": 1.0 if any(self._is_verification_frontier(item) for item in items) else 0.7,
+                "frontier_ids": [item["id"] for item in items],
+                "reason": "selected vertical frontier awaits child query creation",
+            })
+        for parent_id, items in horizontal.items():
+            parent = graph_tools.get_node(parent_id)
+            actions.append({
+                "action": "expand_horizontally",
+                "query_id": parent_id,
+                "query_handle": parent.get("handle"),
+                "priority": max(float(item.get("marginal_utility") or 0.0) for item in items),
+                "required_for_parent": False,
+                "required_path": False,
+                "semantic_importance": 0.9,
+                "frontier_ids": [item["id"] for item in items],
+                "reason": "selected horizontal frontier awaits sibling query creation",
+            })
+        return actions
+
+    def _compute_research_metrics(self, goal_id: str) -> dict[str, Any]:
+        goal = self._goal_node(goal_id)
+        contract = graph_tools.get_task_contract(goal_id) or {}
+        slots = graph_tools.get_coverage_slots(goal_id)
+        weighted_total = 0.0
+        weighted_done = 0.0
+        for slot in slots:
+            weight = {"core": 1.0, "supporting": 0.7, "peripheral": 0.4}.get(slot.get("priority"), 0.6)
+            weighted_total += weight
+            weighted_done += weight * float(slot.get("completion_score") or 0.0)
+        slot_completion_score = weighted_done / weighted_total if weighted_total else 0.0
+        open_horizontal = [
+            frontier for frontier in graph_tools.get_frontiers()
+            if frontier.get("frontier_type") == "horizontal"
+            and frontier.get("status") in {"candidate", "selected"}
+        ]
+        axes = contract.get("coverage_axes") if isinstance(contract.get("coverage_axes"), list) else []
+        horizontal_closure_score = max(0.0, 1.0 - len(open_horizontal) / max(1, len(axes) or 3))
+        sufficient_queries = [
+            query for query in graph_tools.search_nodes("query", {})
+            if query.get("status") == "sufficient"
+        ]
+        core_scores = [
+            float(query.get("sufficiency_score") or 0.0)
+            for query in sufficient_queries
+            if query.get("importance") == "core" or query.get("query_role") == "seed"
+        ]
+        core_claim_support_score = sum(core_scores) / len(core_scores) if core_scores else 0.0
+        selected_frontier_backlog = len(graph_tools.get_frontiers(statuses={"selected"}))
+        delivery_readiness_score = (
+            horizontal_closure_score * 0.3
+            + slot_completion_score * 0.45
+            + core_claim_support_score * 0.25
+        )
+        deliverable_type = goal.get("deliverable_type") or contract.get("deliverable_type") or "research_report"
+        threshold = 0.8 if deliverable_type == "wikipedia_article" else 0.75
+        return {
+            "horizontal_closure_score": horizontal_closure_score,
+            "slot_completion_score": slot_completion_score,
+            "core_claim_support_score": core_claim_support_score,
+            "selected_frontier_backlog": selected_frontier_backlog,
+            "delivery_readiness_score": delivery_readiness_score,
+            "delivery_ready": (
+                horizontal_closure_score >= 0.85
+                and slot_completion_score >= threshold
+                and selected_frontier_backlog == 0
+                and core_claim_support_score >= 0.7
+            ),
+            "slot_completion_threshold": threshold,
+        }
+
+    def _all_remaining_frontiers_low_value(self) -> bool:
+        for frontier in graph_tools.get_frontiers():
+            if frontier.get("status") in {"candidate", "selected"}:
+                return False
+        return True
+
+    def _plan_task_contract(self, user_request: str) -> dict:
+        prompt = mm_prompts.plan_task_contract.replace("{user_request}", user_request)
+        return self._invoke_json(prompt)
+
+    def _plan_seed_queries(self, task_contract: dict[str, Any]) -> dict:
+        prompt = mm_prompts.plan_seed_queries.replace(
+            "{task_contract}",
+            json.dumps(task_contract, ensure_ascii=False),
+        )
+        return self._invoke_json(prompt)
+
+    def _plan_horizontal_queries(
+        self,
+        research_goal: str,
+        attach_parent: dict[str, Any],
+        current_query: Optional[dict[str, Any]],
+        siblings: list[dict[str, Any]],
+        frontiers: list[dict[str, Any]],
+        max_new: int,
+    ) -> dict:
+        prompt = (
+            mm_prompts.plan_horizontal_queries
+            .replace("{research_goal}", research_goal)
+            .replace("{attach_parent}", json.dumps(attach_parent, ensure_ascii=False))
+            .replace("{current_query}", json.dumps(current_query or {}, ensure_ascii=False))
+            .replace("{siblings}", json.dumps(siblings, ensure_ascii=False))
+            .replace("{frontiers}", json.dumps(frontiers, ensure_ascii=False))
+            .replace("{max_new}", str(max_new))
+        )
+        return self._invoke_json(prompt)
+
+    def _plan_vertical_queries(
+        self,
+        research_goal: str,
+        current_query: dict[str, Any],
+        frontiers: list[dict[str, Any]],
+        max_new: int,
+    ) -> dict:
+        prompt = (
+            mm_prompts.plan_vertical_queries
+            .replace("{research_goal}", research_goal)
+            .replace("{current_query}", json.dumps(current_query, ensure_ascii=False))
+            .replace("{frontiers}", json.dumps(frontiers, ensure_ascii=False))
+            .replace("{max_new}", str(max_new))
+        )
+        return self._invoke_json(prompt)
+
+    def _materialize_horizontal_queries(
+        self,
+        parent_id: str,
+        selected_frontiers: list[dict[str, Any]],
+        planned_queries: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        goal = self._goal_node()
+        slot_by_key = {slot.get("slot_key"): slot for slot in graph_tools.get_coverage_slots(goal.get("id"))}
+        frontier_by_signature = {item.get("scope_signature"): item for item in selected_frontiers}
+        frontier_by_desc = {item.get("description"): item for item in selected_frontiers}
+        sibling_queries = [graph_tools.get_node(cid) for cid in graph_tools.get_query_children(parent_id)]
+        existing_signatures = {item.get("scope_signature") for item in sibling_queries}
+        existing_texts = {item.get("text") for item in sibling_queries}
+        created: list[dict[str, Any]] = []
+        used = 0
+        for raw in planned_queries[:3]:
+            if not isinstance(raw, dict):
+                continue
+            text = str(raw.get("text") or "").strip()
+            scope_signature = str(raw.get("scope_signature") or _gap_key(text))
+            if not text or scope_signature in existing_signatures or text in existing_texts:
+                continue
+            frontier = frontier_by_signature.get(scope_signature) or frontier_by_desc.get(raw.get("frontier_description"))
+            if not frontier:
+                continue
+            query_id = graph_tools.create_query_child(
+                parent_id=parent_id,
+                text=text,
+                importance=raw.get("importance") or frontier.get("importance") or "supporting",
+                acceptance_criteria=raw.get("acceptance_criteria") or frontier.get("acceptance_criteria") or [],
+                required_for_parent=False,
+                query_role="horizontal",
+                granularity_level=raw.get("granularity_level") or frontier.get("granularity_level"),
+                scope_signature=scope_signature,
+                target_slot_keys=raw.get("target_slot_keys") or frontier.get("target_slot_keys") or [],
+                anchor_claim_ids=[],
+                anchor_conflict_ids=[],
+                anchor_evidence_ids=[],
+            )
+            for slot_key in raw.get("target_slot_keys") or frontier.get("target_slot_keys") or []:
+                slot = slot_by_key.get(slot_key)
+                if slot:
+                    graph_tools.add_edge(query_id, slot["id"], EdgeType.TARGETS_SLOT)
+            graph_tools.upsert_node(NodeType.RESEARCH_FRONTIER, {
+                "status": "expanded",
+                "spawned_query_id": query_id,
+            }, frontier["id"])
+            query = graph_tools.get_node(query_id)
+            created.append({"id": query_id, "handle": query.get("handle"), "text": query.get("text"), "frontier_id": frontier["id"]})
+            existing_signatures.add(scope_signature)
+            existing_texts.add(text)
+            used += 1
+        if used:
+            graph_tools.upsert_node(NodeType.USER_REQUEST, {
+                "breadth_budget_used": int(goal.get("breadth_budget_used") or 0) + used,
+            }, goal["id"])
+        return created
+
+    def _materialize_vertical_queries(
+        self,
+        parent_id: str,
+        selected_frontiers: list[dict[str, Any]],
+        planned_queries: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        goal = self._goal_node()
+        slot_by_key = {slot.get("slot_key"): slot for slot in graph_tools.get_coverage_slots(goal.get("id"))}
+        frontier_by_signature = {item.get("scope_signature"): item for item in selected_frontiers}
+        frontier_by_desc = {item.get("description"): item for item in selected_frontiers}
+        children = [graph_tools.get_node(cid) for cid in graph_tools.get_query_children(parent_id)]
+        existing_signatures = {item.get("scope_signature") for item in children}
+        existing_texts = {item.get("text") for item in children}
+        created: list[dict[str, Any]] = []
+        depth_used = 0
+        verification_used = 0
+        for raw in planned_queries[:3]:
+            if not isinstance(raw, dict):
+                continue
+            text = str(raw.get("text") or "").strip()
+            scope_signature = str(raw.get("scope_signature") or _gap_key(text))
+            if not text or scope_signature in existing_signatures or text in existing_texts:
+                continue
+            frontier = frontier_by_signature.get(scope_signature) or frontier_by_desc.get(raw.get("frontier_description"))
+            if not frontier:
+                continue
+            query_id = graph_tools.create_query_child(
+                parent_id=parent_id,
+                text=text,
+                importance=raw.get("importance") or frontier.get("importance") or "supporting",
+                acceptance_criteria=raw.get("acceptance_criteria") or frontier.get("acceptance_criteria") or [],
+                required_for_parent=False,
+                query_role="vertical",
+                granularity_level=raw.get("granularity_level") or frontier.get("granularity_level"),
+                scope_signature=scope_signature,
+                target_slot_keys=raw.get("target_slot_keys") or frontier.get("target_slot_keys") or [],
+                anchor_claim_ids=raw.get("anchor_claim_ids") or frontier.get("anchor_claim_ids") or [],
+                anchor_conflict_ids=raw.get("anchor_conflict_ids") or frontier.get("anchor_conflict_ids") or [],
+                anchor_evidence_ids=raw.get("anchor_evidence_ids") or frontier.get("anchor_evidence_ids") or [],
+            )
+            for slot_key in raw.get("target_slot_keys") or frontier.get("target_slot_keys") or []:
+                slot = slot_by_key.get(slot_key)
+                if slot:
+                    graph_tools.add_edge(query_id, slot["id"], EdgeType.TARGETS_SLOT)
+            graph_tools.upsert_node(NodeType.RESEARCH_FRONTIER, {
+                "status": "expanded",
+                "spawned_query_id": query_id,
+            }, frontier["id"])
+            query = graph_tools.get_node(query_id)
+            created.append({"id": query_id, "handle": query.get("handle"), "text": query.get("text"), "frontier_id": frontier["id"]})
+            existing_signatures.add(scope_signature)
+            existing_texts.add(text)
+            if self._is_verification_frontier(frontier):
+                verification_used += 1
+            else:
+                depth_used += 1
+        if depth_used or verification_used:
+            graph_tools.upsert_node(NodeType.USER_REQUEST, {
+                "depth_budget_used": int(goal.get("depth_budget_used") or 0) + depth_used,
+                "verification_budget_used": int(goal.get("verification_budget_used") or 0) + verification_used,
+            }, goal["id"])
+        return created
 
     def _conflict_owner_query(self, conflict_id: str) -> Optional[str]:
         """Return the Query whose SearchRun produced a conflict."""
@@ -1631,7 +1875,7 @@ class MemoryManager:
             if query.get("status") != "pending":
                 return {"error": f"Query {query.get('handle') or resolved} is not pending", "status": query.get("status")}
             if int(query.get("successful_search_runs") or 0) > 0:
-                return {"error": "A Query with a successful SearchRun cannot be searched again; expand its gaps instead"}
+                return {"error": "A Query with a successful SearchRun cannot be searched again; create new frontiers instead"}
             remaining = research_state.remaining_budget()
             if remaining == 0:
                 goal = research_state.mark_budget_exhausted()
@@ -1649,18 +1893,26 @@ class MemoryManager:
                 }
             run_id = claim["search_run_id"]
 
-            gaps = [graph_tools.get_node(gid) for gid in self._addressed_gap_ids(resolved)]
             parent = graph_tools.get_node(graph_tools.get_query_parent(resolved) or "")
+            target_slots = self._query_target_slots(resolved)
             task = {
                 "query": query.get("text"),
+                "query_role": query.get("query_role") or "seed",
+                "granularity_level": query.get("granularity_level"),
+                "scope_signature": query.get("scope_signature"),
                 "acceptance_criteria": query.get("acceptance_criteria") or [],
-                "assigned_gaps": [
+                "target_slots": [
                     {
-                        "description": g.get("description") or g.get("text"),
-                        "acceptance_criteria": g.get("acceptance_criteria") or [],
+                        "slot_key": slot.get("slot_key"),
+                        "section": slot.get("section"),
+                        "dimension": slot.get("dimension"),
+                        "description": slot.get("description"),
                     }
-                    for g in gaps
+                    for slot in target_slots
                 ],
+                "anchor_claim_ids": query.get("anchor_claim_ids") or [],
+                "anchor_conflict_ids": query.get("anchor_conflict_ids") or [],
+                "anchor_evidence_ids": query.get("anchor_evidence_ids") or [],
                 "research_goal": goal.get("research_goal") or goal.get("request"),
                 "time_window": goal.get("time_window"),
                 "region_scope": goal.get("region_scope"),
@@ -2131,29 +2383,35 @@ class MemoryManager:
     # Reporter-facing
     # -----------------------------
     def export_report_context(self, goal_id: Optional[str] = None) -> dict:
-        """Export compact report metadata; evidence is fetched page by page."""
-        goal = graph_tools.get_node(goal_id) if goal_id else {}
+        """Export slot-driven report metadata; evidence is fetched section by section."""
+        goal = graph_tools.get_node(goal_id) if goal_id else self._goal_node()
         if not goal:
-            requests = graph_tools.search_nodes("user_request", {})
-            if requests:
-                goal = requests[0]
-                goal_id = goal["id"]
-        objectives = self.get_research_objectives(goal_id)
+            return {}
+        task_contract = self._task_contract_snapshot(goal.get("id"))
         from tools import report_tools
 
-        limitations = [
-            str(item.get("description") or item.get("text") or "").strip()
-            for item in objectives
-            if item.get("status") == "blocked_best_effort"
+        contract = task_contract.get("task_contract") or {}
+        frontiers = [
+            {
+                "id": frontier.get("id"),
+                "frontier_type": frontier.get("frontier_type"),
+                "description": frontier.get("description"),
+                "status": frontier.get("status"),
+                "target_slot_keys": frontier.get("target_slot_keys") or [],
+            }
+            for frontier in graph_tools.get_frontiers()
+            if frontier.get("status") not in {"resolved", "blocked"}
         ]
-        limitations = [item for item in limitations if item]
-        request_text = str(goal.get("request") or goal.get("research_goal") or "")
-        is_wikipedia_task = "wikipedia" in request_text.lower()
-        sorted_queries = sorted(
-            graph_tools.search_nodes("query", {}),
-            key=lambda query: (query.get("importance") or 0, query.get("id") or ""),
-            reverse=True,
-        )
+        conflicts = [
+            {
+                "id": conflict.get("id"),
+                "description": conflict.get("description"),
+                "conflict_type": conflict.get("conflict_type"),
+                "resolution_status": conflict.get("resolution_status"),
+            }
+            for conflict in graph_tools.search_nodes("conflict", {})
+            if conflict.get("resolution_status") != "resolved"
+        ]
         return {
             "goal": {
                 key: goal.get(key)
@@ -2162,33 +2420,18 @@ class MemoryManager:
                     "region_scope", "source_preferences",
                 )
             } if goal else {},
-            "queries": [
-                {
-                    key: query.get(key)
-                    for key in ("id", "handle", "text", "importance")
-                }
-                for query in sorted_queries
-            ],
-            "objectives": [
-                {
-                    key: objective.get(key)
-                    for key in (
-                        "id", "objective_key", "description", "text",
-                        "requirement", "acceptance_criteria",
-                    )
-                }
-                for objective in objectives
-            ],
-            "limitations": limitations,
-            "disclosed_conflicts": report_tools.get_disclosed_conflicts(),
+            "task_contract": contract,
+            "required_sections": contract.get("required_sections") or [],
+            "required_tables": contract.get("required_tables") or [],
+            "slot_registry": task_contract.get("slot_registry") or [],
+            "disclosed_frontiers": frontiers,
+            "disclosed_conflicts": conflicts or report_tools.get_disclosed_conflicts(),
             "reference_registry": report_tools.build_reference_registry(),
             "writing_hints": {
-                "default_structure": (
-                    "lead + topic sections + conflict/limitation coverage + unified references"
-                ),
+                "default_structure": "section -> slot -> evidence bundle",
                 "prefer_paragraph_prose": True,
                 "avoid_references_as_section_title": True,
-                "task_style": "wikipedia_article" if is_wikipedia_task else "research_report",
+                "task_style": contract.get("deliverable_type") or goal.get("deliverable_type") or "research_report",
             },
         }
 
@@ -2301,17 +2544,10 @@ class MemoryManager:
     # Internal LLM helpers
     # -----------------------------
     def _plan_initial_queries(self, user_request: str) -> dict:
-        """Author the initial query set from the user request via the planner.
-
-        Args:
-            user_request: The original research request.
-
-        Returns:
-            dict with ``research_goal``, ``language`` and ``initial_queries``
-            (each ``{text, importance}``).
-        """
-        prompt = mm_prompts.init_research.replace("{user_request}", user_request)
-        return self._invoke_json(prompt)
+        """Backward-compatible wrapper around task-contract + seed planning."""
+        planned = self._plan_task_contract(user_request)
+        seed = self._plan_seed_queries(planned)
+        return {**planned, "initial_queries": seed.get("seed_queries") or []}
 
     def _plan_followup_queries(
         self,
@@ -2322,57 +2558,26 @@ class MemoryManager:
         reason: str,
         max_new: int = 1,
     ) -> list:
-        """Author self-contained follow-up query strings via the planner.
-
-        Drops any authored query that references another query (a
-        self-containment violation) and retries once before giving up.
-
-        Args:
-            research_goal: The overall research goal, for context.
-            parent_text: The parent query/goal text whose subject is inlined.
-            sibling_texts: Existing sibling query texts (for dedup).
-            gaps: Gaps (vertical) or missing dimensions (horizontal) to cover.
-            reason: Why this expansion is needed.
-            max_new: Maximum number of queries to author.
-
-        Returns:
-            A list of ``{text, importance}`` dicts (cross-referencing ones dropped).
-        """
-        gaps_text = gaps if isinstance(gaps, str) else json.dumps(gaps or [], ensure_ascii=False)
-
-        def author(extra: str = "") -> list:
-            prompt = (
-                mm_prompts.plan_followup_query
-                .replace("{research_goal}", research_goal or "")
-                .replace("{parent_text}", parent_text or "")
-                .replace("{sibling_texts}", json.dumps(sibling_texts or [], ensure_ascii=False))
-                .replace("{gaps}", gaps_text)
-                .replace("{reason}", reason or "")
-                .replace("{max_new}", str(max_new))
-            )
-            parsed = self._invoke_json(prompt + extra)
-            items = []
-            raw_queries = parsed.get("queries") or []
-            if not isinstance(raw_queries, list):
-                raw_queries = []
-            for raw in raw_queries:
-                text, importance, criteria, objective_keys = _query_spec(raw)
-                if isinstance(text, str) and text.strip():
-                    items.append({
-                        "text": text,
-                        "importance": importance,
-                        "acceptance_criteria": criteria,
-                        "objective_keys": objective_keys,
-                    })
-            return items
-
-        def self_contained(item: dict) -> bool:
-            return not any(token in item["text"] for token in _CROSS_REF_TOKENS)
-
-        queries = [q for q in author() if self_contained(q)]
-        if not queries:
-            retry = "\n\n注意：每条 query 必须自包含，把具体对象写进查询本身，禁止出现对其他 query 的指代。"
-            queries = [q for q in author(retry) if self_contained(q)]
+        """Backward-compatible wrapper that routes to the horizontal planner."""
+        parsed = self._plan_horizontal_queries(
+            research_goal=research_goal,
+            attach_parent={"text": parent_text},
+            current_query={"text": parent_text},
+            siblings=[{"text": text} for text in sibling_texts or []],
+            frontiers=gaps if isinstance(gaps, list) else [],
+            max_new=max_new,
+        )
+        queries = []
+        for raw in parsed.get("queries") or []:
+            text = str(raw.get("text") or "").strip()
+            if not text or any(token in text for token in _CROSS_REF_TOKENS):
+                continue
+            queries.append({
+                "text": text,
+                "importance": raw.get("importance"),
+                "acceptance_criteria": raw.get("acceptance_criteria") or [],
+                "objective_keys": raw.get("objective_keys") or [],
+            })
         return queries[:max_new]
 
     def extract_content(self, content: str) -> dict:
