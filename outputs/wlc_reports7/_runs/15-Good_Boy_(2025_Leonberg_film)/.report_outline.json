@@ -1,0 +1,151 @@
+{
+  "title": "Good Boy (2025 Leonberg film)",
+  "chapters": [
+    {
+      "chapter_id": 1,
+      "title": "Overview",
+      "goals": [
+        "Summarize the film's basic identity, genre, and distinguishing features.",
+        "Capture key release context and high-level reception."
+      ],
+      "query_ids": [
+        "q1",
+        "q2",
+        "q3"
+      ],
+      "section_plan": "Introductory lead summarizing director, year, country, genre, main cast, dog POV concept, premiere at SXSW, distribution by IFC Films, and general critical response.",
+      "status": "completed",
+      "source_ids": [
+        "20260702010735793161_066c80f1",
+        "20260702010735832621_04608c79",
+        "20260702010735873967_29c79a52",
+        "20260702010735916452_ac0d8070",
+        "20260702010735963521_1a4174e1",
+        "20260702010736018595_4d8ab385",
+        "20260702010845394006_6beb071b",
+        "20260702010845425927_a1c457c3",
+        "20260702010845462537_6a158ae0",
+        "20260702010845496200_aaf51ee8",
+        "20260702010845530040_957bef55",
+        "20260702011609596075_cef6912f",
+        "20260702011609749940_b7c67182",
+        "20260702011609802951_7e520548",
+        "20260702012319207120_f54911dc"
+      ],
+      "evidence_ids": [],
+      "disclosed_conflict_ids": [],
+      "section_type": null
+    },
+    {
+      "chapter_id": 2,
+      "title": "Plot",
+      "goals": [
+        "Provide a concise, sourced synopsis of the film's premise and narrative approach."
+      ],
+      "query_ids": [
+        "q2",
+        "q3"
+      ],
+      "section_plan": "Summarize the haunted house setup, the dog's point of view, core conflict, and thematic focus without adding unsourced detail.",
+      "status": "pending"
+    },
+    {
+      "chapter_id": 3,
+      "title": "Cast and characters",
+      "goals": [
+        "List principal cast members and their roles, including the canine performer, based on reliable sources."
+      ],
+      "query_ids": [
+        "q1",
+        "q4"
+      ],
+      "section_plan": "Identify human leads and the dog actor, along with brief role descriptions where sourced.",
+      "status": "pending"
+    },
+    {
+      "chapter_id": 4,
+      "title": "Production",
+      "goals": [
+        "Document development background, writing and directing, filming approach, cinematography, music, and production companies."
+      ],
+      "query_ids": [
+        "q1",
+        "q4",
+        "q4.1",
+        "q4.2",
+        "q4.2.1"
+      ],
+      "section_plan": "Cover development history, inspiration, filming techniques for dog POV, small-crew production, cinematography credit ambiguity, and composer credits with conflict noted.",
+      "status": "pending"
+    },
+    {
+      "chapter_id": 5,
+      "title": "Release",
+      "goals": [
+        "Detail festival screenings, theatrical release, and distribution partners."
+      ],
+      "query_ids": [
+        "q2",
+        "q3"
+      ],
+      "section_plan": "Note SXSW world premiere, subsequent festival or limited runs if sourced, IFC Films distribution, trailer release and marketing timeline, and U.S. theatrical release date and runtime discrepancies.",
+      "status": "pending"
+    },
+    {
+      "chapter_id": 6,
+      "title": "Reception",
+      "goals": [
+        "Summarize critical and audience response using available reviews and ratings."
+      ],
+      "query_ids": [
+        "q2"
+      ],
+      "section_plan": "Synthesize views from Variety, Screen Anarchy, and other critics; summarize Rotten Tomatoes metrics and critical consensus where available.",
+      "status": "pending"
+    },
+    {
+      "chapter_id": 7,
+      "title": "Documented conflicts and limitations",
+      "goals": [
+        "Explicitly acknowledge key factual discrepancies and areas with limited public information."
+      ],
+      "query_ids": [
+        "q1",
+        "q2",
+        "q4"
+      ],
+      "section_plan": "Discuss runtime, cinematography credit, dog name spelling, crew size, and composer-count conflicts; note other gaps such as missing box office figures or unsourced production details.",
+      "status": "completed",
+      "source_ids": [
+        "20260702010735793161_066c80f1",
+        "20260702010735832621_04608c79",
+        "20260702010735873967_29c79a52",
+        "20260702010735916452_ac0d8070",
+        "20260702010735963521_1a4174e1",
+        "20260702010736018595_4d8ab385",
+        "20260702010845394006_6beb071b",
+        "20260702010845462537_6a158ae0",
+        "20260702010845496200_aaf51ee8",
+        "20260702011609596075_cef6912f",
+        "20260702011609749940_b7c67182",
+        "20260702012319136450_97597b90",
+        "20260702012319207120_f54911dc",
+        "20260702012319243185_b75356f8",
+        "20260702012832672408_54139b52"
+      ],
+      "evidence_ids": [
+        "20260702010736018595_4d8ab385",
+        "20260702010735963521_1a4174e1",
+        "20260702012832672408_54139b52"
+      ],
+      "disclosed_conflict_ids": [
+        "20260702010738439602_1aa4c0ca",
+        "20260702012323132643_bdbb51bc",
+        "20260702012323261426_ada087e8",
+        "20260702012323337270_6ffb5c6a",
+        "20260702012833196520_fb5234ec"
+      ],
+      "section_type": null
+    }
+  ]
+}

@@ -1,0 +1,188 @@
+
+================================================================================
+[2026-07-02T02:49:14] cwd=/mnt/h/projects/Wiki_Live_Challenge
+$ /mnt/h/DeepResearch/GraphResearcher/.venv/bin/python3 scripts/generate_json.py -i /mnt/h/DeepResearch/GraphResearcher/outputs/wlc_reports7/_wlc_eval/md_data -o /mnt/h/DeepResearch/GraphResearcher/outputs/wlc_reports7/_wlc_eval/json_data --steps extract,fetch
+================================================================================
+Statement extractor: gemini-2.5-flash
+Jina scraper initialized
+Processing 5 files with 10 workers
+Steps: {'fetch', 'extract'}
+
+Progress: 1/5
+Progress: 2/5
+Progress: 3/5
+Progress: 4/5
+Progress: 5/5
+
+Completed:
+  Success: 5
+  Errors: 0
+  Total statements: 488
+  URLs fetched: 0
+  URLs failed: 53
+
+================================================================================
+[2026-07-02T03:09:07] cwd=/mnt/h/projects/Wiki_Live_Challenge
+$ /mnt/h/DeepResearch/GraphResearcher/.venv/bin/python3 scripts/run_evaluation.py all -b 2025_Mar_Nov --gen-dir /mnt/h/DeepResearch/GraphResearcher/outputs/wlc_reports7/_wlc_eval/json_data --gt-dir /mnt/h/projects/Wiki_Live_Challenge/data/2025_Mar_Nov/wiki_data/cleaned_data/article -o /mnt/h/DeepResearch/GraphResearcher/outputs/wlc_reports7/_wlc_eval/results --max-workers 20 --top-k 10
+================================================================================
+============================================================
+WIKI LIVE CHALLENGE EVALUATION
+Benchmark: 2025_Mar_Nov
+============================================================
+
+============================================================
+WIKI WRITING EVALUATION
+============================================================
+[WikiWriting] Evaluating: 2011_Sawyerville–Eoline_tornado.json
+[WikiWriting] Evaluating 3 categories, allow_tie=False
+  [Parallel] Evaluating 'Well-written' (21 criteria)
+  [Parallel] Evaluating 'Broad in its coverage' (8 criteria)
+  [Parallel] Evaluating 'Neutral' (10 criteria)
+  [Done] Category 'Broad in its coverage' completed
+  [Done] Category 'Well-written' completed
+  [Done] Category 'Neutral' completed
+  Gen win rate: 23.08%
+[WikiWriting] Evaluating: Good_Boy_(2025_Leonberg_film).json
+[WikiWriting] Evaluating 3 categories, allow_tie=False
+  [Parallel] Evaluating 'Well-written' (21 criteria)
+  [Parallel] Evaluating 'Broad in its coverage' (8 criteria)
+  [Parallel] Evaluating 'Neutral' (10 criteria)
+  [Done] Category 'Broad in its coverage' completed
+  [Done] Category 'Neutral' completed
+  [Done] Category 'Well-written' completed
+  Gen win rate: 0.00%
+[WikiWriting] Evaluating: Midnight_Sun_(Zara_Larsson_album).json
+[WikiWriting] Evaluating 3 categories, allow_tie=False
+  [Parallel] Evaluating 'Well-written' (21 criteria)
+  [Parallel] Evaluating 'Broad in its coverage' (8 criteria)
+  [Parallel] Evaluating 'Neutral' (10 criteria)
+  [Done] Category 'Neutral' completed
+  [Done] Category 'Well-written' completed
+  [Done] Category 'Broad in its coverage' completed
+  Gen win rate: 0.00%
+[WikiWriting] Evaluating: Ring_of_Nestor.json
+[WikiWriting] Evaluating 3 categories, allow_tie=False
+  [Parallel] Evaluating 'Well-written' (21 criteria)
+  [Parallel] Evaluating 'Broad in its coverage' (8 criteria)
+  [Parallel] Evaluating 'Neutral' (10 criteria)
+  [Done] Category 'Broad in its coverage' completed
+  [Done] Category 'Neutral' completed
+  [Done] Category 'Well-written' completed
+  Gen win rate: 2.56%
+[WikiWriting] Evaluating: The_Rector_of_Justin.json
+[WikiWriting] Evaluating 3 categories, allow_tie=False
+  [Parallel] Evaluating 'Well-written' (21 criteria)
+  [Parallel] Evaluating 'Broad in its coverage' (8 criteria)
+  [Parallel] Evaluating 'Neutral' (10 criteria)
+  [Done] Category 'Broad in its coverage' completed
+  [Done] Category 'Neutral' completed
+  [Done] Category 'Well-written' completed
+  Gen win rate: 0.00%
+
+[Summary] 5 articles evaluated
+  Total Gen wins: 10/195
+  Total GT wins:  185/195
+  Total Ties:     0/195
+  Overall Gen win rate: 5.13%
+
+============================================================
+VERIFIABILITY EVALUATION
+============================================================
+[Verifiability] Evaluating: 2011_Sawyerville–Eoline_tornado.json
+[Verifiability] Statements: GT=110, Gen=54, top_k=10
+[Verifiability] Verifying 164 alignments (max_workers=20)...
+  [Progress] 20/164
+  [Progress] 40/164
+  [Progress] 60/164
+  [Progress] 80/164
+  [Progress] 100/164
+  [Progress] 120/164
+  [Progress] 140/164
+  [Progress] 160/164
+  Gen supported: 31.48%
+[Verifiability] Evaluating: Good_Boy_(2025_Leonberg_film).json
+[Verifiability] Statements: GT=198, Gen=62, top_k=10
+[Verifiability] Verifying 260 alignments (max_workers=20)...
+  [Progress] 20/260
+  [Progress] 40/260
+  [Progress] 60/260
+  [Progress] 80/260
+  [Progress] 100/260
+  [Progress] 120/260
+  [Progress] 140/260
+  [Progress] 160/260
+  [Progress] 180/260
+  [Progress] 200/260
+  [Progress] 220/260
+  [Progress] 240/260
+  [Progress] 260/260
+  Gen supported: 38.71%
+[Verifiability] Evaluating: Midnight_Sun_(Zara_Larsson_album).json
+[Verifiability] Statements: GT=61, Gen=250, top_k=10
+[Verifiability] Verifying 311 alignments (max_workers=20)...
+  [Progress] 20/311
+  [Progress] 40/311
+  [Progress] 60/311
+  [Progress] 80/311
+  [Progress] 100/311
+  [Progress] 120/311
+  [Progress] 140/311
+  [Progress] 160/311
+  [Progress] 180/311
+  [Progress] 200/311
+  [Progress] 220/311
+  [Progress] 240/311
+  [Progress] 260/311
+  [Progress] 280/311
+  [Progress] 300/311
+  Gen supported: 25.60%
+[Verifiability] Evaluating: Ring_of_Nestor.json
+[Verifiability] Statements: GT=97, Gen=1, top_k=10
+[Verifiability] Verifying 98 alignments (max_workers=20)...
+  [Progress] 20/98
+  [Progress] 40/98
+  [Progress] 60/98
+  [Progress] 80/98
+  Gen supported: 0.00%
+[Verifiability] Evaluating: The_Rector_of_Justin.json
+[Verifiability] Statements: GT=260, Gen=121, top_k=10
+[Verifiability] Verifying 381 alignments (max_workers=20)...
+  [Progress] 20/381
+  [Progress] 40/381
+  [Progress] 60/381
+  [Progress] 80/381
+  [Progress] 100/381
+  [Progress] 120/381
+  [Progress] 140/381
+  [Progress] 160/381
+  [Progress] 180/381
+  [Progress] 200/381
+  [Progress] 220/381
+  [Progress] 240/381
+  [Progress] 260/381
+  [Progress] 280/381
+  [Progress] 300/381
+  [Progress] 320/381
+  [Progress] 340/381
+  [Progress] 360/381
+  [Progress] 380/381
+  Gen supported: 37.19%
+
+[Summary] 5 articles evaluated
+  Avg Gen supported by Wiki: 26.60%
+  Avg Gen conflict with Wiki: 23.24%
+  Avg Wiki covered by Gen: 13.47%
+
+============================================================
+CITATION EVALUATION
+============================================================
+[Citation] Evaluating: 2011_Sawyerville–Eoline_tornado.json
+  Skipped: no_valid_citations
+[Citation] Evaluating: Good_Boy_(2025_Leonberg_film).json
+  Skipped: no_valid_citations
+[Citation] Evaluating: Midnight_Sun_(Zara_Larsson_album).json
+  Skipped: no_valid_citations
+[Citation] Evaluating: Ring_of_Nestor.json
+  Skipped: no_statements
+[Citation] Evaluating: The_Rector_of_Justin.json
+  Skipped: no_valid_citations

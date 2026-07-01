@@ -1,0 +1,88 @@
+
+================================================================================
+[2026-07-01T23:52:23] cwd=/mnt/h/projects/Wiki_Live_Challenge
+$ /mnt/h/DeepResearch/GraphResearcher/.venv/bin/python3 scripts/generate_json.py -i /mnt/h/DeepResearch/GraphResearcher/outputs/wlc_reports6/_wlc_eval/md_data -o /mnt/h/DeepResearch/GraphResearcher/outputs/wlc_reports6/_wlc_eval/json_data --steps extract,fetch
+================================================================================
+Statement extractor: gemini-2.5-flash
+Jina scraper initialized
+Processing 1 files with 10 workers
+Steps: {'extract', 'fetch'}
+
+Progress: 1/1
+
+Completed:
+  Success: 1
+  Errors: 0
+  Total statements: 267
+  URLs fetched: 19
+  URLs failed: 1
+
+================================================================================
+[2026-07-01T23:56:55] cwd=/mnt/h/projects/Wiki_Live_Challenge
+$ /mnt/h/DeepResearch/GraphResearcher/.venv/bin/python3 scripts/run_evaluation.py all -b 2025_Mar_Nov --gen-dir /mnt/h/DeepResearch/GraphResearcher/outputs/wlc_reports6/_wlc_eval/json_data --gt-dir /mnt/h/projects/Wiki_Live_Challenge/data/2025_Mar_Nov/wiki_data/cleaned_data/article -o /mnt/h/DeepResearch/GraphResearcher/outputs/wlc_reports6/_wlc_eval/results --max-workers 20 --top-k 10
+================================================================================
+============================================================
+WIKI LIVE CHALLENGE EVALUATION
+Benchmark: 2025_Mar_Nov
+============================================================
+
+============================================================
+WIKI WRITING EVALUATION
+============================================================
+[WikiWriting] Evaluating: Ring_of_Nestor.json
+[WikiWriting] Evaluating 3 categories, allow_tie=False
+  [Parallel] Evaluating 'Well-written' (21 criteria)
+  [Parallel] Evaluating 'Broad in its coverage' (8 criteria)
+  [Parallel] Evaluating 'Neutral' (10 criteria)
+  [Done] Category 'Broad in its coverage' completed
+  [Done] Category 'Neutral' completed
+  [Done] Category 'Well-written' completed
+  Gen win rate: 0.00%
+
+[Summary] 1 articles evaluated
+  Total Gen wins: 0/39
+  Total GT wins:  39/39
+  Total Ties:     0/39
+  Overall Gen win rate: 0.00%
+
+============================================================
+VERIFIABILITY EVALUATION
+============================================================
+[Verifiability] Evaluating: Ring_of_Nestor.json
+[Verifiability] Statements: GT=97, Gen=267, top_k=10
+[Verifiability] Verifying 364 alignments (max_workers=20)...
+  [Progress] 20/364
+  [Progress] 40/364
+  [Progress] 60/364
+  [Progress] 80/364
+  [Progress] 100/364
+  [Progress] 120/364
+  [Progress] 140/364
+  [Progress] 160/364
+  [Progress] 180/364
+  [Progress] 200/364
+  [Progress] 220/364
+  [Progress] 240/364
+  [Progress] 260/364
+  [Progress] 280/364
+  [Progress] 300/364
+  [Progress] 320/364
+  [Progress] 340/364
+  [Progress] 360/364
+  Gen supported: 59.55%
+
+[Summary] 1 articles evaluated
+  Avg Gen supported by Wiki: 59.55%
+  Avg Gen conflict with Wiki: 6.37%
+  Avg Wiki covered by Gen: 13.40%
+
+============================================================
+CITATION EVALUATION
+============================================================
+[Citation] Evaluating: Ring_of_Nestor.json
+[Citation] 267 statements, 18 valid citations
+  Support ratio: 99.25%
+
+[Summary] 1/1 articles evaluated
+  Average support ratio: 99.25%
+  Average conflict ratio: 0.00%

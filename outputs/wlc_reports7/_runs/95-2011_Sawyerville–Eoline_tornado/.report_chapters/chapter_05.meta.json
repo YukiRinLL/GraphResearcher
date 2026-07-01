@@ -1,0 +1,18 @@
+{
+  "chapter_id": 5,
+  "title": "Context within the 2011 Super Outbreak and data conflicts",
+  "source_ids": [
+    "20260702015353689088_53030d6d",
+    "20260702015353770472_46e46302",
+    "20260702020545979708_34355001",
+    "20260702015120843257_5622ba2b",
+    "20260702015353537882_06a24196"
+  ],
+  "evidence_ids": [],
+  "disclosed_conflict_ids": [
+    "20260702015357934789_117153c2",
+    "20260702015358017058_39ff5acc",
+    "20260702015358106200_ac327c9a"
+  ],
+  "section_type": "conflict_disclosure"
+}

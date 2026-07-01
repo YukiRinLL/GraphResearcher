@@ -1,0 +1,20 @@
+{
+  "batchcomplete": "",
+  "query": {
+    "pages": {
+      "48958371": {
+        "pageid": 48958371,
+        "ns": 0,
+        "title": "Research Report",
+        "extract": "# Research Report\n\n## Conclusion\n\nNo verifiable findings are available.",
+        "citation_urls": {},
+        "statements": [
+          {
+            "statement": "No verifiable findings are available."
+          }
+        ],
+        "source_file": "md_data/Ring_of_Nestor.md"
+      }
+    }
+  }
+}

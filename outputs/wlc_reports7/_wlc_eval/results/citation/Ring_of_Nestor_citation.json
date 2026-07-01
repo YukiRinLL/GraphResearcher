@@ -1,0 +1,16 @@
+{
+  "title": "Research Report",
+  "status": "skipped",
+  "reason": "no_statements",
+  "total_statements": 0,
+  "total_citations": 0,
+  "valid_citations": 0,
+  "evaluated_statements": 0,
+  "skipped_statements": 0,
+  "support": 0,
+  "not_support": 0,
+  "conflict": 0,
+  "support_ratio": 0.0,
+  "conflict_ratio": 0.0,
+  "results": []
+}

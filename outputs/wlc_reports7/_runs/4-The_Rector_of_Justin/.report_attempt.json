@@ -1,0 +1,91 @@
+{
+  "accepted": false,
+  "revision_requested": false,
+  "severity": "hard",
+  "report": "",
+  "salvaged_report": "",
+  "issues": [
+    {
+      "code": "delivery_invariant_failed",
+      "severity": "hard",
+      "section_title": "",
+      "block_index": null,
+      "message": "uncited factual paragraph or list item: 1. GradeSaver. \"The Rector of Justin Summary.\" GradeSaver study guide. https://w",
+      "repair_hint": "Fix missing citations, broken references, or forbidden process prose before resubmitting."
+    },
+    {
+      "code": "delivery_invariant_failed",
+      "severity": "hard",
+      "section_title": "",
+      "block_index": null,
+      "message": "uncited factual paragraph or list item: 2. GradeSaver. \"The Rector of Justin Essay Questions.\" GradeSaver study guide. h",
+      "repair_hint": "Fix missing citations, broken references, or forbidden process prose before resubmitting."
+    },
+    {
+      "code": "delivery_invariant_failed",
+      "severity": "hard",
+      "section_title": "",
+      "block_index": null,
+      "message": "uncited factual paragraph or list item: 3. \"The Rector of Justin.\" Grokipedia. https://grokipedia.com/page/the_rector_of",
+      "repair_hint": "Fix missing citations, broken references, or forbidden process prose before resubmitting."
+    },
+    {
+      "code": "delivery_invariant_failed",
+      "severity": "hard",
+      "section_title": "",
+      "block_index": null,
+      "message": "uncited factual paragraph or list item: 4. Amazon.com. \"The Rector of Justin: A Novel\" (product description). https://ww",
+      "repair_hint": "Fix missing citations, broken references, or forbidden process prose before resubmitting."
+    },
+    {
+      "code": "delivery_invariant_failed",
+      "severity": "hard",
+      "section_title": "",
+      "block_index": null,
+      "message": "uncited factual paragraph or list item: 5. AbeBooks. \"The Rector of Justin: A Novel\" (Harper Perennial edition, ISBN 061",
+      "repair_hint": "Fix missing citations, broken references, or forbidden process prose before resubmitting."
+    },
+    {
+      "code": "delivery_invariant_failed",
+      "severity": "hard",
+      "section_title": "",
+      "block_index": null,
+      "message": "uncited factual paragraph or list item: 6. New York Times. \"A CRUCIBLE COVERED WITH IVY; THE RECTOR OF JUSTIN. By Louis ",
+      "repair_hint": "Fix missing citations, broken references, or forbidden process prose before resubmitting."
+    },
+    {
+      "code": "delivery_invariant_failed",
+      "severity": "hard",
+      "section_title": "",
+      "block_index": null,
+      "message": "uncited factual paragraph or list item: 7. Finn, Chester E. Jr. \"From a Half-Century-Old Novel, Wisdom about Teaching an",
+      "repair_hint": "Fix missing citations, broken references, or forbidden process prose before resubmitting."
+    },
+    {
+      "code": "delivery_invariant_failed",
+      "severity": "hard",
+      "section_title": "",
+      "block_index": null,
+      "message": "uncited factual paragraph or list item: 8. \"The Rector of Justin by Louis Auchincloss.\" Good Reading Copy (blog essay). ",
+      "repair_hint": "Fix missing citations, broken references, or forbidden process prose before resubmitting."
+    },
+    {
+      "code": "delivery_invariant_failed",
+      "severity": "hard",
+      "section_title": "",
+      "block_index": null,
+      "message": "uncited factual paragraph or list item: 9. Goodreads. \"The Rector of Justin.\" https://www.goodreads.com/en/book/show/796",
+      "repair_hint": "Fix missing citations, broken references, or forbidden process prose before resubmitting."
+    }
+  ],
+  "retention_ratio": 1.0182,
+  "submitted_sections": 3,
+  "kept_sections": 3,
+  "dropped_sections": 0,
+  "submitted_paragraphs": 28,
+  "kept_paragraphs": 28,
+  "dropped_paragraphs": 0,
+  "section_count": 3,
+  "source_count": 10,
+  "auto_appended_conflict_ids": []
+}

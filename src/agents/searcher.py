@@ -24,8 +24,7 @@ from langgraph.graph.message import add_messages
 
 import config
 from tools.graph_manager_tools import submit_search_result  # langchain @tool
-from tools.middleware import SearchFallbackMiddleware
-from tools.search_tools import serper_search, tavily_search
+from tools.search_tools import tavily_search
 
 # ── State ────────────────────────────────────────────────────────────────
 
@@ -102,8 +101,7 @@ def init_node(state: SearcherState) -> dict:
 _web_search_agent = create_agent(
     model=config.searcher_model,
     system_prompt=config.web_searcher_system_prompt,
-    tools=[serper_search, tavily_search],
-    middleware=[SearchFallbackMiddleware()],
+    tools=[tavily_search],
 )
 
 

@@ -1,0 +1,197 @@
+{
+  "title": "2011 Sawyerville–Eoline tornado",
+  "chapters": [
+    {
+      "chapter_id": 1,
+      "title": "Overview",
+      "goals": [
+        "Summarize the date, location, intensity, path, and overall significance of the 2011 Sawyerville–Eoline tornado.",
+        "Introduce its relationship to the April 27, 2011 outbreak."
+      ],
+      "query_ids": [
+        "20260702014934637851_abe7f776",
+        "20260702015820526958_66c08ba4",
+        "20260702020545979708_34355001",
+        "20260702015353770472_46e46302",
+        "20260702015353689088_53030d6d"
+      ],
+      "section_plan": "Write a concise lead-style overview covering classification, EF rating, affected counties and communities, casualties, and its place within the April 27, 2011 outbreak.",
+      "status": "completed",
+      "source_ids": [
+        "20260702015120843257_5622ba2b",
+        "20260702015353537882_06a24196",
+        "20260702020545979708_34355001"
+      ],
+      "evidence_ids": [
+        "20260702015431432237_e23587c0",
+        "20260702015431903951_585d8b80",
+        "20260702020731950948_37b96771",
+        "20260702020732041650_25f6a1f2",
+        "20260702020732236417_6e054f4e",
+        "20260702020034210900_ced7fc2d",
+        "20260702020034296749_0be46fe8",
+        "20260702020034389368_bc904477",
+        "20260702020034473637_cef852eb",
+        "20260702020607753942_dbec485a",
+        "20260702020607915578_5563ea33",
+        "20260702020608041510_97f19a16",
+        "20260702015121314576_892477e1",
+        "20260702015121395031_e310c7e7",
+        "20260702015121483951_ff4cc3dd",
+        "20260702020549432608_95f65294"
+      ],
+      "disclosed_conflict_ids": [],
+      "section_type": "lead"
+    },
+    {
+      "chapter_id": 2,
+      "title": "Meteorological synopsis",
+      "goals": [
+        "Explain the larger-scale meteorological setup leading to the April 27, 2011 super outbreak.",
+        "Describe the specific development and lifecycle of the Sawyerville–Eoline tornado, including timing, track, and EF-scale variations."
+      ],
+      "query_ids": [
+        "20260702014934637851_abe7f776",
+        "20260702015820526958_66c08ba4",
+        "20260702015820526958_66c08ba4",
+        "20260702020545979708_34355001",
+        "20260702015353640814_adb0d84a",
+        "20260702015353689088_53030d6d",
+        "20260702015353770472_46e46302",
+        "20260702020546582196_42b863c7"
+      ],
+      "section_plan": "Summarize the synoptic setup and super outbreak characteristics, then detail the storm that produced the Sawyerville–Eoline tornado, including radar observations and NWS survey findings on path length, width, and intensity.",
+      "status": "completed",
+      "source_ids": [
+        "20260702015120843257_5622ba2b",
+        "20260702015353537882_06a24196",
+        "20260702020545979708_34355001"
+      ],
+      "evidence_ids": [
+        "20260702015121314576_892477e1",
+        "20260702015121395031_e310c7e7",
+        "20260702015121483951_ff4cc3dd",
+        "20260702015431432237_e23587c0",
+        "20260702015431903951_585d8b80",
+        "20260702020731950948_37b96771",
+        "20260702020732041650_25f6a1f2",
+        "20260702020732236417_6e054f4e",
+        "20260702020732405666_b077fa14",
+        "20260702020034210900_ced7fc2d",
+        "20260702020034296749_0be46fe8",
+        "20260702020034389368_bc904477",
+        "20260702020034473637_cef852eb",
+        "20260702020607753942_dbec485a",
+        "20260702020607915578_5563ea33",
+        "20260702020608041510_97f19a16",
+        "20260702020549432608_95f65294"
+      ],
+      "disclosed_conflict_ids": [],
+      "section_type": "body"
+    },
+    {
+      "chapter_id": 3,
+      "title": "Impact and damage",
+      "goals": [
+        "Document casualties, injuries, and types of damage.",
+        "Highlight the most affected communities, including Sawyerville and Eoline.",
+        "Describe economic losses where available."
+      ],
+      "query_ids": [
+        "20260702015826467106_d6954f13",
+        "20260702015353537882_06a24196",
+        "20260702015353569521_ca0c6266",
+        "20260702015353606264_6b4ade08",
+        "20260702015353732345_281b164a",
+        "20260702020547063300_ede85066"
+      ],
+      "section_plan": "Use NWS, database, news, and academic sources to summarize deaths, injuries, residential and infrastructure damage, and any available cost estimates; note if economic loss data are not specified.",
+      "status": "completed",
+      "source_ids": [
+        "20260702015120843257_5622ba2b",
+        "20260702015353537882_06a24196",
+        "20260702020545979708_34355001"
+      ],
+      "evidence_ids": [
+        "20260702020548589785_5c3b8bd2",
+        "20260702020548662560_aee14605",
+        "20260702020548737474_0f626de6",
+        "20260702020548810858_4c95ed3d",
+        "20260702020548899192_5dc04c4a",
+        "20260702020548974892_68654922",
+        "20260702020549048172_cd7091e3",
+        "20260702020549125214_0066c9d9",
+        "20260702020549194687_8429a31d",
+        "20260702020549270587_cb3e2160",
+        "20260702020549355940_6070fc7b",
+        "20260702020549432608_95f65294",
+        "20260702020609902086_e625cc1f",
+        "20260702020610096404_4aa70c5c",
+        "20260702020610183117_e1ef4f56",
+        "20260702020610268674_321eb126",
+        "20260702020610402977_84515478"
+      ],
+      "disclosed_conflict_ids": [],
+      "section_type": "body"
+    },
+    {
+      "chapter_id": 4,
+      "title": "Aftermath and response",
+      "goals": [
+        "Describe emergency response and recovery efforts following the tornado.",
+        "Note disaster declarations, long-term rebuilding, and commemorations where documented."
+      ],
+      "query_ids": [
+        "20260702015353732345_281b164a",
+        "20260702015353606264_6b4ade08",
+        "20260702020547063300_ede85066",
+        "20260702015353640814_adb0d84a",
+        "20260702015353640814_adb0d84a"
+      ],
+      "section_plan": "Draw on news retrospectives, Tornado Talk material, and mortality studies to discuss search-and-rescue, aid, rebuilding, and how communities remembered or marked the event.",
+      "status": "completed",
+      "source_ids": [
+        "20260702015120843257_5622ba2b",
+        "20260702015353537882_06a24196",
+        "20260702020545979708_34355001",
+        "20260702020547063300_ede85066"
+      ],
+      "evidence_ids": [
+        "20260702020549270587_cb3e2160",
+        "20260702020549432608_95f65294"
+      ],
+      "disclosed_conflict_ids": [],
+      "section_type": "limitations"
+    },
+    {
+      "chapter_id": 5,
+      "title": "Context within the 2011 Super Outbreak and data conflicts",
+      "goals": [
+        "Place the tornado in the broader sequence of tornadoes on April 27, 2011.",
+        "Summarize differing outbreak statistics from Grokipedia and Tornado Talk and explain that counts vary by source."
+      ],
+      "query_ids": [
+        "20260702015353689088_53030d6d",
+        "20260702015353770472_46e46302",
+        "20260702015353732345_281b164a",
+        "20260702020545979708_34355001"
+      ],
+      "section_plan": "Discuss the tornado's ranking among April 27 Alabama tornadoes, referencing outbreak summaries, and then explicitly describe the small discrepancies in total tornado and fatality counts between Grokipedia and Tornado Talk, noting them as variations in methodology.",
+      "status": "completed",
+      "source_ids": [
+        "20260702015353689088_53030d6d",
+        "20260702015353770472_46e46302",
+        "20260702020545979708_34355001",
+        "20260702015120843257_5622ba2b",
+        "20260702015353537882_06a24196"
+      ],
+      "evidence_ids": [],
+      "disclosed_conflict_ids": [
+        "20260702015357934789_117153c2",
+        "20260702015358017058_39ff5acc",
+        "20260702015358106200_ac327c9a"
+      ],
+      "section_type": "conflict_disclosure"
+    }
+  ]
+}
