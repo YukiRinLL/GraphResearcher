@@ -147,8 +147,8 @@ def install_fakes():
     graph_tools.create_source = lambda url, title=None, source_type=None, **attrs: add_typed(
         "Source", {"url": url, "title": title, "source_type": source_type, **attrs}
     )
-    graph_tools.create_document = lambda text, source_id=None: add_typed(
-        "Document", {"text": text, "source_id": source_id}
+    graph_tools.create_document = lambda text, source_id=None, raw_content=None: add_typed(
+        "Document", {"text": text, "source_id": source_id, "raw_content": raw_content}
     )
     graph_tools.create_statement = lambda text, document_id, source_id=None, **attrs: add_typed(
         "Statement", {"text": text, "document_id": document_id, "source_id": source_id, **attrs}
@@ -175,6 +175,8 @@ def main():
 
     first = mm.prepare_search("q1")
     assert first.get("search_run_id"), first
+    assert first["query_text"] == NODES["q1"]["text"], first
+    assert not first["query_text"].lstrip().startswith("{"), first
     duplicate_claim = mm.prepare_search("q1")
     assert duplicate_claim.get("error") and NODES["goal"]["dispatched_search_rounds"] == 1
 
@@ -184,7 +186,12 @@ def main():
             {"local_ref": "invalid"},
         ],
         "documents": [
-            {"local_ref": "d1", "document_summary": "valid document", "source_ref": "s1"},
+            {
+                "local_ref": "d1",
+                "document_summary": "valid document",
+                "source_ref": "s1",
+                "raw_content": "full raw content",
+            },
         ],
         "claims": [
             {"local_ref": "c1", "statement": "valid claim", "document_ref": "d1", "source_ref": "s1"},
@@ -201,6 +208,10 @@ def main():
     assert result["status"] == "succeeded" and result["written"]["sources"] == 1, result
     assert result["written"]["evidence"] == 1 and NODES["q1"]["status"] == "assessing", result
     assert result["written"]["statements"] == 1 and result["written"]["claims"] == 0, result
+    assert any(
+        node.get("type") == "Document" and node.get("raw_content") == "full raw content"
+        for node in NODES.values()
+    ), NODES
     repeated_submit = mm.submit_search_result(first["search_run_id"], "q1", {})
     assert repeated_submit.get("error"), repeated_submit
     assert mm.prepare_search("q1").get("error")

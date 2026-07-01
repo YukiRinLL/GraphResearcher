@@ -1649,30 +1649,13 @@ class MemoryManager:
                 }
             run_id = claim["search_run_id"]
 
-            gaps = [graph_tools.get_node(gid) for gid in self._addressed_gap_ids(resolved)]
-            parent = graph_tools.get_node(graph_tools.get_query_parent(resolved) or "")
-            task = {
-                "query": query.get("text"),
-                "acceptance_criteria": query.get("acceptance_criteria") or [],
-                "assigned_gaps": [
-                    {
-                        "description": g.get("description") or g.get("text"),
-                        "acceptance_criteria": g.get("acceptance_criteria") or [],
-                    }
-                    for g in gaps
-                ],
-                "research_goal": goal.get("research_goal") or goal.get("request"),
-                "time_window": goal.get("time_window"),
-                "region_scope": goal.get("region_scope"),
-                "source_preferences": source_preferences or goal.get("source_preferences") or [],
-                "parent_covered": parent.get("covered") or [],
-                "requirement": "Collect evidence for this Query only. Do not broaden into sibling topics.",
-            }
             return {
                 "search_run_id": run_id,
                 "query_id": resolved,
                 "query_handle": query.get("handle"),
-                "query_text": json.dumps(task, ensure_ascii=False),
+                # Keep the search engine input as the literal query text. Passing the
+                # whole task payload here makes Tavily reject it for excessive length.
+                "query_text": query.get("text") or "",
             }
 
     def fail_search(self, search_run_id: str, query_id: str, error: str) -> dict:
@@ -1954,6 +1937,7 @@ class MemoryManager:
             doc_id = graph_tools.create_document(
                 text=_first(document, "document_summary", "summary_zh", "summary", "text", "content") or "",
                 source_id=resolve(_first(document, "source_ref", "source")),
+                raw_content=_first(document, "raw_content"),
             )
             if document.get("local_ref"):
                 ref_map[document["local_ref"]] = doc_id

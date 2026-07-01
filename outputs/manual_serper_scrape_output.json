@@ -1,0 +1,12 @@
+{
+  "source_search_file": "outputs/manual_serper_search_output.json",
+  "url": "http://www.caict.ac.cn/kxyj/qwfb/bps/202601/P020260130541978285206.pdf",
+  "tool": "serper_scrape",
+  "params": {
+    "url": "http://www.caict.ac.cn/kxyj/qwfb/bps/202601/P020260130541978285206.pdf"
+  },
+  "scrape_output": {
+    "text": "CAICT 中国信通院\n市區 蓝皮书 No.202515\n具身智能发展报告\n(2025年)\n中国信息通信研究院\n2026年1月",
+    "credits": 10
+  }
+}

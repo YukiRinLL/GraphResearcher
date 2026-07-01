@@ -320,7 +320,8 @@ def create_source(
 
 def create_document(
     text: str,
-    source_id: Optional[str] = None
+    source_id: Optional[str] = None,
+    raw_content: Optional[str] = None,
 ) -> dict[str, Any]:
     if source_id and get_node(source_id).get("type") != NodeType.SOURCE.value:
         raise ValueError(f"Document source must be Source: {source_id!r}")
@@ -328,6 +329,8 @@ def create_document(
     attributes = {"text": text}
     if source_id:
         attributes["source_id"] = source_id
+    if raw_content:
+        attributes["raw_content"] = raw_content
     doc_id = _run_async(manager.add_node(NodeType.DOCUMENT, attributes))
     if source_id:
         _run_async(manager.add_edge(source_id, doc_id, EdgeType.HAS_DOCUMENT))
