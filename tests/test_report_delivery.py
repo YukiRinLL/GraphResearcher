@@ -1,5 +1,6 @@
 """Standalone regression checks for canonical cited report delivery."""
 
+import json
 import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -22,23 +23,60 @@ def main():
             "research_goal": "比较机器人公司",
             "language": "zh",
         },
-        "q1": {"id": "q1", "type": "Query", "handle": "q1", "text": "公司与融资"},
+        "q1": {
+            "id": "q1",
+            "type": "Query",
+            "handle": "q1",
+            "text": "公司与融资",
+            "importance": "core",
+            "source_count_snapshot": 1,
+            "top_evidence_ids": ["e1"],
+            "evidence_digest": ["公司未公开具体融资金额。"],
+            "search_subject_key": "company-a",
+        },
+        "q2": {
+            "id": "q2",
+            "type": "Query",
+            "handle": "q2",
+            "text": "产品与部署",
+            "importance": "supporting",
+            "source_count_snapshot": 1,
+            "top_evidence_ids": ["e2"],
+            "evidence_digest": ["该公司开发仓储机器人。"],
+        },
         "run1": {"id": "run1", "type": "SearchRun", "status": "succeeded"},
+        "run2": {"id": "run2", "type": "SearchRun", "status": "succeeded"},
         "s1": {
             "id": "s1",
             "type": "Source",
             "title": "Company source",
             "url": "https://example.com/company",
         },
+        "s2": {
+            "id": "s2",
+            "type": "Source",
+            "title": "Product source",
+            "url": "https://example.com/product",
+        },
         "e1": {
             "id": "e1",
             "type": "Evidence",
             "claim": "公司未公开具体融资金额。",
         },
+        "e2": {
+            "id": "e2",
+            "type": "Evidence",
+            "claim": "该公司开发仓储机器人。",
+        },
         "c1": {
             "id": "c1",
             "type": "Claim",
             "statement": "该公司开发仓储机器人。",
+        },
+        "c2": {
+            "id": "c2",
+            "type": "Claim",
+            "statement": "机器人已部署到多个仓储场景。",
         },
         "objective": {
             "id": "objective",
@@ -51,12 +89,19 @@ def main():
     }
     edges = [
         {"source": "goal", "target": "q1", "type": "HAS_QUERY"},
+        {"source": "goal", "target": "q2", "type": "HAS_QUERY"},
         {"source": "q1", "target": "run1", "type": "SEARCHED_BY"},
+        {"source": "q2", "target": "run2", "type": "SEARCHED_BY"},
         {"source": "run1", "target": "s1", "type": "FOUND_SOURCE"},
+        {"source": "run2", "target": "s2", "type": "FOUND_SOURCE"},
         {"source": "run1", "target": "e1", "type": "PRODUCED"},
         {"source": "run1", "target": "c1", "type": "PRODUCED"},
+        {"source": "run2", "target": "e2", "type": "PRODUCED"},
+        {"source": "run2", "target": "c2", "type": "PRODUCED"},
         {"source": "s1", "target": "e1", "type": "SUPPORTED_BY"},
         {"source": "s1", "target": "c1", "type": "SUPPORTED_BY"},
+        {"source": "s2", "target": "e2", "type": "SUPPORTED_BY"},
+        {"source": "s2", "target": "c2", "type": "SUPPORTED_BY"},
     ]
     created_sections = []
     created_edges = []
@@ -90,7 +135,11 @@ def main():
     graph_tools.search_nodes = search_nodes
     graph_tools.get_query_evaluation_subgraph = lambda query_id: {
         "query": dict(nodes[query_id]),
-        "nodes": [dict(nodes["e1"]), dict(nodes["c1"])],
+        "nodes": (
+            [dict(nodes["e1"]), dict(nodes["c1"])]
+            if query_id == "q1"
+            else [dict(nodes["e2"]), dict(nodes["c2"])]
+        ),
         "edges": [dict(edge) for edge in edges],
         "children": [],
     }
@@ -117,6 +166,10 @@ def main():
         context = mm.export_report_context()
         assert "subgraph" not in context and "evidence" not in context and "research_status" not in context
         assert context["reference_registry"][0]["source_id"] == "s1"
+        assert context["query_evidence_digests"][0]["query_id"] == "q1"
+        assert context["lead_candidates"]
+        assert context["comparison_slots"]
+        assert context["entity_profiles"][0]["entity_key"] == "company-a"
         assert len(str(context)) < 5000
         assert context["disclosed_conflicts"] == []
 
@@ -222,6 +275,12 @@ def main():
 
         with TemporaryDirectory() as temp_dir:
             graph_manager_tools.configure(temp_dir)
+            tool_context = graph_manager_tools.export_report_context.invoke({})
+            outline_json = Path(temp_dir, ".report_outline.json")
+            assert outline_json.exists()
+            outline_payload = json.loads(outline_json.read_text(encoding="utf-8"))
+            assert outline_payload["planning_assets"]["query_evidence_digests"]
+            assert tool_context["query_evidence_digests"]
             outline = graph_manager_tools.commit_report_outline.invoke({
                 "title": "机器人公司研究",
                 "chapters": [{
@@ -236,6 +295,16 @@ def main():
             bundle = graph_manager_tools.prepare_report_chapter_bundle.invoke({"chapter_id": 1})
             assert bundle["status"] == "ok" and bundle["chapter_title"] == "公司与融资"
             assert {item["id"] for item in bundle["evidence_items"]} == {"e1", "c1"}
+            assert bundle["section_brief"]["focus_queries"][0]["query_id"] == "q1"
+            assert bundle["top_evidence_items"]
+            assert bundle["query_evidence_digests"][0]["query_id"] == "q1"
+            assert bundle["lead_candidates"]
+            assert bundle["comparison_slots"] == []
+            chapter_meta = json.loads(
+                Path(temp_dir, ".report_chapters", "chapter_01.meta.json").read_text(encoding="utf-8")
+            )
+            assert chapter_meta["section_brief"]["chapter_title"] == "公司与融资"
+            assert chapter_meta["top_evidence_ids"]
             chapter = graph_manager_tools.commit_report_chapter.invoke({
                 "chapter_id": 1,
                 "title": "公司与融资",
@@ -293,8 +362,6 @@ def main():
     finally:
         for name, original in originals.items():
             setattr(graph_tools, name, original)
-
-    print("ALL REPORT DELIVERY CHECKS PASSED")
 
 
 if __name__ == "__main__":

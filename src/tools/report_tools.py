@@ -373,8 +373,268 @@ def get_report_evidence(query_id: str, offset: int = 0, limit: int = 20) -> dict
     }
 
 
+def _all_report_evidence_items(query_id: str) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """Return all citation-ready evidence items for one Query."""
+    first_page = get_report_evidence(query_id, offset=0, limit=100)
+    if first_page.get("error"):
+        return {"id": query_id}, []
+    query_info = dict(first_page.get("query") or {"id": query_id})
+    items = list(first_page.get("items") or [])
+    next_offset = first_page.get("next_offset")
+    while next_offset is not None:
+        page = get_report_evidence(query_id, offset=int(next_offset), limit=100)
+        items.extend(page.get("items") or [])
+        next_offset = page.get("next_offset")
+    return query_info, items
+
+
+def _normalize_digest_lines(value: Any) -> list[str]:
+    """Return a normalized list of digest lines from one Query property."""
+    if isinstance(value, list):
+        return [str(item).strip() for item in value if str(item).strip()]
+    if isinstance(value, str) and value.strip():
+        return [value.strip()]
+    return []
+
+
+def _dedupe_preserve_order(values: list[str]) -> list[str]:
+    """Return unique non-empty values in first-seen order."""
+    return list(dict.fromkeys([value for value in values if value]))
+
+
+def _importance_rank(value: Any) -> int:
+    """Return a stable numeric rank for Query importance labels."""
+    return {"core": 3, "supporting": 2, "peripheral": 1}.get(str(value or "").lower(), 0)
+
+
+def _candidate_from_item(item: dict[str, Any], query_id: str) -> dict[str, Any]:
+    """Project one evidence item into a lightweight reusable candidate shape."""
+    return {
+        "text": str(item.get("text") or "").strip(),
+        "query_ids": [query_id],
+        "evidence_ids": [str(item.get("id") or "").strip()] if str(item.get("id") or "").strip() else [],
+        "source_ids": [str(source_id).strip() for source_id in item.get("source_ids") or [] if str(source_id).strip()],
+    }
+
+
+def _merge_candidates(candidates: list[dict[str, Any]], limit: int = 5) -> list[dict[str, Any]]:
+    """Merge candidates by text and keep the highest-coverage subset."""
+    merged: dict[str, dict[str, Any]] = {}
+    for candidate in candidates:
+        text = str(candidate.get("text") or "").strip()
+        if not text:
+            continue
+        current = merged.setdefault(text, {"text": text, "query_ids": [], "evidence_ids": [], "source_ids": []})
+        current["query_ids"] = _dedupe_preserve_order(current["query_ids"] + list(candidate.get("query_ids") or []))
+        current["evidence_ids"] = _dedupe_preserve_order(current["evidence_ids"] + list(candidate.get("evidence_ids") or []))
+        current["source_ids"] = _dedupe_preserve_order(current["source_ids"] + list(candidate.get("source_ids") or []))
+    ranked = sorted(
+        merged.values(),
+        key=lambda item: (-len(item["query_ids"]), -len(item["source_ids"]), item["text"]),
+    )
+    return ranked[:limit]
+
+
+def _comparison_requested(query_digests: list[dict[str, Any]], title: str = "", section_plan: str = "") -> bool:
+    """Return whether one section should receive comparison scaffolding."""
+    if len(query_digests) >= 2:
+        return True
+    haystack = f"{title}\n{section_plan}".lower()
+    return any(keyword in haystack for keyword in ("比较", "对比", " vs ", "difference", "comparison"))
+
+
+def _build_comparison_slots(
+    query_digests: list[dict[str, Any]],
+    *,
+    title: str = "",
+    section_plan: str = "",
+) -> list[dict[str, Any]]:
+    """Build chapter- or report-level comparison scaffolds from query digests."""
+    if not _comparison_requested(query_digests, title=title, section_plan=section_plan):
+        return []
+    supporting_points: list[dict[str, Any]] = []
+    query_ids: list[str] = []
+    evidence_ids: list[str] = []
+    source_ids: list[str] = []
+    for digest in query_digests:
+        query_id = str(digest.get("query_id") or "").strip()
+        if not query_id:
+            continue
+        query_ids.append(query_id)
+        evidence_ids.extend(digest.get("top_evidence_ids") or [])
+        source_ids.extend(digest.get("top_source_ids") or [])
+        text = next((line for line in digest.get("digest_lines") or [] if str(line).strip()), "")
+        if not text:
+            continue
+        supporting_points.append({
+            "query_id": query_id,
+            "query_handle": digest.get("query_handle"),
+            "text": text,
+            "evidence_ids": list(digest.get("top_evidence_ids") or []),
+            "source_ids": list(digest.get("top_source_ids") or []),
+        })
+    if not supporting_points:
+        return []
+    return [{
+        "slot_label": title or "Cross-query comparison",
+        "query_ids": _dedupe_preserve_order(query_ids),
+        "evidence_ids": _dedupe_preserve_order(evidence_ids),
+        "source_ids": _dedupe_preserve_order(source_ids),
+        "supporting_points": supporting_points,
+    }]
+
+
+def build_report_planning_assets(query_ids: Optional[list[str]] = None) -> dict[str, Any]:
+    """Build reusable compressed writing assets for Reporter-facing tools."""
+    wanted_query_ids = {
+        str(query_id).strip()
+        for query_id in query_ids or []
+        if str(query_id).strip()
+    }
+    queries = sorted(
+        graph_tools.search_nodes("query", {}),
+        key=lambda query: (_importance_rank(query.get("importance")), query.get("id") or ""),
+        reverse=True,
+    )
+    if wanted_query_ids:
+        queries = [query for query in queries if str(query.get("id") or "").strip() in wanted_query_ids]
+
+    query_digests: list[dict[str, Any]] = []
+    raw_candidates: list[dict[str, Any]] = []
+    entity_group_candidates: dict[str, list[dict[str, Any]]] = {}
+
+    for query in queries:
+        query_id = str(query.get("id") or "").strip()
+        if not query_id:
+            continue
+        query_info, all_items = _all_report_evidence_items(query_id)
+        items_by_id = {str(item.get("id") or ""): item for item in all_items}
+
+        explicit_top_ids = [
+            str(item_id).strip()
+            for item_id in query.get("top_evidence_ids") or []
+            if str(item_id).strip()
+        ]
+        top_items = [items_by_id[item_id] for item_id in explicit_top_ids if item_id in items_by_id]
+        if len(top_items) < 3:
+            for item in all_items:
+                item_id = str(item.get("id") or "").strip()
+                if item_id and item_id not in {str(existing.get("id") or "") for existing in top_items}:
+                    top_items.append(item)
+                if len(top_items) >= 3:
+                    break
+        digest_lines = _normalize_digest_lines(query.get("evidence_digest"))
+        if not digest_lines:
+            digest_lines = [str(item.get("text") or "").strip() for item in top_items if str(item.get("text") or "").strip()][:3]
+
+        top_source_ids = _dedupe_preserve_order([
+            str(source_id).strip()
+            for item in top_items
+            for source_id in item.get("source_ids") or []
+            if str(source_id).strip()
+        ])
+        top_evidence_ids = _dedupe_preserve_order([
+            str(item.get("id") or "").strip()
+            for item in top_items
+            if str(item.get("id") or "").strip()
+        ])
+
+        query_digest = {
+            "query_id": query_id,
+            "query_handle": query_info.get("handle") or query.get("handle"),
+            "query_text": query_info.get("text") or query.get("text"),
+            "importance": query.get("importance"),
+            "source_count_snapshot": query.get("source_count_snapshot"),
+            "top_evidence_ids": top_evidence_ids,
+            "top_source_ids": top_source_ids,
+            "digest_lines": digest_lines,
+        }
+        query_digests.append(query_digest)
+
+        for item in top_items:
+            raw_candidates.append(_candidate_from_item(item, query_id))
+
+        subject_key = str(query.get("search_subject_key") or "").strip()
+        if subject_key:
+            entity_group_candidates.setdefault(subject_key, []).extend(
+                _candidate_from_item(item, query_id)
+                for item in top_items
+            )
+
+    lead_candidates = _merge_candidates(raw_candidates, limit=5)
+    comparison_slots = _build_comparison_slots(query_digests)
+    entity_profiles = []
+    for entity_key, candidates in entity_group_candidates.items():
+        merged = _merge_candidates(candidates, limit=3)
+        if not merged:
+            continue
+        entity_profiles.append({
+            "entity_key": entity_key,
+            "display_label": entity_key,
+            "query_ids": _dedupe_preserve_order([
+                query_id for item in merged for query_id in item.get("query_ids") or []
+            ]),
+            "evidence_ids": _dedupe_preserve_order([
+                evidence_id for item in merged for evidence_id in item.get("evidence_ids") or []
+            ]),
+            "source_ids": _dedupe_preserve_order([
+                source_id for item in merged for source_id in item.get("source_ids") or []
+            ]),
+            "profile_points": [item["text"] for item in merged if item.get("text")],
+        })
+
+    return {
+        "query_evidence_digests": query_digests,
+        "lead_candidates": lead_candidates,
+        "comparison_slots": comparison_slots,
+        "entity_profiles": entity_profiles,
+    }
+
+
+def persist_report_planning_assets(output_dir: Optional[str], planning_assets: dict[str, Any]) -> dict[str, Any]:
+    """Persist global Reporter planning assets into the outline artifact."""
+    path = _outline_path(output_dir)
+    outline = _read_json_file(path)
+    outline.setdefault("title", "Research Report")
+    outline.setdefault("chapters", [])
+    outline["planning_assets"] = {
+        "query_evidence_digests": list(planning_assets.get("query_evidence_digests") or []),
+        "lead_candidates": list(planning_assets.get("lead_candidates") or []),
+        "comparison_slots": list(planning_assets.get("comparison_slots") or []),
+        "entity_profiles": list(planning_assets.get("entity_profiles") or []),
+    }
+    _write_json_file(path, outline)
+    return outline
+
+
+def _subset_planning_assets(
+    planning_assets: dict[str, Any],
+    query_ids: list[str],
+) -> dict[str, list[dict[str, Any]]]:
+    """Return the subset of planning assets relevant to one chapter."""
+    wanted = set(query_ids)
+
+    def relevant(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        return [
+            item
+            for item in items or []
+            if wanted.intersection(str(query_id).strip() for query_id in item.get("query_ids") or [])
+        ]
+
+    return {
+        "query_evidence_digests": [
+            item for item in planning_assets.get("query_evidence_digests") or []
+            if str(item.get("query_id") or "").strip() in wanted
+        ],
+        "lead_candidates": relevant(planning_assets.get("lead_candidates") or []),
+        "comparison_slots": relevant(planning_assets.get("comparison_slots") or []),
+        "entity_profiles": relevant(planning_assets.get("entity_profiles") or []),
+    }
+
+
 def commit_report_outline(output_dir: Optional[str], title: str, chapters: list[dict]) -> dict[str, Any]:
     """Persist the chapter-level report outline for the current run."""
+    existing = _read_json_file(_outline_path(output_dir))
     normalized: list[dict[str, Any]] = []
     seen_ids: set[int] = set()
     for index, chapter in enumerate(chapters or [], start=1):
@@ -394,7 +654,12 @@ def commit_report_outline(output_dir: Optional[str], title: str, chapters: list[
             "section_plan": str(chapter.get("section_plan") or "").strip(),
             "status": str(chapter.get("status") or "pending"),
         })
-    outline = {"title": str(title).strip() or "Research Report", "chapters": normalized}
+    outline = {
+        "title": str(title).strip() or "Research Report",
+        "chapters": normalized,
+    }
+    if existing.get("planning_assets"):
+        outline["planning_assets"] = existing["planning_assets"]
     _write_json_file(_outline_path(output_dir), outline)
     _outline_markdown_path(output_dir).write_text(
         _render_outline_markdown(outline["title"], normalized),
@@ -446,6 +711,79 @@ def prepare_report_chapter_bundle(
         for item in evidence_items
         for source_id in item.get("source_ids") or []
     })
+    planning_assets = outline.get("planning_assets") or build_report_planning_assets(query_ids)
+    chapter_assets = _subset_planning_assets(planning_assets, query_ids)
+    top_evidence_items: list[dict[str, Any]] = []
+    seen_top_items: set[str] = set()
+    evidence_items_by_id = {
+        str(item.get("id") or "").strip(): item
+        for item in evidence_items
+        if str(item.get("id") or "").strip()
+    }
+    for digest in chapter_assets["query_evidence_digests"]:
+        for item_id in digest.get("top_evidence_ids") or []:
+            resolved = evidence_items_by_id.get(str(item_id).strip())
+            if not resolved or resolved["id"] in seen_top_items:
+                continue
+            top_evidence_items.append(resolved)
+            seen_top_items.add(resolved["id"])
+            if len(top_evidence_items) >= 8:
+                break
+        if len(top_evidence_items) >= 8:
+            break
+    if len(top_evidence_items) < 8:
+        for item in evidence_items:
+            if item["id"] in seen_top_items:
+                continue
+            top_evidence_items.append(item)
+            seen_top_items.add(item["id"])
+            if len(top_evidence_items) >= 8:
+                break
+
+    chapter_comparison_slots = _build_comparison_slots(
+        chapter_assets["query_evidence_digests"],
+        title=str(chapter.get("title") or ""),
+        section_plan=str(chapter.get("section_plan") or ""),
+    )
+    relevant_conflicts = [
+        conflict
+        for conflict in get_disclosed_conflicts()
+        if set(conflict.get("source_ids") or []).intersection(source_ids)
+    ]
+    summary_lines = [
+        item["text"]
+        for item in chapter_assets["lead_candidates"][:2]
+        if str(item.get("text") or "").strip()
+    ] or [
+        line
+        for digest in chapter_assets["query_evidence_digests"][:2]
+        for line in digest.get("digest_lines")[:1]
+        if str(line).strip()
+    ]
+    section_brief = {
+        "chapter_id": int(chapter_id),
+        "chapter_title": chapter.get("title"),
+        "chapter_goals": chapter.get("goals") or [],
+        "section_plan": chapter.get("section_plan") or "",
+        "focus_queries": [
+            {
+                "query_id": digest.get("query_id"),
+                "query_handle": digest.get("query_handle"),
+                "query_text": digest.get("query_text"),
+            }
+            for digest in chapter_assets["query_evidence_digests"]
+        ],
+        "summary": " ".join(summary_lines).strip(),
+        "coverage_notes": [
+            note
+            for note in (
+                f"top_evidence_items={len(top_evidence_items)}",
+                f"disclosed_conflicts={len(relevant_conflicts)}",
+                "comparison scaffolding available" if chapter_comparison_slots else "comparison scaffolding not needed",
+            )
+            if note
+        ],
+    }
     bundle = {
         "status": "ok",
         "chapter_id": int(chapter_id),
@@ -453,16 +791,18 @@ def prepare_report_chapter_bundle(
         "chapter_goals": chapter.get("goals") or [],
         "section_plan": chapter.get("section_plan") or "",
         "query_ids": query_ids,
+        "section_brief": section_brief,
         "evidence_items": evidence_items,
+        "top_evidence_items": top_evidence_items,
+        "query_evidence_digests": chapter_assets["query_evidence_digests"],
+        "lead_candidates": chapter_assets["lead_candidates"],
+        "comparison_slots": chapter_comparison_slots,
+        "entity_profiles": chapter_assets["entity_profiles"],
         "reference_registry_subset": [
             entry for entry in build_reference_registry()
             if entry.get("source_id") in source_ids
         ],
-        "disclosed_conflicts": [
-            conflict
-            for conflict in get_disclosed_conflicts()
-            if set(conflict.get("source_ids") or []).intersection(source_ids)
-        ],
+        "disclosed_conflicts": relevant_conflicts,
     }
     meta = {
         "chapter_id": int(chapter_id),
@@ -470,6 +810,17 @@ def prepare_report_chapter_bundle(
         "query_ids": query_ids,
         "source_ids": source_ids,
         "evidence_ids": [item["id"] for item in evidence_items],
+        "section_brief": section_brief,
+        "top_evidence_ids": [item["id"] for item in top_evidence_items],
+        "top_source_ids": _dedupe_preserve_order([
+            source_id
+            for item in top_evidence_items
+            for source_id in item.get("source_ids") or []
+        ]),
+        "query_evidence_digests": chapter_assets["query_evidence_digests"],
+        "lead_candidates": chapter_assets["lead_candidates"],
+        "comparison_slots": chapter_comparison_slots,
+        "entity_profiles": chapter_assets["entity_profiles"],
     }
     _write_json_file(_chapter_meta_path(output_dir, int(chapter_id)), meta)
     return bundle
@@ -507,7 +858,9 @@ def commit_report_chapter(
 
     chapter_file = _chapter_path(output_dir, int(chapter_id))
     chapter_file.write_text(str(content).strip() + "\n", encoding="utf-8")
+    existing_meta = _read_json_file(_chapter_meta_path(output_dir, int(chapter_id)))
     _write_json_file(_chapter_meta_path(output_dir, int(chapter_id)), {
+        **existing_meta,
         "chapter_id": int(chapter_id),
         "title": chapter["title"],
         "source_ids": chapter["source_ids"],

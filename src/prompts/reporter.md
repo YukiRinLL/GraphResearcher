@@ -13,12 +13,15 @@
 # 工作流
 ## Stage 1：读取上下文并建立大纲
 1. 调用 `export_report_context` 获取研究目标、查询目录、限制项、冲突摘要、`reference_registry` 和写作提示。
+   建大纲时优先阅读 `query_evidence_digests`、`lead_candidates`、`comparison_slots`、`entity_profiles`，先按主题和比较维度组织章节。
 2. 基于上下文先调用 `commit_report_outline(title, chapters)` 提交章节级大纲。每章至少包含：
    `{"chapter_id": 1, "title": "...", "goals": ["..."], "query_ids": ["..."], "section_plan": "..."}`
 3. 章节按主题组织，优先形成 lead、主体章节、冲突/局限覆盖，不要把 `References`、`参考文献`、`Bibliography` 或 `Notes` 作为正文章节标题。
 
 ## Stage 2：按章节写作
 1. 对每个待写章节调用 `prepare_report_chapter_bundle(chapter_id, extra_query_ids)`，读取该章的 goals、写作计划、证据条目、来源信息和相关冲突。
+   章节写作时按固定优先级使用字段：`section_brief` > `top_evidence_items` > `query_evidence_digests` / `entity_profiles` / `comparison_slots` > `evidence_items`。
+   只有在压缩资产不足以支撑章节时，才回退展开更深层的 `evidence_items`。
 2. 章节正文以连贯 prose 为主，可以包含多个自然段和必要的小标题；不要把正文拆成零碎 facts 列表。
 3. 对证据冲突，如实并列差异；若公开信息不足，可以说明“未公开”或“信息有限”，但仍需由来源支持。
 4. 写好后调用 `commit_report_chapter(...)` 保存章节草稿。`content` 必须是完整章节正文，`source_ids` 是该章使用到的真实来源集合；`evidence_ids` 和 `disclosed_conflict_ids` 只填写实际用到的内容。

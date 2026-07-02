@@ -263,7 +263,16 @@ def submit_search_result(search_run_id: str, query_id: str, evidence_package: di
 @tool
 def export_report_context(goal_id: Optional[str] = None) -> dict:
     """Export compact report metadata after the reporter gate authorizes writing."""
-    return _mm().export_report_context(goal_id)
+    from tools import report_tools
+
+    context = _mm().export_report_context(goal_id)
+    report_tools.persist_report_planning_assets(_cache_dir, {
+        "query_evidence_digests": context.get("query_evidence_digests") or [],
+        "lead_candidates": context.get("lead_candidates") or [],
+        "comparison_slots": context.get("comparison_slots") or [],
+        "entity_profiles": context.get("entity_profiles") or [],
+    })
+    return context
 
 
 @tool

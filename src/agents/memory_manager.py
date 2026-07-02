@@ -2146,8 +2146,14 @@ class MemoryManager:
         is_wikipedia_task = "wikipedia" in request_text.lower()
         sorted_queries = sorted(
             graph_tools.search_nodes("query", {}),
-            key=lambda query: (query.get("importance") or 0, query.get("id") or ""),
+            key=lambda query: (
+                {"core": 3, "supporting": 2, "peripheral": 1}.get(str(query.get("importance") or "").lower(), 0),
+                query.get("id") or "",
+            ),
             reverse=True,
+        )
+        planning_assets = report_tools.build_report_planning_assets(
+            [str(query.get("id") or "").strip() for query in sorted_queries if str(query.get("id") or "").strip()]
         )
         return {
             "goal": {
@@ -2177,6 +2183,10 @@ class MemoryManager:
             "limitations": limitations,
             "disclosed_conflicts": report_tools.get_disclosed_conflicts(),
             "reference_registry": report_tools.build_reference_registry(),
+            "query_evidence_digests": planning_assets["query_evidence_digests"],
+            "lead_candidates": planning_assets["lead_candidates"],
+            "comparison_slots": planning_assets["comparison_slots"],
+            "entity_profiles": planning_assets["entity_profiles"],
             "writing_hints": {
                 "default_structure": (
                     "lead + topic sections + conflict/limitation coverage + unified references"
