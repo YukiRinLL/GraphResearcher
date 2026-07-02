@@ -19,6 +19,7 @@ import logging
 import re
 from pathlib import Path
 from typing import Any, Optional
+from urllib.parse import urlparse
 
 from memory.graph import EdgeType
 from tools import graph_tools
@@ -63,6 +64,13 @@ _PLACEHOLDER_RE = re.compile(
 )
 _EXTERNAL_FILE_RE = re.compile(
     r"详见附件|保存在.+文件|see full.+file|stored in.+file|详见.+chapter_\d+|详见.+draft\.md",
+    re.IGNORECASE,
+)
+_TIMESTAMP_NODE_ID_RE = re.compile(r"\b20\d{12,20}_[0-9a-f]{6,12}\b", re.IGNORECASE)
+_SHORT_INTERNAL_ID_RE = re.compile(r"(?<![A-Za-z0-9_])(st\d{1,6}|e\d{1,6}|c\d{1,6})(?![A-Za-z0-9_])")
+_EVIDENCE_LABEL_RE = re.compile(
+    r"(?:证据|evidence|claim|statement)(?:_id| id|编号)?\s*[:：]\s*"
+    r"(?:20\d{12,20}_[0-9a-f]{6,12}|st\d{1,6}|e\d{1,6}|c\d{1,6})",
     re.IGNORECASE,
 )
 _NO_FINDINGS_TEXT = {"暂无可核实结论。", "No verifiable findings are available."}
@@ -149,6 +157,81 @@ def _render_outline_markdown(title: str, chapters: list[dict[str, Any]]) -> str:
     return "\n".join(lines).strip() + "\n"
 
 
+def _goal_source_blocklist() -> set[str]:
+    """Return normalized blocked source domains declared on the current goal."""
+    from tools import research_state
+
+    goal = research_state.get_goal()
+    raw_values: list[str] = []
+    for key in (
+        "forbidden_sources",
+        "forbidden_source_domains",
+        "blocked_source_domains",
+        "source_blocklist",
+        "source_exclude_domains",
+    ):
+        value = goal.get(key)
+        if isinstance(value, list):
+            raw_values.extend(str(item).strip() for item in value if str(item).strip())
+        elif isinstance(value, str) and value.strip():
+            raw_values.extend(
+                bit.strip() for bit in re.split(r"[,;\n]", value) if bit.strip()
+            )
+    for item in goal.get("source_preferences") or []:
+        text = str(item).strip()
+        lowered = text.lower()
+        if lowered.startswith(("exclude:", "avoid:", "forbid:", "blocked:")):
+            raw_values.append(text.split(":", 1)[1].strip())
+        elif text.startswith("!"):
+            raw_values.append(text[1:].strip())
+
+    blocked: set[str] = set()
+    for value in raw_values:
+        if not value:
+            continue
+        normalized = value if "://" in value else f"https://{value}"
+        domain = urlparse(normalized).netloc.lower()
+        if domain.startswith("www."):
+            domain = domain[4:]
+        if domain:
+            blocked.add(domain)
+    return blocked
+
+
+def _source_domain(source: dict[str, Any]) -> str:
+    """Return one normalized Source domain for blocklist checks."""
+    url = str(source.get("url") or "").strip()
+    if not url:
+        return ""
+    domain = urlparse(url).netloc.lower()
+    if domain.startswith("www."):
+        domain = domain[4:]
+    return domain
+
+
+def _matches_blocked_domain(domain: str, blocked: set[str]) -> bool:
+    """Return whether one source domain matches the run's blocklist."""
+    return any(domain == item or domain.endswith(f".{item}") for item in blocked)
+
+
+def _internal_id_issues(report_text: str) -> list[str]:
+    """Return user-visible internal graph identifier leaks."""
+    text = report_text or ""
+    issues: list[str] = []
+    for match in _TIMESTAMP_NODE_ID_RE.finditer(text):
+        issues.append(f"internal node id leaked into report: {match.group(0)}")
+    for match in _EVIDENCE_LABEL_RE.finditer(text):
+        issues.append(f"internal evidence label leaked into report: {match.group(0)}")
+    for match in _SHORT_INTERNAL_ID_RE.finditer(text):
+        token = match.group(1)
+        start = max(0, match.start() - 8)
+        end = min(len(text), match.end() + 8)
+        window = text[start:end]
+        if re.search(r"[（(,，;；:\s]", window) or re.search(r"[）),，;；:\s]", window):
+            issues.append(f"internal short id leaked into report: {token}")
+    return list(dict.fromkeys(issues))
+
+
 def build_reference_registry() -> list[dict]:
     """Return the canonical, URL-deduped, stably-numbered reference registry.
 
@@ -200,7 +283,6 @@ def _source_ids_for_item(item_id: str, nodes: dict[str, dict], edges: list[dict]
     for edge in edges:
         source = edge.get("source")
         target = edge.get("target")
-        edge_type = str(edge.get("type") or "").lower()
         if target == item_id and is_type(source, "Source"):
             source_ids.add(source)
         if target == item_id and is_type(source, "Document"):
@@ -552,6 +634,7 @@ def validate_delivery_invariants(report_text: str) -> list[str]:
     issues: list[str] = []
     if _FORBIDDEN_META_RE.search(text):
         issues.append("forbidden internal-process or service-offer prose")
+    issues.extend(_internal_id_issues(text))
     references = _reference_entries(text)
     for unit in _body_units(text):
         if unit in _NO_FINDINGS_TEXT:
@@ -893,7 +976,7 @@ def compile_structured_report(title: str, sections: list[dict]) -> dict:
         if not source_ids or invalid:
             issues.append(_issue(
                 "invalid_source_ids",
-                "soft",
+                "hard",
                 f"section {section_title!r} requires valid URL-backed source_ids",
                 "Replace missing or invalid source_ids with valid URL-backed sources for this section.",
                 section_title=section_title,
@@ -1450,6 +1533,7 @@ def validate_final_report(report_text: str) -> list[str]:
     """Return final-report consistency violations."""
     text = report_text or ""
     issues = _validate_compiled_report_content(text)
+    issues.extend(_internal_id_issues(text))
     ref_match = _REF_HEADING_RE.search(text)
     body = text[: ref_match.start()] if ref_match else text
     sections = _parse_sections(body)
@@ -1459,6 +1543,7 @@ def validate_final_report(report_text: str) -> list[str]:
     goal = research_state.get_goal()
     years = [int(year) for year in re.findall(r"\b(?:19|20)\d{2}\b", str(goal.get("time_window") or ""))]
     references = _reference_sources(text)
+    blocked_domains = _goal_source_blocklist()
     if years and references:
         lower, upper = min(years), max(years)
         for section in sections:
@@ -1475,6 +1560,15 @@ def validate_final_report(report_text: str) -> list[str]:
                     issues.append(
                         f"out-of-window source cited outside a background section: "
                         f"{section['title']} [{citation}]"
+                    )
+    if blocked_domains and references:
+        for section in sections:
+            for citation in section["cites"]:
+                source = references.get(citation, {})
+                domain = _source_domain(source)
+                if domain and _matches_blocked_domain(domain, blocked_domains):
+                    issues.append(
+                        f"forbidden source cited in report: {section['title']} [{citation}] {domain}"
                     )
     for section in graph_tools.search_nodes("report_section", {}):
         if len(str(section.get("content") or "").strip()) < 80:

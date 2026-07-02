@@ -52,6 +52,11 @@ _QID_RE = re.compile(r"(?:query_id|Query ID|queryId|qid|id)[=:]\s*([a-f0-9_]+)",
 _MAX_DEBUG_SEARCH_OUTPUT_CHARS = 30_000
 _MAX_SOURCE_RAW_CHARS = 20_000
 _DEFAULT_MAX_RESULTS = 5
+_PER_SOURCE_STATEMENT_CAP = 6
+_PER_SOURCE_EVIDENCE_CAP = 8
+_PER_QUERY_STATEMENT_CAP = 24
+_PER_QUERY_EVIDENCE_CAP = 24
+_QUERY_DIGEST_LIMIT = 5
 
 _EMPTY_PACKAGE: dict = {
     "sources": [],
@@ -250,6 +255,173 @@ def _parse_source_packet(text: str) -> dict:
     return data
 
 
+def _normalize_text(text: Any) -> str:
+    """Collapse whitespace so salience and dedup run on stable text."""
+    return re.sub(r"\s+", " ", str(text or "")).strip()
+
+
+def _query_terms(query_text: str) -> set[str]:
+    """Return lowercase query tokens useful for simple salience scoring."""
+    return {
+        token
+        for token in re.findall(r"[A-Za-z0-9\u4e00-\u9fff]{2,}", str(query_text or "").lower())
+        if len(token) >= 2
+    }
+
+
+def _text_fingerprint(text: str) -> str:
+    """Return a lightweight near-duplicate key."""
+    tokens = re.findall(r"[A-Za-z0-9\u4e00-\u9fff]{2,}", text.lower())
+    if not tokens:
+        return text.lower()
+    return " ".join(tokens[:24])
+
+
+def _confidence_bonus(confidence: Any) -> float:
+    """Return a small score bonus from the model's confidence label."""
+    return {"high": 0.3, "medium": 0.15, "low": 0.0}.get(str(confidence or "").lower(), 0.0)
+
+
+def _salience_score(query_text: str, item: dict[str, Any]) -> float:
+    """Score one statement/evidence item by topical overlap and specificity."""
+    text = _normalize_text(item.get("text"))
+    if not text:
+        return 0.0
+    terms = _query_terms(query_text)
+    text_tokens = set(re.findall(r"[A-Za-z0-9\u4e00-\u9fff]{2,}", text.lower()))
+    overlap = len(terms & text_tokens)
+    digits_bonus = 0.1 if re.search(r"\d", text) else 0.0
+    locator_bonus = 0.1 if item.get("locator") else 0.0
+    qualifier_bonus = 0.05 * min(2, len(item.get("qualifiers") or []))
+    limitation_bonus = 0.05 * min(2, len(item.get("limitations") or []))
+    return overlap + digits_bonus + locator_bonus + qualifier_bonus + limitation_bonus + _confidence_bonus(item.get("confidence"))
+
+
+def _filter_packet_items(
+    query_text: str,
+    items: list[dict[str, Any]],
+    *,
+    cap: int,
+) -> list[dict[str, Any]]:
+    """Normalize, rank, and deduplicate one source packet item list."""
+    best_by_fingerprint: dict[str, tuple[float, dict[str, Any]]] = {}
+    for raw_item in items or []:
+        if not isinstance(raw_item, dict):
+            continue
+        normalized = dict(raw_item)
+        normalized["text"] = _normalize_text(raw_item.get("text"))
+        if not normalized["text"]:
+            continue
+        normalized["qualifiers"] = raw_item.get("qualifiers") if isinstance(raw_item.get("qualifiers"), list) else []
+        normalized["limitations"] = raw_item.get("limitations") if isinstance(raw_item.get("limitations"), list) else []
+        score = _salience_score(query_text, normalized)
+        fingerprint = _text_fingerprint(normalized["text"])
+        current = best_by_fingerprint.get(fingerprint)
+        if current is None or score > current[0]:
+            best_by_fingerprint[fingerprint] = (score, normalized)
+
+    ranked = sorted(
+        best_by_fingerprint.values(),
+        key=lambda item: (-item[0], item[1]["text"].lower()),
+    )
+    return [item for _, item in ranked[:cap]]
+
+
+def _filter_source_packet(query_text: str, packet: dict[str, Any]) -> dict[str, Any]:
+    """Apply per-source extraction caps before the merged package is built."""
+    filtered = dict(_EMPTY_SOURCE_PACKET)
+    filtered["source"] = packet.get("source") if isinstance(packet.get("source"), dict) else {}
+    filtered["document"] = packet.get("document") if isinstance(packet.get("document"), dict) else {}
+    filtered["statements"] = _filter_packet_items(
+        query_text,
+        packet.get("statements") or [],
+        cap=_PER_SOURCE_STATEMENT_CAP,
+    )
+    filtered["evidence"] = _filter_packet_items(
+        query_text,
+        packet.get("evidence") or [],
+        cap=_PER_SOURCE_EVIDENCE_CAP,
+    )
+    kept_refs = {
+        str(item.get("local_ref") or "").strip()
+        for item in filtered["evidence"]
+        if str(item.get("local_ref") or "").strip()
+    }
+    filtered["conflicts"] = [
+        conflict
+        for conflict in packet.get("conflicts") or []
+        if isinstance(conflict, dict)
+        and any(str(ref).strip() in kept_refs for ref in conflict.get("evidence_refs") or [])
+    ]
+    return filtered
+
+
+def _trim_package_items(
+    query_text: str,
+    items: list[dict[str, Any]],
+    *,
+    cap: int,
+) -> list[dict[str, Any]]:
+    """Apply one query-level cap while keeping the most salient unique items."""
+    best_by_fingerprint: dict[str, tuple[float, dict[str, Any]]] = {}
+    for item in items or []:
+        normalized = dict(item)
+        normalized["text"] = _normalize_text(item.get("text"))
+        if not normalized["text"]:
+            continue
+        score = _salience_score(query_text, normalized)
+        fingerprint = _text_fingerprint(normalized["text"])
+        current = best_by_fingerprint.get(fingerprint)
+        if current is None or score > current[0]:
+            best_by_fingerprint[fingerprint] = (score, normalized)
+    ranked = sorted(
+        best_by_fingerprint.values(),
+        key=lambda item: (-item[0], item[1]["text"].lower(), item[1].get("local_ref", "")),
+    )
+    return [item for _, item in ranked[:cap]]
+
+
+def _prune_package(package: dict[str, Any]) -> dict[str, Any]:
+    """Drop sources, documents, and conflicts that no longer back kept facts."""
+    kept_document_refs = {
+        str(item.get("document_ref") or "").strip()
+        for bucket in ("statements", "evidence")
+        for item in package.get(bucket) or []
+        if str(item.get("document_ref") or "").strip()
+    }
+    kept_source_refs = {
+        str(item.get("source_ref") or "").strip()
+        for bucket in ("statements", "evidence")
+        for item in package.get(bucket) or []
+        if str(item.get("source_ref") or "").strip()
+    }
+    kept_evidence_refs = {
+        str(item.get("local_ref") or "").strip()
+        for item in package.get("evidence") or []
+        if str(item.get("local_ref") or "").strip()
+    }
+    package["documents"] = [
+        item for item in package.get("documents") or []
+        if str(item.get("local_ref") or "").strip() in kept_document_refs
+    ]
+    package["sources"] = [
+        item for item in package.get("sources") or []
+        if str(item.get("local_ref") or "").strip() in kept_source_refs
+    ]
+    package["conflicts"] = [
+        {
+            **item,
+            "evidence_refs": [
+                ref for ref in item.get("evidence_refs") or []
+                if str(ref).strip() in kept_evidence_refs
+            ],
+        }
+        for item in package.get("conflicts") or []
+        if any(str(ref).strip() in kept_evidence_refs for ref in item.get("evidence_refs") or [])
+    ]
+    return package
+
+
 def _extract_source_packet(query_text: str, source: dict[str, Any]) -> dict:
     """Run one source-level extraction pass."""
     source_payload = {
@@ -359,6 +531,23 @@ def _merge_source_packets(search_results: dict, packets: list[dict]) -> dict:
     return package
 
 
+def _apply_extraction_controls(search_results: dict, packets: list[dict], query_text: str) -> dict:
+    """Run the full source-level and query-level extraction control pipeline."""
+    filtered_packets = [_filter_source_packet(query_text, packet) for packet in packets if isinstance(packet, dict)]
+    package = _merge_source_packets(search_results, filtered_packets)
+    package["statements"] = _trim_package_items(
+        query_text,
+        package.get("statements") or [],
+        cap=_PER_QUERY_STATEMENT_CAP,
+    )
+    package["evidence"] = _trim_package_items(
+        query_text,
+        package.get("evidence") or [],
+        cap=_PER_QUERY_EVIDENCE_CAP,
+    )
+    return _prune_package(package)
+
+
 def extract_evidence_package_node(state: SearcherState) -> dict:
     """Extract a structured ``evidence_package`` from source-level Tavily results."""
     search_results = state.get("search_results") or {}
@@ -373,10 +562,14 @@ def extract_evidence_package_node(state: SearcherState) -> dict:
         for source in sources
         if isinstance(source, dict)
     ]
-    ep = _merge_source_packets(search_results, packets)
+    ep = _apply_extraction_controls(search_results, packets, state["query_text"])
     return {
         "evidence_package": ep,
-        "messages": [AIMessage(content=json.dumps({"kept_sources": len(sources)}, ensure_ascii=False))],
+        "messages": [AIMessage(content=json.dumps({
+            "kept_sources": len(ep.get("sources") or []),
+            "kept_statements": len(ep.get("statements") or []),
+            "kept_evidence": len(ep.get("evidence") or []),
+        }, ensure_ascii=False))],
     }
 
 def submit_node(state: SearcherState) -> dict:

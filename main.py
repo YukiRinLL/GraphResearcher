@@ -242,6 +242,24 @@ def _prepare_report_for_delivery(
     return report_text, list(dict.fromkeys(issues)), "evidence_fallback"
 
 
+def _should_mark_report_completed(
+    *,
+    report_saved: bool,
+    state_before_write: str | None,
+    attempt_summary: dict | None,
+    validation_issues: list[str],
+) -> bool:
+    """Return whether a Reporter run qualifies for COMPLETED."""
+    attempt_summary = attempt_summary or {}
+    return (
+        report_saved
+        and state_before_write == "REPORTING"
+        and attempt_summary.get("accepted") is True
+        and attempt_summary.get("revision_requested") is False
+        and not validation_issues
+    )
+
+
 def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
     """Run the research loop for a single request and save the artifacts.
 
@@ -402,7 +420,12 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
                     "report_validation_issues": validation_issues,
                     "report_attempt_summary": attempt_summary_brief,
                 }
-                if report_saved and state_before_write == research_state.REPORTING:
+                if _should_mark_report_completed(
+                    report_saved=report_saved,
+                    state_before_write=state_before_write,
+                    attempt_summary=attempt_summary,
+                    validation_issues=validation_issues,
+                ):
                     goal_update["research_state"] = research_state.COMPLETED
                 research_state.update_goal(goal_update)
                 status_summary = research_state.get_status()

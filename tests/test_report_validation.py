@@ -11,14 +11,19 @@ from tools import graph_tools, report_tools, research_state  # noqa: E402
 
 def main():
     nodes = {
-        "goal": {"id": "goal", "type": "UserRequest", "time_window": "2018-2024"},
+        "goal": {
+            "id": "goal",
+            "type": "UserRequest",
+            "time_window": "2018-2024",
+            "source_preferences": ["!blocked.example.net"],
+        },
         "s1": {
             "id": "s1", "type": "Source", "title": "Current source",
             "url": "https://example.com/current", "published_at": "2023-06-01",
         },
         "s2": {
             "id": "s2", "type": "Source", "title": "Future source",
-            "url": "https://example.com/future", "published_at": "2025-01-01",
+            "url": "https://blocked.example.net/future", "published_at": "2025-01-01",
         },
         "conflict": {
             "id": "conflict", "type": "Conflict", "resolution_status": "disclosed",
@@ -73,7 +78,7 @@ def main():
         "## Findings\n\nTesla Optimus hand parameter conflict. "
         + ("A supported factual sentence. " * 5)
         + "[2]\n\n## References\n\n"
-        + "[2] Future source https://example.com/future"
+        + "[2] Future source https://blocked.example.net/future"
     )
     issues = report_tools.validate_final_report(out_of_window)
     assert any("out-of-window" in issue for issue in issues), issues
@@ -81,6 +86,7 @@ def main():
     background = out_of_window.replace("## Findings", "## Background")
     issues = report_tools.validate_final_report(background)
     assert not any("out-of-window" in issue for issue in issues), issues
+    assert any("forbidden source" in issue for issue in issues), issues
 
     valid = (
         "## Findings\n\nTesla Optimus hand parameter conflict. "
@@ -112,6 +118,8 @@ def main():
 
     internal = valid.replace("A supported factual sentence.", "Research Graph query node.")
     assert any("internal process term" in issue for issue in report_tools.validate_final_report(internal))
+    leaked_ids = valid.replace("A supported factual sentence.", "（证据：20260701222726445506_d4e6f244, e1）")
+    assert any("internal" in issue for issue in report_tools.validate_final_report(leaked_ids))
 
     run21_bad = (
         "## Findings\n\n"

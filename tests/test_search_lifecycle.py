@@ -208,6 +208,9 @@ def main():
     assert result["status"] == "succeeded" and result["written"]["sources"] == 1, result
     assert result["written"]["evidence"] == 1 and NODES["q1"]["status"] == "assessing", result
     assert result["written"]["statements"] == 1 and result["written"]["claims"] == 0, result
+    assert NODES["q1"]["evidence_digest"] == ["valid evidence"], NODES["q1"]
+    assert NODES["q1"]["top_evidence_ids"], NODES["q1"]
+    assert NODES["q1"]["source_count_snapshot"] == 1, NODES["q1"]
     assert any(
         node.get("type") == "Document" and node.get("raw_content") == "full raw content"
         for node in NODES.values()

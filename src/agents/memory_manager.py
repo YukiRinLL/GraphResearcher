@@ -2036,6 +2036,12 @@ class MemoryManager:
         evidence_count = len(evidence_ids)
         statement_count = len(statement_ids)
         succeeded = source_count > 0 and (evidence_count > 0 or statement_count > 0)
+        evidence_digest = [
+            str(_first(item, "statement", "evidence_text", "text_zh", "text") or "").strip()
+            for item in evidence_package.get("evidence", []) or []
+            if str(_first(item, "statement", "evidence_text", "text_zh", "text") or "").strip()
+        ][:5]
+        top_evidence_ids = evidence_ids[:5]
         evidence_keys = {
             _gap_key(_first(item, "statement", "evidence_text", "text_zh", "text") or "")
             for item in evidence_package.get("evidence", []) or []
@@ -2062,17 +2068,22 @@ class MemoryManager:
                 "assessing",
                 successful_search_runs=1,
                 low_novelty_streak=low_streak,
+                evidence_digest=evidence_digest,
+                top_evidence_ids=top_evidence_ids,
+                source_count_snapshot=source_count,
             )
             graph_tools.increment_successful_search_rounds(goal["id"])
             self._bump_portfolio_revision()
         else:
             attempts = int(query.get("search_attempts") or 0)
             next_status = "blocked" if attempts >= 3 else "pending"
-            transition_attributes = (
-                {"block_reason": "three SearchRuns completed without valid Source and Evidence"}
-                if next_status == "blocked"
-                else {}
-            )
+            transition_attributes = {
+                "evidence_digest": evidence_digest,
+                "top_evidence_ids": top_evidence_ids,
+                "source_count_snapshot": source_count,
+            }
+            if next_status == "blocked":
+                transition_attributes["block_reason"] = "three SearchRuns completed without valid Source and Evidence"
             graph_tools.transition_query(resolved_query_id, next_status, **transition_attributes)
             if next_status == "blocked":
                 self._propagate_child_completion(resolved_query_id, "blocked")
@@ -2285,7 +2296,7 @@ class MemoryManager:
     # Internal LLM helpers
     # -----------------------------
     def _plan_initial_queries(self, user_request: str) -> dict:
-        """Author the initial query set from the user request via the planner.
+        """Plan the initial query set from the user request via the planner.
 
         Args:
             user_request: The original research request.
@@ -2306,7 +2317,7 @@ class MemoryManager:
         reason: str,
         max_new: int = 1,
     ) -> list:
-        """Author self-contained follow-up query strings via the planner.
+        """Plan self-contained follow-up query strings via the planner.
 
         Drops any authored query that references another query (a
         self-containment violation) and retries once before giving up.

@@ -1,617 +1,410 @@
 # GraphResearcher 修改方案
 
-本文基于当前 GraphResearcher 代码库撰写，目标不是修补单个 case，而是系统性解决两类问题：
+本文基于当前代码库与 `outputs/run5` 的真实运行结果撰写。目标不是修补单个 prompt，而是结合 Tavily-only 搜索链路已经落地的事实，重新定义下一阶段改造重点。
 
-1. 研究链路偏向“事实可追溯”，没有持续生产“可写作素材”。
-2. 搜索链路没有真正实现“横向铺开 + 纵向深挖”，并且当前收敛逻辑会把“分数涨不动”误判成“报告基本可交付”。
+当前系统已经不再处于“搜索抓不到正文”的阶段。新的主问题是：
+
+1. 搜索输入质量提升后，系统在极少轮次里就会写入大量原子节点，但缺少预算控制、压缩层和交付层过滤。
+2. Reporter 仍然直接面向大量细粒度 evidence 工作，缺少章节级写作资产，导致成稿泄漏内部结构并出现失真。
+3. 收敛与交付校验仍然过宽，已经发现的报告问题不会阻止 run 被标记为 `COMPLETED`。
 
 本文只给方案，不直接改代码。凡是涉及字段、数据结构、图谱对象类型、运行时状态语义和收敛门槛的部分，都属于待确认 plan；确认后再进入实现。
 
 ## 0. 结论先行
 
-当前系统的问题不在单一 prompt，也不在 Searcher 是否偶尔搜歪，而在三层设计共同叠加：
+`run5` 说明，GraphResearcher 的风险已经从“搜不到”切换为“搜得太多但交付不受控”。
 
-1. 初始规划层把“最小 query 数覆盖 objective”作为默认最优解，天然偏向少量大 query。
-2. 搜索执行层被明确限制为“基本逐字检索，不 fan-out”，因此无法在执行期弥补上游 query 过粗的问题。
-3. 评估与收敛层把 query sufficiency、objective coverage 和 marginal utility 当成主信号，但这些信号并不直接衡量“是否已形成可成稿的章节素材包”。
+- 搜索工具已正确调用，Tavily 可以抓到 `raw_content`。
+- 仅 2 次成功 SearchRun，就写入了 237 条 `Statement`、159 条 `Evidence`、11 个 `Document`、7 个 `Source`。
+- 单个 query 的写入量已达到 `172 statements / 119 evidence` 与 `65 statements / 40 evidence`。
+- 最终报告只显式使用了 2 个来源，却把内部 `evidence_id` 直接写进正文，出现了 `（证据：2026...）` 这类用户可见的内部标识。
+- `report_validation_issues` 已经发现正文引用了时间窗口外来源，但 run 仍被标记为 `COMPLETED`。
 
-因此，系统会稳定地产生一种假阳性：
+这说明当前系统的问题不再只是“Reporter 没吃到足够事实”，而是四层设计同时失配：
 
-- 图里已经有不少 source、statement、evidence、claim。
-- LLM 也能给出看似合理的 objective coverage/confidence。
-- 但 Reporter 仍然拿不到章节 brief、实体画像、时间线、对比矩阵、lead 候选、证据束这类写作中间产物。
-- 最后表现为 coverage 似乎够了，成稿却仍然不平衡、不连贯、不像高质量文章。
+1. 初始规划层仍偏向少量粗 query。
+2. Searcher 抽取层缺少 statement/evidence 预算与 salience 控制。
+3. Reporter 上游没有章节级压缩产物，只能直接消费海量原子 evidence。
+4. convergence / delivery gate 不能阻止内部 ID 泄漏、时间窗口违规和弱引用质量报告通过。
 
-`outputs/run5` 当前不存在。我实际参考了 `outputs/run4`。该运行里只有 3 个 query，却已经将多个明显属于“章节素材未补齐”的 gap 打成 `deferred_low_value`，同时 `company_profiles` objective 在 `coverage=0.6` 的情况下被标为 `blocked_best_effort`。这与用户指出的问题完全一致。
+## 1. run5 暴露出的新问题
 
-## 1. 现状诊断
+### 1.1 内部证据标识泄漏到用户可见报告
 
-### 1.1 问题 A 的根因
+`outputs/run5/report.md` 中多处出现：
 
-根因不是 Reporter 写得不够好，而是上游没有生产它真正需要的对象。
+- `（证据：20260701222726445506_d4e6f244、...）`
 
-- `MemoryManager.init_research()` 会把任务压成少量 initial queries，并且 `_select_initial_queries()` 明确追求“最小 query 集覆盖 must objectives”，这会奖励“大而全 query”，而不是可写作分层。[`src/agents/memory_manager.py:237`](src/agents/memory_manager.py:237) [`src/agents/memory_manager.py:380`](src/agents/memory_manager.py:380)
-- `assess_query` prompt 要求的是 query sufficiency 和 atomic gaps，但 gap 类型仍是事实/验证导向，没有“章节是否可写”的判断框架。[`src/prompts/memory_manager_prompts.py:86`](src/prompts/memory_manager_prompts.py:86)
-- `evaluate_portfolio` prompt 只看 objective coverage/confidence，没有 section completeness、table completeness、lead support、article balance 之类的结构信号。[`src/prompts/memory_manager_prompts.py:215`](src/prompts/memory_manager_prompts.py:215)
-- `export_report_context()` 给 Reporter 的输入仍然非常薄，只包含 goal、queries、objectives、limitations、冲突和 reference registry，没有 chapter brief、entity profile、comparison slots、timeline、lead facts 等写作资产。[`src/agents/memory_manager.py:2133`](src/agents/memory_manager.py:2133)
-- Reporter prompt 已经明确要求按主题组织、写 lead、形成章节，但上游没有提供与这些要求一一对应的结构化材料，Reporter 只能从分散 evidence 中临时拼接。[`src/prompts/reporter.md:12`](src/prompts/reporter.md:12)
+这不是单纯文风问题，而是内部图谱标识越过了产品边界。
 
-表象包括：
+根因在于：
 
-- 章节不平衡。
-- 叙事更像拼接摘要而不是成稿。
-- 表格或对比槽位容易缺格。
-- WLC lead 难写，正文像 evidence aggregation。
+- Reporter prompt 明确允许模型使用“证据 ID”，但没有明确禁止把这些 ID 写进正文。
+- `submit_final_report` / report compiler 只校验 `source_ids` 与 `evidence_ids` 是否存在，没有把“正文包含内部 node id”视为 hard failure。
+- Reporter 当前面对的是 `evidence_items` 原子列表，而不是已经整理过的章节 brief / evidence bundle，因此更容易把内部追踪 id 当成“引用形式”直接复制进 prose。
 
-### 1.2 问题 B 的根因
+这类问题必须在交付层强拦截，而不应只靠 prompt 约束。
 
-根因不是 Searcher 能力不足，而是系统默认工作流把“query 规划”和“执行 fan-out”都收得过紧。
+### 1.2 搜索成功后节点膨胀过快
 
-- `init_research` prompt要求 initial queries 是 compact、coarse，并由代码选择最小覆盖集合，这会把任务天然压成少量粗 query。[`src/prompts/memory_manager_prompts.py:11`](src/prompts/memory_manager_prompts.py:11) [`src/agents/memory_manager.py:380`](src/agents/memory_manager.py:380)
-- `web_searcher` prompt 明确要求基本逐字执行 query，并且禁止拆成多个改写查询，不允许在 Searcher 层做真正的横向展开。[`src/prompts/web_searcher.md:4`](src/prompts/web_searcher.md:4)
-- `expand_gaps()` 目前是一种“缺啥补啥”的后继机制，而且每个 search subject 最多只生成一个 child query，更像局部 repair，而不是预先设计的阶段化搜索。[`src/agents/memory_manager.py:1270`](src/agents/memory_manager.py:1270)
-- `evaluate_research_portfolio()` 采用 deficit + impact + confidence_gain 的 utility，且对已有 search subject 给较高 redundancy 惩罚，这会早早压制横向补齐型 gap，尤其是 roster、taxonomy、table-cell 这类需要广铺的工作。[`src/agents/memory_manager.py:1135`](src/agents/memory_manager.py:1135)
+`run5` 中只有 2 个 SearchRun succeeded，但已写入：
 
-表象包括：
+- `Statement`: 237
+- `Evidence`: 159
+- `Document`: 11
+- `Source`: 7
 
-- 先用一个超大 root query 粗抓资料。
-- 再只对 fatal conflict 或少数显性缺口继续展开。
-- 横向 coverage hole 被当成低收益 deferred。
-- 代表性对象不全、taxonomy 不稳、矩阵槽位不满。
+写入量本身说明 `raw_content` 已经显著提升了 Searcher 的抽取能力；但当前系统没有“抽取预算”概念，导致 Searcher 会把长正文里的大量细碎事实全部升级成正式节点。
 
-### 1.3 收敛误判的根因
+根因在于：
 
-这是当前最危险的问题，属于机制级误判，不是 prompt 波动。
+- 每个来源默认可带入最多 20k 字符的 `raw_content`。
+- analyzer prompt 要求抽 statement + evidence，却没有上限、优先级、章节相关性或 objective-aware 过滤。
+- `_merge_source_packets()` 会把所有抽出来的 statement/evidence 无差别写进 evidence_package。
+- Query 评估和 Reporter bundle 读取也默认面向这些全量原子节点工作。
 
-- objective coverage/confidence 主要来自 LLM 评估，若拿不到可靠值，就退回 query 的最高 sufficiency_score。[`src/agents/memory_manager.py:1037`](src/agents/memory_manager.py:1037)
-- 当 objective 未达到 coverage/confidence 阈值，但连续几轮 realized gain 低，就会被标成 `blocked_best_effort`。[`src/agents/memory_manager.py:1080`](src/agents/memory_manager.py:1080)
-- `assess_convergence()` 只要 must objectives 全部处于 `satisfied` 或 `blocked_best_effort`，就视作 objectives_ready。[`src/agents/memory_manager.py:1525`](src/agents/memory_manager.py:1525)
-- `tools.convergence.structurally_converged()` 也重复了同样的逻辑，把 `blocked_best_effort` 视作结构收敛。[`src/tools/convergence.py:98`](src/tools/convergence.py:98)
-- 现有测试已经把“低 gain 两轮后变成 blocked_best_effort”固化成预期，这说明问题不是偶发现象，而是代码与测试共同确认的当前产品语义。[`tests/test_tree_state_machine.py:251`](tests/test_tree_state_machine.py:251)
+这会带来三个直接后果：
 
-这会导致一个错误等价：
+- 图谱噪声升高，低价值 statement 淹没高价值 statement。
+- query sufficiency 容易被“证据密度”虚高。
+- Reporter 被迫在大量原子 fact 中自行做压缩，稳定性下降。
 
-- “继续搜，分数涨不动”
-- 被当成
-- “这个必须目标可以按 best effort 通过”
+### 1.3 图谱很大，但实际成稿只使用了极少来源
 
-但对于写作型任务，尤其是 Bench-II 和 WLC，这两者并不等价。
+`run5` 最终报告只使用了 2 个来源，而图里已有 7 个 `Source`、11 个 `Document`。
 
-## 2. benchmark 影响面
+这说明问题已经不是“没有证据”，而是：
 
-### 2.1 deep_research_bench/query.jsonl
+- 没有把证据组织成可写作的章节资产。
+- 没有对 evidence 做优先级压缩。
+- 没有在交付前检查“图中事实密度”和“成稿实际引用覆盖”之间是否严重失衡。
 
-这类任务多为开放研究题、短 prompt、目标边界松。
+换句话说，当前系统把“大量入图”误当成“准备好写作”。
 
-风险不是完全答不上来，而是：
+### 1.4 交付校验发现问题，但不会阻止放行
 
-- 只回答到显眼主线，没有把横向对象铺开。
-- 比较维度不稳定。
-- 代表性 roster 不完整。
-- 看起来“已经有结论”，但缺少支持结论的覆盖面。
+`run5` 已被标记为：
 
-这类任务最容易被“大 query + early convergence”伤害。
+- `research_state = COMPLETED`
+- `report_readiness_score = 1.0`
+- must objectives 全部 `satisfied`
 
-### 2.2 DeepResearch-Bench-II/tasks_and_rubrics.jsonl
+但同一运行里仍存在：
 
-这类任务通常有强结构、强时间边界、强表格、强禁源约束、强分部分交付。
+- `report_validation_issues`: 正文引用了窗口外来源
 
-风险是：
+这说明当前 convergence / readiness gate 仍然把报告校验当成“提醒”，而不是 stop condition。
 
-- objective 分数看起来不低，但 rubric 槽位未填满。
-- section completeness 不足。
-- table cell completeness 不足。
-- time-bounded coverage 没被硬性约束到 section/cell 级别。
-- forbidden source constraint 没进入 gap 和 convergence gate。
+对于真实交付，这种语义是不够的。至少以下问题应具备 hard-gate 属性：
 
-这类任务不能只用“must objective 是否涨不动”来判断是否可交付。
+- 内部 node id / evidence id 泄漏到正文
+- forbidden source / out-of-window source 违规
+- 正文无有效来源映射
+- 章节虽有 prose，但无法绑定真实来源
 
-### 2.3 Wiki Live Challenge / ga_100.json
+## 2. 现状诊断
 
-这类任务是典型实体文章写作，lead、section hierarchy、文风、摘要能力和引用组织都很关键。
+### 2.1 问题 A：写作素材仍然缺失
 
-风险是：
+即便 Tavily 与 `raw_content` 已经解决“材料输入太薄”的问题，Reporter 上游仍然没有持续生产真正可写的对象。
 
-- 图里 facts 很多，但没有 lead facts、entity profile、timeline、section evidence bundle。
-- Reporter 只能临时拼写，不容易形成百科文章常见的稳定骨架。
-- 正文像“按来源摘录的摘要”，不像 article。
+- `export_report_context()` 仍然只输出 goal、queries、objectives、limitations、冲突和 `reference_registry`。
+- `prepare_report_chapter_bundle()` 仍然按 query 拉取全量 `evidence_items`，没有章节级压缩。
+- Reporter prompt 要求按主题组织章节，但缺少 `section_brief`、`entity_profile`、`comparison_slot`、`lead_candidate`、`timeline_slice` 这类一等写作资产。
 
-WLC 需要单独的 article readiness gate，而不应与一般 research report 共用一套弱收敛逻辑。
+因此，Reporter 虽然“有很多 facts 可用”，却没有“清晰的章节施工面”。
 
-## 3. 建议保留、替换与渐进演化
+### 2.2 问题 B：搜索规划仍然偏粗，但抽取层已变得很重
 
-### 3.1 建议保留
+原方案已经指出：query 规划过于依赖少量 coarse query。`run5` 证明这一点在 Tavily 时代变得更危险：
+
+- coarse query 不再只是“搜歪”
+- 它会直接带来“长正文 + 大量原子抽取 + 图谱膨胀”
+
+也就是说，当前问题不是 Searcher fan-out 不够，而是：
+
+- 上游 query 太粗
+- 中游 source packet 太肥
+- 下游 statement/evidence 升级门槛太低
+
+这三者叠加后，图会在极少轮次内被撑大。
+
+### 2.3 问题 C：当前 evidence model 仍把“抽到”近似等同于“值得入图”
+
+现有主链：
+
+- Query -> SearchRun -> Source / Document / Statement / Claim / Evidence
+
+方向本身没有错，但缺少中间层：
+
+- source-level extraction artifact
+- chapter-level evidence bundle
+- objective-aware salience filter
+
+因此，所有抽取到的内容几乎都会直接进入正式知识图谱节点，导致：
+
+- 高价值事实与低价值事实混杂
+- 同一来源内部冗余 statement 大量堆积
+- Report bundle 读取成本与 token 成本迅速上升
+
+### 2.4 问题 D：delivery gate 仍然太弱
+
+当前系统会在以下情况下仍然放行：
+
+- must objective 已经“看起来满足”
+- novelty / marginal utility 不再明显上升
+- report compiler 接受了章节结构
+
+但这些信号都不能保证：
+
+- 正文没有泄漏内部结构
+- 时间窗口和禁源约束已被满足
+- 成稿真正覆盖了图中的主要证据资产
+
+这意味着现有 gate 更像“研究流程结束判断”，而不是“最终交付通过判断”。
+
+## 3. benchmark 影响面
+
+### 3.1 deep_research_bench/query.jsonl
+
+这类任务的风险依然是：
+
+- 代表性对象不完整
+- 结构化覆盖面不足
+- 看似有结论，但证据覆盖不稳
+
+在 Tavily 时代，还新增一个风险：
+
+- 少量 query 就可能写入很多低价值事实，导致 coverage 虚高
+
+### 3.2 DeepResearch-Bench-II/tasks_and_rubrics.jsonl
+
+这类任务新增的主要风险是：
+
+- 图里有很多 statement/evidence，但表格或 rubric 槽位仍未填满
+- 时间窗口违规不会阻止最终通过
+- section completeness 与 citation hygiene 没有被 hard-gate 化
+
+### 3.3 Wiki Live Challenge / ga_100.json
+
+WLC 类任务的风险比原方案更明显：
+
+- 海量原子 evidence 不会自动转化为条目骨架
+- lead、timeline、section hierarchy 仍然缺少专门资产
+- 内部证据 ID 泄漏到正文，会直接破坏成稿可读性
+
+## 4. 建议保留、替换与新增主线
+
+### 4.1 建议保留
 
 - 以 objective 作为 report-level contract 的方向应保留。
 - Query -> SearchRun -> Source/Document/Statement/Claim/Evidence 的事实可追溯主链应保留。
 - Searcher 与 Reporter 的角色分离应保留。
-- `expand_gaps()` 这类从缺口到 follow-up query 的机制应保留，但要换 gap taxonomy 和调度规则。
+- `expand_gaps()` 这类从缺口到 follow-up query 的机制应保留，但要换 gap taxonomy 与调度规则。
 
-### 3.2 建议彻底替换
+### 4.2 建议彻底替换
 
-- “最小 initial query 集覆盖 must objectives”作为默认 query 规划目标，应替换为“按任务 archetype 生成阶段化 query portfolio”。
+- “最小 initial query 集覆盖 must objectives”作为默认规划目标，应替换为“按任务 archetype 输出阶段化 query portfolio”。
 - “must objective = satisfied 或 blocked_best_effort 即可过关”的收敛规则，应彻底替换。
-- 只围绕事实缺口/冲突缺口的 gap taxonomy，应替换为“事实 + 结构 + 写作素材”混合 taxonomy。
+- “只要 evidence 足够多，就默认更接近 ready”的隐式语义，应替换为“evidence 经过预算控制、压缩和章节化之后，才有资格进入 readiness 判断”。
 
-### 3.3 建议渐进演化
+### 4.3 建议新增主线
 
-- `Analysis` 的现状已经明显过载。第一阶段应先把任务合同层的
-  `objective`、调度缺口层的 `gap` 从 `Analysis` 中拆出，分别形成
-  `Objective`、`Gap` 正式节点类型。
-- `Insight` 第一阶段可以暂时留在 `Analysis`，避免一次性把证据层分析、
-  阶段性总结和写作中间产物全部同时重构。
-- 写作素材对象和 readiness 对象第一阶段仍可继续复用 `Analysis`
-  子类型承载，等 Reporter、收敛和 benchmark 验证中证明有效，再决定
-  是否把其中一部分继续上升为正式 NodeType。
+在原方案的基础上，再新增两条一等改造主线：
 
-这条路径最符合当前仓库“先小步验证，再固化契约”的协作方式。
+1. extraction budget / salience control
+2. citation hygiene / delivery validation hard gate
 
-## 3.4 `Analysis` 拆分方案
+这两条现在已经不是增强项，而是 P0/P1 级问题。
 
-当前实现里，`Analysis` 同时承担了三层职责：
+## 5. 搜索与抽取改造方案
 
-1. report-level 研究目标：`Analysis(objective)`
-2. query-level 缺口：`Analysis(gap)`
-3. query-level 阶段性总结：`Analysis(insight)`
+### 5.1 搜索规划仍应改为阶段化覆盖
 
-而在原始 KG schema 语义里，`Analysis` 更适合回到证据管理层，用于承载
-围绕 `Claim / Statement / Evidence` 的中间分析结果。基于当前确认的实施
-范围，建议第一阶段先拆出两类正式节点：
-
-- `Objective`
-  - 替代当前 `Analysis(objective)`
-  - 仅允许挂在 `UserRequest` 下
-  - 保留现有字段：`objective_key`、`description`、`requirement`、
-    `weight`、`acceptance_criteria`、`coverage`、`confidence`、`status`、
-    `low_gain_streak`、`last_evaluated_successful_rounds`、`assessment_reason`
-- `Gap`
-  - 替代当前 `Analysis(gap)`
-  - 仅允许挂在 `Query` 下
-  - 保留现有字段：`gap_key`、`description`、`importance`、`status`、
-    `gap_category`、`objective_keys`、`search_subject_key`、
-    `decision_impact`、`confidence_gain`、`estimated_search_rounds`、
-    `acceptance_criteria`、`marginal_utility`、`objective_deficit`、
-    `resolution_reason`
-
-第一阶段明确不做：
-
-- 不把 `Insight` 拆成正式节点类型
-- 不立即重做证据层 `Analysis`
-- 不立即把所有写作中间产物都升级成正式节点类型
-
-第一阶段的目标是先把当前最容易污染图谱语义、最影响收敛和调度逻辑的
-两类对象拆干净：
-
-- `UserRequest -HAS_OBJECTIVE-> Objective`
-- `Query -HAS_GAP-> Gap`
-
-与此同时，`Analysis` 暂时保留两类用途：
-
-- `insight`
-- 写作中间产物 / readiness checkpoint 的过渡性承载容器
-
-这样可以先把任务合同层和调度层拆清楚，再单独决定证据层分析与写作素材层
-是否继续细分。
-
-## 4. 任务分型方案
-
-建议引入 task archetype classification，并把它当成 research contract 的一部分。
-
-### 4.1 待确认的 proposed shape
-
-建议在 `UserRequest` 运行时 contract 中增加一组任务元信息：
-
-```json
-{
-  "task_archetype": "open_research|structured_report|comparative_matrix|entity_article|timeline_history|causal_analysis",
-  "delivery_contract": {
-    "required_sections": ["..."],
-    "required_dimensions": ["..."],
-    "required_tables": [
-      {
-        "table_key": "stable-key",
-        "columns": ["..."],
-        "row_expectation": "enumerated|at_least_n|derived_from_scope"
-      }
-    ],
-    "time_boundary": "string|null",
-    "forbidden_sources": ["..."],
-    "style_contract": "research_report|wikipedia_article"
-  }
-}
-```
-
-这里是 plan shape，不是建议直接落库。是否进入正式 runtime contract，需要用户确认。
-
-### 4.2 archetype 的实际作用
-
-- `open_research`：关注 coverage breadth、代表性对象、核心争议与主要结论。
-- `structured_report`：关注 section completeness、part completeness、时间边界和限制项。
-- `comparative_matrix`：关注 roster completeness 和 table-cell completeness。
-- `entity_article`：关注 lead coverage、section skeleton、timeline completeness、人物或实体 profile。
-- `timeline_history`：关注时间轴节点连续性、阶段转折和关键事件证据。
-- `causal_analysis`：关注因果链节点、机制解释、反例或限制条件。
-
-不同 archetype 应决定：
-
-- 初始 query portfolio 的形状。
-- gap 类型优先级。
-- utility 加权。
-- convergence gate。
-- Reporter 上游素材结构。
-
-## 5. 搜索规划改造方案
-
-### 5.1 规划目标从“最小覆盖”改为“阶段化覆盖”
-
-建议把当前 query 规划拆为三阶段，而不是一开始就问“几个 coarse query 最能覆盖所有 objective”。
+保留原方案判断：
 
 1. Horizontal discovery
 2. Slot completion
 3. Vertical deep dive / verification
 
-### 5.2 第一阶段：horizontal discovery
+但现在要明确补充：不同阶段不仅 query 粒度不同，抽取预算也必须不同。
 
-目标不是把每个 objective 做深，而是先把“写作骨架需要的主对象/主维度/主路线”铺出来。
+### 5.2 新增 extraction budget 概念
 
-不同 archetype 的第一阶段产出应该不同：
+建议引入三层预算：
 
-- open_research：路线、学校、流派、公司、国家、主要争议。
-- comparative_matrix：候选对象 roster、比较维度、时间边界。
-- entity_article：章节骨架、关键时期、关键人物、主要作品/事件。
-- structured_report：章节主问题、表格槽位、限制条件、国家/案例清单。
+- `per_source_extraction_budget`
+- `per_query_statement_cap`
+- `per_query_evidence_cap`
 
-建议 query 粒度改为“单一搜索意图 + 单一主题簇”，而不是“把整个任务塞进一条 query”。
+示意：
 
-粒度建议：
+```text
+discovery phase:
+  每个来源只允许保留高 salience summary + 少量 top statements/evidence
 
-- 一条 query 最多服务一个主主题簇。
-- 一条 query 最多覆盖一个主要 roster 发现任务，或一个主要维度补齐任务。
-- 如果 query 文本里同时出现“路线 + 公司 + 产品 + 商业化 + 融资 + 团队”，基本就已经过粗。
+slot completion phase:
+  优先保留能补齐 table / roster / section slot 的 facts
 
-### 5.3 第二阶段：slot completion
+deep dive phase:
+  仅对高价值对象或冲突对象放宽抽取预算
+```
 
-这一步是当前系统缺失最明显的层。
+### 5.3 Statement / Evidence 的升级门槛要提高
 
-目标是把第一阶段暴露出的写作槽位补齐，而不是继续泛搜新事实。
+当前“抽到就入图”的策略需要改成两层：
 
-典型 slot 包括：
+第一层：
 
-- 每条路线的代表公司 roster。
-- 每家公司的固定画像维度。
-- 每张表的 cell。
-- 每个章节的 lead facts。
-- 每个 timeline 段的关键事件。
+- 保留 source-level extraction artifact
+- 允许完整保留较多来源内信息
 
-这一步应该优先于 fatal conflict 深挖之外的大多数“额外细节”。
+第二层：
 
-### 5.4 第三阶段：vertical deep dive / verification
+- 只有高 salience、与 objective / section / slot 有关、可独立支持结论的事实，才升级为正式 `Statement` / `Evidence`
 
-只有在以下情况才进入真正纵深：
+也就是说，不是所有 analyzer 抽取结果都值得成为正式知识图谱节点。
 
-- 槽位已经大体齐全，但某个高影响维度还不可靠。
-- 出现影响主结论的 conflict。
-- 需要 primary source 验证。
-- 需要对高权重对象做 deeper profile。
+### 5.4 去重与压缩不应只发生在 URL 层
 
-### 5.5 对当前代码的落地建议
+当前主要靠 URL 去重，这远远不够。
 
-- 改 `init_research` prompt，不再要求 compact coarse query，而是要求输出 `phase_1_queries` 和 `phase_2_expectations`。
-- `_select_initial_queries()` 不再只做最小覆盖，而是做“每个 must objective 至少保留一个 discovery query + 必要的 slot discovery query”。
-- `plan_followup_query` 不再只服务 atomic gaps，还要能服务 slot-completion gap。
-- Searcher 仍然不做任意自由 fan-out，但允许在同一 phase contract 下执行“同一 search subject 的受控子查询集合”。
+需要新增：
+
+- 同源 statement 近重复折叠
+- 同义 evidence 聚合
+- query 内 top-fact 选取
+- objective-aware fact ranking
+
+否则同一篇长文里的多个近义陈述会把图和 Reporter bundle 一起淹没。
 
 ## 6. 中间产物改造方案
 
-这是提升 WLC 写作质量和 Bench-II 完整度的关键。
+原方案中“补 section_brief / entity_profile / comparison_slot / lead_candidate / readiness_checkpoint”这一方向应保留，而且重要性比原来更高。
 
-### 6.1 第一阶段的节点策略
+### 6.1 仍建议第一阶段只正式拆出 `Objective` 与 `Gap`
 
-当前 `NodeType` 已经较稳定，而且 AGENTS 明确把结构修改视作高风险协作面。[`src/memory/graph.py:21`](src/memory/graph.py:21)
+这部分判断不变：
 
-在本轮已确认范围内，建议第一阶段只新增两个正式节点类型：
+- `Analysis(objective)` -> `Objective`
+- `Analysis(gap)` -> `Gap`
 
-- `Objective`
-- `Gap`
+`Insight` 与写作中间产物第一阶段仍可继续留在 `Analysis` 子类型里，避免 schema 震荡过大。
 
-其余新增中间产物暂时继续复用 `Analysis` 节点，新增若干 `analysis_type`：
+### 6.2 但要新增两类过渡性对象
 
-- `section_brief`
-- `chapter_brief`
-- `entity_profile`
-- `timeline_slice`
-- `comparison_slot`
-- `lead_candidate`
-- `evidence_bundle`
-- `readiness_checkpoint`
+除了原方案中的写作资产，还建议新增：
 
-这样做的好处是：
+- `source_packet_summary`
+- `query_evidence_digest`
 
-- 只对当前最过载、最影响主流程的 `Analysis(objective)` 和
-  `Analysis(gap)` 做结构拆分。
-- `UserRequest` 和 `Query` 的父子关系会变得更清晰，收敛、调度和状态机
-  也更容易理解。
-- 仍然避免一次性把 `Insight` 和写作中间产物都升级为正式节点类型。
-- 可以先验证这些对象是否真的改善 Reporter 和 convergence。
-- 便于回滚和迭代 shape。
+用途：
 
-### 6.2 待确认的 proposed shape
+- `source_packet_summary`：承接来源级完整抽取，不要求全部升格成 statement/evidence
+- `query_evidence_digest`：把 query 下的大量原子证据压缩成可供 MemoryManager / Reporter 消费的高层摘要
 
-建议这些对象统一带上三组字段：
+这样能在不立刻重构全部 schema 的前提下，把“完整抽取”和“正式入图”分层。
 
-```json
-{
-  "analysis_type": "section_brief|entity_profile|comparison_slot|...",
-  "artifact_key": "stable-key",
-  "owner_scope": {
-    "objective_keys": ["..."],
-    "query_ids": ["..."],
-    "chapter_id": 1,
-    "entity_name": "optional",
-    "slot_key": "optional"
-  },
-  "content": {
-    "summary": "...",
-    "fields": {},
-    "status": "draft|usable|weak|missing",
-    "coverage": 0.0,
-    "confidence": 0.0
-  },
-  "source_ids": ["..."],
-  "evidence_ids": ["..."]
-}
-```
+## 7. Reporter 上游与交付改造方案
 
-### 6.3 谁生产，谁消费
+### 7.1 Reporter 当前最缺的是“压缩后的章节施工面”
 
-- MemoryManager 生产：
-  - section/chapter brief
-  - comparison slot
-  - readiness checkpoint
-- Searcher submit 后的归纳逻辑生产：
-  - entity profile
-  - timeline slice
-  - lead candidate
-  - evidence bundle
-- Reporter 消费：
-  - 章节大纲
-  - 每章 evidence bundle
-  - entity profile
-  - timeline
-  - comparison slots
-  - lead candidates
-- Convergence 消费：
-  - readiness checkpoint
-  - section/table/lead completeness
+原方案已经指出，Reporter 缺的不是“更多事实”，而是“可直接写的组织单元”。`run5` 说明现在这个结论更强：
 
-### 6.4 最重要的新增对象
+- Reporter 不是 facts 太少
+- 而是 facts 太多、太原子、太贴近内部结构
 
-如果只能先做一小批，我建议优先做这五个：
+### 7.2 chapter bundle 不应再默认拉取全量 evidence_items
 
-1. `entity_profile`
-2. `comparison_slot`
-3. `section_brief`
-4. `lead_candidate`
-5. `readiness_checkpoint`
+当前 `prepare_report_chapter_bundle()` 会把 query 下所有 evidence/claim 分页全量取出。
 
-它们分别对应：
+建议改为：
 
-- 比较型任务的横向整理。
-- Bench-II 表格与维度填充。
-- WLC 和长报告的章节搭骨架。
-- lead 写作。
-- 收敛防误判。
+- 默认提供 `section_brief`
+- 默认提供 `top_evidence_items`
+- 默认提供 `entity_profile`
+- 默认提供 `comparison_slots`
+- 默认提供 `lead_candidates`
+- 如用户或章节 plan 明确需要，再按需展开更深层 evidence
 
-## 7. gap / portfolio / utility 改造方案
+也就是说，chapter bundle 应从“原子事实传输层”变成“章节写作输入层”。
 
-### 7.1 现有 gap taxonomy 的问题
+### 7.3 必须禁止内部 ID 出现在最终正文
 
-当前 gap 类型是：
+这是本轮方案必须新增的硬要求。
 
-- `missing_core_evidence`
-- `fatal_conflict`
-- `enrichment`
-- `additional_example`
-- `verification`
-- `detail`
+建议新增 deterministic 校验：
 
-它本质上还是证据工程 taxonomy，不是交付工程 taxonomy。[`src/prompts/memory_manager_prompts.py:95`](src/prompts/memory_manager_prompts.py:95)
+- 检测正文中的 `evidence_id` / `claim_id` / 长 node id
+- 检测 `证据：2026...`、`e\d+`、`st\d+`、长时间戳式 node id
+- 一旦发现，直接 `revision_requested = true` 或拒绝最终提交
 
-### 7.2 建议新增 gap taxonomy
+内部 traceability 应只存在于：
 
-建议把 gap 分成三组：
+- `source_ids`
+- `evidence_ids`
+- `disclosed_conflict_ids`
+- ReportSection 绑定元数据
 
-第一组，事实与验证型：
+不应进入用户可见 prose。
 
-- `missing_core_evidence`
-- `fatal_conflict`
-- `verification`
-- `primary_source_missing`
+### 7.4 citation hygiene 应进入 Reporter contract
 
-第二组，覆盖与结构型：
+当前 prompt 只要求“每个事实性段落都必须带引用”，但还不够。
 
-- `coverage_hole`
-- `roster_hole`
-- `taxonomy_hole`
-- `table_cell_missing`
-- `time_slice_missing`
-- `country_case_missing`
+建议再明确要求：
 
-第三组，写作素材型：
+- 正文只允许出现编译器生成的 `[n]` 式引用
+- 不得手写内部 source id / evidence id
+- 不得把 `source_ids` / `evidence_ids` 当作正文的一部分输出
 
-- `section_brief_missing`
-- `entity_profile_missing`
-- `lead_support_missing`
-- `chapter_bundle_missing`
-- `section_balance_missing`
+## 8. convergence / delivery gate 改造方案
 
-### 7.3 utility 公式为什么会压制横向扩展
-
-当前公式的核心问题有三点：
-
-- deficit 是按 objective 阈值缺口算的，而不是按“尚缺多少对象/槽位/章节素材”算的。
-- redundancy 对已探索 subject 惩罚过强，导致同一路线下的补齐工作被判成重复劳动。
-- rounds 惩罚会压低 roster/table 补齐型工作，因为这类工作天然要多轮铺开。
-
-因此，一旦 objective 已接近阈值，横向补齐几乎都会被降成低 utility。
-
-### 7.4 建议的新 utility 组成
-
-建议把 utility 改成按 archetype 可配置的四项组合：
-
-```text
-utility =
-  structure_gap_weight * structure_deficit
-  + coverage_gap_weight * coverage_deficit
-  + evidence_gap_weight * evidence_deficit
-  + decision_impact_weight * decision_impact
-  - redundancy_penalty
-  - cost_penalty
-```
-
-其中最关键的是加入：
-
-- `structure_deficit`
-- `roster_deficit`
-- `table_completion_deficit`
-- `lead_support_deficit`
-
-对比型任务和 WLC，这些项应高于普通 evidence_gain。
-
-### 7.5 调度规则建议
-
-- 在 archetype 未完成基础骨架前，`coverage_hole`、`roster_hole`、`table_cell_missing`、`section_brief_missing` 不能被轻易 defer。
-- `fatal_conflict` 仍可强制优先。
-- `enrichment` 和 `detail` 只有在结构骨架完整后才有资格竞争。
-
-## 8. convergence 改造方案
-
-### 8.1 必须改掉的核心规则
-
-必须禁止：
-
-- must objective 仅凭 `blocked_best_effort` 就视为 ready。
-
-更准确地说，不是完全删除 `blocked_best_effort`，而是降低它的语义：
-
-- `blocked_best_effort` 只能表示“该 objective 在当前预算或公开资料下继续提升困难”。
-- 它不能单独作为报告通过条件。
-
-### 8.2 新的两层 gate
-
-建议把收敛拆成两层：
+### 8.1 原方案中的两层 gate 方向应保留
 
 1. Evidence convergence
 2. Delivery readiness convergence
 
-第一层回答：
+### 8.2 现在必须再加第三层：delivery validation gate
 
-- 继续搜索是否还能显著提升事实可靠性。
+建议 stop condition 拆成三层：
 
-第二层回答：
+1. `evidence_converged`
+2. `delivery_ready`
+3. `delivery_validated`
 
-- 现有材料是否足以交付目标 archetype 所要求的文章或报告。
+第三层回答：
 
-只有两层都过，才能进入 Reporter。
+- 最终草稿是否满足时间窗口、禁源约束、引用规范、内部标识隔离等硬规则
 
-### 8.3 待确认的 proposed shape
+只有三层都过，才能把 run 标成 `COMPLETED`。
 
-建议新增 `readiness_checkpoint` 的统一结构：
+### 8.3 建议提升为 hard gate 的问题
 
-```json
-{
-  "analysis_type": "readiness_checkpoint",
-  "checkpoint_type": "global|section|table|lead|article",
-  "artifact_key": "stable-key",
-  "status": "ready|not_ready|blocked",
-  "metrics": {
-    "coverage": 0.0,
-    "confidence": 0.0,
-    "structure_completeness": 0.0,
-    "slot_completeness": 0.0,
-    "lead_support": 0.0
-  },
-  "blocking_reasons": ["..."]
-}
-```
+- out-of-window source 在非背景段落出现
+- forbidden source 出现在正文
+- 正文出现内部 node id / evidence id
+- 正文章节没有有效来源绑定
+- section content 与 `source_ids` 明显不匹配
 
-### 8.4 archetype-specific gate
+这些不应只进入 `report_validation_issues`，而应能阻止最终放行。
 
-建议至少定义四套 gate：
+## 9. gap / portfolio / utility 改造补充
 
-- `open_research`
-  - 主结论 coverage 过线
-  - 代表性 roster 达到最低覆盖
-  - 关键争议有披露
-- `structured_report`
-  - required sections 全部可写
-  - required tables/cells 达到阈值
-  - 时间边界与禁源约束通过
-- `comparative_matrix`
-  - roster 完整度过线
-  - 核心比较维度缺格率低于阈值
-- `entity_article`
-  - lead_support 过线
-  - article skeleton 稳定
-  - timeline 与主要主题 section 均有 evidence bundle
+原方案中的 gap taxonomy 方向仍然成立，但现在要补一个新维度：
 
-### 8.5 WLC 单独 gate
+- `extraction_overload`
+- `evidence_noise`
+- `citation_hygiene_failure`
 
-WLC 建议单独加一个 `article_readiness_gate`，至少检查：
+这些不是传统 research gap，却会直接影响最终交付质量。
 
-- lead 是否有足够 high-salience facts 支撑。
-- 是否已经形成稳定 section skeleton。
-- 每个主 section 是否有至少一个可写 evidence bundle。
-- 是否有 timeline 或 life-cycle 素材支持过渡。
+utility 也不应只考虑“再搜一轮值不值”，还要考虑：
 
-### 8.6 Bench-II 单独 gate
+- 当前 query 是否已经明显过载
+- 进一步扩大 evidence 是否会恶化 Reporter 输入质量
 
-Bench-II 建议单独加 `section_table_completion_gate`：
-
-- required section 是否全部 ready。
-- required table 的列与行是否达到预期。
-- 是否仍有 forbidden source 风险。
-- time-bounded evidence 是否覆盖到 section/cell。
-
-## 9. Reporter 上游改造建议
-
-### 9.1 当前 Reporter 缺的不是“更多事实”，而是“可直接写的组织单元”
-
-Reporter prompt 本身并不差，它已经在要求：
-
-- 先提大纲。
-- 再按章读取 bundle。
-- 写连贯 prose。
-- 写 lead。
-
-问题在于 `export_report_context()` 和 chapter bundle 目前没有提供足够强的上游结构。[`src/prompts/reporter.md:13`](src/prompts/reporter.md:13) [`src/agents/memory_manager.py:2133`](src/agents/memory_manager.py:2133)
-
-### 9.2 最少需要补的上游结构
-
-如果保留现有 Reporter 机制，最少要补：
-
-- `section_brief`
-- `chapter_evidence_bundle`
-- `entity_profile`
-- `comparison_slots`
-- `lead_candidates`
-
-这五类对象足以显著改善：
-
-- lead 起笔。
-- 章节重心。
-- 段落过渡。
-- 横向比较的一致性。
-- 冲突与限制披露位置。
-
-### 9.3 可以参考 ms-agent/deep_research/v2 的迁移方向
-
-如果参考业界更成熟的 deep research 流程，值得迁移的不是“再加一个写手 prompt”，而是这几类机制：
-
-- 先形成 delivery plan，再做检索补齐。
-- 研究过程中维护 section/table/slot 的 completion state。
-- 把对象级 profile 和章节级 brief 当成一等产物。
-- 在 report-ready 之前做 article/report readiness 审核，而不是只看 evidence density。
+换句话说，未来某些 query 应该优先触发“压缩/整理”而不是“继续搜索”。
 
 ## 10. 模块级改动清单
 
@@ -620,192 +413,159 @@ Reporter prompt 本身并不差，它已经在要求：
 建议修改：
 
 - `init_research`
-  - 从“compact coarse queries”改成“输出 task archetype + delivery contract + 分阶段 query portfolio”。
+  - 输出 task archetype + delivery contract + 分阶段 query portfolio
 - `assess_query`
-  - gap taxonomy 扩展为覆盖型、结构型、写作素材型。
-  - 明确要求判断“是否足以支撑 section/table/entity profile/lead candidate”。
+  - 除了判断 sufficiency，还要判断 evidence overload / chapter readiness
 - `evaluate_portfolio`
-  - 输入不再只看 query summaries，而要看 readiness summaries。
+  - 读取 readiness summaries，而不是只看 query summaries
 - `assess_convergence`
-  - 从“fatal conflict 分类”扩展为“fatal conflict + delivery readiness blockers”。
+  - 增加 delivery validation blockers
 - `plan_followup_query`
-  - 支持 slot completion query，而不是只写原子补洞 query。
+  - 支持 slot completion query，不再只服务原子补洞
 
-### 10.2 `src/agents/memory_manager.py`
-
-建议修改：
-
-- `init_research()`
-  - 增加 archetype 识别和 delivery contract 落地。
-  - `_create_objectives()` 改为写入 `Objective`，不再写
-    `Analysis(objective)`。
-  - 改 initial query selection，避免最小覆盖直接吞掉横向 discovery。
-- `evaluate_research_portfolio()`
-  - 读取 `Objective` 与 `Gap`，不再以 `analysis_type` 区分
-    objective/gap。
-  - 去掉 `blocked_best_effort` 直接计入 readiness 的逻辑。
-  - 引入 structure/slot/lead/table 等 readiness 信号。
-  - utility 改为 archetype-aware。
-- `expand_gaps()`
-  - 改为写入和读取 `Gap`，不再写 `Analysis(gap)`。
-  - 支持 coverage_hole / roster_hole / table_cell_missing 等 gap 的 query 规划。
-- `assess_convergence()`
-  - must objective 读取 `Objective`。
-  - 拆成 evidence convergence 与 delivery readiness gate。
-  - 只有 must objective satisfied，或 blocked 但被更高层 readiness gate 豁免时，才允许 stop。
-- `export_report_context()`
-  - 输出 section briefs、entity profiles、timeline、comparison slots、lead candidates、readiness 状态。
-
-这是本轮改造的核心文件。
-
-### 10.3 `src/agents/searcher.py`
+### 10.2 `src/agents/searcher.py`
 
 建议修改：
 
-- 保持 Searcher 不负责全局规划，但允许它在受控 contract 下执行“同一主题簇的小规模受控多检索”。
-- 抽取结构中加入对 entity、timeline、table cell、profile fields 的显式抽取。
-- submit 前增加“素材对象归档”步骤，而不仅是 statement/evidence/conflict。
+- 引入 `per_source_extraction_budget`
+- 引入 `per_query_statement_cap`
+- 引入 `per_query_evidence_cap`
+- 在 `_extract_source_packet()` 后增加 salience filter / near-duplicate collapse
+- 区分“source-level完整抽取”与“正式入图 statement/evidence”
+- submit 前生成 `query_evidence_digest`
 
-### 10.4 `src/prompts/web_searcher.md`
-
-建议修改：
-
-- 从“禁止拆 query”改成“禁止脱离上游 contract 自由扩题，但允许在当前 phase 下对 roster、slot、entity 做受控子检索”。
-- 增加 primary source 优先、时间边界检查、禁源约束回避。
-- 对 structured report 和 WLC，分别强调“章节素材补齐”和“实体文章素材补齐”。
-
-### 10.5 `src/prompts/reporter.md`
+### 10.3 `src/prompts/analyzer.md`
 
 建议修改：
 
-- 让 Reporter 显式消费新增素材对象，而不是只消费 query/evidence。
-- 按 archetype 区分写作模式：
-  - research_report
-  - comparative_report
-  - wikipedia_article
-- 要求先消化 lead candidates、section briefs 和 entity/timeline bundles，再生成 outline。
+- 从“尽量多抽”改成“优先抽与 query objective 最相关、最可复用、最能支持章节写作的事实”
+- 增加 top-k / salience / anti-dup 指令
+- discovery 与 deep dive 阶段使用不同抽取预算
+
+### 10.4 `src/prompts/reporter.md`
+
+建议修改：
+
+- 明确禁止在正文输出任何内部 id
+- 明确正文只允许 reader-facing prose + 编译引用
+- 要求优先消费 section briefs / lead candidates / entity profiles / comparison slots
+- 要求面对过量证据时先压缩后写，而不是平铺原子 evidence
+
+### 10.5 `src/tools/report_tools.py`
+
+建议修改：
+
+- chapter bundle 默认提供压缩后的高层资产，而不是全量 evidence_items
+- `submit_final_report` 新增 internal-id leakage 检查
+- `report_validation_issues` 中的时间窗口/禁源/内部 ID 问题升级为 hard gate
+- 增加“图中来源数 vs 成稿实际引用来源数”这类 coverage sanity check
 
 ### 10.6 `src/tools/convergence.py`
 
 建议修改：
 
-- 读取 `Objective`，不再从 `Analysis(objective)` 读取 must objectives。
-- `structurally_converged()` 不再把 `blocked_best_effort` 当作天然通过状态。
-- 增加 delivery readiness metrics 的 deterministic 部分。
-- novelty 指标保留，但不再单独驱动 must objective 放行。
+- 不再把 `blocked_best_effort` 当作天然通过状态
+- 增加 delivery validation gate
+- 把 `report_validation_issues` 纳入 stop / continue 语义
 
-### 10.7 `src/tools/report_tools.py`
-
-建议修改：
-
-- chapter bundle 中直接支持 section_brief、entity_profile、timeline_slice、comparison_slot、lead_candidates。
-- 对 final report validation 增加结构覆盖检查接口，为 Bench-II 和 WLC 提供可观察指标。
-
-### 10.8 `src/tools/research_state.py`
+### 10.7 `src/agents/memory_manager.py`
 
 建议修改：
 
-- `get_status()` 内部改为直接读取 `Gap`、`Objective`。
-- 在 `get_status()` 里暴露 archetype、delivery readiness、table completion、lead readiness 等摘要状态。
-- 为后续 run.log 和 benchmark 评估提供更清晰的运行态可观测性。
-
-### 10.9 测试文件
-
-建议新增或扩展：
-
-- `tests/test_tree_state_machine.py`
-  - 覆盖 blocked_best_effort 不再直接放行 must objective。
-- `tests/test_convergence.py`
-  - 增加 archetype-specific gate。
-- `tests/test_report_delivery.py`
-  - 验证 chapter bundle 已包含新增素材对象。
-- 新增 `tests/test_task_archetype_contract.py`
-  - 验证分类和 contract shape。
-- 新增 `tests/test_slot_completion.py`
-  - 验证 roster/table/section slot 补齐逻辑。
-- 新增 `tests/test_wlc_readiness.py`
-  - 验证 article readiness gate。
+- `export_report_context()` 输出更多章节级与对象级写作资产
+- `assess_convergence()` 不再只看 objective / utility，还要看 delivery validation
+- readiness 不再与“图里证据多”近似等价
 
 ## 11. 优先级与实施顺序
 
 ### P0
 
-- 将 `Analysis(objective)`、`Analysis(gap)` 拆为 `Objective`、`Gap`。
-- 重写 convergence 语义，禁止 must objective 仅凭 `blocked_best_effort` 通过。
-- 引入 task archetype 和 delivery contract。
-- 重写 initial query planning，使其按阶段输出 horizontal discovery query portfolio。
-- 扩展 gap taxonomy，纳入 roster/table/section/lead 类缺口。
+- 修正 delivery gate：内部 ID 泄漏、时间窗口违规、禁源违规不得放行
+- 修正 Reporter contract：禁止内部 id 出现在正文
+- 引入 extraction budget / salience control
+- 防止长正文在少量 query 下制造海量低价值 statement/evidence
 
 这批改动最可能首先提升：
 
-- 收敛正确性。
-- Bench-II rubric 完成度。
-- 横向 coverage。
+- 最终成稿可用性
+- 交付正确性
+- 图谱规模可控性
 
 ### P1
 
-- 引入 `section_brief`、`entity_profile`、`comparison_slot`、`lead_candidate`、`readiness_checkpoint`。
-- 扩展 `export_report_context()` 和 chapter bundle。
-- 让 Reporter 真实消费这些中间产物。
+- 引入 task archetype 和 delivery contract
+- 重写 initial query planning，按阶段输出 discovery / slot completion / deep dive
+- 扩展 gap taxonomy，加入 roster/table/section/lead 类缺口
+- 引入 `section_brief`、`entity_profile`、`comparison_slot`、`lead_candidate`、`query_evidence_digest`
 
 这批改动最可能首先提升：
 
-- WLC 写作质量。
-- 成稿连贯性。
-- 章节平衡与 lead 质量。
+- 横向 coverage
+- 章节组织质量
+- Bench-II / WLC 的结构完成度
 
 ### P2
 
-- 视验证结果决定是否把部分 `Analysis` 子类型升级为正式 NodeType。
-- 在 Searcher 层增加受控多检索策略。
-- 引入更细的 forbidden source / time boundary 自动检查。
-- 引入更系统的 benchmark instrumentation。
+- 将 `Analysis(objective)`、`Analysis(gap)` 拆为 `Objective`、`Gap`
+- 视验证结果决定是否继续拆 `Insight` 或升级更多中间产物为正式 NodeType
+- 引入更细的 benchmark instrumentation
 
-这批改动更偏增强和产品化。
+这批改动更偏 schema 固化与产品化。
 
 ## 12. 建议的实施路径
 
-建议按四步走。
-
 ### Step 1
 
-先完成 `Objective` / `Gap` 拆分，并同步修正 contract、gap taxonomy、
-convergence 的读取与写入路径。
+先修交付硬故障：
 
-目标是先修掉三个最危险的根因：
+- 禁止内部 id 泄漏到正文
+- 将时间窗口/禁源违规升级为 hard gate
+- 让 report validation 真正影响最终放行
 
-- `Analysis` 语义混杂
-- must objective 被 `blocked_best_effort` 误放行
-- 大 query 天然占优且 gap 调度不透明
+目标是先确保“不会继续产出明显坏报告”。
 
 ### Step 2
 
-保留 `Insight` 在 `Analysis` 中，同时新增 `Analysis` 形态的写作中间素材对象，
-并改 `export_report_context()`。
+再修搜索成功后的节点膨胀：
 
-目标是让 Reporter 能吃到真正可写的材料。
+- 引入 extraction budget
+- 加入 salience filter / anti-dup
+- 增加 source-level artifact 与 query-level digest
+
+目标是先把“搜得太多”的问题从图谱层和 Reporter 输入层同时压住。
 
 ### Step 3
 
-按 archetype 调整 Reporter prompt 和 chapter bundle。
+随后补章节级写作资产：
 
-目标是把 `research_report`、`comparative_matrix`、`entity_article` 三类交付拉开。
+- `section_brief`
+- `entity_profile`
+- `comparison_slot`
+- `lead_candidate`
+- `readiness_checkpoint`
+
+目标是让 Reporter 吃到真正可写的材料，而不是海量原子 evidence。
 
 ### Step 4
 
-基于 benchmark 结果再决定是否上升 schema。
+最后再推进 task archetype、delivery contract 与 `Objective` / `Gap` 拆分。
 
-到这一阶段再决定是否继续把 `Insight` 从 `Analysis` 中拆出，以及是否要把
-`section_brief`、`entity_profile`、`readiness_checkpoint` 等进一步升级为
-正式节点类型。
-
-这样风险最低，也最容易回归验证。
+这样风险最低，也最容易逐步回归验证。
 
 ## 13. 验证方案
 
-### 13.1 小规模回归测试
+### 13.1 `run5` 定点复测
 
-建议先做四类脚本级回归：
+建议继续用当前“具身智能技术路线与代表公司”任务做定点复测，重点观察：
+
+- 正文是否完全消失 `（证据：2026...）` 这类内部 id
+- 是否不再出现窗口外来源在正文硬段落中被引用
+- 2-3 个 query 下 statement/evidence 数量是否明显收敛
+- 成稿实际引用的 source 覆盖是否不再严重落后于图中 source 数
+
+### 13.2 小规模脚本级回归
+
+建议至少覆盖：
 
 1. 一个 open research 题
 2. 一个 Bench-II 强结构题
@@ -814,16 +574,26 @@ convergence 的读取与写入路径。
 
 每类只挑 1 到 3 个样本，先观察运行态信号。
 
-### 13.2 `run4` 类案例复测
+### 13.3 新增强制测试项
 
-建议用当前“具身智能技术路线与代表公司”任务做定点复测，重点观察：
+建议新增或扩展：
 
-- initial queries 是否从 1 条大 query 变成阶段化 portfolio。
-- 是否显式生成路线 roster、公司 roster、公司画像槽位。
-- `company_profiles` 在 coverage 未到线时是否仍会被错误标成 `blocked_best_effort` 通过。
-- `deferred_low_value` 的 gap 是否明显减少，尤其是 taxonomy、产品进度、商业化、团队画像类 gap。
+- `tests/test_report_delivery.py`
+  - 正文出现内部 evidence id 时必须拒绝
+- `tests/test_search_budgeting.py`
+  - 验证单 query / 单 source 抽取预算
+- `tests/test_evidence_dedup.py`
+  - 验证同源近重复 statement/evidence 折叠
+- `tests/test_convergence.py`
+  - report validation issues 不得继续放行
+- `tests/test_task_archetype_contract.py`
+  - archetype 与 delivery contract shape
+- `tests/test_slot_completion.py`
+  - roster / table / section slot 补齐逻辑
+- `tests/test_wlc_readiness.py`
+  - article readiness gate
 
-### 13.3 benchmark 抽样评估
+### 13.4 benchmark 抽样评估
 
 建议对三类 benchmark 分别抽样：
 
@@ -831,59 +601,10 @@ convergence 的读取与写入路径。
 - Bench-II：10 个强结构题
 - WLC：10 个 entity article
 
-关注四组指标：
+重点关注五组指标：
 
 - 搜索覆盖质量
+- 图谱规模与噪声水平
 - 结构完整度
 - 成稿质量
-- 收敛正确性
-
-### 13.4 观察指标建议
-
-搜索覆盖质量：
-
-- roster completeness
-- taxonomy completeness
-- primary source ratio
-- time-bounded evidence ratio
-
-结构完整度：
-
-- section readiness score
-- table cell completion ratio
-- lead support score
-- entity profile completion ratio
-
-成稿质量：
-
-- lead 是否独立成立
-- 章节是否平衡
-- 段落是否以主题而非来源组织
-- WLC 是否更像百科文章而非资料摘要
-
-收敛正确性：
-
-- must objective 未达标时是否仍被 stop
-- readiness blockers 是否被正确暴露
-- blocked_best_effort 是否只作为限制披露，而不是直接通行证
-
-## 14. 推荐的确认顺序
-
-在真正实施前，建议用户先确认以下三个 shape。
-
-1. 是否接受引入 `task_archetype + delivery_contract` 作为新的运行时 contract。
-2. 是否接受第一阶段先把 `Analysis(objective)`、`Analysis(gap)` 拆为
-   `Objective`、`Gap`，同时让 `Insight` 暂时留在 `Analysis`。
-3. 是否接受第一阶段仍用 `Analysis` 子类型承载新中间产物，而不是继续扩大
-   正式 NodeType。
-4. 是否接受将 `blocked_best_effort` 从“可通过状态”降级为“限制披露状态”，并引入新的 delivery readiness gate。
-
-如果这四点确认，后续实现可以在较小范围内分批推进，不必一次性重做整套系统。
-
-## 15. 最终判断
-
-这次改造最应该优先解决的，不是“把 query 变小”这件孤立的小事，而是把系统的优化目标从“图里是否已经有足够多可追溯事实”转成“是否已经形成对目标 archetype 可交付的写作素材与结构覆盖”。
-
-只要这个目标函数不变，哪怕继续补 prompt、补 source filtering、补 conflict handling，也仍然会不断重现同一种问题：分数看似够了，成稿却还不像成稿。
-
-相反，如果把 archetype、slot completeness、写作中间产物和 readiness gate 建起来，即使 Searcher 和 Reporter 本身不大改，系统表现也会明显更稳定，尤其是在 Bench-II 和 WLC 上。
+- 收敛与交付正确性

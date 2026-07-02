@@ -151,6 +151,15 @@ def main():
         assert "本次图谱" not in soft_compiled["salvaged_report"]
         assert any(issue["code"] == "forbidden_meta_prose" for issue in soft_compiled["issues"])
 
+        leaked_id = report_tools.compile_structured_report("机器人公司研究", [{
+            "title": "公司与融资",
+            "content": "公司未公开具体融资金额。（证据：20260701222726445506_d4e6f244, e1）",
+            "source_ids": ["s1"],
+            "evidence_ids": ["e1"],
+        }])
+        assert leaked_id["accepted"] is False and leaked_id["severity"] == "hard", leaked_id
+        assert any("internal" in issue["message"] for issue in leaked_id["issues"]), leaked_id["issues"]
+
         orchestrator_rewrite = (
             "下面的整理基于截至 2025 年的公开资料，并严格受本次研究图谱覆盖范围约束。\n\n"
             "由于引用系统限制，正文不逐条打 [1][2]。\n\n"
@@ -166,6 +175,12 @@ def main():
         assert "研究图谱" not in delivered and "如果你接下来希望" not in delivered
         assert "公司未公开具体融资金额" in delivered
         assert not report_tools.validate_delivery_invariants(delivered), issues
+        assert app_main._should_mark_report_completed(
+            report_saved=True,
+            state_before_write="REPORTING",
+            attempt_summary={"accepted": True, "revision_requested": False},
+            validation_issues=issues,
+        ) is True
 
         fallback, issues, mode = app_main._prepare_report_for_delivery(
             orchestrator_rewrite,
@@ -178,6 +193,12 @@ def main():
         assert mode == "salvaged_reporter", (mode, issues)
         assert "公司未公开具体融资金额" in fallback
         assert not report_tools.validate_delivery_invariants(fallback)
+        assert app_main._should_mark_report_completed(
+            report_saved=True,
+            state_before_write="REPORTING",
+            attempt_summary=soft_compiled,
+            validation_issues=issues,
+        ) is False
 
         context_only, issues, mode = app_main._prepare_report_for_delivery(
             orchestrator_rewrite,
@@ -192,6 +213,12 @@ def main():
         assert "## 研究范围与局限" in context_only
         assert "公司未公开具体融资金额" in context_only
         assert not report_tools.validate_delivery_invariants(context_only)
+        assert app_main._should_mark_report_completed(
+            report_saved=True,
+            state_before_write="REPORTING",
+            attempt_summary={"accepted": False, "revision_requested": False},
+            validation_issues=issues,
+        ) is False
 
         with TemporaryDirectory() as temp_dir:
             graph_manager_tools.configure(temp_dir)
