@@ -1,0 +1,329 @@
+{
+  "chapter_id": 3,
+  "title": "技术路线-公司-区域矩阵：中美欧及其他地区格局",
+  "query_ids": [
+    "20260702204859637455_41dc02dc",
+    "20260702204859796566_6a13cd27",
+    "20260702210734336412_95a61ccb"
+  ],
+  "source_ids": [
+    "20260702205420427888_2bd9c4b0",
+    "20260702205420499348_1ca39e9a",
+    "20260702205420542395_2466b7f9",
+    "20260702205420587996_83a57d4a",
+    "20260702205420629658_38452154",
+    "20260702205532060585_79b003ca",
+    "20260702205532099715_cc21568c",
+    "20260702205532144879_6905e212",
+    "20260702205630950694_b86b93fc",
+    "20260702205630994060_8615dbb1",
+    "20260702205631072977_1237d017",
+    "20260702205631120445_19126b01"
+  ],
+  "evidence_ids": [
+    "20260702205423484199_d784b675",
+    "20260702205535709782_74d7dbfa",
+    "20260702205423948173_5f582c0e",
+    "20260702205423299716_26c7c3d4",
+    "20260702205536013276_f59ee46d",
+    "20260702205535300390_e1ed3592",
+    "20260702205535911184_365b14fe",
+    "20260702205420587996_83a57d4a",
+    "20260702205420542395_2466b7f9",
+    "20260702205812347888_7318706a",
+    "20260702205811285473_d48c6b30",
+    "20260702205811397860_138419a9",
+    "20260702205536763136_19d6774f",
+    "20260702205811871605_25b94f2c",
+    "20260702205424730368_582dd231",
+    "20260702205818813341_768e2c70",
+    "20260702205636175897_cbb65a0b",
+    "20260702205636362823_1be23d5f",
+    "20260702205636637166_69553ad4",
+    "20260702205819019077_4924f535",
+    "20260702205536217509_9841c731",
+    "20260702205536318993_d8043151",
+    "20260702205811651564_e2dbc3c7",
+    "20260702205819169116_cd6dd1c2",
+    "20260702205819284101_4d7228c6",
+    "20260702205818353109_f0a5501f",
+    "20260702205818528681_c70fe043",
+    "20260702205818602151_bc4ef787",
+    "20260702205818707561_d470039a",
+    "20260702205818917100_9812cbfe",
+    "20260702205423854965_19444466",
+    "20260702205424137004_10c287ff",
+    "20260702205811793672_270c395d",
+    "20260702205812090200_3286ac0f",
+    "20260702205424598065_d2bf7ead",
+    "20260702205424824387_d1829757",
+    "20260702205424226457_f893fea1",
+    "20260702210527613940_a74d4724",
+    "20260702205812168293_84bed8dc",
+    "20260702205425373023_d9cc3bd6",
+    "20260702210527968916_b16330e8"
+  ],
+  "section_brief": {
+    "chapter_id": 3,
+    "chapter_title": "技术路线-公司-区域矩阵：中美欧及其他地区格局",
+    "chapter_goals": [
+      "构建“技术路线-公司-地区”映射，形成代表性公司清单",
+      "比较不同路线在中美欧及其他地区的代表企业分布与集中度",
+      "结合市场研究数据分析全球具身智能产品类型与区域分布"
+    ],
+    "section_plan": "围绕人形机器人、移动机器人、服务机器人等产品类别，列出美国、中国、欧洲及其他（日本、韩国等）的代表公司，给出矩阵式对照与文字分析，利用Humanoid Index、EVST、RoboZaps和UBTECH等案例说明区域分布与集中格局。",
+    "focus_queries": [
+      {
+        "query_id": "20260702210734336412_95a61ccb",
+        "query_handle": "q2.1",
+        "query_text": "2020-2026年美国具身智能与人形机器人公司和研究机构（Agility Robotics Digit、Figure AI Figure 02、Tesla Optimus、Boston Dynamics Atlas/Stretch、Apptronik Apollo、1X Technologies 美国业务NEO/EVE、Collaborative Robotics协作机器人、人形移动操作机器人、Diligent Robotics Moxi、Sarcos Technology and Robotics及suitX Guardian XO/外骨骼系列、Reflex Robotics人形机器人项目、Richtech Robotics服务机器人与类人形产品、Persona AI人形或拟人机器人、HEBI Robotics与人形相关模块），以及美国研究机构如Toyota Research Institute Los Altos实验室（T-HR3、人形机器人与Large Behavior Models）、Field AI（Caltech/JPL系机器人基础模型）等的总部城市州别、公司或研究机构属性、具身智能或人形机器人旗舰产品/项目名称，并基于Humanoid Index、EVST文章、RoboZaps文章和Ross Dawson相关材料确认其是否为美国实体，同时区分并标注Unitree、AgiBot、Sanctuary AI、UBTECH、Galaxea等非美国公司，在此基础上形成美国具身智能/人形机器人代表性公司与研究机构清单，以及美国与非美国主体在全球人形机器人领域的数量与区域分布对比说明"
+      },
+      {
+        "query_id": "20260702204859796566_6a13cd27",
+        "query_handle": "q2",
+        "query_text": "United States embodied AI companies humanoid robots multimodal reinforcement learning key players 2020-2026"
+      },
+      {
+        "query_id": "20260702204859637455_41dc02dc",
+        "query_handle": "q1",
+        "query_text": "全球 具身智能 embodied AI 主要 技术 路线 分类 多模态 强化 学习 端云 协同 总结 综述 2023-2026"
+      }
+    ],
+    "summary": "“Embodied AI Market by Product Type [Robots (Humanoid Robots, Mobile Robots, Industrial Robots, Service Robots, Cobots), Exoskeletons, Autonomous Systems, Smart Appliances], Level of Embodiment (Level 1, Level 2, Level 3) - Global Forecast to 2030.” “The top 8 humanoid robot companies to watch in 2026 are Figure AI, Agility Robotics, Tesla, Boston Dynamics, Apptronik, 1X Technologies, Unitree Robotics, and AgiBot. We ranked them on three criteria: commercial deployment scale, hardware technical maturity (degrees of freedom, payload, locomotion reliability), and software stack depth, specifically whether each company has moved beyond teleoperation toward autonomous or vision-language-action (VLA) model-driven operation.”",
+    "coverage_notes": [
+      "top_evidence_items=8",
+      "disclosed_conflicts=0",
+      "comparison scaffolding available"
+    ]
+  },
+  "top_evidence_ids": [
+    "20260702205423299716_26c7c3d4",
+    "20260702205423394046_3d7d84dc",
+    "20260702205423484199_d784b675",
+    "20260702205423576258_4c2f733b",
+    "20260702205423666691_e13979e5",
+    "20260702205535300390_e1ed3592",
+    "20260702205535404782_4be76417",
+    "20260702205535505607_89f67612"
+  ],
+  "top_source_ids": [
+    "20260702205420499348_1ca39e9a",
+    "20260702205420427888_2bd9c4b0",
+    "20260702205420587996_83a57d4a",
+    "20260702205420629658_38452154",
+    "20260702205532099715_cc21568c",
+    "20260702205532060585_79b003ca"
+  ],
+  "query_evidence_digests": [
+    {
+      "query_id": "20260702210734336412_95a61ccb",
+      "query_handle": "q2.1",
+      "query_text": "2020-2026年美国具身智能与人形机器人公司和研究机构（Agility Robotics Digit、Figure AI Figure 02、Tesla Optimus、Boston Dynamics Atlas/Stretch、Apptronik Apollo、1X Technologies 美国业务NEO/EVE、Collaborative Robotics协作机器人、人形移动操作机器人、Diligent Robotics Moxi、Sarcos Technology and Robotics及suitX Guardian XO/外骨骼系列、Reflex Robotics人形机器人项目、Richtech Robotics服务机器人与类人形产品、Persona AI人形或拟人机器人、HEBI Robotics与人形相关模块），以及美国研究机构如Toyota Research Institute Los Altos实验室（T-HR3、人形机器人与Large Behavior Models）、Field AI（Caltech/JPL系机器人基础模型）等的总部城市州别、公司或研究机构属性、具身智能或人形机器人旗舰产品/项目名称，并基于Humanoid Index、EVST文章、RoboZaps文章和Ross Dawson相关材料确认其是否为美国实体，同时区分并标注Unitree、AgiBot、Sanctuary AI、UBTECH、Galaxea等非美国公司，在此基础上形成美国具身智能/人形机器人代表性公司与研究机构清单，以及美国与非美国主体在全球人形机器人领域的数量与区域分布对比说明",
+      "importance": "core",
+      "source_count_snapshot": null,
+      "top_evidence_ids": [],
+      "top_source_ids": [],
+      "digest_lines": []
+    },
+    {
+      "query_id": "20260702204859796566_6a13cd27",
+      "query_handle": "q2",
+      "query_text": "United States embodied AI companies humanoid robots multimodal reinforcement learning key players 2020-2026",
+      "importance": "core",
+      "source_count_snapshot": 5,
+      "top_evidence_ids": [
+        "20260702205423299716_26c7c3d4",
+        "20260702205423394046_3d7d84dc",
+        "20260702205423484199_d784b675",
+        "20260702205423576258_4c2f733b",
+        "20260702205423666691_e13979e5"
+      ],
+      "top_source_ids": [
+        "20260702205420499348_1ca39e9a",
+        "20260702205420427888_2bd9c4b0",
+        "20260702205420587996_83a57d4a"
+      ],
+      "digest_lines": [
+        "“SoftBank Robotics Group leads the embodied AI market with humanoid robots like Pepper and NAO, known for emotional AI and interactive learning in service and healthcare.”",
+        "“The top 8 humanoid robot companies to watch in 2026 are Figure AI, Agility Robotics, Tesla, Boston Dynamics, Apptronik, 1X Technologies, Unitree Robotics, and AgiBot. We ranked them on three criteria: commercial deployment scale, hardware technical maturity (degrees of freedom, payload, locomotion reliability), and software stack depth, specifically whether each company has moved beyond teleoperation toward autonomous or vision-language-action (VLA) model-driven operation.”",
+        "“Embodied AI Market by Product Type [Robots (Humanoid Robots, Mobile Robots, Industrial Robots, Service Robots, Cobots), Exoskeletons, Autonomous Systems, Smart Appliances], Level of Embodiment (Level 1, Level 2, Level 3) - Global Forecast to 2030.”",
+        "“The product offerings of the company include humanoid robots, cleaning robots, and delivery robots. The embodied AI products include Pepper, NAO, Whiz, Scrubber, RS26, Keenbot, Servi, Delivery X1, BellaBot, and KittyBot.”",
+        "“TL;DR — Top Humanoid Robot Companies in 2026 * **Most valuable:** Figure AI ($39B valuation) * **Cheapest you can buy:** Unitree G1 ($16,000) * **Most experienced:** Boston Dynamics (30+ years) * **Biggest production scale:** Tesla (targeting 1M units/year) * **First commercial deployment:** Agility Robotics Digit * **Best for home:** 1X NEO ($20,000 or $499/mo)”"
+      ]
+    },
+    {
+      "query_id": "20260702204859637455_41dc02dc",
+      "query_handle": "q1",
+      "query_text": "全球 具身智能 embodied AI 主要 技术 路线 分类 多模态 强化 学习 端云 协同 总结 综述 2023-2026",
+      "importance": "core",
+      "source_count_snapshot": 9,
+      "top_evidence_ids": [
+        "20260702205535300390_e1ed3592",
+        "20260702205535404782_4be76417",
+        "20260702205535505607_89f67612",
+        "20260702205535607778_33e4bba9",
+        "20260702205535709782_74d7dbfa"
+      ],
+      "top_source_ids": [
+        "20260702205420629658_38452154",
+        "20260702205532099715_cc21568c",
+        "20260702205532060585_79b003ca",
+        "20260702205532144879_6905e212"
+      ],
+      "digest_lines": [
+        "“Having raised nearly a billion dollars (about US $940 million) prior to 2022, Shenzhen-based UBTECH Robotics ... In December 2023 UBTECH listed on the Hong Kong Stock Exchange and raised a further HK $931 million (≈ US $119 million) in a February 2025 follow-on offering. The company unveiled Walker S, pivoting the humanoid toward industrial inspection, logistics and service-robotics applications in line with China’s national embodied-AI roadmap.”",
+        "“多模态大模型（MM-LLM）通过融合文本、图像、语音等异构信息，解决了传统模型 ‘感官单一’ 的问题。世界模型（World Models, WMs）则为智能体提供了‘预测未来’的能力，通过构建环境动态的内部表征实现预测推理，具身智能（Embodied AI）则将这种能力落地于物理世界，完成‘感知 - 决策 - 执行’的闭环。三者的协同融合，正在推动人工智能从‘单一感知’到‘多维感知’，从‘被动认知’ 到 ‘主动预测’，迈向‘统一感知与决策’的新阶段，这也是通向通用人工智能（AGI）的必然发展趋势。”",
+        "“The top 8 humanoid robot companies to watch in 2026 are Figure AI, Agility Robotics, Tesla, Boston Dynamics, Apptronik, 1X Technologies, Unitree Robotics, and AgiBot. We ranked them on three criteria: commercial deployment scale, hardware technical maturity (degrees of freedom, payload, locomotion reliability), and software stack depth, specifically whether each company has moved beyond teleoperation toward autonomous or vision-language-action (VLA) model-driven operation.”",
+        "图5标题：中文为“具身智能的不同架构举例”，英文为“Examples of different architectures in embodied AI”，显示论文中通过示意图展示多种具身智能系统架构示例。",
+        "“Embodied AI Market by Product Type [Robots (Humanoid Robots, Mobile Robots, Industrial Robots, Service Robots, Cobots), Exoskeletons, Autonomous Systems, Smart Appliances], Level of Embodiment (Level 1, Level 2, Level 3) - Global Forecast to 2030.”"
+      ]
+    }
+  ],
+  "lead_candidates": [
+    {
+      "text": "“Embodied AI Market by Product Type [Robots (Humanoid Robots, Mobile Robots, Industrial Robots, Service Robots, Cobots), Exoskeletons, Autonomous Systems, Smart Appliances], Level of Embodiment (Level 1, Level 2, Level 3) - Global Forecast to 2030.”",
+      "query_ids": [
+        "20260702204859796566_6a13cd27",
+        "20260702204859637455_41dc02dc"
+      ],
+      "evidence_ids": [
+        "20260702205423484199_d784b675",
+        "20260702205535709782_74d7dbfa"
+      ],
+      "source_ids": [
+        "20260702205420499348_1ca39e9a",
+        "20260702205532099715_cc21568c"
+      ]
+    },
+    {
+      "text": "“The top 8 humanoid robot companies to watch in 2026 are Figure AI, Agility Robotics, Tesla, Boston Dynamics, Apptronik, 1X Technologies, Unitree Robotics, and AgiBot. We ranked them on three criteria: commercial deployment scale, hardware technical maturity (degrees of freedom, payload, locomotion reliability), and software stack depth, specifically whether each company has moved beyond teleoperation toward autonomous or vision-language-action (VLA) model-driven operation.”",
+      "query_ids": [
+        "20260702204859796566_6a13cd27",
+        "20260702204859637455_41dc02dc"
+      ],
+      "evidence_ids": [
+        "20260702205423394046_3d7d84dc",
+        "20260702205535505607_89f67612"
+      ],
+      "source_ids": [
+        "20260702205420427888_2bd9c4b0",
+        "20260702205532060585_79b003ca"
+      ]
+    }
+  ],
+  "comparison_slots": [
+    {
+      "slot_label": "技术路线-公司-区域矩阵：中美欧及其他地区格局",
+      "query_ids": [
+        "20260702210734336412_95a61ccb",
+        "20260702204859796566_6a13cd27",
+        "20260702204859637455_41dc02dc"
+      ],
+      "evidence_ids": [
+        "20260702205423299716_26c7c3d4",
+        "20260702205423394046_3d7d84dc",
+        "20260702205423484199_d784b675",
+        "20260702205423576258_4c2f733b",
+        "20260702205423666691_e13979e5",
+        "20260702205535300390_e1ed3592",
+        "20260702205535404782_4be76417",
+        "20260702205535505607_89f67612",
+        "20260702205535607778_33e4bba9",
+        "20260702205535709782_74d7dbfa"
+      ],
+      "source_ids": [
+        "20260702205420499348_1ca39e9a",
+        "20260702205420427888_2bd9c4b0",
+        "20260702205420587996_83a57d4a",
+        "20260702205420629658_38452154",
+        "20260702205532099715_cc21568c",
+        "20260702205532060585_79b003ca",
+        "20260702205532144879_6905e212"
+      ],
+      "supporting_points": [
+        {
+          "query_id": "20260702204859796566_6a13cd27",
+          "query_handle": "q2",
+          "text": "“SoftBank Robotics Group leads the embodied AI market with humanoid robots like Pepper and NAO, known for emotional AI and interactive learning in service and healthcare.”",
+          "evidence_ids": [
+            "20260702205423299716_26c7c3d4",
+            "20260702205423394046_3d7d84dc",
+            "20260702205423484199_d784b675",
+            "20260702205423576258_4c2f733b",
+            "20260702205423666691_e13979e5"
+          ],
+          "source_ids": [
+            "20260702205420499348_1ca39e9a",
+            "20260702205420427888_2bd9c4b0",
+            "20260702205420587996_83a57d4a"
+          ]
+        },
+        {
+          "query_id": "20260702204859637455_41dc02dc",
+          "query_handle": "q1",
+          "text": "“Having raised nearly a billion dollars (about US $940 million) prior to 2022, Shenzhen-based UBTECH Robotics ... In December 2023 UBTECH listed on the Hong Kong Stock Exchange and raised a further HK $931 million (≈ US $119 million) in a February 2025 follow-on offering. The company unveiled Walker S, pivoting the humanoid toward industrial inspection, logistics and service-robotics applications in line with China’s national embodied-AI roadmap.”",
+          "evidence_ids": [
+            "20260702205535300390_e1ed3592",
+            "20260702205535404782_4be76417",
+            "20260702205535505607_89f67612",
+            "20260702205535607778_33e4bba9",
+            "20260702205535709782_74d7dbfa"
+          ],
+          "source_ids": [
+            "20260702205420629658_38452154",
+            "20260702205532099715_cc21568c",
+            "20260702205532060585_79b003ca",
+            "20260702205532144879_6905e212"
+          ]
+        }
+      ]
+    }
+  ],
+  "entity_profiles": [
+    {
+      "entity_key": "us_companies",
+      "display_label": "us_companies",
+      "query_ids": [
+        "20260702204859796566_6a13cd27"
+      ],
+      "evidence_ids": [
+        "20260702205423484199_d784b675",
+        "20260702205423299716_26c7c3d4",
+        "20260702205423666691_e13979e5"
+      ],
+      "source_ids": [
+        "20260702205420499348_1ca39e9a",
+        "20260702205420587996_83a57d4a"
+      ],
+      "profile_points": [
+        "“Embodied AI Market by Product Type [Robots (Humanoid Robots, Mobile Robots, Industrial Robots, Service Robots, Cobots), Exoskeletons, Autonomous Systems, Smart Appliances], Level of Embodiment (Level 1, Level 2, Level 3) - Global Forecast to 2030.”",
+        "“SoftBank Robotics Group leads the embodied AI market with humanoid robots like Pepper and NAO, known for emotional AI and interactive learning in service and healthcare.”",
+        "“TL;DR — Top Humanoid Robot Companies in 2026 * **Most valuable:** Figure AI ($39B valuation) * **Cheapest you can buy:** Unitree G1 ($16,000) * **Most experienced:** Boston Dynamics (30+ years) * **Biggest production scale:** Tesla (targeting 1M units/year) * **First commercial deployment:** Agility Robotics Digit * **Best for home:** 1X NEO ($20,000 or $499/mo)”"
+      ]
+    },
+    {
+      "entity_key": "global_routes",
+      "display_label": "global_routes",
+      "query_ids": [
+        "20260702204859637455_41dc02dc"
+      ],
+      "evidence_ids": [
+        "20260702205535709782_74d7dbfa",
+        "20260702205535300390_e1ed3592",
+        "20260702205535505607_89f67612"
+      ],
+      "source_ids": [
+        "20260702205532099715_cc21568c",
+        "20260702205420629658_38452154",
+        "20260702205532060585_79b003ca"
+      ],
+      "profile_points": [
+        "“Embodied AI Market by Product Type [Robots (Humanoid Robots, Mobile Robots, Industrial Robots, Service Robots, Cobots), Exoskeletons, Autonomous Systems, Smart Appliances], Level of Embodiment (Level 1, Level 2, Level 3) - Global Forecast to 2030.”",
+        "“Having raised nearly a billion dollars (about US $940 million) prior to 2022, Shenzhen-based UBTECH Robotics ... In December 2023 UBTECH listed on the Hong Kong Stock Exchange and raised a further HK $931 million (≈ US $119 million) in a February 2025 follow-on offering. The company unveiled Walker S, pivoting the humanoid toward industrial inspection, logistics and service-robotics applications in line with China’s national embodied-AI roadmap.”",
+        "“The top 8 humanoid robot companies to watch in 2026 are Figure AI, Agility Robotics, Tesla, Boston Dynamics, Apptronik, 1X Technologies, Unitree Robotics, and AgiBot. We ranked them on three criteria: commercial deployment scale, hardware technical maturity (degrees of freedom, payload, locomotion reliability), and software stack depth, specifically whether each company has moved beyond teleoperation toward autonomous or vision-language-action (VLA) model-driven operation.”"
+      ]
+    }
+  ],
+  "disclosed_conflict_ids": [],
+  "section_type": "body"
+}

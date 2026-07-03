@@ -88,6 +88,137 @@ _OUTLINE_MARKDOWN_FILE = ".report_outline.md"
 _CHAPTER_DIR = ".report_chapters"
 _DRAFT_FILE = ".report_draft.md"
 _CHAPTER_META_SUFFIX = ".meta.json"
+_ASCII_SLOT_LABEL_RE = re.compile(r"^[a-z0-9][a-z0-9 _-]*$")
+_LEAD_SLOT_KEYWORDS = (
+    "lead",
+    "summary",
+    "overview",
+    "executive summary",
+    "introduction",
+    "摘要",
+    "总览",
+    "概览",
+    "概述",
+    "导读",
+    "引言",
+)
+_COMPARISON_SLOT_KEYWORDS = (
+    "comparison",
+    "compare",
+    "difference",
+    "vs",
+    "比较",
+    "对比",
+    "矩阵",
+    "差异",
+)
+_ENTITY_PROFILE_SLOT_KEYWORDS = (
+    "entity profile",
+    "company profile",
+    "profile",
+    "画像",
+    "主体画像",
+    "企业画像",
+    "公司画像",
+    "团队画像",
+)
+_CANONICAL_SLOT_ALIASES = {
+    "comparison": (
+        "comparison",
+        "compare",
+        "comparison matrix",
+        "matrix comparison",
+        "vs",
+        "difference",
+        "比较",
+        "对比",
+        "比较矩阵",
+        "对比矩阵",
+        "跨公司对比矩阵",
+        "公司对比矩阵",
+        "差异对比",
+    ),
+    "lead": (
+        "lead",
+        "lead section",
+        "summary",
+        "overview",
+        "executive summary",
+        "introduction",
+        "摘要",
+        "总览",
+        "概览",
+        "概述",
+        "导读",
+        "引言",
+    ),
+    "entity_profile": (
+        "entity_profile",
+        "entity profile",
+        "company profile",
+        "profile",
+        "画像",
+        "主体画像",
+        "企业画像",
+        "公司画像",
+        "团队画像",
+    ),
+    "technical_routes_overview": (
+        "technical_routes_overview",
+        "technical routes overview",
+        "technical route overview",
+        "technology routes overview",
+        "技术路线概览",
+        "技术路径概览",
+        "技术路线总览",
+        "技术路径总览",
+    ),
+    "industry_landscape_summary": (
+        "industry_landscape_summary",
+        "industry landscape summary",
+        "industry landscape",
+        "market landscape summary",
+        "行业格局总结",
+        "行业格局概览",
+        "产业格局概览",
+        "行业景观总结",
+    ),
+    "commercialization_progress": (
+        "commercialization_progress",
+        "commercialization progress",
+        "commercial progress",
+        "go to market progress",
+        "商业化进展",
+        "商业化推进",
+        "商业落地进展",
+        "落地进展",
+    ),
+    "financing_status": (
+        "financing_status",
+        "financing status",
+        "funding status",
+        "fundraising status",
+        "融资状态",
+        "融资情况",
+        "融资进展",
+        "资本状态",
+        "融资公开信息",
+    ),
+    "team_profile": (
+        "team_profile",
+        "team profile",
+        "team overview",
+        "团队画像",
+        "团队概况",
+        "团队简介",
+        "核心团队画像",
+    ),
+}
+_SLOT_ALIAS_TO_CANONICAL = {
+    re.sub(r"\s+", " ", alias.replace("_", " ").replace("-", " ").strip().lower()): canonical
+    for canonical, aliases in _CANONICAL_SLOT_ALIASES.items()
+    for alias in (canonical, *aliases)
+}
 
 
 def _artifact_root(output_dir: Optional[str]) -> Path:
@@ -136,6 +267,112 @@ def _read_json_file(path: Path) -> dict[str, Any]:
 def _write_json_file(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def _slot_alias_key(value: Any) -> str:
+    """Return a normalized lookup key for one slot label alias."""
+    return re.sub(
+        r"\s+",
+        " ",
+        str(value or "").strip().lower().replace("_", " ").replace("-", " "),
+    ).strip()
+
+
+def canonicalize_slot_label(value: Any) -> str:
+    """Return one canonical slot label from an explicit whitelist plus mild formatting normalization."""
+    text = str(value or "").strip()
+    if not text:
+        return ""
+    key = _slot_alias_key(text)
+    if key in _SLOT_ALIAS_TO_CANONICAL:
+        return _SLOT_ALIAS_TO_CANONICAL[key]
+    if _ASCII_SLOT_LABEL_RE.fullmatch(key):
+        return re.sub(r"[\s-]+", "_", key).strip("_")
+    return text
+
+
+def canonicalize_slot_labels(values: Any) -> list[str]:
+    """Return canonical, de-duplicated slot labels in first-seen order."""
+    if isinstance(values, str):
+        values = [values]
+    if not isinstance(values, list):
+        return []
+    canonical = [canonicalize_slot_label(value) for value in values]
+    return list(dict.fromkeys([value for value in canonical if value]))
+
+
+def infer_slot_labels_from_section(
+    *,
+    title: str = "",
+    section_plan: str = "",
+    section_type: Optional[str] = None,
+    goals: Optional[list[str]] = None,
+) -> list[str]:
+    """Infer structural delivery slots from chapter semantics without changing persisted schema."""
+    section_slots = canonicalize_slot_labels([section_type] if section_type else [])
+    coverage = set(section_slots)
+    haystack = "\n".join([
+        str(title or ""),
+        str(section_plan or ""),
+        "\n".join(str(goal or "") for goal in goals or []),
+    ]).lower()
+    if any(keyword in haystack for keyword in _LEAD_SLOT_KEYWORDS):
+        coverage.add("lead")
+    if any(keyword in haystack for keyword in _COMPARISON_SLOT_KEYWORDS):
+        coverage.add("comparison")
+    if any(keyword in haystack for keyword in _ENTITY_PROFILE_SLOT_KEYWORDS):
+        coverage.add("entity_profile")
+    return sorted(coverage)
+
+
+def infer_delivery_slot_coverage(
+    output_dir: Optional[str],
+    planning_assets: Optional[dict[str, Any]] = None,
+) -> list[str]:
+    """Return canonical slots covered by existing planning assets and report artifacts."""
+    coverage: set[str] = set()
+    assets = planning_assets or {}
+    if assets.get("lead_candidates"):
+        coverage.add("lead")
+    if assets.get("comparison_slots"):
+        coverage.add("comparison")
+    if assets.get("entity_profiles"):
+        coverage.add("entity_profile")
+
+    outline = _read_json_file(_outline_path(output_dir))
+    outline_assets = outline.get("planning_assets") or {}
+    if outline_assets.get("lead_candidates"):
+        coverage.add("lead")
+    if outline_assets.get("comparison_slots"):
+        coverage.add("comparison")
+    if outline_assets.get("entity_profiles"):
+        coverage.add("entity_profile")
+    for chapter in outline.get("chapters") or []:
+        coverage.update(infer_slot_labels_from_section(
+            title=str(chapter.get("title") or ""),
+            section_plan=str(chapter.get("section_plan") or ""),
+            section_type=chapter.get("section_type"),
+            goals=[str(goal) for goal in chapter.get("goals") or [] if str(goal).strip()],
+        ))
+
+    chapter_root = (Path(output_dir) if output_dir else Path(".")) / _CHAPTER_DIR
+    if chapter_root.exists():
+        for meta_path in chapter_root.glob(f"*{_CHAPTER_META_SUFFIX}"):
+            meta = _read_json_file(meta_path)
+            if meta.get("lead_candidates"):
+                coverage.add("lead")
+            if meta.get("comparison_slots"):
+                coverage.add("comparison")
+            if meta.get("entity_profiles"):
+                coverage.add("entity_profile")
+            brief = meta.get("section_brief") or {}
+            coverage.update(infer_slot_labels_from_section(
+                title=str(meta.get("title") or brief.get("chapter_title") or ""),
+                section_plan=str(brief.get("section_plan") or ""),
+                section_type=meta.get("section_type"),
+                goals=[str(goal) for goal in brief.get("chapter_goals") or [] if str(goal).strip()],
+            ))
+    return sorted(coverage)
 
 
 def _render_outline_markdown(title: str, chapters: list[dict[str, Any]]) -> str:

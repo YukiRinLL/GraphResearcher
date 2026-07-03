@@ -1,0 +1,125 @@
+{
+  "chapter_id": 3,
+  "title": "技术路线间的系统对比：数据需求、泛化能力与工程复杂度",
+  "query_ids": [
+    "20260702152640724069_2ea24881",
+    "20260702160008667003_dc1f0a1f",
+    "20260702160924603592_b5f30b2f",
+    "20260702162256109433_5bffab19"
+  ],
+  "source_ids": [
+    "20260702151855707416_0f6d4507",
+    "20260702151855743850_af5e94da",
+    "20260702151855672073_474a9cc4",
+    "20260702151855785973_336d63ca"
+  ],
+  "evidence_ids": [
+    "20260702151858975811_ca4f0588",
+    "20260702151938137785_d9fa44fd",
+    "20260702151859066723_a0341b6c",
+    "20260702151938267928_296cff54",
+    "20260702160341851914_253aab92",
+    "20260702151938461665_6fad8a16",
+    "20260702151900086040_f117ad11",
+    "20260702152428402553_b7c1cdf0",
+    "20260702152820530080_891d7968",
+    "20260702160342017495_e764c768",
+    "20260702151937945571_368e99e7",
+    "20260702151859357755_a647dab6",
+    "20260702160342131017_eedf4ee2",
+    "20260702160342237142_b1ea04b7",
+    "20260702151859727871_8846a1f3",
+    "20260702160341753410_36f5eeee",
+    "20260702151938981535_91ca056d",
+    "20260702151859906956_de831dd2",
+    "20260702152428787533_e5df95fe",
+    "20260702162207298358_afe36cc1",
+    "20260702162206683708_34f6b5d3"
+  ],
+  "section_brief": {
+    "chapter_id": 3,
+    "chapter_title": "技术路线间的系统对比：数据需求、泛化能力与工程复杂度",
+    "chapter_goals": [
+      "比较端到端VLA、分层大模型、层级LLM+RL、世界模型辅助四类路线在数据规模与质量需求、任务表现、跨场景/跨本体泛化、控制实时性与工程复杂度方面的差异",
+      "结合具体模型与实验数据给出集中比较与阶段性判断"
+    ],
+    "section_plan": "围绕几个关键比较维度分段展开，穿插RT-1、Gemini Robotics-ER、Helix等模型已报道数据，最后总结各路线适用场景和当前瓶颈。",
+    "focus_queries": [
+      {
+        "query_id": "20260702152640724069_2ea24881",
+        "query_handle": "q2.3",
+        "query_text": "2022-2025 全球 具身智能 技术路线 分类 对照 端到端 VLA 路线 分层大模型 LLM/VLM+skill APIs 路线 层级 LLM+RL 路线 世界模型辅助 路线 数据驱动/数据金字塔 路线 模块化分层 路线 本体/形态 路线 技术关键词 与 代表模型 系统化 总结 对比 结合 Firoozi et al. 2023 Foundation models in robotics Hu et al. 2023 Toward general-purpose robots via foundation models Liu et al. 2024 Aligning cyber space with physical world 以及 2022-2025 中国信通院 具身智能/机器人基础模型 报告 与 券商产业研究 报告 提取 modular pipeline LLM for planning policy learning from demonstration world-model-based control 等英文分类用语 与 中文术语 模块化分层 分层大模型 端到端 VLA 世界模型 层级 LLM+RL 的映射 差异 形成 路线–技术关键词–代表模型 对照表 并 比较 端到端 VLA 分层大模型 层级 LLM+RL 世界模型辅助 路线 在 数据规模与质量需求 短程/长程任务表现 跨场景与跨本体泛化 控制频率/实时性 工程复杂度 上的 优势 与 瓶颈 引用 RT-1 RT-2 OpenVLA Octo π0 Helix UniAct MLA SayCan PaLM-E Gemini Robotics-ER RoBridge ExploreVLM RoboBrain 2.0 Hi-Core RLinF SimpleVLA-RL Cosmos Genie Ctrl-World DayDreamer RoboDreamPolicy ManiBox GEN-0 Helix 7-9 Hz 规划 200 Hz 控制 等 具体数据 与 例子"
+      },
+      {
+        "query_id": "20260702162256109433_5bffab19",
+        "query_handle": "q2.6",
+        "query_text": "2022-2025 全球 具身智能 技术路线 分类 对照 总结 模块化分层 路线 分层大模型（LLM/VLM+skill APIs）路线 端到端 VLA 路线 层级 LLM+RL 路线 世界模型辅助 路线 数据驱动/数据金字塔 路线 本体/形态 路线 在不引入新增外部证据 前提下 基于 Firoozi 2023 Hu 2023 Liu 2024 中国信通院具身智能与机器人基础模型报告 及 2022-2025 券商产业研究报告 内容 抽取并整理 每条路线 对应的 核心技术关键词（如 SLAM MPC WBC VLA Diffusion Policy world model hierarchical planning imitation learning reinforcement learning motion control 等） 与 代表性模型或系统（如 RT-1 RT-2 OpenVLA Octo π0 系列 Helix UniAct MLA SayCan PaLM-E Gemini Robotics-ER RoBridge ExploreVLM RoboBrain 2.0 Hi-Core RLinF SimpleVLA-RL Cosmos Genie Ctrl-World DayDreamer RoboDreamPolicy ManiBox GEN-0 等） 形成可直接用于报告的 路线–技术关键词–代表模型/系统 结构化总览 表格 并利用文献与报告中已给出的 具体数据 与 定性描述（如 RT-1 厨房 700+ 任务约 97% 成功率 Gemini Robotics 长程家务任务 20–40% 成功率 Helix 7–9 Hz 规划 与约 200 Hz 控制频率 行业报告中 1–10 Hz 高层规划 vs ≥100 Hz 本体控制 ManiBox/GEN-0 数据幂律 scaling law Sim2Real gap 分析 等） 撰写集中比较段 系统说明 端到端 VLA 分层大模型（LLM/VLM+skill APIs） 层级 LLM+RL 世界模型辅助 四类路线 在 数据规模与质量需求 短程/长程任务表现 跨场景与跨本体泛化能力 控制频率与实时性要求 以及 软硬协同工程复杂度 方面的 主要优势 与 当前瓶颈"
+      },
+      {
+        "query_id": "20260702160924603592_b5f30b2f",
+        "query_handle": "q2.5",
+        "query_text": "2022-2025 全球具身智能技术路线结构化综述：围绕全球具身智能技术路线分类（模块化分层、分层大模型 LLM/VLM+skill APIs、端到端 VLA、层级 LLM+RL、世界模型辅助、数据驱动/数据金字塔、本体/形态），在不新增模型与术语的前提下提炼“路线–技术关键词–代表模型/系统”结构化列表（技术关键词如 SLAM、MPC、WBC、VLA、Diffusion Policy、world model、hierarchical planning、imitation learning、reinforcement learning、motion control 等；代表模型或系统如 RT-1、RT-2、OpenVLA、Octo、π0 系列、Helix、UniAct、MLA、SayCan、PaLM-E、Gemini Robotics-ER、RoBridge、ExploreVLM、RoboBrain 2.0、Hi-Core、RLinf、SimpleVLA-RL、Cosmos、Genie、Ctrl-World、DayDreamer、RoboDreamPolicy 等），并在该对照结构中显式标注每条路线属于控制/算法侧、数据侧或本体/形态侧；同时基于已报道数据与案例（如 RT-1 700+ 厨房任务约97%成功率、Gemini Robotics 长程家务任务20–40%成功率、Helix 7–9 Hz认知规划与约200 Hz控制频率、行业报告中1–10 Hz高层规划 vs ≥100 Hz本体控制、ManiBox/GEN-0 的数据幂律与每10×数据带来近似比例性能提升、Sim2Real gap 分析），系统撰写集中比较段，对比端到端 VLA、分层大模型 LLM/VLM+skill APIs、层级 LLM+RL、世界模型辅助四类路线在数据规模与质量需求、短程/长程任务表现、跨场景与跨本体泛化能力、控制频率与实时性要求以及软硬协同工程复杂度方面的优势与瓶颈，并结合 Firoozi 2023、Hu 2023、Liu 2024 英文 survey 中 modular pipeline、LLM for planning、policy learning from demonstration、world-model-based control 等分类用语，与中国信通院具身智能/机器人基础模型报告及产业/券商研究报告中的“模块化分层、分层大模型、端到端 VLA、世界模型、层级 LLM+RL”等中文术语，给出中英文 / 学术与产业视角下路线命名与分类的映射关系及差异总结，说明学术 survey 按算法/学习范式命名与中文产业/政策报告按工程栈与产品形态命名但在实质路线划分上基本一致的结论"
+      },
+      {
+        "query_id": "20260702160008667003_dc1f0a1f",
+        "query_handle": "q2.4",
+        "query_text": "2022-2025 全球具身智能技术路线结构化对照表与路线差异分析：围绕全球具身智能技术路线分类（模块化分层、分层大模型LLM/VLM+skill APIs、端到端VLA、层级LLM+RL、世界模型辅助、数据驱动/数据金字塔、本体/形态），在已有文献与产业报告基础上（包括 Firoozi 2023 foundation models in robotics、Hu 2023 Toward general-purpose robots via foundation models、Liu 2024 Aligning cyber space with physical world、中国信通院具身智能/机器人基础模型报告及券商产业研究报告），系统整理每条路线的“路线–技术关键词–代表模型”结构化列表（技术关键词如 SLAM、MPC、WBC、VLA、Diffusion Policy、world model、hierarchical planning、imitation learning、reinforcement learning、motion control 等；代表模型或系统如 RT-1、RT-2、OpenVLA、Octo、π0 系列、Helix、UniAct、MLA、SayCan、PaLM-E、Gemini Robotics-ER、RoBridge、ExploreVLM、RoboBrain 2.0、Hi-Core、RLinF、SimpleVLA-RL、Cosmos、Genie、Ctrl-World、DayDreamer、RoboDreamPolicy 等），并在表中显式标注各路线属于控制/算法侧、数据侧或本体/形态侧；同时利用已报道的具体数据和案例（如 RT-1 700+ 厨房任务约97%成功率、Gemini Robotics 长程家务任务20–40%成功率、Helix 7–9 Hz认知规划与约200 Hz控制频率、行业报告中1–10 Hz高层规划 vs ≥100 Hz本体控制、ManiBox/GEN-0 的数据幂律与每10×数据带来近似比例性能提升、Sim2Real gap 分析等），集中撰写比较段，系统对比端到端VLA、分层大模型LLM/VLM+skill APIs、层级LLM+RL、世界模型辅助路线在数据规模与质量需求、短程/长程任务表现、跨场景与跨本体泛化能力、控制频率与实时性要求、软硬协同与工程复杂度上的优势与瓶颈；并基于 Firoozi 2023、Hu 2023、Liu 2024 英文综述中的 modular pipeline、LLM for planning、policy learning from demonstration、world-model-based control 等分类，与中国信通院及产业/券商报告中的“模块化分层、分层大模型、端到端VLA、世界模型、层级LLM+RL”等中文术语，给出一段中英文 / 学术与产业视角的路线命名映射说明，指出一一对应关系及命名差异，总结学术survey按算法/学习范式命名、中文产业/政策报告按工程栈与产品形态命名但在实质路线划分上基本一致的结论"
+      }
+    ],
+    "summary": "",
+    "coverage_notes": [
+      "top_evidence_items=0",
+      "disclosed_conflicts=0",
+      "comparison scaffolding not needed"
+    ]
+  },
+  "top_evidence_ids": [],
+  "top_source_ids": [],
+  "query_evidence_digests": [
+    {
+      "query_id": "20260702152640724069_2ea24881",
+      "query_handle": "q2.3",
+      "query_text": "2022-2025 全球 具身智能 技术路线 分类 对照 端到端 VLA 路线 分层大模型 LLM/VLM+skill APIs 路线 层级 LLM+RL 路线 世界模型辅助 路线 数据驱动/数据金字塔 路线 模块化分层 路线 本体/形态 路线 技术关键词 与 代表模型 系统化 总结 对比 结合 Firoozi et al. 2023 Foundation models in robotics Hu et al. 2023 Toward general-purpose robots via foundation models Liu et al. 2024 Aligning cyber space with physical world 以及 2022-2025 中国信通院 具身智能/机器人基础模型 报告 与 券商产业研究 报告 提取 modular pipeline LLM for planning policy learning from demonstration world-model-based control 等英文分类用语 与 中文术语 模块化分层 分层大模型 端到端 VLA 世界模型 层级 LLM+RL 的映射 差异 形成 路线–技术关键词–代表模型 对照表 并 比较 端到端 VLA 分层大模型 层级 LLM+RL 世界模型辅助 路线 在 数据规模与质量需求 短程/长程任务表现 跨场景与跨本体泛化 控制频率/实时性 工程复杂度 上的 优势 与 瓶颈 引用 RT-1 RT-2 OpenVLA Octo π0 Helix UniAct MLA SayCan PaLM-E Gemini Robotics-ER RoBridge ExploreVLM RoboBrain 2.0 Hi-Core RLinF SimpleVLA-RL Cosmos Genie Ctrl-World DayDreamer RoboDreamPolicy ManiBox GEN-0 Helix 7-9 Hz 规划 200 Hz 控制 等 具体数据 与 例子",
+      "importance": "core",
+      "source_count_snapshot": null,
+      "top_evidence_ids": [],
+      "top_source_ids": [],
+      "digest_lines": []
+    },
+    {
+      "query_id": "20260702162256109433_5bffab19",
+      "query_handle": "q2.6",
+      "query_text": "2022-2025 全球 具身智能 技术路线 分类 对照 总结 模块化分层 路线 分层大模型（LLM/VLM+skill APIs）路线 端到端 VLA 路线 层级 LLM+RL 路线 世界模型辅助 路线 数据驱动/数据金字塔 路线 本体/形态 路线 在不引入新增外部证据 前提下 基于 Firoozi 2023 Hu 2023 Liu 2024 中国信通院具身智能与机器人基础模型报告 及 2022-2025 券商产业研究报告 内容 抽取并整理 每条路线 对应的 核心技术关键词（如 SLAM MPC WBC VLA Diffusion Policy world model hierarchical planning imitation learning reinforcement learning motion control 等） 与 代表性模型或系统（如 RT-1 RT-2 OpenVLA Octo π0 系列 Helix UniAct MLA SayCan PaLM-E Gemini Robotics-ER RoBridge ExploreVLM RoboBrain 2.0 Hi-Core RLinF SimpleVLA-RL Cosmos Genie Ctrl-World DayDreamer RoboDreamPolicy ManiBox GEN-0 等） 形成可直接用于报告的 路线–技术关键词–代表模型/系统 结构化总览 表格 并利用文献与报告中已给出的 具体数据 与 定性描述（如 RT-1 厨房 700+ 任务约 97% 成功率 Gemini Robotics 长程家务任务 20–40% 成功率 Helix 7–9 Hz 规划 与约 200 Hz 控制频率 行业报告中 1–10 Hz 高层规划 vs ≥100 Hz 本体控制 ManiBox/GEN-0 数据幂律 scaling law Sim2Real gap 分析 等） 撰写集中比较段 系统说明 端到端 VLA 分层大模型（LLM/VLM+skill APIs） 层级 LLM+RL 世界模型辅助 四类路线 在 数据规模与质量需求 短程/长程任务表现 跨场景与跨本体泛化能力 控制频率与实时性要求 以及 软硬协同工程复杂度 方面的 主要优势 与 当前瓶颈",
+      "importance": "supporting",
+      "source_count_snapshot": null,
+      "top_evidence_ids": [],
+      "top_source_ids": [],
+      "digest_lines": []
+    },
+    {
+      "query_id": "20260702160924603592_b5f30b2f",
+      "query_handle": "q2.5",
+      "query_text": "2022-2025 全球具身智能技术路线结构化综述：围绕全球具身智能技术路线分类（模块化分层、分层大模型 LLM/VLM+skill APIs、端到端 VLA、层级 LLM+RL、世界模型辅助、数据驱动/数据金字塔、本体/形态），在不新增模型与术语的前提下提炼“路线–技术关键词–代表模型/系统”结构化列表（技术关键词如 SLAM、MPC、WBC、VLA、Diffusion Policy、world model、hierarchical planning、imitation learning、reinforcement learning、motion control 等；代表模型或系统如 RT-1、RT-2、OpenVLA、Octo、π0 系列、Helix、UniAct、MLA、SayCan、PaLM-E、Gemini Robotics-ER、RoBridge、ExploreVLM、RoboBrain 2.0、Hi-Core、RLinf、SimpleVLA-RL、Cosmos、Genie、Ctrl-World、DayDreamer、RoboDreamPolicy 等），并在该对照结构中显式标注每条路线属于控制/算法侧、数据侧或本体/形态侧；同时基于已报道数据与案例（如 RT-1 700+ 厨房任务约97%成功率、Gemini Robotics 长程家务任务20–40%成功率、Helix 7–9 Hz认知规划与约200 Hz控制频率、行业报告中1–10 Hz高层规划 vs ≥100 Hz本体控制、ManiBox/GEN-0 的数据幂律与每10×数据带来近似比例性能提升、Sim2Real gap 分析），系统撰写集中比较段，对比端到端 VLA、分层大模型 LLM/VLM+skill APIs、层级 LLM+RL、世界模型辅助四类路线在数据规模与质量需求、短程/长程任务表现、跨场景与跨本体泛化能力、控制频率与实时性要求以及软硬协同工程复杂度方面的优势与瓶颈，并结合 Firoozi 2023、Hu 2023、Liu 2024 英文 survey 中 modular pipeline、LLM for planning、policy learning from demonstration、world-model-based control 等分类用语，与中国信通院具身智能/机器人基础模型报告及产业/券商研究报告中的“模块化分层、分层大模型、端到端 VLA、世界模型、层级 LLM+RL”等中文术语，给出中英文 / 学术与产业视角下路线命名与分类的映射关系及差异总结，说明学术 survey 按算法/学习范式命名与中文产业/政策报告按工程栈与产品形态命名但在实质路线划分上基本一致的结论",
+      "importance": "supporting",
+      "source_count_snapshot": null,
+      "top_evidence_ids": [],
+      "top_source_ids": [],
+      "digest_lines": []
+    },
+    {
+      "query_id": "20260702160008667003_dc1f0a1f",
+      "query_handle": "q2.4",
+      "query_text": "2022-2025 全球具身智能技术路线结构化对照表与路线差异分析：围绕全球具身智能技术路线分类（模块化分层、分层大模型LLM/VLM+skill APIs、端到端VLA、层级LLM+RL、世界模型辅助、数据驱动/数据金字塔、本体/形态），在已有文献与产业报告基础上（包括 Firoozi 2023 foundation models in robotics、Hu 2023 Toward general-purpose robots via foundation models、Liu 2024 Aligning cyber space with physical world、中国信通院具身智能/机器人基础模型报告及券商产业研究报告），系统整理每条路线的“路线–技术关键词–代表模型”结构化列表（技术关键词如 SLAM、MPC、WBC、VLA、Diffusion Policy、world model、hierarchical planning、imitation learning、reinforcement learning、motion control 等；代表模型或系统如 RT-1、RT-2、OpenVLA、Octo、π0 系列、Helix、UniAct、MLA、SayCan、PaLM-E、Gemini Robotics-ER、RoBridge、ExploreVLM、RoboBrain 2.0、Hi-Core、RLinF、SimpleVLA-RL、Cosmos、Genie、Ctrl-World、DayDreamer、RoboDreamPolicy 等），并在表中显式标注各路线属于控制/算法侧、数据侧或本体/形态侧；同时利用已报道的具体数据和案例（如 RT-1 700+ 厨房任务约97%成功率、Gemini Robotics 长程家务任务20–40%成功率、Helix 7–9 Hz认知规划与约200 Hz控制频率、行业报告中1–10 Hz高层规划 vs ≥100 Hz本体控制、ManiBox/GEN-0 的数据幂律与每10×数据带来近似比例性能提升、Sim2Real gap 分析等），集中撰写比较段，系统对比端到端VLA、分层大模型LLM/VLM+skill APIs、层级LLM+RL、世界模型辅助路线在数据规模与质量需求、短程/长程任务表现、跨场景与跨本体泛化能力、控制频率与实时性要求、软硬协同与工程复杂度上的优势与瓶颈；并基于 Firoozi 2023、Hu 2023、Liu 2024 英文综述中的 modular pipeline、LLM for planning、policy learning from demonstration、world-model-based control 等分类，与中国信通院及产业/券商报告中的“模块化分层、分层大模型、端到端VLA、世界模型、层级LLM+RL”等中文术语，给出一段中英文 / 学术与产业视角的路线命名映射说明，指出一一对应关系及命名差异，总结学术survey按算法/学习范式命名、中文产业/政策报告按工程栈与产品形态命名但在实质路线划分上基本一致的结论",
+      "importance": "supporting",
+      "source_count_snapshot": null,
+      "top_evidence_ids": [],
+      "top_source_ids": [],
+      "digest_lines": []
+    }
+  ],
+  "lead_candidates": [],
+  "comparison_slots": [],
+  "entity_profiles": [],
+  "disclosed_conflict_ids": [],
+  "section_type": "comparison"
+}

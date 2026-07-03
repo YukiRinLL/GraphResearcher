@@ -22,6 +22,16 @@ def main():
             "request": "机器人公司研究",
             "research_goal": "比较机器人公司",
             "language": "zh",
+            "task_archetype": "comparative_matrix",
+            "delivery_contract": {
+                "report_mode": "comparative_matrix",
+                "required_section_types": ["lead", "body", "comparison", "limitations"],
+                "required_slot_labels": ["对比矩阵"],
+                "comparison_required": True,
+                "entity_focus": False,
+                "strict_time_window": False,
+                "prefer_compression_over_expansion": True,
+            },
         },
         "q1": {
             "id": "q1",
@@ -166,6 +176,9 @@ def main():
         context = mm.export_report_context()
         assert "subgraph" not in context and "evidence" not in context and "research_status" not in context
         assert context["reference_registry"][0]["source_id"] == "s1"
+        assert context["task_archetype"] == "comparative_matrix"
+        assert context["delivery_contract"]["comparison_required"] is True
+        assert context["delivery_contract"]["required_slot_labels"] == ["comparison"]
         assert context["query_evidence_digests"][0]["query_id"] == "q1"
         assert context["lead_candidates"]
         assert context["comparison_slots"]
@@ -281,6 +294,8 @@ def main():
             outline_payload = json.loads(outline_json.read_text(encoding="utf-8"))
             assert outline_payload["planning_assets"]["query_evidence_digests"]
             assert tool_context["query_evidence_digests"]
+            assert tool_context["task_archetype"] == "comparative_matrix"
+            assert tool_context["delivery_contract"]["comparison_required"] is True
             outline = graph_manager_tools.commit_report_outline.invoke({
                 "title": "机器人公司研究",
                 "chapters": [{

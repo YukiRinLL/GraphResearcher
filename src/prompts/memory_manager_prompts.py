@@ -1,3 +1,5 @@
+"""Prompt templates for GraphResearcher's MemoryManager workflows."""
+
 init_research = """You are the Query Planner for GraphResearcher.
 Parse the user's research request and produce a compact JSON object that seeds the Research Graph with a set of INITIAL search queries.
 
@@ -6,7 +8,9 @@ Extract:
 2. The expected output/report language.
 3. The requested or reasonably inferred time window, region scope, and source preferences.
 4. A small report-level research contract (`objectives`).
-5. Candidate INITIAL queries and the objective keys each query covers.
+5. The task archetype and delivery contract that describe how the final report should be structured.
+6. A staged query portfolio plan. Only `discovery` queries become initial live queries; `slot_completion` and `deep_dive` stay as planned follow-up work unless later materialized.
+7. Candidate INITIAL queries and the objective keys each query covers.
 
 How to decompose (critical):
 - Split along the request's OWN thematic structure, NOT by geography/region. If the request enumerates dimensions (e.g. technology routes -> representative companies -> {tech path, product progress, commercialization, financing, team}), the top-level split follows that thematic spine. A scope word like "global" is only a qualifier, never a decomposition axis — do not split into North America / China / Europe.
@@ -14,8 +18,13 @@ How to decompose (critical):
   extra example, source verification, or other leaf fact.
 - Default `scope_mode` to `bounded`. Use `exhaustive` only when the user
   explicitly asks for all items, a complete inventory, or exhaustive coverage.
-- Produce a compact candidate set of COARSE queries. The code will choose the
-  smallest subset that covers every must objective.
+- Classify the task into exactly one `task_archetype`:
+  `open_research | entity_article | comparative_matrix | structured_slots | timeline_tracking`.
+- Produce a `delivery_contract` with this exact shape:
+  `{"report_mode": "...", "required_section_types": ["lead","body","comparison","limitations"], "required_slot_labels": ["..."], "comparison_required": bool, "entity_focus": bool, "strict_time_window": bool, "prefer_compression_over_expansion": true}`.
+- Produce a staged `query_portfolio_plan`. Each item must have:
+  `{"plan_id": "...", "portfolio_stage": "discovery|slot_completion|deep_dive", "text": "...", "importance": "core|supporting|peripheral", "objective_keys": ["..."], "acceptance_criteria": ["..."], "slot_targets": ["..."], "section_targets": ["..."], "search_subject_key": "..."}`.
+- Make `initial_queries` the `discovery` subset of the staged plan. The code may still rebalance which discovery items become real Query nodes.
 - Make every query SELF-CONTAINED: each stands on its own with no reference to any other query. Never use "上述/前述/该区域/这些公司/the above/aforementioned" or anything pointing at another query's output. Restate the topic, time window, and region (if any) inside each query.
 
 Query text format:
@@ -41,6 +50,16 @@ Return this JSON shape:
   "region_scope": "requested region scope, or null",
   "source_preferences": ["preferred source category or domain, if specified"],
   "scope_mode": "bounded|exhaustive",
+  "task_archetype": "open_research|entity_article|comparative_matrix|structured_slots|timeline_tracking",
+  "delivery_contract": {
+    "report_mode": "short label for the final report mode",
+    "required_section_types": ["lead", "body", "comparison", "limitations"],
+    "required_slot_labels": ["slot label"],
+    "comparison_required": false,
+    "entity_focus": false,
+    "strict_time_window": false,
+    "prefer_compression_over_expansion": true
+  },
   "objectives": [
     {
       "objective_key": "stable-short-key",
@@ -48,6 +67,19 @@ Return this JSON shape:
       "requirement": "must|should",
       "weight": 1.0,
       "acceptance_criteria": ["minimum reportable standard"]
+    }
+  ],
+  "query_portfolio_plan": [
+    {
+      "plan_id": "stable-short-id",
+      "portfolio_stage": "discovery|slot_completion|deep_dive",
+      "text": "tight self-contained search phrase",
+      "importance": "core|supporting|peripheral",
+      "objective_keys": ["stable-short-key"],
+      "acceptance_criteria": ["specific evidence required"],
+      "slot_targets": ["slot label"],
+      "section_targets": ["lead|body|comparison|limitations"],
+      "search_subject_key": "stable-topic-key"
     }
   ],
   "initial_queries": [
@@ -94,7 +126,10 @@ Rules:
   selects only work with enough report-level marginal value.
 - Each gap needs an importance, a generic gap category, affected objective keys,
   a reusable search subject key, decision impact, expected confidence gain,
-  estimated search rounds, and concrete acceptance criteria.
+  estimated search rounds, concrete acceptance criteria, and where possible the
+  intended `preferred_stage`, `slot_targets`, and `section_targets`.
+- Prefer `slot_completion`, `section_completeness`, or `lead_readiness` when the
+  missing work is primarily about report structure rather than more raw facts.
 - Return `blocked` only when reliable evidence cannot reasonably be obtained.
 
 Return:
@@ -105,9 +140,12 @@ Return:
     {
       "description": "one atomic missing fact or analysis",
       "importance": "core|supporting|peripheral",
-      "gap_category": "missing_core_evidence|fatal_conflict|enrichment|additional_example|verification|detail",
+      "gap_category": "missing_core_evidence|fatal_conflict|enrichment|additional_example|verification|detail|slot_completion|section_completeness|lead_readiness",
+      "preferred_stage": "slot_completion|deep_dive|null",
       "objective_keys": ["affected-report-objective-key"],
       "search_subject_key": "stable-topic-key-for-grouping-related-gaps",
+      "slot_targets": ["delivery slot label"],
+      "section_targets": ["lead|body|comparison|limitations"],
       "decision_impact": 0.0,
       "confidence_gain": 0.0,
       "estimated_search_rounds": 1,
@@ -170,6 +208,9 @@ Author one self-contained child search query that jointly covers the assigned
 atomic gaps sharing one search subject.
 
 Research goal: {research_goal}
+Task archetype: {task_archetype}
+Delivery contract: {delivery_contract}
+Preferred stage: {preferred_stage}
 Parent topic (the subject to deepen, or the parent whose dimensions to complete): {parent_text}
 Existing sibling queries under the attach point (do NOT duplicate their coverage): {sibling_texts}
 Atomic gaps to cover: {gaps}
@@ -179,6 +220,8 @@ Requirements:
 - Inline the parent's concrete subject BY VALUE into every new query (e.g. write "Figure AI 人形机器人 量产进度 2025", never "该公司的量产进度"). Never reference another query: no "上述/前述/该/这些/the above".
 - Each query must be SELF-CONTAINED and a TIGHT natural-language search phrase: key entities + time window, no filler, not a verbose question, not bare keywords, not an instruction to an agent.
 - Cover only the assigned related gaps; do not repeat what the existing siblings already cover.
+- If `preferred_stage=slot_completion`, make the query directly serve the missing slot/section instead of broad background expansion.
+- If `preferred_stage=deep_dive`, make the query directly target verification, conflict resolution, or missing core evidence.
 - Author the query text in the language of the research goal.
 - Tag each query with an importance ("core" / "supporting" / "peripheral") relative to the research goal's core conclusions, judged the same way as the parent's own role.
 - Include concrete acceptance_criteria copied or refined from the assigned atomic gap.

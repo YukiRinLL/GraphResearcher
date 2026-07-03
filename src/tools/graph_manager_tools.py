@@ -165,8 +165,14 @@ def get_research_status(goal_id: Optional[str] = None) -> dict:
 
     next_actions = _mm().get_next_actions()
     status = research_state.get_status(goal_id)
+    goal = research_state.get_goal(goal_id)
+    delivery_readiness = _mm()._compute_delivery_readiness(goal_id, goal=goal)
     status["tree_validation"] = _mm_validate_tree()
     status["next_actions"] = next_actions
+    status["task_archetype"] = goal.get("task_archetype")
+    status["delivery_contract"] = goal.get("delivery_contract") or {}
+    status["delivery_readiness"] = delivery_readiness
+    status["missing_contract_slots"] = delivery_readiness.get("missing_contract_slots", [])
     return status
 
 

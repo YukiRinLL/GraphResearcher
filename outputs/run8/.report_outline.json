@@ -1,0 +1,727 @@
+{
+  "title": "全球具身智能主要技术路线与代表性公司研究（截至2026年7月）",
+  "chapters": [
+    {
+      "chapter_id": 1,
+      "title": "导言：全球具身智能兴起与研究范围",
+      "goals": [
+        "交代具身智能的概念与本报告的研究边界",
+        "概述全球市场规模、产业阶段与投资热度，为后文铺垫",
+        "点出技术路线与区域格局的核心问题与主要争议"
+      ],
+      "query_ids": [
+        "20260702204859637455_41dc02dc",
+        "20260702204900176452_eb53e668"
+      ],
+      "section_plan": "用2-3段文字概括具身智能的定义、与多模态大模型和机器人产业的关系，引用全球与中国市场预测、投资事件数据，说明本报告按“技术路线+公司+区域”展开，并提示数据不完备与时间截面。",
+      "status": "pending"
+    },
+    {
+      "chapter_id": 2,
+      "title": "具身智能主要技术路线的分类与定义",
+      "goals": [
+        "基于综述与产业报告，总结当前具身智能的主要技术路线类型",
+        "围绕模型架构、训练范式、端云协同、多模态与强化学习结合方式给出分类依据",
+        "为每条技术路线列出典型技术特征、优势/局限和代表性公司或机构"
+      ],
+      "query_ids": [
+        "20260702204859637455_41dc02dc",
+        "20260702204859923107_87c2d35c"
+      ],
+      "section_plan": "先从学术综述与产业报告提炼3-5条具身智能技术路线（如：机器人基础模型/世界模型驱动路线、多模态大模型+VLA路线、传统控制与学习混合路线、云端机器人与端云协同路线等），分别定义和分析技术特征，结合Humanoid Index与产业报告给出每条路线的代表公司示例。",
+      "status": "completed",
+      "source_ids": [
+        "20260702205630950694_b86b93fc",
+        "20260702205532060585_79b003ca",
+        "20260702205532099715_cc21568c",
+        "20260702205532144879_6905e212",
+        "20260702205630994060_8615dbb1",
+        "20260702205631072977_1237d017",
+        "20260702205631120445_19126b01",
+        "20260702205420499348_1ca39e9a",
+        "20260702205420587996_83a57d4a",
+        "20260702205420629658_38452154"
+      ],
+      "evidence_ids": [
+        "20260702205536984751_19152504",
+        "20260702210527328198_37e9bc46",
+        "20260702210527068679_27e493cf",
+        "20260702205537088139_ac9715c8",
+        "20260702210528044285_b837a935",
+        "20260702210528206224_643aeb21",
+        "20260702205635439578_3b7f3b6f",
+        "20260702205636175897_cbb65a0b",
+        "20260702205535404782_4be76417",
+        "20260702210527434444_a868ae1c",
+        "20260702205635617751_e8243407",
+        "20260702205636269632_f2a6d507",
+        "20260702205635527532_8f1d86c8",
+        "20260702205635900034_df6cbe31",
+        "20260702205535709782_74d7dbfa",
+        "20260702205423484199_d784b675",
+        "20260702205636362823_1be23d5f",
+        "20260702205636637166_69553ad4",
+        "20260702205537599099_376cfce5",
+        "20260702205535300390_e1ed3592",
+        "20260702210528728939_8c2552cb",
+        "20260702205818353109_f0a5501f",
+        "20260702210529382326_14b877fb",
+        "20260702205819284101_4d7228c6",
+        "20260702210528834642_2f66c0c0",
+        "20260702205635994994_7e10d7ce",
+        "20260702205536175897_cbb65a0b",
+        "20260702205423299716_26c7c3d4",
+        "20260702205423576258_4c2f733b",
+        "20260702210528383209_707caf9e",
+        "20260702205423948173_5f582c0e",
+        "20260702205424226457_f893fea1",
+        "20260702205536217509_9841c731",
+        "20260702205536318993_d8043151",
+        "20260702210528573454_40c7734a",
+        "20260702205634948480_de529dbe",
+        "20260702205636730024_0410ea3b",
+        "20260702205423394046_3d7d84dc",
+        "20260702205423666691_e13979e5",
+        "20260702205535505607_89f67612",
+        "20260702205819169116_cd6dd1c2",
+        "20260702205420587996_83a57d4a",
+        "20260702205420542395_2466b7f9"
+      ],
+      "disclosed_conflict_ids": [],
+      "section_type": "body"
+    },
+    {
+      "chapter_id": 3,
+      "title": "技术路线-公司-区域矩阵：中美欧及其他地区格局",
+      "goals": [
+        "构建“技术路线-公司-地区”映射，形成代表性公司清单",
+        "比较不同路线在中美欧及其他地区的代表企业分布与集中度",
+        "结合市场研究数据分析全球具身智能产品类型与区域分布"
+      ],
+      "query_ids": [
+        "20260702204859637455_41dc02dc",
+        "20260702204859796566_6a13cd27",
+        "20260702210734336412_95a61ccb"
+      ],
+      "section_plan": "围绕人形机器人、移动机器人、服务机器人等产品类别，列出美国、中国、欧洲及其他（日本、韩国等）的代表公司，给出矩阵式对照与文字分析，利用Humanoid Index、EVST、RoboZaps和UBTECH等案例说明区域分布与集中格局。",
+      "status": "pending"
+    },
+    {
+      "chapter_id": 4,
+      "title": "重点公司技术路径与核心方案",
+      "goals": [
+        "针对若干头部或代表性公司，系统梳理其具身智能技术路径与核心方案",
+        "说明各公司在模型架构、训练范式、多模态与强化学习结合、端云协同上的布局",
+        "在信息不全时明确标注不确定性"
+      ],
+      "query_ids": [
+        "20260702204859923107_87c2d35c",
+        "20260702204859796566_6a13cd27"
+      ],
+      "section_plan": "选取Figure AI、Agility Robotics、Tesla、Boston Dynamics、Apptronik、1X、Unitree、AgiBot、UBTECH等公司，以及若干研究机构，逐一用小段落介绍其技术栈：是否采用机器人基础模型、VLA/世界模型、云端协同等，指出公开披露与未披露部分。",
+      "status": "completed",
+      "source_ids": [
+        "20260702205420427888_2bd9c4b0",
+        "20260702205420499348_1ca39e9a",
+        "20260702205420542395_2466b7f9",
+        "20260702205420587996_83a57d4a",
+        "20260702205420629658_38452154",
+        "20260702205532060585_79b003ca",
+        "20260702205532099715_cc21568c",
+        "20260702205532144879_6905e212",
+        "20260702205630950694_b86b93fc",
+        "20260702205630994060_8615dbb1",
+        "20260702205631072977_1237d017",
+        "20260702205631120445_19126b01"
+      ],
+      "evidence_ids": [
+        "20260702205423394046_3d7d84dc",
+        "20260702205809550273_86df4f3d",
+        "20260702205809713859_520ab55f",
+        "20260702205809853775_da67986b",
+        "20260702205809968831_2a13a63f",
+        "20260702205818353109_f0a5501f",
+        "20260702205420629658_38452154",
+        "20260702205810119700_43470142",
+        "20260702205631072977_1237d017",
+        "20260702205423854965_19444466",
+        "20260702205810188430_17302ca4",
+        "20260702205810264171_2ec2a4d5",
+        "20260702205420542395_2466b7f9",
+        "20260702205420587996_83a57d4a",
+        "20260702205810503395_1d060130",
+        "20260702205810589457_e3c14a2a",
+        "20260702205819169116_cd6dd1c2",
+        "20260702205819284101_4d7228c6",
+        "20260702205636175897_cbb65a0b",
+        "20260702205636637166_69553ad4",
+        "20260702205818707561_d470039a",
+        "20260702205818813341_768e2c70",
+        "20260702205810724005_f37167c7",
+        "20260702205811078231_a2d11319",
+        "20260702205811194122_40513614",
+        "20260702205812090200_3286ac0f",
+        "20260702205812168293_84bed8dc",
+        "20260702205535300390_e1ed3592",
+        "20260702205535404782_4be76417",
+        "20260702205423299716_26c7c3d4",
+        "20260702205423576258_4c2f733b",
+        "20260702205536013276_f59ee46d",
+        "20260702205536217509_9841c731",
+        "20260702205536318993_d8043151",
+        "20260702205819019077_4924f535",
+        "20260702210528728939_8c2552cb",
+        "20260702210530223453_df9f7049",
+        "20260702205537088139_ac9715c8",
+        "20260702205537696118_434533a7"
+      ],
+      "disclosed_conflict_ids": [],
+      "section_type": "body"
+    },
+    {
+      "chapter_id": 5,
+      "title": "重点公司产品形态、研发进度与商业化路径",
+      "goals": [
+        "梳理代表性公司的具身智能产品形态（人形、移动、服务、外骨骼等）",
+        "说明其研发/落地阶段（Demo、试点、量产）与典型应用场景",
+        "整理已有或试点客户、收费模式与订单/收入信息（如有），并标注不确定性"
+      ],
+      "query_ids": [
+        "20260702204900052564_91e6e681",
+        "20260702204859796566_6a13cd27",
+        "20260702210734336412_95a61ccb"
+      ],
+      "section_plan": "按产品类别分小节，分别覆盖美国、中国、欧洲及其他代表性公司，描述如Digit、Figure 02、Optimus、Walker等产品的形态与落地进度，引用市场与政策文件说明中国“万台级落地能力”等趋势，并讨论RaaS等商业模式。",
+      "status": "pending"
+    },
+    {
+      "chapter_id": 6,
+      "title": "资本与团队：具身智能公司的融资与人才结构",
+      "goals": [
+        "汇总主要公司的融资事件、轮次、金额区间和投资方",
+        "结合中国具身智能产业指数与全球市场预测讨论资本支持强度",
+        "概述代表性公司创始团队与核心技术人才背景，在缺失处标注不确定性"
+      ],
+      "query_ids": [
+        "20260702204900176452_eb53e668",
+        "20260702204859637455_41dc02dc"
+      ],
+      "section_plan": "先用宏观数据说明全球尤其是中国的投融资规模，再选取如UBTECH等披露较多的案例，介绍其融资历程与估值区间，讨论不同路线（人形 vs 服务机器人等）获得资本的差异，并简要提及创始人与技术团队来源。",
+      "status": "pending"
+    },
+    {
+      "chapter_id": 7,
+      "title": "技术路线与区域的比较分析：难度、落地与资本偏好",
+      "goals": [
+        "综合前文，对比不同技术路线的技术难度与落地难度",
+        "分析中美欧在具身智能产业中的布局重点与优势/短板",
+        "讨论资本与政策在不同路线和区域上的倾斜，并指出关键不确定性"
+      ],
+      "query_ids": [
+        "20260702204859637455_41dc02dc",
+        "20260702204900176452_eb53e668",
+        "20260702204900052564_91e6e681"
+      ],
+      "section_plan": "以比较视角，对比机器人基础模型/VLA路线与传统控制+学习路线在数据需求、算力和工程复杂度上的差异；比较中国“部署态元年”和美国以私营公司驱动的图景，评估各区域在供应链、场景资源和资金上的优势。最后总结投资者需要关注的技术和市场不确定性。",
+      "status": "pending"
+    },
+    {
+      "chapter_id": 8,
+      "title": "局限与不确定性说明",
+      "goals": [
+        "系统披露本研究在数据、方法和时间范围上的局限",
+        "说明部分公司融资和团队信息缺失或数据不一致的情况",
+        "提醒读者在使用报告进行投资决策时需要进行补充尽调"
+      ],
+      "query_ids": [
+        "20260702204900176452_eb53e668",
+        "20260702210734336412_95a61ccb"
+      ],
+      "section_plan": "集中说明检索预算、信息披露差异和融资数据冲突等问题，引用已登记的冲突说明，对缺失和估计部分做出透明标注，并建议读者结合最新公开信息和一手尽职调查。",
+      "status": "pending"
+    }
+  ],
+  "planning_assets": {
+    "query_evidence_digests": [
+      {
+        "query_id": "20260702210734336412_95a61ccb",
+        "query_handle": "q2.1",
+        "query_text": "2020-2026年美国具身智能与人形机器人公司和研究机构（Agility Robotics Digit、Figure AI Figure 02、Tesla Optimus、Boston Dynamics Atlas/Stretch、Apptronik Apollo、1X Technologies 美国业务NEO/EVE、Collaborative Robotics协作机器人、人形移动操作机器人、Diligent Robotics Moxi、Sarcos Technology and Robotics及suitX Guardian XO/外骨骼系列、Reflex Robotics人形机器人项目、Richtech Robotics服务机器人与类人形产品、Persona AI人形或拟人机器人、HEBI Robotics与人形相关模块），以及美国研究机构如Toyota Research Institute Los Altos实验室（T-HR3、人形机器人与Large Behavior Models）、Field AI（Caltech/JPL系机器人基础模型）等的总部城市州别、公司或研究机构属性、具身智能或人形机器人旗舰产品/项目名称，并基于Humanoid Index、EVST文章、RoboZaps文章和Ross Dawson相关材料确认其是否为美国实体，同时区分并标注Unitree、AgiBot、Sanctuary AI、UBTECH、Galaxea等非美国公司，在此基础上形成美国具身智能/人形机器人代表性公司与研究机构清单，以及美国与非美国主体在全球人形机器人领域的数量与区域分布对比说明",
+        "importance": "core",
+        "source_count_snapshot": null,
+        "top_evidence_ids": [],
+        "top_source_ids": [],
+        "digest_lines": []
+      },
+      {
+        "query_id": "20260702204900176452_eb53e668",
+        "query_handle": "q5",
+        "query_text": "整理各代表性公司的融资情况，包括轮次、金额区间和主要投资方。",
+        "importance": "core",
+        "source_count_snapshot": 23,
+        "top_evidence_ids": [
+          "20260702211713256946_24e3c53a",
+          "20260702211713354335_fb9dd8ed",
+          "20260702211713455778_18d47f7d",
+          "20260702211713551952_d55f1f4b",
+          "20260702211713638393_2e44af22"
+        ],
+        "top_source_ids": [
+          "20260702211709830390_b3adb9f0",
+          "20260702205657014956_b33973ab",
+          "20260702211709867260_ccafea37"
+        ],
+        "digest_lines": [
+          "“据不完全统计，截至 2025 年 12 月，我国具身智能 和机器人领域投资事件数达 744 起，融资总额 735.43 亿元人民币。”",
+          "“到2026年底，人形机器人等重点产品在一批代表性场景中率先完成应用验证和常态部署，开启‘作业模式’；凝练形成百个以上高价值应用场景，进一步丰富具身智能应用谱系，带动形成万台级规模落地能力。”",
+          "“供应链韧性（得分：8.2）：绝对强项，定海神针。这是所有二级维度中得分最高的一 项。”",
+          "“根据美国市场研究公司 Grand View Research 预测，到 2030 年被 誉为 “智三样” 的人形机器人约 40.4 亿美元 3，自动驾驶汽车 （L1-L3 ）约 1722 亿美元 4，以及无人机约 1636 亿美元 5，累计市场规模将达到 3398.4 亿美元。”",
+          "“评估显示， 2026 年中国具身智能产业综合指数为7.4/10，标志着产业已全面跨越技术验证期， 进入“商业化落地攻坚与生态格局塑造”的关键新阶段。”"
+        ]
+      },
+      {
+        "query_id": "20260702204900052564_91e6e681",
+        "query_handle": "q4",
+        "query_text": "整理各代表性公司具身智能产品的形态与研发/落地进度，包括实物机器人、开放API、Demo还是量产阶段以及主要应用场景。",
+        "importance": "core",
+        "source_count_snapshot": 19,
+        "top_evidence_ids": [
+          "20260702205700519709_0e9462c4",
+          "20260702205700613741_16ed10e8",
+          "20260702205700707159_446a3c66",
+          "20260702205700797524_2d1f1b3c",
+          "20260702205700890748_568edfc5"
+        ],
+        "top_source_ids": [
+          "20260702205656864219_4c7500e5",
+          "20260702205657014956_b33973ab",
+          "20260702205656904793_975e0f2e"
+        ],
+        "digest_lines": [
+          "“据不完全统计，截至 2025 年 12 月，我国具身智能 和机器人领域投资事件数达 744 起，融资总额 735.43 亿元人民币。”",
+          "“到2026年底，人形机器人等重点产品在一批代表性场景中率先完成应用验证和常态部署，开启‘作业模式’；凝练形成百个以上高价值应用场景，进一步丰富具身智能应用谱系，带动形成万台级规模落地能力。”",
+          "“供应链韧性（得分：8.2）：绝对强项，定海神针。这是所有二级维度中得分最高的一 项。”",
+          "“根据美国市场研究公司 Grand View Research 预测，到 2030 年被 誉为 “智三样” 的人形机器人约 40.4 亿美元 3，自动驾驶汽车 （L1-L3 ）约 1722 亿美元 4，以及无人机约 1636 亿美元 5，累计市场规模将达到 3398.4 亿美元。”",
+          "“评估显示， 2026 年中国具身智能产业综合指数为7.4/10，标志着产业已全面跨越技术验证期， 进入“商业化落地攻坚与生态格局塑造”的关键新阶段。”"
+        ]
+      },
+      {
+        "query_id": "20260702204859923107_87c2d35c",
+        "query_handle": "q3",
+        "query_text": "对每家选定的代表性公司，整理其具身智能相关的技术路径与核心方案，包括模型架构、训练范式、端云协同、多模态与强化学习结合方式等。",
+        "importance": "core",
+        "source_count_snapshot": 14,
+        "top_evidence_ids": [
+          "20260702205634555159_c105a6c8",
+          "20260702205634856070_bff0efdc",
+          "20260702205634948480_de529dbe",
+          "20260702205635067210_c726100a",
+          "20260702205635160156_27b5bbde"
+        ],
+        "top_source_ids": [
+          "20260702205630950694_b86b93fc",
+          "20260702205532060585_79b003ca"
+        ],
+        "digest_lines": [
+          "“据不完全统计，截至 2025 年 12 月，我国具身智能 和机器人领域投资事件数达 744 起，融资总额 735.43 亿元人民币。”",
+          "“根据美国市场研究公司 Grand View Research 预测，到 2030 年被 誉为 “智三样” 的人形机器人约 40.4 亿美元 3，自动驾驶汽车 （L1-L3 ）约 1722 亿美元 4，以及无人机约 1636 亿美元 5，累计市场规模将达到 3398.4 亿美元。”",
+          "图6标题：中文为“RT-X收集到的多样化数据[55]”，英文为“Diverse data collected by RT-X[55]”，表明文中引用 RT‑X 系统收集的多样化数据作为具身智能相关数据来源示例。",
+          "计量信息显示：文章访问数为12971，HTML全文浏览量为6767，PDF下载量为3902，被引次数为0。",
+          "“2025 年《政府工作报告》首次将“具身智能”列入国家未来产 业重点培育清单。”"
+        ]
+      },
+      {
+        "query_id": "20260702204859796566_6a13cd27",
+        "query_handle": "q2",
+        "query_text": "United States embodied AI companies humanoid robots multimodal reinforcement learning key players 2020-2026",
+        "importance": "core",
+        "source_count_snapshot": 5,
+        "top_evidence_ids": [
+          "20260702205423299716_26c7c3d4",
+          "20260702205423394046_3d7d84dc",
+          "20260702205423484199_d784b675",
+          "20260702205423576258_4c2f733b",
+          "20260702205423666691_e13979e5"
+        ],
+        "top_source_ids": [
+          "20260702205420499348_1ca39e9a",
+          "20260702205420427888_2bd9c4b0",
+          "20260702205420587996_83a57d4a"
+        ],
+        "digest_lines": [
+          "“SoftBank Robotics Group leads the embodied AI market with humanoid robots like Pepper and NAO, known for emotional AI and interactive learning in service and healthcare.”",
+          "“The top 8 humanoid robot companies to watch in 2026 are Figure AI, Agility Robotics, Tesla, Boston Dynamics, Apptronik, 1X Technologies, Unitree Robotics, and AgiBot. We ranked them on three criteria: commercial deployment scale, hardware technical maturity (degrees of freedom, payload, locomotion reliability), and software stack depth, specifically whether each company has moved beyond teleoperation toward autonomous or vision-language-action (VLA) model-driven operation.”",
+          "“Embodied AI Market by Product Type [Robots (Humanoid Robots, Mobile Robots, Industrial Robots, Service Robots, Cobots), Exoskeletons, Autonomous Systems, Smart Appliances], Level of Embodiment (Level 1, Level 2, Level 3) - Global Forecast to 2030.”",
+          "“The product offerings of the company include humanoid robots, cleaning robots, and delivery robots. The embodied AI products include Pepper, NAO, Whiz, Scrubber, RS26, Keenbot, Servi, Delivery X1, BellaBot, and KittyBot.”",
+          "“TL;DR — Top Humanoid Robot Companies in 2026 * **Most valuable:** Figure AI ($39B valuation) * **Cheapest you can buy:** Unitree G1 ($16,000) * **Most experienced:** Boston Dynamics (30+ years) * **Biggest production scale:** Tesla (targeting 1M units/year) * **First commercial deployment:** Agility Robotics Digit * **Best for home:** 1X NEO ($20,000 or $499/mo)”"
+        ]
+      },
+      {
+        "query_id": "20260702204859637455_41dc02dc",
+        "query_handle": "q1",
+        "query_text": "全球 具身智能 embodied AI 主要 技术 路线 分类 多模态 强化 学习 端云 协同 总结 综述 2023-2026",
+        "importance": "core",
+        "source_count_snapshot": 9,
+        "top_evidence_ids": [
+          "20260702205535300390_e1ed3592",
+          "20260702205535404782_4be76417",
+          "20260702205535505607_89f67612",
+          "20260702205535607778_33e4bba9",
+          "20260702205535709782_74d7dbfa"
+        ],
+        "top_source_ids": [
+          "20260702205420629658_38452154",
+          "20260702205532099715_cc21568c",
+          "20260702205532060585_79b003ca",
+          "20260702205532144879_6905e212"
+        ],
+        "digest_lines": [
+          "“Having raised nearly a billion dollars (about US $940 million) prior to 2022, Shenzhen-based UBTECH Robotics ... In December 2023 UBTECH listed on the Hong Kong Stock Exchange and raised a further HK $931 million (≈ US $119 million) in a February 2025 follow-on offering. The company unveiled Walker S, pivoting the humanoid toward industrial inspection, logistics and service-robotics applications in line with China’s national embodied-AI roadmap.”",
+          "“多模态大模型（MM-LLM）通过融合文本、图像、语音等异构信息，解决了传统模型 ‘感官单一’ 的问题。世界模型（World Models, WMs）则为智能体提供了‘预测未来’的能力，通过构建环境动态的内部表征实现预测推理，具身智能（Embodied AI）则将这种能力落地于物理世界，完成‘感知 - 决策 - 执行’的闭环。三者的协同融合，正在推动人工智能从‘单一感知’到‘多维感知’，从‘被动认知’ 到 ‘主动预测’，迈向‘统一感知与决策’的新阶段，这也是通向通用人工智能（AGI）的必然发展趋势。”",
+          "“The top 8 humanoid robot companies to watch in 2026 are Figure AI, Agility Robotics, Tesla, Boston Dynamics, Apptronik, 1X Technologies, Unitree Robotics, and AgiBot. We ranked them on three criteria: commercial deployment scale, hardware technical maturity (degrees of freedom, payload, locomotion reliability), and software stack depth, specifically whether each company has moved beyond teleoperation toward autonomous or vision-language-action (VLA) model-driven operation.”",
+          "图5标题：中文为“具身智能的不同架构举例”，英文为“Examples of different architectures in embodied AI”，显示论文中通过示意图展示多种具身智能系统架构示例。",
+          "“Embodied AI Market by Product Type [Robots (Humanoid Robots, Mobile Robots, Industrial Robots, Service Robots, Cobots), Exoskeletons, Autonomous Systems, Smart Appliances], Level of Embodiment (Level 1, Level 2, Level 3) - Global Forecast to 2030.”"
+        ]
+      }
+    ],
+    "lead_candidates": [
+      {
+        "text": "“据不完全统计，截至 2025 年 12 月，我国具身智能 和机器人领域投资事件数达 744 起，融资总额 735.43 亿元人民币。”",
+        "query_ids": [
+          "20260702204900176452_eb53e668",
+          "20260702204900052564_91e6e681",
+          "20260702204859923107_87c2d35c"
+        ],
+        "evidence_ids": [
+          "20260702211713256946_24e3c53a",
+          "20260702205700519709_0e9462c4",
+          "20260702205634555159_c105a6c8"
+        ],
+        "source_ids": [
+          "20260702211709830390_b3adb9f0",
+          "20260702205656864219_4c7500e5",
+          "20260702205630950694_b86b93fc"
+        ]
+      },
+      {
+        "text": "“根据美国市场研究公司 Grand View Research 预测，到 2030 年被 誉为 “智三样” 的人形机器人约 40.4 亿美元 3，自动驾驶汽车 （L1-L3 ）约 1722 亿美元 4，以及无人机约 1636 亿美元 5，累计市场规模将达到 3398.4 亿美元。”",
+        "query_ids": [
+          "20260702204900176452_eb53e668",
+          "20260702204900052564_91e6e681",
+          "20260702204859923107_87c2d35c"
+        ],
+        "evidence_ids": [
+          "20260702211713551952_d55f1f4b",
+          "20260702205700797524_2d1f1b3c",
+          "20260702205634856070_bff0efdc"
+        ],
+        "source_ids": [
+          "20260702211709830390_b3adb9f0",
+          "20260702205656864219_4c7500e5",
+          "20260702205630950694_b86b93fc"
+        ]
+      },
+      {
+        "text": "“Embodied AI Market by Product Type [Robots (Humanoid Robots, Mobile Robots, Industrial Robots, Service Robots, Cobots), Exoskeletons, Autonomous Systems, Smart Appliances], Level of Embodiment (Level 1, Level 2, Level 3) - Global Forecast to 2030.”",
+        "query_ids": [
+          "20260702204859796566_6a13cd27",
+          "20260702204859637455_41dc02dc"
+        ],
+        "evidence_ids": [
+          "20260702205423484199_d784b675",
+          "20260702205535709782_74d7dbfa"
+        ],
+        "source_ids": [
+          "20260702205420499348_1ca39e9a",
+          "20260702205532099715_cc21568c"
+        ]
+      },
+      {
+        "text": "“The top 8 humanoid robot companies to watch in 2026 are Figure AI, Agility Robotics, Tesla, Boston Dynamics, Apptronik, 1X Technologies, Unitree Robotics, and AgiBot. We ranked them on three criteria: commercial deployment scale, hardware technical maturity (degrees of freedom, payload, locomotion reliability), and software stack depth, specifically whether each company has moved beyond teleoperation toward autonomous or vision-language-action (VLA) model-driven operation.”",
+        "query_ids": [
+          "20260702204859796566_6a13cd27",
+          "20260702204859637455_41dc02dc"
+        ],
+        "evidence_ids": [
+          "20260702205423394046_3d7d84dc",
+          "20260702205535505607_89f67612"
+        ],
+        "source_ids": [
+          "20260702205420427888_2bd9c4b0",
+          "20260702205532060585_79b003ca"
+        ]
+      },
+      {
+        "text": "“供应链韧性（得分：8.2）：绝对强项，定海神针。这是所有二级维度中得分最高的一 项。”",
+        "query_ids": [
+          "20260702204900176452_eb53e668",
+          "20260702204900052564_91e6e681"
+        ],
+        "evidence_ids": [
+          "20260702211713455778_18d47f7d",
+          "20260702205700707159_446a3c66"
+        ],
+        "source_ids": [
+          "20260702211709867260_ccafea37",
+          "20260702205656904793_975e0f2e"
+        ]
+      }
+    ],
+    "comparison_slots": [
+      {
+        "slot_label": "Cross-query comparison",
+        "query_ids": [
+          "20260702210734336412_95a61ccb",
+          "20260702204900176452_eb53e668",
+          "20260702204900052564_91e6e681",
+          "20260702204859923107_87c2d35c",
+          "20260702204859796566_6a13cd27",
+          "20260702204859637455_41dc02dc"
+        ],
+        "evidence_ids": [
+          "20260702211713256946_24e3c53a",
+          "20260702211713354335_fb9dd8ed",
+          "20260702211713455778_18d47f7d",
+          "20260702211713551952_d55f1f4b",
+          "20260702211713638393_2e44af22",
+          "20260702205700519709_0e9462c4",
+          "20260702205700613741_16ed10e8",
+          "20260702205700707159_446a3c66",
+          "20260702205700797524_2d1f1b3c",
+          "20260702205700890748_568edfc5",
+          "20260702205634555159_c105a6c8",
+          "20260702205634856070_bff0efdc",
+          "20260702205634948480_de529dbe",
+          "20260702205635067210_c726100a",
+          "20260702205635160156_27b5bbde",
+          "20260702205423299716_26c7c3d4",
+          "20260702205423394046_3d7d84dc",
+          "20260702205423484199_d784b675",
+          "20260702205423576258_4c2f733b",
+          "20260702205423666691_e13979e5",
+          "20260702205535300390_e1ed3592",
+          "20260702205535404782_4be76417",
+          "20260702205535505607_89f67612",
+          "20260702205535607778_33e4bba9",
+          "20260702205535709782_74d7dbfa"
+        ],
+        "source_ids": [
+          "20260702211709830390_b3adb9f0",
+          "20260702205657014956_b33973ab",
+          "20260702211709867260_ccafea37",
+          "20260702205656864219_4c7500e5",
+          "20260702205656904793_975e0f2e",
+          "20260702205630950694_b86b93fc",
+          "20260702205532060585_79b003ca",
+          "20260702205420499348_1ca39e9a",
+          "20260702205420427888_2bd9c4b0",
+          "20260702205420587996_83a57d4a",
+          "20260702205420629658_38452154",
+          "20260702205532099715_cc21568c",
+          "20260702205532144879_6905e212"
+        ],
+        "supporting_points": [
+          {
+            "query_id": "20260702204900176452_eb53e668",
+            "query_handle": "q5",
+            "text": "“据不完全统计，截至 2025 年 12 月，我国具身智能 和机器人领域投资事件数达 744 起，融资总额 735.43 亿元人民币。”",
+            "evidence_ids": [
+              "20260702211713256946_24e3c53a",
+              "20260702211713354335_fb9dd8ed",
+              "20260702211713455778_18d47f7d",
+              "20260702211713551952_d55f1f4b",
+              "20260702211713638393_2e44af22"
+            ],
+            "source_ids": [
+              "20260702211709830390_b3adb9f0",
+              "20260702205657014956_b33973ab",
+              "20260702211709867260_ccafea37"
+            ]
+          },
+          {
+            "query_id": "20260702204900052564_91e6e681",
+            "query_handle": "q4",
+            "text": "“据不完全统计，截至 2025 年 12 月，我国具身智能 和机器人领域投资事件数达 744 起，融资总额 735.43 亿元人民币。”",
+            "evidence_ids": [
+              "20260702205700519709_0e9462c4",
+              "20260702205700613741_16ed10e8",
+              "20260702205700707159_446a3c66",
+              "20260702205700797524_2d1f1b3c",
+              "20260702205700890748_568edfc5"
+            ],
+            "source_ids": [
+              "20260702205656864219_4c7500e5",
+              "20260702205657014956_b33973ab",
+              "20260702205656904793_975e0f2e"
+            ]
+          },
+          {
+            "query_id": "20260702204859923107_87c2d35c",
+            "query_handle": "q3",
+            "text": "“据不完全统计，截至 2025 年 12 月，我国具身智能 和机器人领域投资事件数达 744 起，融资总额 735.43 亿元人民币。”",
+            "evidence_ids": [
+              "20260702205634555159_c105a6c8",
+              "20260702205634856070_bff0efdc",
+              "20260702205634948480_de529dbe",
+              "20260702205635067210_c726100a",
+              "20260702205635160156_27b5bbde"
+            ],
+            "source_ids": [
+              "20260702205630950694_b86b93fc",
+              "20260702205532060585_79b003ca"
+            ]
+          },
+          {
+            "query_id": "20260702204859796566_6a13cd27",
+            "query_handle": "q2",
+            "text": "“SoftBank Robotics Group leads the embodied AI market with humanoid robots like Pepper and NAO, known for emotional AI and interactive learning in service and healthcare.”",
+            "evidence_ids": [
+              "20260702205423299716_26c7c3d4",
+              "20260702205423394046_3d7d84dc",
+              "20260702205423484199_d784b675",
+              "20260702205423576258_4c2f733b",
+              "20260702205423666691_e13979e5"
+            ],
+            "source_ids": [
+              "20260702205420499348_1ca39e9a",
+              "20260702205420427888_2bd9c4b0",
+              "20260702205420587996_83a57d4a"
+            ]
+          },
+          {
+            "query_id": "20260702204859637455_41dc02dc",
+            "query_handle": "q1",
+            "text": "“Having raised nearly a billion dollars (about US $940 million) prior to 2022, Shenzhen-based UBTECH Robotics ... In December 2023 UBTECH listed on the Hong Kong Stock Exchange and raised a further HK $931 million (≈ US $119 million) in a February 2025 follow-on offering. The company unveiled Walker S, pivoting the humanoid toward industrial inspection, logistics and service-robotics applications in line with China’s national embodied-AI roadmap.”",
+            "evidence_ids": [
+              "20260702205535300390_e1ed3592",
+              "20260702205535404782_4be76417",
+              "20260702205535505607_89f67612",
+              "20260702205535607778_33e4bba9",
+              "20260702205535709782_74d7dbfa"
+            ],
+            "source_ids": [
+              "20260702205420629658_38452154",
+              "20260702205532099715_cc21568c",
+              "20260702205532060585_79b003ca",
+              "20260702205532144879_6905e212"
+            ]
+          }
+        ]
+      }
+    ],
+    "entity_profiles": [
+      {
+        "entity_key": "us_companies",
+        "display_label": "us_companies",
+        "query_ids": [
+          "20260702204859796566_6a13cd27"
+        ],
+        "evidence_ids": [
+          "20260702205423484199_d784b675",
+          "20260702205423299716_26c7c3d4",
+          "20260702205423666691_e13979e5"
+        ],
+        "source_ids": [
+          "20260702205420499348_1ca39e9a",
+          "20260702205420587996_83a57d4a"
+        ],
+        "profile_points": [
+          "“Embodied AI Market by Product Type [Robots (Humanoid Robots, Mobile Robots, Industrial Robots, Service Robots, Cobots), Exoskeletons, Autonomous Systems, Smart Appliances], Level of Embodiment (Level 1, Level 2, Level 3) - Global Forecast to 2030.”",
+          "“SoftBank Robotics Group leads the embodied AI market with humanoid robots like Pepper and NAO, known for emotional AI and interactive learning in service and healthcare.”",
+          "“TL;DR — Top Humanoid Robot Companies in 2026 * **Most valuable:** Figure AI ($39B valuation) * **Cheapest you can buy:** Unitree G1 ($16,000) * **Most experienced:** Boston Dynamics (30+ years) * **Biggest production scale:** Tesla (targeting 1M units/year) * **First commercial deployment:** Agility Robotics Digit * **Best for home:** 1X NEO ($20,000 or $499/mo)”"
+        ]
+      },
+      {
+        "entity_key": "company_finance_slots",
+        "display_label": "company_finance_slots",
+        "query_ids": [
+          "20260702204900176452_eb53e668"
+        ],
+        "evidence_ids": [
+          "20260702211713455778_18d47f7d",
+          "20260702211713354335_fb9dd8ed",
+          "20260702211713256946_24e3c53a"
+        ],
+        "source_ids": [
+          "20260702211709867260_ccafea37",
+          "20260702205657014956_b33973ab",
+          "20260702211709830390_b3adb9f0"
+        ],
+        "profile_points": [
+          "“供应链韧性（得分：8.2）：绝对强项，定海神针。这是所有二级维度中得分最高的一 项。”",
+          "“到2026年底，人形机器人等重点产品在一批代表性场景中率先完成应用验证和常态部署，开启‘作业模式’；凝练形成百个以上高价值应用场景，进一步丰富具身智能应用谱系，带动形成万台级规模落地能力。”",
+          "“据不完全统计，截至 2025 年 12 月，我国具身智能 和机器人领域投资事件数达 744 起，融资总额 735.43 亿元人民币。”"
+        ]
+      },
+      {
+        "entity_key": "company_product_slots",
+        "display_label": "company_product_slots",
+        "query_ids": [
+          "20260702204900052564_91e6e681"
+        ],
+        "evidence_ids": [
+          "20260702205700707159_446a3c66",
+          "20260702205700613741_16ed10e8",
+          "20260702205700519709_0e9462c4"
+        ],
+        "source_ids": [
+          "20260702205656904793_975e0f2e",
+          "20260702205657014956_b33973ab",
+          "20260702205656864219_4c7500e5"
+        ],
+        "profile_points": [
+          "“供应链韧性（得分：8.2）：绝对强项，定海神针。这是所有二级维度中得分最高的一 项。”",
+          "“到2026年底，人形机器人等重点产品在一批代表性场景中率先完成应用验证和常态部署，开启‘作业模式’；凝练形成百个以上高价值应用场景，进一步丰富具身智能应用谱系，带动形成万台级规模落地能力。”",
+          "“据不完全统计，截至 2025 年 12 月，我国具身智能 和机器人领域投资事件数达 744 起，融资总额 735.43 亿元人民币。”"
+        ]
+      },
+      {
+        "entity_key": "company_tech_slots",
+        "display_label": "company_tech_slots",
+        "query_ids": [
+          "20260702204859923107_87c2d35c"
+        ],
+        "evidence_ids": [
+          "20260702205635160156_27b5bbde",
+          "20260702205634555159_c105a6c8",
+          "20260702205634856070_bff0efdc"
+        ],
+        "source_ids": [
+          "20260702205630950694_b86b93fc"
+        ],
+        "profile_points": [
+          "“2025 年《政府工作报告》首次将“具身智能”列入国家未来产 业重点培育清单。”",
+          "“据不完全统计，截至 2025 年 12 月，我国具身智能 和机器人领域投资事件数达 744 起，融资总额 735.43 亿元人民币。”",
+          "“根据美国市场研究公司 Grand View Research 预测，到 2030 年被 誉为 “智三样” 的人形机器人约 40.4 亿美元 3，自动驾驶汽车 （L1-L3 ）约 1722 亿美元 4，以及无人机约 1636 亿美元 5，累计市场规模将达到 3398.4 亿美元。”"
+        ]
+      },
+      {
+        "entity_key": "global_routes",
+        "display_label": "global_routes",
+        "query_ids": [
+          "20260702204859637455_41dc02dc"
+        ],
+        "evidence_ids": [
+          "20260702205535709782_74d7dbfa",
+          "20260702205535300390_e1ed3592",
+          "20260702205535505607_89f67612"
+        ],
+        "source_ids": [
+          "20260702205532099715_cc21568c",
+          "20260702205420629658_38452154",
+          "20260702205532060585_79b003ca"
+        ],
+        "profile_points": [
+          "“Embodied AI Market by Product Type [Robots (Humanoid Robots, Mobile Robots, Industrial Robots, Service Robots, Cobots), Exoskeletons, Autonomous Systems, Smart Appliances], Level of Embodiment (Level 1, Level 2, Level 3) - Global Forecast to 2030.”",
+          "“Having raised nearly a billion dollars (about US $940 million) prior to 2022, Shenzhen-based UBTECH Robotics ... In December 2023 UBTECH listed on the Hong Kong Stock Exchange and raised a further HK $931 million (≈ US $119 million) in a February 2025 follow-on offering. The company unveiled Walker S, pivoting the humanoid toward industrial inspection, logistics and service-robotics applications in line with China’s national embodied-AI roadmap.”",
+          "“The top 8 humanoid robot companies to watch in 2026 are Figure AI, Agility Robotics, Tesla, Boston Dynamics, Apptronik, 1X Technologies, Unitree Robotics, and AgiBot. We ranked them on three criteria: commercial deployment scale, hardware technical maturity (degrees of freedom, payload, locomotion reliability), and software stack depth, specifically whether each company has moved beyond teleoperation toward autonomous or vision-language-action (VLA) model-driven operation.”"
+        ]
+      }
+    ]
+  }
+}on-language-action (VLA) model-driven operation.”"
+        ]
+      }
+    ]
+  }
+}

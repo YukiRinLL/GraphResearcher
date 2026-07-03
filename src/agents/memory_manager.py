@@ -71,6 +71,17 @@ OBJECTIVE_CONFIDENCE_THRESHOLD = 0.65
 EXPANSION_UTILITY_THRESHOLD = 0.25
 LOW_REALIZED_GAIN_THRESHOLD = 0.05
 LOW_GAIN_WINDOW = 2
+QUERY_OVERLOAD_STATEMENT_THRESHOLD = 18
+QUERY_OVERLOAD_EVIDENCE_THRESHOLD = 18
+_TASK_ARCHETYPES = {
+    "open_research",
+    "entity_article",
+    "comparative_matrix",
+    "structured_slots",
+    "timeline_tracking",
+}
+_PORTFOLIO_STAGES = {"discovery", "slot_completion", "deep_dive"}
+_VALID_SECTION_TYPES = {"lead", "body", "comparison", "limitations"}
 _GAP_CATEGORIES = {
     "missing_core_evidence",
     "fatal_conflict",
@@ -78,6 +89,9 @@ _GAP_CATEGORIES = {
     "additional_example",
     "verification",
     "detail",
+    "slot_completion",
+    "section_completeness",
+    "lead_readiness",
 }
 
 
@@ -155,6 +169,124 @@ def _query_spec(item: Any) -> tuple:
     return item, None, [], []
 
 
+def _string_list(value: Any) -> list[str]:
+    """Return a normalized list of non-empty strings."""
+    if not isinstance(value, list):
+        return []
+    result = []
+    for item in value:
+        text = str(item or "").strip()
+        if text:
+            result.append(text)
+    return result
+
+
+def _importance_rank(value: Any) -> int:
+    """Return a sortable rank for query/gap importance."""
+    return {"core": 3, "supporting": 2, "peripheral": 1}.get(str(value or "").lower(), 0)
+
+
+def _canonical_slot_labels(value: Any) -> list[str]:
+    """Return canonical slot labels through the shared report-side whitelist."""
+    from tools import report_tools
+
+    return report_tools.canonicalize_slot_labels(_string_list(value))
+
+
+def _node_type_matches(node: dict[str, Any], node_type: Any) -> bool:
+    """Return whether a graph node matches the requested type."""
+    expected = getattr(node_type, "value", node_type)
+    return str(node.get("type", "")).replace("_", "").lower() == str(expected).replace("_", "").lower()
+
+
+def _default_preferred_stage(gap_category: str) -> str:
+    """Map a gap category to its default portfolio stage."""
+    if gap_category in {"slot_completion", "section_completeness", "lead_readiness"}:
+        return "slot_completion"
+    if gap_category in {"missing_core_evidence", "fatal_conflict", "verification"}:
+        return "deep_dive"
+    return "deep_dive"
+
+
+def _normalize_query_plan_item(
+    item: Any,
+    default_stage: str = "discovery",
+    default_importance: str = "supporting",
+) -> Optional[dict[str, Any]]:
+    """Normalize one staged query-plan item into a stable dict."""
+    if isinstance(item, dict):
+        text = str(item.get("text") or "").strip()
+        if not text:
+            return None
+        stage = str(item.get("portfolio_stage") or default_stage).strip().lower()
+        if stage not in _PORTFOLIO_STAGES:
+            stage = default_stage
+        importance = str(item.get("importance") or default_importance).strip().lower()
+        if importance not in {"core", "supporting", "peripheral"}:
+            importance = default_importance
+        objective_keys = _string_list(item.get("objective_keys"))
+        acceptance_criteria = _string_list(item.get("acceptance_criteria"))
+        slot_targets = _canonical_slot_labels(item.get("slot_targets"))
+        section_targets = [item for item in _string_list(item.get("section_targets")) if item in _VALID_SECTION_TYPES]
+        search_subject_key = str(item.get("search_subject_key") or item.get("plan_id") or _gap_key(text)).strip()
+        plan_id = str(item.get("plan_id") or _gap_key(f"{stage}:{text}:{search_subject_key}")).strip()
+        return {
+            "plan_id": plan_id,
+            "portfolio_stage": stage,
+            "text": text,
+            "importance": importance,
+            "objective_keys": objective_keys,
+            "acceptance_criteria": acceptance_criteria,
+            "slot_targets": slot_targets,
+            "section_targets": section_targets,
+            "search_subject_key": search_subject_key,
+        }
+    if isinstance(item, str) and item.strip():
+        text = item.strip()
+        plan_id = _gap_key(f"{default_stage}:{text}")
+        return {
+            "plan_id": plan_id,
+            "portfolio_stage": default_stage,
+            "text": text,
+            "importance": default_importance,
+            "objective_keys": [],
+            "acceptance_criteria": [],
+            "slot_targets": [],
+            "section_targets": [],
+            "search_subject_key": plan_id,
+        }
+    return None
+
+
+def _normalize_delivery_contract(raw: Any, task_archetype: str, time_window: Optional[str]) -> dict[str, Any]:
+    """Return a stable delivery contract with archetype-aware defaults."""
+    contract = raw if isinstance(raw, dict) else {}
+    report_mode = str(contract.get("report_mode") or task_archetype or "research_report").strip() or "research_report"
+    required_section_types = [
+        item for item in _string_list(contract.get("required_section_types"))
+        if item in _VALID_SECTION_TYPES
+    ]
+    if not required_section_types:
+        required_section_types = ["lead", "body", "limitations"]
+    comparison_required = bool(contract.get("comparison_required")) or task_archetype == "comparative_matrix"
+    entity_focus = bool(contract.get("entity_focus")) or task_archetype == "entity_article"
+    strict_time_window = bool(contract.get("strict_time_window")) or bool(str(time_window or "").strip())
+    if comparison_required and "comparison" not in required_section_types:
+        required_section_types.append("comparison")
+    required_slot_labels = _canonical_slot_labels(contract.get("required_slot_labels"))
+    if comparison_required and "comparison" not in required_slot_labels:
+        required_slot_labels.append("comparison")
+    return {
+        "report_mode": report_mode,
+        "required_section_types": list(dict.fromkeys(required_section_types)),
+        "required_slot_labels": list(dict.fromkeys(required_slot_labels)),
+        "comparison_required": comparison_required,
+        "entity_focus": entity_focus,
+        "strict_time_window": strict_time_window,
+        "prefer_compression_over_expansion": True,
+    }
+
+
 def _gap_key(description: str) -> str:
     """Return a stable normalized fingerprint for one atomic knowledge gap."""
     normalized = " ".join((description or "").lower().split())
@@ -182,6 +314,44 @@ class MemoryManager:
         if isinstance(content, list):  # some providers return content parts
             content = "".join(part.get("text", "") if isinstance(part, dict) else str(part) for part in content)
         return _parse_json(str(content))
+
+    @staticmethod
+    def _normalize_query_portfolio_plan(
+        raw_plan: Any,
+        initial_queries: Any,
+        objectives: list[dict],
+        user_request: str,
+    ) -> list[dict[str, Any]]:
+        """Return a stable staged portfolio plan."""
+        objective_keys = {item.get("objective_key") for item in objectives if item.get("objective_key")}
+        raw_items = raw_plan if isinstance(raw_plan, list) and raw_plan else initial_queries
+        normalized: list[dict[str, Any]] = []
+        for item in raw_items or []:
+            plan_item = _normalize_query_plan_item(item)
+            if not plan_item:
+                continue
+            plan_item["objective_keys"] = [
+                key for key in plan_item["objective_keys"]
+                if key in objective_keys
+            ]
+            normalized.append(plan_item)
+        if not normalized:
+            fallback = _normalize_query_plan_item({
+                "text": user_request,
+                "importance": "core",
+                "portfolio_stage": "discovery",
+                "objective_keys": [objectives[0]["objective_key"]] if objectives else [],
+                "acceptance_criteria": ["Directly answer the user's research request with reliable evidence"],
+            })
+            if fallback:
+                normalized.append(fallback)
+        return normalized
+
+    @staticmethod
+    def _normalize_task_archetype(value: Any) -> str:
+        """Return a supported task archetype with a stable fallback."""
+        archetype = str(value or "").strip().lower()
+        return archetype if archetype in _TASK_ARCHETYPES else "open_research"
 
     # -----------------------------
     # Orchestrator-facing
@@ -217,6 +387,9 @@ class MemoryManager:
                 time_window=parsed.get("time_window"),
                 region_scope=parsed.get("region_scope"),
                 source_preferences=parsed.get("source_preferences") or [],
+                task_archetype=self._normalize_task_archetype(parsed.get("task_archetype")),
+                delivery_contract={},
+                query_portfolio_plan=[],
                 research_state="INITIALIZING",
                 max_search_rounds=middleware.get_max_search_rounds(),
                 dispatched_search_rounds=0,
@@ -235,37 +408,59 @@ class MemoryManager:
             )
 
         objectives = self._create_objectives(goal_id, parsed.get("objectives"), user_request)
+        task_archetype = self._normalize_task_archetype(parsed.get("task_archetype"))
+        delivery_contract = _normalize_delivery_contract(
+            parsed.get("delivery_contract"),
+            task_archetype,
+            parsed.get("time_window"),
+        )
+        query_portfolio_plan = self._normalize_query_portfolio_plan(
+            parsed.get("query_portfolio_plan"),
+            parsed.get("initial_queries"),
+            objectives,
+            user_request,
+        )
+        graph_tools.upsert_node(NodeType.USER_REQUEST, {
+            "task_archetype": task_archetype,
+            "delivery_contract": delivery_contract,
+            "query_portfolio_plan": query_portfolio_plan,
+        }, goal_id)
+
         queries = []
-        initial_queries = parsed.get("initial_queries")
-        if not isinstance(initial_queries, list) or not initial_queries:
-            initial_queries = [
-                {
-                    "text": user_request,
-                    "importance": "core",
-                    "objective_keys": [objectives[0]["objective_key"]],
-                    "acceptance_criteria": ["Directly answer the user's research request with reliable evidence"],
-                }
-            ]
-        initial_queries = self._select_initial_queries(initial_queries, objectives)
+        initial_queries = self._select_initial_queries(
+            query_portfolio_plan,
+            objectives,
+            task_archetype,
+            delivery_contract,
+        )
         covered_objective_keys = {
             key
             for item in initial_queries
-            for key in _query_spec(item)[3]
+            for key in item.get("objective_keys") or []
         }
         for objective in objectives:
             if (
                 objective.get("requirement") == "must"
                 and objective.get("objective_key") not in covered_objective_keys
             ):
-                initial_queries.append({
+                initial_queries.append(_normalize_query_plan_item({
+                    "plan_id": f"fallback-{objective['objective_key']}",
                     "text": objective.get("description") or user_request,
                     "importance": "core",
+                    "portfolio_stage": "discovery",
                     "objective_keys": [objective["objective_key"]],
                     "acceptance_criteria": objective.get("acceptance_criteria") or [],
-                })
+                    "section_targets": ["body"],
+                    "search_subject_key": objective["objective_key"],
+                }))
         objective_by_key = {o["objective_key"]: o for o in objectives}
         for item in initial_queries:
-            text, importance, criteria, objective_keys = _query_spec(item)
+            if not item or item.get("portfolio_stage") != "discovery":
+                continue
+            text = item.get("text")
+            importance = item.get("importance")
+            criteria = item.get("acceptance_criteria") or []
+            objective_keys = item.get("objective_keys") or []
             if not isinstance(text, str) or not text.strip():
                 continue
             importance = importance or "supporting"
@@ -276,6 +471,11 @@ class MemoryManager:
                 acceptance_criteria=criteria,
                 objective_keys=[key for key in objective_keys if key in objective_by_key],
                 required_for_parent=False,
+                portfolio_stage="discovery",
+                slot_targets=item.get("slot_targets") or [],
+                section_targets=item.get("section_targets") or [],
+                task_archetype=task_archetype,
+                search_subject_key=item.get("search_subject_key"),
             )
             for key in objective_keys:
                 objective = objective_by_key.get(key)
@@ -289,6 +489,10 @@ class MemoryManager:
                 "priority_tier": query.get("priority_tier"),
                 "acceptance_criteria": criteria,
                 "objective_keys": objective_keys,
+                "portfolio_stage": "discovery",
+                "slot_targets": item.get("slot_targets") or [],
+                "section_targets": item.get("section_targets") or [],
+                "search_subject_key": item.get("search_subject_key"),
             })
         if not queries:
             query_id = graph_tools.create_query_child(
@@ -298,6 +502,10 @@ class MemoryManager:
                 acceptance_criteria=["Directly answer the user's research request with reliable evidence"],
                 objective_keys=[objectives[0]["objective_key"]],
                 required_for_parent=False,
+                portfolio_stage="discovery",
+                section_targets=["body"],
+                task_archetype=task_archetype,
+                search_subject_key=_gap_key(user_request),
             )
             graph_tools.add_edge(query_id, objectives[0]["id"], EdgeType.COVERS_OBJECTIVE)
             query = graph_tools.get_node(query_id)
@@ -307,6 +515,9 @@ class MemoryManager:
                 "text": user_request,
                 "priority_tier": query.get("priority_tier"),
                 "acceptance_criteria": query.get("acceptance_criteria") or [],
+                "portfolio_stage": "discovery",
+                "slot_targets": query.get("slot_targets") or [],
+                "section_targets": query.get("section_targets") or [],
             })
 
         research_state.update_goal({"research_state": research_state.RESEARCHING}, goal_id)
@@ -316,7 +527,10 @@ class MemoryManager:
             "research_goal": parsed.get("research_goal", ""),
             "language": parsed.get("language"),
             "scope_mode": graph_tools.get_node(goal_id).get("scope_mode", "bounded"),
+            "task_archetype": task_archetype,
+            "delivery_contract": delivery_contract,
             "objectives": objectives,
+            "query_portfolio_plan": query_portfolio_plan,
             "queries": queries,
         }
 
@@ -377,9 +591,19 @@ class MemoryManager:
         return [graph_tools.get_node(objective_id)]
 
     @staticmethod
-    def _select_initial_queries(candidates: Any, objectives: list[dict]) -> list:
-        """Greedily choose the smallest candidate set covering must objectives."""
-        items = [item for item in candidates or [] if isinstance(item, (dict, str))]
+    def _select_initial_queries(
+        candidates: Any,
+        objectives: list[dict],
+        task_archetype: Optional[str] = None,
+        delivery_contract: Optional[dict[str, Any]] = None,
+    ) -> list[dict]:
+        """Choose discovery queries that cover must objectives and delivery slots."""
+        items = [
+            normalized
+            for candidate in candidates or []
+            for normalized in [_normalize_query_plan_item(candidate)]
+            if normalized and normalized.get("portfolio_stage") == "discovery"
+        ]
         if not items:
             return []
         must = {
@@ -387,31 +611,49 @@ class MemoryManager:
             for objective in objectives
             if objective.get("requirement") == "must"
         } or {objective["objective_key"] for objective in objectives}
+        contract = delivery_contract or {}
+        required_slots = set(_canonical_slot_labels(contract.get("required_slot_labels")))
         uncovered = set(must)
+        uncovered_slots = set(required_slots)
         selected: list = []
         remaining = list(items)
-        while uncovered and remaining:
+        while (uncovered or uncovered_slots) and remaining:
             best = max(
                 remaining,
-                key=lambda item: len(set(_query_spec(item)[3]) & uncovered),
+                key=lambda item: (
+                    len(set(item.get("objective_keys") or []) & uncovered),
+                    len(set(_canonical_slot_labels(item.get("slot_targets"))) & uncovered_slots),
+                    _importance_rank(item.get("importance")),
+                    len(item.get("section_targets") or []),
+                ),
             )
-            covered = set(_query_spec(best)[3]) & uncovered
-            if not covered:
+            covered = set(best.get("objective_keys") or []) & uncovered
+            slot_covered = set(_canonical_slot_labels(best.get("slot_targets"))) & uncovered_slots
+            if not covered and not slot_covered:
                 break
             selected.append(best)
             uncovered -= covered
+            uncovered_slots -= slot_covered
             remaining.remove(best)
         for objective in objectives:
             key = objective.get("objective_key")
             if key not in uncovered:
                 continue
-            selected.append({
+            fallback = _normalize_query_plan_item({
                 "text": objective.get("description") or objective.get("text"),
                 "importance": "core" if objective.get("requirement") == "must" else "supporting",
+                "portfolio_stage": "discovery",
                 "objective_keys": [key],
                 "acceptance_criteria": objective.get("acceptance_criteria") or [],
+                "section_targets": ["comparison"] if task_archetype == "comparative_matrix" else ["body"],
+                "slot_targets": [key] if key in required_slots else [],
+                "search_subject_key": key,
             })
-        return selected or items[:1]
+            if fallback:
+                selected.append(fallback)
+        if not selected and items:
+            selected = [max(items, key=lambda item: (_importance_rank(item.get("importance")), len(item.get("objective_keys") or [])))]
+        return selected
 
     def get_research_objectives(self, goal_id: Optional[str] = None) -> list[dict]:
         """Return report-level objectives ordered by requirement and weight."""
@@ -600,6 +842,10 @@ class MemoryManager:
                 objective_keys=[key],
                 required_for_parent=False,
                 recovery_objective_key=key,
+                portfolio_stage="deep_dive",
+                section_targets=["body"],
+                task_archetype=self._normalize_task_archetype(goal.get("task_archetype")),
+                search_subject_key=key,
             )
             graph_tools.add_edge(query_id, objective["id"], EdgeType.COVERS_OBJECTIVE)
             query = graph_tools.get_node(query_id)
@@ -892,6 +1138,9 @@ class MemoryManager:
             objective_keys = spec.get("objective_keys")
             if not isinstance(objective_keys, list):
                 objective_keys = query.get("objective_keys") or []
+            preferred_stage = str(spec.get("preferred_stage") or _default_preferred_stage(category)).strip().lower()
+            if preferred_stage not in _PORTFOLIO_STAGES:
+                preferred_stage = _default_preferred_stage(category)
             try:
                 decision_impact = max(0.0, min(1.0, float(spec.get("decision_impact", 0.0))))
                 confidence_gain = max(0.0, min(1.0, float(spec.get("confidence_gain", 0.0))))
@@ -910,6 +1159,12 @@ class MemoryManager:
                 gap_category=category,
                 objective_keys=objective_keys,
                 search_subject_key=str(spec.get("search_subject_key") or key),
+                preferred_stage=preferred_stage,
+                slot_targets=_canonical_slot_labels(spec.get("slot_targets")),
+                section_targets=[
+                    item for item in _string_list(spec.get("section_targets"))
+                    if item in _VALID_SECTION_TYPES
+                ],
                 decision_impact=decision_impact,
                 confidence_gain=confidence_gain,
                 estimated_search_rounds=estimated_rounds,
@@ -952,6 +1207,9 @@ class MemoryManager:
                     gap_category="missing_core_evidence",
                     objective_keys=query.get("objective_keys") or [],
                     search_subject_key=key,
+                    preferred_stage="deep_dive",
+                    slot_targets=[],
+                    section_targets=["body"],
                     decision_impact=0.7,
                     confidence_gain=0.5,
                     estimated_search_rounds=1,
@@ -960,12 +1218,24 @@ class MemoryManager:
                 created_gaps.append(gap_id)
                 new_status = "needs_expansion"
 
+        overload_flags = self._query_pressure_flags(
+            resolved,
+            evaluation=evaluation,
+            query=query,
+            time_window=research_state.get_goal().get("time_window"),
+        )
+
         graph_tools.transition_query(
             resolved,
             new_status,
             sufficiency_score=score,
             covered=verdict.get("covered") or [],
             assessment_reason=verdict.get("reason") or "",
+            extraction_overload=overload_flags["extraction_overload"],
+            evidence_noise=overload_flags["evidence_noise"] and new_status != "sufficient",
+            citation_hygiene_failure=overload_flags["citation_hygiene_failure"],
+            statement_count_snapshot=overload_flags["statement_count"],
+            evidence_count_snapshot=overload_flags["evidence_count"],
         )
         if new_status in {"sufficient", "blocked"}:
             self._propagate_child_completion(resolved, new_status)
@@ -981,6 +1251,11 @@ class MemoryManager:
             "sufficiency_score": score,
             "status": new_status,
             "created_gaps": created_gaps,
+            "overload_flags": {
+                "extraction_overload": overload_flags["extraction_overload"],
+                "evidence_noise": overload_flags["evidence_noise"] and new_status != "sufficient",
+                "citation_hygiene_failure": overload_flags["citation_hygiene_failure"],
+            },
             "next_action": "evaluate_research_portfolio" if new_status == "needs_expansion" else "get_next_actions",
         }
 
@@ -1036,6 +1311,33 @@ class MemoryManager:
             return {"error": "Portfolio evaluation is only allowed while researching"}
         objectives = self.get_research_objectives(goal_id)
         queries = graph_tools.search_nodes("query", {})
+        delivery_contract = _normalize_delivery_contract(
+            goal.get("delivery_contract"),
+            self._normalize_task_archetype(goal.get("task_archetype")),
+            goal.get("time_window"),
+        )
+        missing_contract_slots = self._compute_delivery_readiness(
+            goal_id,
+            goal=goal,
+            queries=queries,
+        )["missing_contract_slots"]
+        query_flags = {
+            query["id"]: self._query_pressure_flags(
+                query["id"],
+                query=query,
+                time_window=goal.get("time_window"),
+            )
+            for query in queries
+            if query.get("id")
+        }
+        overload_query_ids = [
+            query_id for query_id, flags in query_flags.items()
+            if flags["extraction_overload"]
+        ]
+        citation_hygiene_query_ids = [
+            query_id for query_id, flags in query_flags.items()
+            if flags["citation_hygiene_failure"]
+        ]
         prompt = (
             mm_prompts.evaluate_portfolio
             .replace("{objectives}", json.dumps(objectives, ensure_ascii=False))
@@ -1047,6 +1349,10 @@ class MemoryManager:
                     "status": q.get("status"),
                     "sufficiency_score": q.get("sufficiency_score"),
                     "covered": q.get("covered") or [],
+                    "slot_targets": _canonical_slot_labels(q.get("slot_targets")),
+                    "section_targets": q.get("section_targets") or [],
+                    "portfolio_stage": q.get("portfolio_stage"),
+                    "overload_flags": query_flags.get(q.get("id"), {}),
                 }
                 for q in queries
             ], ensure_ascii=False))
@@ -1153,6 +1459,11 @@ class MemoryManager:
                 for gap in group
                 for key in (gap.get("objective_keys") or [])
             }
+            slot_targets = {
+                target
+                for gap in group
+                for target in _canonical_slot_labels(gap.get("slot_targets"))
+            }
             impacted = [objective_by_key[key] for key in keys if key in objective_by_key]
             must_impacted = [item for item in impacted if item.get("requirement") == "must"]
             deficits = [
@@ -1172,10 +1483,37 @@ class MemoryManager:
             benefit = 0.5 * deficit + 0.3 * decision_impact + 0.2 * confidence_gain
             utility = benefit * (1.0 - redundancy) / rounds
             fatal = any(gap.get("gap_category") == "fatal_conflict" for gap in group)
-            choose = fatal or (
-                bool(deficits)
-                and utility >= EXPANSION_UTILITY_THRESHOLD
+            slot_needed = bool(slot_targets & set(missing_contract_slots))
+            preferred_stage = max(
+                (
+                    gap.get("preferred_stage") or _default_preferred_stage(str(gap.get("gap_category") or ""))
+                    for gap in group
+                ),
+                key=lambda stage: {"slot_completion": 2, "deep_dive": 1, "discovery": 0}.get(str(stage), 0),
+                default="deep_dive",
             )
+            group_searches_noisy = any(
+                query_flags.get(query.get("id"), {}).get("evidence_noise")
+                for query in queries
+                if str(query.get("search_subject_key") or "") == subject
+            )
+            priority_score = (
+                2 if slot_needed or preferred_stage == "slot_completion" else 0,
+                1 if fatal or preferred_stage == "deep_dive" else 0,
+                utility,
+            )
+            choose = (
+                slot_needed
+                or fatal
+                or (bool(deficits) and utility >= EXPANSION_UTILITY_THRESHOLD)
+            )
+            if (
+                group_searches_noisy
+                and not slot_needed
+                and not deficits
+                and delivery_contract.get("prefer_compression_over_expansion")
+            ):
+                choose = False
             new_status = "selected" if choose else "deferred_low_value"
             owners = [
                 graph_tools.get_node(owner_id)
@@ -1192,7 +1530,12 @@ class MemoryManager:
                     "marginal_utility": utility,
                     "objective_deficit": deficit,
                     "expansion_parent_id": expansion_parent_id,
-                    "resolution_reason": None if choose else "global marginal utility below expansion threshold",
+                    "selection_priority": list(priority_score),
+                    "resolution_reason": None if choose else (
+                        "prefer compression over expansion"
+                        if group_searches_noisy and delivery_contract.get("prefer_compression_over_expansion")
+                        else "global marginal utility below expansion threshold"
+                    ),
                 }, gap["id"])
                 (selected if choose else deferred).append(graph_tools.get_node(gap["id"]))
 
@@ -1235,6 +1578,9 @@ class MemoryManager:
             "evaluated_portfolio_revision": revision,
             "last_max_marginal_utility": max_utility,
             "report_readiness_score": readiness,
+            "task_archetype": self._normalize_task_archetype(goal.get("task_archetype")),
+            "delivery_contract": delivery_contract,
+            "missing_contract_slots": missing_contract_slots,
         }, goal["id"])
         return {
             "selected_gap_ids": [item["id"] for item in selected],
@@ -1242,6 +1588,9 @@ class MemoryManager:
             "objectives": objectives,
             "report_readiness_score": readiness,
             "last_max_marginal_utility": max_utility,
+            "missing_contract_slots": missing_contract_slots,
+            "overload_query_ids": overload_query_ids,
+            "citation_hygiene_query_ids": citation_hygiene_query_ids,
             "next_action": "get_next_actions",
         }
 
@@ -1266,6 +1615,91 @@ class MemoryManager:
         # Query scores are not evidence-item granular. Conservatively reject a
         # mixed dated set so out-of-window evidence cannot inflate coverage.
         return not dated or all(lower <= year <= upper for year in dated)
+
+    @staticmethod
+    def _query_pressure_flags(
+        query_id: str,
+        evaluation: Optional[dict[str, Any]] = None,
+        query: Optional[dict[str, Any]] = None,
+        time_window: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """Return overload and citation-hygiene flags for one Query."""
+        evaluation = evaluation or graph_tools.get_query_evaluation_subgraph(query_id)
+        query = query or graph_tools.get_node(query_id)
+        nodes = evaluation.get("nodes", []) or []
+        statement_count = sum(1 for node in nodes if _node_type_matches(node, NodeType.STATEMENT))
+        evidence_count = sum(1 for node in nodes if _node_type_matches(node, NodeType.EVIDENCE))
+        extraction_overload = (
+            statement_count >= QUERY_OVERLOAD_STATEMENT_THRESHOLD
+            or evidence_count >= QUERY_OVERLOAD_EVIDENCE_THRESHOLD
+        )
+        citation_hygiene_failure = not MemoryManager._query_evidence_within_time_window(query_id, time_window)
+        evidence_noise = extraction_overload and str(query.get("status") or "") != "sufficient"
+        return {
+            "statement_count": statement_count,
+            "evidence_count": evidence_count,
+            "extraction_overload": extraction_overload,
+            "evidence_noise": evidence_noise,
+            "citation_hygiene_failure": citation_hygiene_failure,
+        }
+
+    def _compute_delivery_readiness(
+        self,
+        goal_id: Optional[str] = None,
+        goal: Optional[dict[str, Any]] = None,
+        queries: Optional[list[dict[str, Any]]] = None,
+        gaps: Optional[list[dict[str, Any]]] = None,
+    ) -> dict[str, Any]:
+        """Return deterministic delivery-readiness signals from graph + planning assets."""
+        from tools import report_tools, research_state
+
+        goal = goal or research_state.get_goal(goal_id)
+        queries = queries if queries is not None else graph_tools.search_nodes("query", {})
+        gaps = gaps if gaps is not None else graph_tools.search_nodes("analysis", {"analysis_type": "gap"})
+        contract = _normalize_delivery_contract(
+            goal.get("delivery_contract"),
+            self._normalize_task_archetype(goal.get("task_archetype")),
+            goal.get("time_window"),
+        )
+        query_ids = [
+            str(query.get("id") or "").strip()
+            for query in queries
+            if str(query.get("id") or "").strip()
+        ]
+        planning_assets = report_tools.build_report_planning_assets(query_ids)
+        structural_slot_coverage = set(
+            report_tools.infer_delivery_slot_coverage(self.cache_dir, planning_assets)
+        )
+        slot_coverage = set()
+        for query in queries:
+            if query.get("status") == "sufficient":
+                slot_coverage.update(_canonical_slot_labels(query.get("slot_targets")))
+        for gap in gaps:
+            if gap.get("status") in {"selected", "resolved", "assigned"}:
+                slot_coverage.update(_canonical_slot_labels(gap.get("slot_targets")))
+        slot_coverage.update(structural_slot_coverage)
+
+        missing_contract_slots = [
+            slot for slot in contract.get("required_slot_labels") or []
+            if slot not in slot_coverage
+        ]
+        lead_required = "lead" in (contract.get("required_section_types") or [])
+        comparison_required = bool(contract.get("comparison_required"))
+        entity_focus = bool(contract.get("entity_focus"))
+        if lead_required and "lead" not in slot_coverage and "lead" not in missing_contract_slots:
+            missing_contract_slots.append("lead")
+        if comparison_required and "comparison" not in slot_coverage and "comparison" not in missing_contract_slots:
+            missing_contract_slots.append("comparison")
+        if entity_focus and "entity_profile" not in slot_coverage and "entity_profile" not in missing_contract_slots:
+            missing_contract_slots.append("entity_profile")
+        return {
+            "ready": not missing_contract_slots,
+            "missing_contract_slots": missing_contract_slots,
+            "lead_required": lead_required,
+            "comparison_required": comparison_required,
+            "entity_focus": entity_focus,
+            "slot_coverage": sorted(slot_coverage),
+        }
 
     def expand_gaps(self, parent_id: str, gap_ids: Optional[list[str]] = None) -> dict:
         """Create one child Query per selected search subject."""
@@ -1314,6 +1748,12 @@ class MemoryManager:
 
         created = []
         goal = research_state.get_goal()
+        task_archetype = self._normalize_task_archetype(goal.get("task_archetype"))
+        delivery_contract = _normalize_delivery_contract(
+            goal.get("delivery_contract"),
+            task_archetype,
+            goal.get("time_window"),
+        )
         sibling_texts = [
             graph_tools.get_node(cid).get("text")
             for cid in graph_tools.get_query_children(resolved)
@@ -1329,6 +1769,16 @@ class MemoryManager:
                 continue
             followups = self._plan_followup_queries(
                 research_goal=goal.get("research_goal") or goal.get("request") or "",
+                task_archetype=task_archetype,
+                delivery_contract=delivery_contract,
+                preferred_stage=max(
+                    (
+                        gap.get("preferred_stage") or _default_preferred_stage(str(gap.get("gap_category") or ""))
+                        for gap in group
+                    ),
+                    key=lambda stage: {"slot_completion": 2, "deep_dive": 1, "discovery": 0}.get(str(stage), 0),
+                    default="deep_dive",
+                ),
                 parent_text=parent.get("text") or "",
                 sibling_texts=sibling_texts,
                 gaps=[
@@ -1336,6 +1786,8 @@ class MemoryManager:
                         "id": gap["id"],
                         "description": gap.get("description") or gap.get("text"),
                         "acceptance_criteria": gap.get("acceptance_criteria") or [],
+                        "slot_targets": _canonical_slot_labels(gap.get("slot_targets")),
+                        "section_targets": gap.get("section_targets") or [],
                     }
                     for gap in group
                 ],
@@ -1357,6 +1809,14 @@ class MemoryManager:
                 key for gap in group for key in (gap.get("objective_keys") or [])
                 if key in objective_by_key
             })
+            portfolio_stage = max(
+                (
+                    gap.get("preferred_stage") or _default_preferred_stage(str(gap.get("gap_category") or ""))
+                    for gap in group
+                ),
+                key=lambda stage: {"slot_completion": 2, "deep_dive": 1, "discovery": 0}.get(str(stage), 0),
+                default="deep_dive",
+            )
             child_id = graph_tools.create_query_child(
                 parent_id=resolved,
                 text=spec["text"],
@@ -1367,6 +1827,15 @@ class MemoryManager:
                 gap_ids=[gap["id"] for gap in group],
                 objective_keys=objective_keys,
                 required_for_parent=False,
+                portfolio_stage=portfolio_stage,
+                slot_targets=sorted({
+                    target for gap in group for target in _canonical_slot_labels(gap.get("slot_targets"))
+                }),
+                section_targets=sorted({
+                    target for gap in group for target in _string_list(gap.get("section_targets"))
+                    if target in _VALID_SECTION_TYPES
+                }),
+                task_archetype=task_archetype,
                 search_subject_key=subject,
             )
             for key in objective_keys:
@@ -1377,6 +1846,7 @@ class MemoryManager:
                 "handle": child.get("handle"),
                 "text": child.get("text"),
                 "gap_ids": [gap["id"] for gap in group],
+                "portfolio_stage": portfolio_stage,
             })
             sibling_texts.append(child.get("text"))
 
@@ -1503,6 +1973,9 @@ class MemoryManager:
                             if objective.get("requirement") == "must"
                         ],
                         required_for_parent=False,
+                        portfolio_stage="deep_dive",
+                        section_targets=["body"],
+                        task_archetype=self._normalize_task_archetype(goal.get("task_archetype")),
                         search_subject_key=f"fatal-conflict-{conflict['id']}",
                     )
                     for objective in self.get_research_objectives(goal_id):
@@ -1529,6 +2002,33 @@ class MemoryManager:
             item.get("status") in {"satisfied", "blocked_best_effort"}
             for item in must
         )
+        delivery_readiness = self._compute_delivery_readiness(
+            goal_id,
+            goal=goal,
+            queries=all_queries,
+        )
+        must_objective_keys = {
+            item.get("objective_key")
+            for item in must
+            if item.get("objective_key")
+        }
+        query_flags = {
+            query["id"]: self._query_pressure_flags(
+                query["id"],
+                query=query,
+                time_window=goal.get("time_window"),
+            )
+            for query in all_queries
+            if query.get("id")
+        }
+        citation_hygiene_query_ids = [
+            query["id"]
+            for query in all_queries
+            if (
+                must_objective_keys.intersection(query.get("objective_keys") or [])
+                and query_flags.get(query["id"], {}).get("citation_hygiene_failure")
+            )
+        ]
         active = [
             query for query in all_queries
             if query.get("status") in {"searching", "assessing"}
@@ -1551,10 +2051,12 @@ class MemoryManager:
             tree["valid"]
             and portfolio_current
             and objectives_ready
+            and delivery_readiness["ready"]
             and not active
             and not selected_gaps
             and not created_fatal_gaps
             and not exhaustive_open
+            and not citation_hygiene_query_ids
         ):
             for query in all_queries:
                 if query.get("status") == "pending":
@@ -1564,6 +2066,8 @@ class MemoryManager:
                 "research_state": research_state.REPORT_READY,
                 "last_convergence_recommendation": "stop",
                 "report_authorized_reason": "report-level objectives reached marginal-utility convergence",
+                "delivery_readiness": delivery_readiness,
+                "missing_contract_slots": delivery_readiness["missing_contract_slots"],
             }, goal_id)
             recommendation = "stop"
             state = research_state.REPORT_READY
@@ -1572,6 +2076,8 @@ class MemoryManager:
                 "research_state": research_state.RESEARCHING,
                 "last_convergence_recommendation": "continue",
                 "report_authorized_reason": None,
+                "delivery_readiness": delivery_readiness,
+                "missing_contract_slots": delivery_readiness["missing_contract_slots"],
             }, goal_id)
             recommendation = "continue"
             state = research_state.RESEARCHING
@@ -1592,6 +2098,9 @@ class MemoryManager:
             "recommendation": recommendation,
             "reason": verdict.get("reason", ""),
             "research_state": state,
+            "delivery_readiness": delivery_readiness,
+            "missing_contract_slots": delivery_readiness["missing_contract_slots"],
+            "citation_hygiene_query_ids": citation_hygiene_query_ids,
             "tree_validation": tree,
             "next_actions": self.get_next_actions() if recommendation == "continue" else [],
         }
@@ -2160,7 +2669,7 @@ class MemoryManager:
                 key: goal.get(key)
                 for key in (
                     "id", "request", "research_goal", "language", "time_window",
-                    "region_scope", "source_preferences",
+                    "region_scope", "source_preferences", "task_archetype", "delivery_contract",
                 )
             } if goal else {},
             "queries": [
@@ -2183,6 +2692,12 @@ class MemoryManager:
             "limitations": limitations,
             "disclosed_conflicts": report_tools.get_disclosed_conflicts(),
             "reference_registry": report_tools.build_reference_registry(),
+            "task_archetype": self._normalize_task_archetype(goal.get("task_archetype")),
+            "delivery_contract": _normalize_delivery_contract(
+                goal.get("delivery_contract"),
+                self._normalize_task_archetype(goal.get("task_archetype")),
+                goal.get("time_window"),
+            ),
             "query_evidence_digests": planning_assets["query_evidence_digests"],
             "lead_candidates": planning_assets["lead_candidates"],
             "comparison_slots": planning_assets["comparison_slots"],
@@ -2321,6 +2836,9 @@ class MemoryManager:
     def _plan_followup_queries(
         self,
         research_goal: str,
+        task_archetype: str,
+        delivery_contract: dict[str, Any],
+        preferred_stage: str,
         parent_text: str,
         sibling_texts: list,
         gaps: Any,
@@ -2349,6 +2867,9 @@ class MemoryManager:
             prompt = (
                 mm_prompts.plan_followup_query
                 .replace("{research_goal}", research_goal or "")
+                .replace("{task_archetype}", task_archetype or "")
+                .replace("{delivery_contract}", json.dumps(delivery_contract or {}, ensure_ascii=False))
+                .replace("{preferred_stage}", preferred_stage or "")
                 .replace("{parent_text}", parent_text or "")
                 .replace("{sibling_texts}", json.dumps(sibling_texts or [], ensure_ascii=False))
                 .replace("{gaps}", gaps_text)

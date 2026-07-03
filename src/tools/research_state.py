@@ -131,10 +131,14 @@ def get_status(goal_id: Optional[str] = None) -> dict[str, Any]:
         "successful_search_rounds": goal.get("successful_search_rounds", 0),
         "remaining_search_rounds": remaining_budget(goal.get("id")),
         "scope_mode": goal.get("scope_mode", "bounded"),
+        "task_archetype": goal.get("task_archetype"),
+        "delivery_contract": goal.get("delivery_contract", {}),
         "portfolio_revision": goal.get("portfolio_revision", 0),
         "evaluated_portfolio_revision": goal.get("evaluated_portfolio_revision", 0),
         "last_max_marginal_utility": goal.get("last_max_marginal_utility", 0.0),
         "report_readiness_score": goal.get("report_readiness_score", 0.0),
+        "delivery_readiness": goal.get("delivery_readiness", {}),
+        "missing_contract_slots": goal.get("missing_contract_slots", []),
         "objectives": [
             {
                 "objective_key": objective.get("objective_key"),

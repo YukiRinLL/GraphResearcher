@@ -17,6 +17,17 @@ NODES = {
         "id": "goal", "type": "UserRequest", "research_state": "RESEARCHING",
         "max_search_rounds": 20, "dispatched_search_rounds": 2, "successful_search_rounds": 2,
         "scope_mode": "bounded", "portfolio_revision": 1, "evaluated_portfolio_revision": 1,
+        "task_archetype": "comparative_matrix",
+        "time_window": "2024-2025",
+        "delivery_contract": {
+            "report_mode": "comparative_matrix",
+            "required_section_types": ["lead", "body", "comparison", "limitations"],
+            "required_slot_labels": ["对比矩阵"],
+            "comparison_required": True,
+            "entity_focus": False,
+            "strict_time_window": True,
+            "prefer_compression_over_expansion": True,
+        },
     },
     "o1": {
         "id": "o1", "type": "Analysis", "analysis_type": "objective",
@@ -26,12 +37,16 @@ NODES = {
     "q1": {
         "id": "q1", "type": "Query", "handle": "q1", "text": "core route", "status": "assessing",
         "priority": 1.0, "sem": 1.0, "required_for_parent": True, "acceptance_criteria": [],
-        "objective_keys": ["core-answer"],
+        "objective_keys": ["core-answer"], "search_subject_key": "shared-subject",
+        "slot_targets": ["跨公司对比矩阵"], "section_targets": ["comparison"],
+        "top_evidence_ids": ["e1"], "evidence_digest": ["owned evidence"], "source_count_snapshot": 1,
     },
     "q2": {
         "id": "q2", "type": "Query", "handle": "q2", "text": "sibling route", "status": "pending",
         "priority": 0.76, "sem": 0.6, "required_for_parent": True, "acceptance_criteria": [],
-        "objective_keys": ["core-answer"],
+        "objective_keys": ["core-answer"], "search_subject_key": "shared-subject",
+        "slot_targets": ["跨公司对比矩阵"], "section_targets": ["comparison"],
+        "top_evidence_ids": ["e2"], "evidence_digest": ["sibling evidence"], "source_count_snapshot": 1,
     },
     "r1": {"id": "r1", "type": "SearchRun", "query_id": "q1", "status": "succeeded"},
     "r2": {"id": "r2", "type": "SearchRun", "query_id": "q2", "status": "succeeded"},
@@ -49,6 +64,8 @@ EDGES = [
     {"source": "r2", "target": "shared", "type": "FOUND_SOURCE"},
     {"source": "r1", "target": "e1", "type": "PRODUCED"},
     {"source": "r2", "target": "e2", "type": "PRODUCED"},
+    {"source": "shared", "target": "e1", "type": "SUPPORTED_BY"},
+    {"source": "shared", "target": "e2", "type": "SUPPORTED_BY"},
 ]
 SEQ = 0
 
@@ -130,6 +147,10 @@ def install_fakes():
             "objective_keys": attrs.get("objective_keys") or [],
             "search_subject_key": attrs.get("search_subject_key"),
             "recovery_objective_key": attrs.get("recovery_objective_key"),
+            "portfolio_stage": attrs.get("portfolio_stage"),
+            "slot_targets": attrs.get("slot_targets") or [],
+            "section_targets": attrs.get("section_targets") or [],
+            "task_archetype": attrs.get("task_archetype"),
         }
         edge_type = EdgeType.HAS_QUERY if parent_node.get("type") == "UserRequest" else EdgeType.PARENT_OF
         add_edge(parent_id, node_id, edge_type)
@@ -179,12 +200,15 @@ def main():
             "gaps": [
                 {
                     "description": "gap one", "importance": "core", "acceptance_criteria": ["one"],
-                    "objective_keys": ["core-answer"], "gap_category": "missing_core_evidence",
-                    "search_subject_key": "shared-subject", "decision_impact": 1.0, "confidence_gain": 1.0,
+                    "objective_keys": ["core-answer"], "gap_category": "slot_completion",
+                    "preferred_stage": "slot_completion", "slot_targets": ["公司对比矩阵"],
+                    "section_targets": ["comparison"], "search_subject_key": "shared-subject",
+                    "decision_impact": 1.0, "confidence_gain": 1.0,
                 },
                 {
                     "description": "gap two", "importance": "supporting", "acceptance_criteria": ["two"],
                     "objective_keys": ["core-answer"], "gap_category": "verification",
+                    "preferred_stage": "deep_dive", "section_targets": ["body"],
                     "search_subject_key": "shared-subject", "decision_impact": 0.8, "confidence_gain": 0.8,
                 },
             ],
@@ -230,23 +254,41 @@ def main():
     assert "exact_query_id" not in actions[0], actions
     assessed = mm.assess_query("q1")
     assert assessed["status"] == "needs_expansion" and len(assessed["created_gaps"]) == 2, assessed
+    assert assessed["overload_flags"]["extraction_overload"] is False, assessed
     portfolio = mm.evaluate_research_portfolio("goal")
     assert len(portfolio["selected_gap_ids"]) == 2, portfolio
+    assert portfolio["missing_contract_slots"] == [], portfolio
     expanded = mm.expand_gaps("q1")
     assert len(expanded["created"]) == 1 and NODES["q1"]["status"] == "waiting_children", expanded
     assert len(expanded["created"][0]["gap_ids"]) == 2, expanded
+    assert expanded["created"][0]["portfolio_stage"] == "slot_completion", expanded
+    assert NODES[expanded["created"][0]["id"]]["slot_targets"] == ["comparison"], expanded
     assert all(NODES[c["id"]]["priority"] < NODES["q1"]["priority"] for c in expanded["created"])
 
     NODES["qlow"] = {
         "id": "qlow", "type": "Query", "handle": "q3", "text": "repeated branch", "status": "assessing",
         "priority": 0.5, "sem": 0.6, "required_for_parent": False, "low_novelty_streak": 2,
-        "objective_keys": ["core-answer"],
+        "objective_keys": ["core-answer"], "search_subject_key": "detail",
     }
     EDGES.append({"source": "goal", "target": "qlow", "type": "HAS_QUERY"})
+    original_eval = graph_tools.get_query_evaluation_subgraph
+    graph_tools.get_query_evaluation_subgraph = lambda query_id: (
+        {
+            "query": dict(NODES["qlow"]),
+            "nodes": [{"id": f"eov{i}", "type": "Evidence", "claim": f"detail {i}"} for i in range(18)],
+            "edges": [],
+            "children": [],
+        }
+        if query_id == "qlow"
+        else original_eval(query_id)
+    )
     low = mm.assess_query("qlow")
     assert low["status"] == "needs_expansion" and low["created_gaps"], low
+    assert low["overload_flags"]["extraction_overload"] is True, low
     low_portfolio = mm.evaluate_research_portfolio("goal")
     assert low_portfolio["deferred_gap_ids"] and NODES["qlow"]["status"] == "sufficient", low_portfolio
+    assert "qlow" in low_portfolio["overload_query_ids"], low_portfolio
+    graph_tools.get_query_evaluation_subgraph = original_eval
 
     NODES["ohard"] = {
         "id": "ohard", "type": "Analysis", "analysis_type": "objective",
@@ -348,8 +390,5 @@ def main():
         loop_guard._record_tool_result(repeated_call, blocked_result)
     assert NODES["goal"]["research_state"] == "FAILED"
     assert "Repeated identical failed tool action" in NODES["goal"]["last_error"]
-    print("ALL TREE STATE-MACHINE CHECKS PASSED")
-
-
 if __name__ == "__main__":
     main()
