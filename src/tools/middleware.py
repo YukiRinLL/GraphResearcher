@@ -192,65 +192,6 @@ def _last_ai_message(response) -> object | None:
     return last if isinstance(last, AIMessage) else None
 
 
-# Search tools that can substitute for each other when one returns an error.
-_SEARCH_FALLBACK = {"serper_search": "tavily_search", "tavily_search": "serper_search"}
-
-
-class SearchFallbackMiddleware(AgentMiddleware):
-    """Transparently retries a failed web search with the alternate engine.
-
-    Web-search tools return a dict containing an ``error`` key on failure
-    (rate limit, no credits, network) instead of raising. When `serper_search`
-    or `tavily_search` returns such a result, this middleware re-runs the same
-    query through the other engine once, so a single dead engine does not waste
-    the agent's turn. Falls back at most once per call (no loop).
-    """
-
-    @staticmethod
-    def _is_error_result(result: object) -> bool:
-        """Return True if a tool result (ToolMessage) carries an ``error`` key."""
-        text = _message_text(result)
-        if '"error"' not in text:
-            return False
-        try:
-            data = json.loads(text)
-            return isinstance(data, dict) and "error" in data
-        except (json.JSONDecodeError, ValueError):
-            return '"error"' in text
-
-    def _alternate(self, tool_call: dict, result: object):
-        """Run the alternate search engine if the primary result is an error.
-
-        Returns:
-            A replacement ``ToolMessage`` from the alternate engine, or ``None``.
-        """
-        name = tool_call.get("name")
-        alt_name = _SEARCH_FALLBACK.get(name)
-        if alt_name is None or not self._is_error_result(result):
-            return None
-        from tools import search_tools
-
-        alt_tool = getattr(search_tools, alt_name)
-        logger.info("Search engine %s failed; falling back to %s.", name, alt_name)
-        try:
-            alt_output = alt_tool.invoke(dict(tool_call.get("args", {})))
-        except Exception as e:  # noqa: BLE001 — keep the original error result on fallback failure
-            logger.warning("Fallback search %s also failed: %s", alt_name, e)
-            return None
-        content = alt_output if isinstance(alt_output, str) else json.dumps(alt_output, ensure_ascii=False)
-        return ToolMessage(content=content, tool_call_id=tool_call["id"], name=name)
-
-    def wrap_tool_call(self, request, handler):
-        """Run the search tool, retrying with the alternate engine on error."""
-        result = handler(request)
-        return self._alternate(request.tool_call, result) or result
-
-    async def awrap_tool_call(self, request, handler):
-        """Async counterpart of :meth:`wrap_tool_call`."""
-        result = await handler(request)
-        return self._alternate(request.tool_call, result) or result
-
-
 class EmptyResponseRetryMiddleware(AgentMiddleware):
     """Retries when the model returns an empty terminal response.
 
