@@ -64,3 +64,15 @@ uv run python main.py "request" -v debug --no-subgraphs
 # Surface middleware logs (e.g. search-budget messages) without other detail
 uv run python main.py "request" -r 1 --log-level INFO
 ```
+
+
+uv run python test_wlc.py \
+  --prompt-path /Users/yindq/projects/DeepResearch/Wiki_Live_Challenge/data/2025_Mar_Nov/wiki_data//ga_100.json \
+  --output-path outputs/wlc_run2 \
+  --sample-size 1 \
+  --seed 42 \
+  --max-rounds 1 \
+  --verbose debug \
+  --evaluate \
+  --wlc-root /Users/yindq/projects/DeepResearch/Wiki_Live_Challenge \
+  --benchmark 2025_Mar_Nov \
