@@ -1,41 +1,20 @@
-"""Web search tools for the Searcher agent.
-
-Exposes two web-search tools: `serper_search` (Serper.dev, the default) and
-`tavily_search` (Tavily, alternative). Clients are created lazily so importing
-this module does not require any API key until a search actually runs.
-"""
+"""为 Searcher 提供仅基于 Tavily 的网页正文搜索工具."""
 
 import os
 from typing import Literal, Optional
 
-import requests
 from langchain_core.tools import tool
 from tavily import TavilyClient
 
 _tavily_client: Optional[TavilyClient] = None
 
-# Cap per-result raw page text returned to the agent (chars).
-_MAX_RAW_CONTENT_CHARS = 4000
-
-SERPER_ENDPOINTS = {
-    "general": "https://google.serper.dev/search",
-    "news": "https://google.serper.dev/news",
-    "finance": "https://google.serper.dev/search",
-}
-
-# Timeout configuration (seconds)
-SEARCH_TIMEOUT = int(os.environ.get("SEARCH_TIMEOUT", "30"))
+# 单条正文的上限既约束工具返回，也保护后续逐来源抽取的上下文。
+_MAX_RAW_CONTENT_CHARS = 20_000
+SEARCH_TIMEOUT = float(os.environ.get("SEARCH_TIMEOUT", "30"))
 
 
 def _client() -> TavilyClient:
-    """Return the Tavily client, creating it on first use.
-
-    Deferring construction keeps importing this module cheap and avoids
-    requiring ``TAVILY_API_KEY`` until a search actually runs.
-
-    Returns:
-        A configured ``TavilyClient``.
-    """
+    """按需创建并复用 Tavily 客户端."""
     global _tavily_client
     if _tavily_client is None:
         _tavily_client = TavilyClient(api_key=os.environ["TAVILY_API_KEY"])
@@ -43,106 +22,42 @@ def _client() -> TavilyClient:
 
 
 @tool
-def serper_search(
-    query: str,
-    max_results: int = 5,
-    topic: Literal["general", "news", "finance"] = "general",
-    include_raw_content: bool = False,
-) -> dict:
-    """Run a web search via Serper.dev (Google Search API). This is the default search tool.
-
-    Args:
-        query: The search query.
-        max_results: Maximum number of results to return.
-        topic: Search topic — ``general`` or ``news`` (``finance`` falls back to
-            general; Serper has no dedicated finance endpoint).
-        include_raw_content: Accepted for interface parity with ``tavily_search``;
-            Serper returns snippets, not full page text, so this is ignored.
-
-    Returns:
-        A normalized dict ``{"query", "results": [{title, url, content, date}], "raw"}``,
-        or, on failure, a dict with an ``error`` key so the agent can degrade
-        gracefully instead of crashing the whole run.
-    """
-    try:
-        endpoint = SERPER_ENDPOINTS.get(topic, SERPER_ENDPOINTS["general"])
-        response = requests.post(
-            endpoint,
-            headers={"X-API-KEY": os.environ["SERPER_API_KEY"], "Content-Type": "application/json"},
-            json={"q": query, "num": max_results},
-            timeout=SEARCH_TIMEOUT,
-        )
-        if response.status_code >= 400:
-            # Surface Serper's own message (e.g. "Not enough credits") rather than a bare HTTP code.
-            return {
-                "error": f"HTTP {response.status_code}: {response.text[:200]}",
-                "query": query,
-                "results": [],
-                "note": "Serper search failed (see error). The alternate engine will be tried.",
-            }
-        data = response.json()
-        items = data.get("news") if topic == "news" else data.get("organic")
-        results = [
-            {
-                "title": item.get("title"),
-                "url": item.get("link"),
-                "content": item.get("snippet"),
-                "date": item.get("date"),
-            }
-            for item in (items or [])[:max_results]
-        ]
-        # Return only the normalized results; echoing the full raw Serper
-        # response back into the conversation bloats context and enlarges the
-        # surface that the proxy's content filter can trip on.
-        return {"query": query, "results": results}
-    except Exception as e:  # noqa: BLE001 — surface any search failure as data, not a crash
-        return {
-            "error": f"{type(e).__name__}: {e}",
-            "query": query,
-            "results": [],
-            "note": "Search request failed (see error for the exact cause). Try the alternate engine, adjust the query, or proceed with evidence already collected.",
-        }
-
-
-@tool
 def tavily_search(
     query: str,
     max_results: int = 5,
     topic: Literal["general", "news", "finance"] = "general",
-    include_raw_content: bool = False,
 ) -> dict:
-    """Run a web search via Tavily.
+    """使用 Tavily 搜索网页，并强制返回可用于证据抽取的正文.
 
     Args:
-        query: The search query.
-        max_results: Maximum number of results to return.
-        topic: Search topic — ``general``, ``news`` or ``finance``.
-        include_raw_content: Whether to include the full page text of results.
+        query: 搜索查询。
+        max_results: 最多返回的结果数。
+        topic: 搜索主题，可取 ``general``、``news`` 或 ``finance``。
 
     Returns:
-        The Tavily search response, or, on failure, a dict with an ``error``
-        key describing the problem so the agent can degrade gracefully instead
-        of crashing the whole run.
+        Tavily 搜索响应。失败时返回包含 ``error`` 和空 ``results`` 的字典，
+        让现有 SearchRun 生命周期把本轮作为空结果处理。
     """
     try:
         response = _client().search(
             query,
             max_results=max_results,
-            include_raw_content=include_raw_content,
+            include_raw_content=True,
             topic=topic,
+            timeout=SEARCH_TIMEOUT,
         )
-        # Cap per-result raw page text so a few long pages don't flood the
-        # conversation (context bloat + larger content-filter surface).
-        if include_raw_content and isinstance(response, dict):
+        if isinstance(response, dict):
             for item in response.get("results", []) or []:
-                raw = item.get("raw_content")
-                if isinstance(raw, str) and len(raw) > _MAX_RAW_CONTENT_CHARS:
-                    item["raw_content"] = raw[:_MAX_RAW_CONTENT_CHARS] + "…(truncated)"
+                if not isinstance(item, dict):
+                    continue
+                raw_content = item.get("raw_content")
+                if isinstance(raw_content, str) and len(raw_content) > _MAX_RAW_CONTENT_CHARS:
+                    item["raw_content"] = raw_content[:_MAX_RAW_CONTENT_CHARS] + "...(truncated)"
         return response
-    except Exception as e:  # noqa: BLE001 — surface any search failure as data, not a crash
+    except Exception as exc:  # noqa: BLE001 - 搜索失败应进入现有空结果状态机，而不是中断整次运行。
         return {
-            "error": f"{type(e).__name__}: {e}",
+            "error": f"{type(exc).__name__}: {exc}",
             "query": query,
             "results": [],
-            "note": "Search request failed (see error for the exact cause). Try the alternate engine, adjust the query, or proceed with evidence already collected.",
+            "note": "Tavily search failed. Adjust the query or continue with evidence already collected.",
         }

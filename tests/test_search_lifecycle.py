@@ -205,11 +205,20 @@ def main():
     assert repeated_submit.get("error"), repeated_submit
     assert mm.prepare_search("q1").get("error")
 
+    empty_package = {
+        "sources": [],
+        "documents": [],
+        "statements": [],
+        "evidence": [],
+        "conflicts": [],
+    }
     for expected_status in ("pending", "pending", "blocked"):
         prepared = mm.prepare_search("q2")
         assert prepared.get("search_run_id"), prepared
-        empty = mm.submit_search_result(prepared["search_run_id"], "q2", {})
+        # Tavily 请求失败或全部结果缺少正文时，Searcher 会提交显式空 package。
+        empty = mm.submit_search_result(prepared["search_run_id"], "q2", empty_package)
         assert empty["status"] == "empty" and empty["query_status"] == expected_status, empty
+        assert NODES[prepared["search_run_id"]]["status"] == "empty", empty
     assert mm.prepare_search("q2").get("error")
 
     NODES["qbad"] = {

@@ -1,15 +1,15 @@
-你是 Searcher 内部的 web_searcher 子代理，负责执行网页检索与内容读取，把高质量、可追溯的原始素材交回给 Searcher 主代理。你不负责知识抽取、图谱写入或研究规划。
+本文档定义 Searcher 的网页搜索边界。运行时由确定性节点直接调用 Tavily，不由模型选择搜索工具或改写查询。
 时间提醒：当前日期为<current_date>，当前时间为<current_time>。
 
 # 职责
-1. **直接使用** Searcher 主代理给定的 query 文本作为检索输入（基本逐字检索）。时效敏感时只追加当前年份、latest、recent 或明确时间窗口，并按主题选择 `topic`（general / news / finance）。**不要把它拆成多个改写查询**——查询的拆分由上游 Query Planner 以图谱节点形式完成，不在你这一层进行。
-2. 默认调用 `serper_search`；仅当其返回错误（如限流）或结果质量明显不足时，才回退 `tavily_search`，并在需要原文时设 `include_raw_content=True` 读取正文。若同一 query 结果过薄，可对**同一 query 文本**做最小措辞微调后重试，但不得 fan-out 成多主题检索。
-3. 筛掉低相关、明显重复、转载、SEO 聚合页和无法追溯来源身份的内容。
+1. 直接使用上游 Query Planner 给定的 query 文本，不拆分、不扩写、不 fan-out。
+2. 固定调用一次 `tavily_search`，使用 `topic="general"`，最多请求 5 条结果，并强制读取 `raw_content`。
+3. 规范化 URL 后去重，丢弃无合法 HTTP(S) URL 或无正文的结果。
+4. 搜索摘要只用于调试和筛选，不得进入 analyzer 的抽取输入。
 
 # 工具
-- `serper_search(query, max_results, topic)`（**默认**）：基于 Serper.dev 的 Google 搜索，返回标题、URL、摘要和日期；摘要只能作为线索。
-- `tavily_search(query, max_results, topic, include_raw_content)`（备用）：Tavily 网页搜索；需要原文时可设置 `include_raw_content=True`。
-- 两个工具失败时都会返回带 `error` 字段的结果而非报错；遇到 `error` 应换查询、换工具或如实记录后继续，不要中断整轮。
+- `tavily_search(query, max_results, topic)`：唯一网页搜索工具，内部固定请求正文。
+- 工具失败时返回带 `error` 和空 `results` 的字典，由现有 SearchRun 空结果状态机处理。
 
 # 返回给主代理
-对每个保留下来的来源，结构化记录：标题、URL、发布方/作者（若有）、发布或更新日期（若有）、来源类型、触发它的查询语句、与检索目标的相关性，以及读取到的正文或忠实摘要。不要伪造任何元数据；缺失的字段标记为 null。不做事实判断，不做抽取——把素材原样交给 Searcher 主代理或 analyzer。
+向后续逐来源抽取节点传递真实 URL、标题、发布日期和 `raw_content`。完整正文不写入图谱；调试摘要只记录正文字符数和丢弃计数。
