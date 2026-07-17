@@ -49,6 +49,9 @@ def dispatch_searcher(query_id: str, source_preferences: list[str] | None = None
             "search_run_id": prepared["search_run_id"],
             "query_id": prepared["query_id"],
             "query_text": prepared["query_text"],
+            "source_preferences": prepared.get("source_preferences", []),
+            "excluded_domains": prepared.get("excluded_domains", []),
+            "excluded_urls": prepared.get("excluded_urls", []),
             "messages": [HumanMessage(content=prepared["query_text"])],
         })
     except Exception as exc:

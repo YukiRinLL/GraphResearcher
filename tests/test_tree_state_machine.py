@@ -130,6 +130,7 @@ def install_fakes():
             "objective_keys": attrs.get("objective_keys") or [],
             "search_subject_key": attrs.get("search_subject_key"),
             "recovery_objective_key": attrs.get("recovery_objective_key"),
+            "expansion_mode": attrs.get("expansion_mode"),
         }
         edge_type = EdgeType.HAS_QUERY if parent_node.get("type") == "UserRequest" else EdgeType.PARENT_OF
         add_edge(parent_id, node_id, edge_type)
@@ -181,18 +182,33 @@ def main():
                     "description": "gap one", "importance": "core", "acceptance_criteria": ["one"],
                     "objective_keys": ["core-answer"], "gap_category": "missing_core_evidence",
                     "search_subject_key": "shared-subject", "decision_impact": 1.0, "confidence_gain": 1.0,
+                    "expansion_mode": "vertical", "trigger_type": "graph_evidence", "trigger_refs": ["e1"],
                 },
                 {
                     "description": "gap two", "importance": "supporting", "acceptance_criteria": ["two"],
                     "objective_keys": ["core-answer"], "gap_category": "verification",
                     "search_subject_key": "shared-subject", "decision_impact": 0.8, "confidence_gain": 0.8,
+                    "expansion_mode": "horizontal", "trigger_type": "graph_evidence", "trigger_refs": ["e1"],
                 },
             ],
             "recommendation": "needs_expansion",
             "reason": "two gaps",
         },
         {"objectives": [{"objective_key": "core-answer", "coverage": 0.4, "confidence": 0.4}]},
-        {"queries": [{"text": "combined child query", "importance": "core", "acceptance_criteria": ["one", "two"]}]},
+        {"queries": [{"text": "vertical child evidence query", "importance": "core", "acceptance_criteria": ["one"]}]},
+        {"queries": [{"text": "horizontal sibling evidence query", "importance": "supporting", "acceptance_criteria": ["two"]}]},
+        {"queries": [{"text": "deep same-level evidence query", "importance": "supporting", "acceptance_criteria": ["deep"]}]},
+        {
+            "sufficiency_score": 0.2,
+            "covered": [],
+            "gaps": [{
+                "description": "ungrounded sibling evidence", "gap_category": "enrichment",
+                "objective_keys": ["core-answer"], "search_subject_key": "ungrounded",
+                "decision_impact": 1.0, "confidence_gain": 1.0,
+                "expansion_mode": "horizontal", "trigger_type": "graph_evidence", "trigger_refs": ["e1"],
+            }],
+            "recommendation": "needs_expansion",
+        },
         {
             "sufficiency_score": 0.8,
             "covered": ["base"],
@@ -200,6 +216,7 @@ def main():
                 "description": "optional detail", "gap_category": "detail",
                 "objective_keys": ["core-answer"], "search_subject_key": "detail",
                 "decision_impact": 0.1, "confidence_gain": 0.1,
+                "expansion_mode": "vertical", "trigger_type": "delivery_requirement", "trigger_refs": ["o1"],
             }],
             "recommendation": "needs_expansion",
         },
@@ -222,6 +239,13 @@ def main():
             {"objective_key": "hard-answer", "coverage": 0.1, "confidence": 0.1},
             {"objective_key": "exhaustive-answer", "coverage": 0.1, "confidence": 0.1},
         ]},
+        {"objectives": [
+            {"objective_key": "core-answer", "coverage": 0.8, "confidence": 0.75},
+            {"objective_key": "hard-answer", "coverage": 0.1, "confidence": 0.1},
+            {"objective_key": "exhaustive-answer", "coverage": 0.8, "confidence": 0.75},
+            {"objective_key": "recover-answer", "coverage": 0.1, "confidence": 0.1},
+        ]},
+        {"queries": [{"text": "recover answer authoritative evidence", "importance": "core", "acceptance_criteria": ["recover"]}]},
         {"fatal_unresolved_conflicts": [], "reason": "done"},
     ]))
     actions = mm.get_next_actions()
@@ -232,13 +256,50 @@ def main():
     assert assessed["status"] == "needs_expansion" and len(assessed["created_gaps"]) == 2, assessed
     portfolio = mm.evaluate_research_portfolio("goal")
     assert len(portfolio["selected_gap_ids"]) == 2, portfolio
+    expansion_actions = mm.get_next_actions()
+    assert expansion_actions[0]["action"] == "expand_gaps", expansion_actions
+    assert expansion_actions[0]["parent_id"] == "q1", expansion_actions
     expanded = mm.expand_gaps("q1")
-    assert len(expanded["created"]) == 1 and NODES["q1"]["status"] == "waiting_children", expanded
-    assert len(expanded["created"][0]["gap_ids"]) == 2, expanded
-    assert all(NODES[c["id"]]["priority"] < NODES["q1"]["priority"] for c in expanded["created"])
+    assert len(expanded["created"]) == 2 and NODES["q1"]["status"] == "waiting_children", expanded
+    vertical = next(item for item in expanded["created"] if item["expansion_mode"] == "vertical")
+    horizontal = next(item for item in expanded["created"] if item["expansion_mode"] == "horizontal")
+    assert vertical["attach_parent_id"] == "q1" and horizontal["attach_parent_id"] == "goal", expanded
+    assert NODES[vertical["id"]]["priority"] < NODES["q1"]["priority"]
+    assert graph_tools.validate_query_tree()["valid"]
+
+    NODES[vertical["id"]]["status"] = "needs_expansion"
+    deep_gap_id = graph_tools.create_analysis(
+        "deep horizontal gap",
+        query_id=vertical["id"],
+        analysis_type="gap",
+        description="deep horizontal gap",
+        gap_key="deep-horizontal-gap",
+        importance="supporting",
+        status="selected",
+        objective_keys=["core-answer"],
+        search_subject_key="deep-horizontal-subject",
+        expansion_mode="horizontal",
+        trigger_type="graph_evidence",
+        trigger_refs=["e1"],
+        expansion_parent_id=vertical["id"],
+    )
+    deep_expanded = mm.expand_gaps(vertical["id"], [deep_gap_id])
+    assert deep_expanded["created"][0]["attach_parent_id"] == "q1", deep_expanded
+    assert deep_expanded["created"][0]["handle"] == "q1.2", deep_expanded
+    assert graph_tools.validate_query_tree()["valid"]
+
+    NODES["qinvalid"] = {
+        "id": "qinvalid", "type": "Query", "handle": "q2.1", "text": "isolated evidence route",
+        "status": "assessing", "priority": 0.6, "sem": 0.6, "required_for_parent": False,
+        "objective_keys": ["core-answer"],
+    }
+    EDGES.append({"source": "q2", "target": "qinvalid", "type": "PARENT_OF"})
+    invalid_assessment = mm.assess_query("qinvalid")
+    assert invalid_assessment["status"] == "blocked", invalid_assessment
+    assert invalid_assessment["created_gaps"] == [], invalid_assessment
 
     NODES["qlow"] = {
-        "id": "qlow", "type": "Query", "handle": "q3", "text": "repeated branch", "status": "assessing",
+        "id": "qlow", "type": "Query", "handle": "q4", "text": "repeated branch", "status": "assessing",
         "priority": 0.5, "sem": 0.6, "required_for_parent": False, "low_novelty_streak": 2,
         "objective_keys": ["core-answer"],
     }
@@ -279,11 +340,11 @@ def main():
     NODES["goal"]["scope_mode"] = "bounded"
 
     NODES["qopt"] = {
-        "id": "qopt", "type": "Query", "handle": "q4", "status": "waiting_children",
+        "id": "qopt", "type": "Query", "handle": "q5", "status": "waiting_children",
         "required_for_parent": False,
     }
     NODES["qoptc"] = {
-        "id": "qoptc", "type": "Query", "handle": "q4.1", "status": "pending",
+        "id": "qoptc", "type": "Query", "handle": "q5.1", "status": "pending",
         "required_for_parent": True,
     }
     EDGES.extend([
@@ -308,11 +369,24 @@ def main():
         "coverage": 0.0, "confidence": 0.0, "status": "open",
     }
     EDGES.append({"source": "goal", "target": "orecover", "type": "HAS_OBJECTIVE"})
+    NODES["oexhaustive"].update({"coverage": 0.8, "confidence": 0.75, "status": "satisfied"})
     recovery = mm._recover_unactionable_research(NODES["goal"], [
         dict(node) for node in NODES.values() if node.get("type") == "Query"
     ])
-    assert recovery["action"] == "dispatch_searcher" and recovery["query_id"].startswith("child"), recovery
-    assert "exact_query_id" not in recovery and recovery["query_handle"].startswith("q"), recovery
+    assert recovery["action"] == "evaluate_research_portfolio" and recovery["query_id"] is None, recovery
+    recovery_gaps = [
+        node for node in NODES.values()
+        if node.get("analysis_type") == "gap" and node.get("recovery_objective_key") == "recover-answer"
+    ]
+    assert len(recovery_gaps) == 1, recovery_gaps
+    assert recovery_gaps[0]["trigger_refs"] == ["orecover"]
+    assert recovery_gaps[0]["expansion_mode"] == "horizontal"
+    recovery_portfolio = mm.evaluate_research_portfolio("goal")
+    assert recovery_gaps[0]["id"] in recovery_portfolio["selected_gap_ids"], recovery_portfolio
+    assert NODES[recovery_gaps[0]["id"]]["expansion_parent_id"] == "goal"
+    recovery_expanded = mm.expand_gaps("goal", [recovery_gaps[0]["id"]])
+    assert recovery_expanded["created"][0]["attach_parent_id"] == "goal", recovery_expanded
+    assert recovery_expanded["created"][0]["text"] == "recover answer authoritative evidence", recovery_expanded
     NODES["orecover"].update({"coverage": 0.8, "confidence": 0.75, "status": "satisfied"})
 
     for node in NODES.values():

@@ -61,10 +61,12 @@ def _test_tavily_tool_contract():
             "query": "test query",
             "max_results": 3,
             "topic": "news",
+            "exclude_domains": ["blocked.example"],
         })
         call = fake.calls[0]
         assert call["include_raw_content"] is True, call
         assert call["max_results"] == 3 and call["topic"] == "news", call
+        assert call["exclude_domains"] == ["blocked.example"], call
         assert call["timeout"] == search_tools.SEARCH_TIMEOUT, call
         raw_content = result["results"][0]["raw_content"]
         assert raw_content.startswith("x" * 20_000), len(raw_content)
@@ -81,7 +83,11 @@ def _test_searcher_pipeline():
     original_search = searcher._TAVILY_SEARCH
     original_model = searcher.config._model_cache.get("default")
     try:
-        searcher._TAVILY_SEARCH = lambda **kwargs: {
+        search_calls = []
+
+        def fake_search(**kwargs):
+            search_calls.append(kwargs)
+            return {
             "query": kwargs["query"],
             "request_id": "request-1",
             "results": [
@@ -122,9 +128,20 @@ def _test_searcher_pipeline():
                     "content": "SNIPPET_ONLY_C",
                     "raw_content": "FULL_BODY_C",
                 },
+                {
+                    "url": "https://blocked.example/domain-result",
+                    "title": "Forbidden domain",
+                    "raw_content": "FORBIDDEN_DOMAIN_BODY",
+                },
+                {
+                    "url": "https://allowed.example/forbidden/?utm_source=test",
+                    "title": "Forbidden exact URL",
+                    "raw_content": "FORBIDDEN_URL_BODY",
+                },
                 "invalid result",
             ],
         }
+        searcher._TAVILY_SEARCH = fake_search
         model = FakeModel([
             {
                 "source": {"source_type": "report", "published_at": "2025-01-01"},
@@ -162,13 +179,19 @@ def _test_searcher_pipeline():
             "query_id": "q1",
             "search_run_id": "run1",
             "query_text": "test query",
+            "source_preferences": ["official sources"],
+            "excluded_domains": ["blocked.example"],
+            "excluded_urls": ["https://allowed.example/forbidden"],
         }
         searched = searcher.web_search_node(state)
         results = searched["search_results"]
+        assert search_calls[0]["query"] == "test query", search_calls
+        assert search_calls[0]["exclude_domains"] == ["blocked.example"], search_calls
         assert results["dropped_duplicates"] == 1, results
         assert results["dropped_without_raw_content"] == 1, results
         assert results["dropped_without_url"] == 1, results
         assert results["dropped_invalid_results"] == 1, results
+        assert results["dropped_excluded_sources"] == 2, results
         assert len(results["results"]) == 3, results
         assert results["results"][0]["url"] == "https://example.com/article?a=1&b=2", results
         assert results["results"][1]["url"] == "https://example.org/other", results
@@ -201,6 +224,9 @@ def _test_empty_search_results():
             "query_id": "q1",
             "search_run_id": "run1",
             "query_text": "empty query",
+            "source_preferences": [],
+            "excluded_domains": [],
+            "excluded_urls": [],
         }
         searcher._TAVILY_SEARCH = lambda **_kwargs: {"error": "offline", "results": []}
         searched = searcher.web_search_node(state)

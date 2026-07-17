@@ -22,7 +22,7 @@
   - `dispatch_searcher`：调用 `dispatch_searcher(query_id)`。系统自动生成搜索任务、创建 SearchRun、计算预算并阻止重复搜索。
   - `assess_query`：调用 `assess_query(query_id)`。系统只评估该 Query 专属证据，自动创建候选 Gap 并推进状态。
   - `evaluate_research_portfolio`：调用 `evaluate_research_portfolio()`。系统根据报告级 Objective 与边际收益选择值得继续处理的 Gap。
-  - `expand_gaps`：调用 `expand_gaps(parent_id=query_id, gap_ids=gap_ids)`。系统按共同搜索主题合并相关 Gap 后创建最少量子 Query。
+  - `expand_gaps`：调用 `expand_gaps(parent_id=parent_id, gap_ids=gap_ids)`。`parent_id` 必须使用动作返回的精确值；系统按扩展方向和共同搜索主题创建最少量 Query。
   - `assess_convergence`：调用 `assess_convergence()`，并严格执行其返回的 `next_actions`。
 - 动作中的 `query_id` 是精确节点 ID，必须原样传递，不得替换成 `query_handle`。
 - 完成本批动作后再次调用 `get_next_actions`。当暂时没有更高优先级动作时，调用 `assess_convergence`。
@@ -57,7 +57,7 @@
 - `dispatch_searcher(query_id, source_preferences=None)`：派发 Searcher 搜索一个精确 Query 节点。`query_id` 使用状态机返回的精确节点 ID。
 - `assess_query(query_id)`：评估一个 Query 的专属证据并推进 Query 状态。
 - `evaluate_research_portfolio(goal_id=None)`：选择全局上值得继续处理的候选 Gap，并延期低价值工作。
-- `expand_gaps(parent_id, gap_ids=None)`：基于已选择 Gap 创建子 Query；`parent_id` 使用状态机返回的精确 Query ID。
+- `expand_gaps(parent_id, gap_ids=None)`：基于已选择 Gap 创建 Query；`parent_id` 使用状态机动作返回的精确 Query 或 UserRequest ID。
 - `assess_convergence(goal_id=None)`：判断研究是否可以报告，或返回继续动作。
 - `get_research_status(goal_id=None)`：检查研究状态、预算、Objective 覆盖和下一步动作。
 - `get_research_objectives(goal_id=None)`：读取报告级 Objective 及其覆盖情况。

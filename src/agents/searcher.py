@@ -29,6 +29,9 @@ class SearcherState(TypedDict):
     query_id: str
     search_run_id: str
     query_text: str
+    source_preferences: list[str]
+    excluded_domains: list[str]
+    excluded_urls: list[str]
     search_results: Optional[dict]
     search_output: str
     evidence_package: Optional[dict]
@@ -146,6 +149,7 @@ def _compact_search_output(search_results: dict) -> str:
         "dropped_without_url": search_results.get("dropped_without_url", 0),
         "dropped_without_raw_content": search_results.get("dropped_without_raw_content", 0),
         "dropped_duplicates": search_results.get("dropped_duplicates", 0),
+        "dropped_excluded_sources": search_results.get("dropped_excluded_sources", 0),
         "dropped_invalid_results": search_results.get("dropped_invalid_results", 0),
     }
     text = json.dumps(compact, ensure_ascii=False)
@@ -159,10 +163,22 @@ _TAVILY_SEARCH = getattr(tavily_search, "func", tavily_search)
 
 def web_search_node(state: SearcherState) -> dict:
     """固定执行一次 Tavily general 搜索，并只保留唯一且带正文的来源."""
+    excluded_domains = {
+        str(domain).strip().lower().removeprefix("-site:").strip("./")
+        for domain in state.get("excluded_domains") or []
+        if domain is not None and str(domain).strip()
+    }
+    excluded_urls = {
+        url for url in (
+            _canonicalize_url(value) for value in state.get("excluded_urls") or []
+        )
+        if url
+    }
     result = _TAVILY_SEARCH(
         query=state["query_text"],
         max_results=_DEFAULT_MAX_RESULTS,
         topic="general",
+        exclude_domains=sorted(excluded_domains),
     )
     if not isinstance(result, dict):
         result = {
@@ -176,6 +192,7 @@ def web_search_node(state: SearcherState) -> dict:
     dropped_without_url = 0
     dropped_without_raw_content = 0
     dropped_duplicates = 0
+    dropped_excluded_sources = 0
     dropped_invalid_results = 0
     for item in result.get("results", []) or []:
         if not isinstance(item, dict):
@@ -187,6 +204,13 @@ def web_search_node(state: SearcherState) -> dict:
             continue
         if reason == "without_raw_content":
             dropped_without_raw_content += 1
+            continue
+        hostname = (urlsplit(normalized["url"]).hostname or "").lower()
+        if normalized["url"] in excluded_urls or any(
+            hostname == domain or hostname.endswith(f".{domain}")
+            for domain in excluded_domains
+        ):
+            dropped_excluded_sources += 1
             continue
         if normalized["url"] in seen_urls:
             dropped_duplicates += 1
@@ -201,6 +225,7 @@ def web_search_node(state: SearcherState) -> dict:
         "dropped_without_url": dropped_without_url,
         "dropped_without_raw_content": dropped_without_raw_content,
         "dropped_duplicates": dropped_duplicates,
+        "dropped_excluded_sources": dropped_excluded_sources,
         "dropped_invalid_results": dropped_invalid_results,
         "request_id": result.get("request_id"),
         "response_time": result.get("response_time"),

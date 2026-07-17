@@ -208,7 +208,7 @@ def evaluate_research_portfolio(goal_id: Optional[str] = None) -> dict:
 
 @tool
 def expand_gaps(parent_id: str, gap_ids: Optional[list[str]] = None) -> dict:
-    """Group selected atomic gaps by search subject and create child Queries."""
+    """Group selected gaps by direction/subject and create strict-tree Queries."""
     return _mm().expand_gaps(parent_id, gap_ids)
 
 

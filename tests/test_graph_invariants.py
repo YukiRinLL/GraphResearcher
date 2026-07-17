@@ -117,16 +117,28 @@ def main():
             {"objective_key": "c", "requirement": "must", "description": "c"},
         ],
     )
-    assert len(selected) == 2
-    assert {key for item in selected for key in item["objective_keys"]} == {"a", "b", "c"}
+    assert len(selected) == 1
+    assert selected[0]["text"] == "covers a and b"
+    assert set(selected[0]["objective_keys"]) == {"a", "b"}
+    complex_selected = mm._select_initial_queries(
+        [
+            {"text": "probe one", "objective_keys": ["a"]},
+            {"text": "probe two", "objective_keys": ["b"]},
+            {"text": "probe three", "objective_keys": []},
+            {"text": "probe four", "objective_keys": ["c"]},
+        ],
+        [],
+        complexity="complex",
+    )
+    assert [item["text"] for item in complex_selected] == ["probe one", "probe two", "probe three"]
     fallback = mm._select_initial_queries(
         [{"text": "unmapped candidate", "objective_keys": []}],
         [{"objective_key": "a", "requirement": "must", "description": "objective a"}],
     )
     assert fallback == [{
-        "text": "objective a",
-        "importance": "core",
-        "objective_keys": ["a"],
+        "text": "unmapped candidate",
+        "importance": "supporting",
+        "objective_keys": [],
         "acceptance_criteria": [],
     }]
     created_sections = []

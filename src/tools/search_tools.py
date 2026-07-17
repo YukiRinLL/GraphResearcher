@@ -26,6 +26,7 @@ def tavily_search(
     query: str,
     max_results: int = 5,
     topic: Literal["general", "news", "finance"] = "general",
+    exclude_domains: Optional[list[str]] = None,
 ) -> dict:
     """使用 Tavily 搜索网页，并强制返回可用于证据抽取的正文.
 
@@ -33,6 +34,7 @@ def tavily_search(
         query: 搜索查询。
         max_results: 最多返回的结果数。
         topic: 搜索主题，可取 ``general``、``news`` 或 ``finance``。
+        exclude_domains: 不允许返回的域名列表。
 
     Returns:
         Tavily 搜索响应。失败时返回包含 ``error`` 和空 ``results`` 的字典，
@@ -44,6 +46,7 @@ def tavily_search(
             max_results=max_results,
             include_raw_content=True,
             topic=topic,
+            exclude_domains=exclude_domains or None,
             timeout=SEARCH_TIMEOUT,
         )
         if isinstance(response, dict):

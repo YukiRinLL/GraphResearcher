@@ -19,6 +19,9 @@ NODES = {
         "max_search_rounds": 10,
         "dispatched_search_rounds": 0,
         "successful_search_rounds": 0,
+        "source_preferences": ["official sources"],
+        "excluded_domains": ["en.wikipedia.org"],
+        "excluded_urls": ["https://example.com/forbidden"],
     },
     "q1": {
         "id": "q1",
@@ -173,8 +176,12 @@ def main():
     install_fakes()
     mm = MemoryManager(model=object())
 
-    first = mm.prepare_search("q1")
+    first = mm.prepare_search("q1", ["academic sources", "-site:blocked.example"])
     assert first.get("search_run_id"), first
+    assert first["query_text"] == "successful query", first
+    assert first["source_preferences"] == ["official sources", "academic sources"], first
+    assert first["excluded_domains"] == ["en.wikipedia.org", "blocked.example"], first
+    assert first["excluded_urls"] == ["https://example.com/forbidden"], first
     duplicate_claim = mm.prepare_search("q1")
     assert duplicate_claim.get("error") and NODES["goal"]["dispatched_search_rounds"] == 1
 

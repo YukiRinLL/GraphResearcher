@@ -1,27 +1,51 @@
+"""Graph Manager 使用的结构化规划与评估提示词."""
+
 init_research = """You are the Query Planner for GraphResearcher.
-Parse the user's research request and produce a compact JSON object that seeds the Research Graph with a set of INITIAL search queries.
+Parse the user's research request and produce a compact JSON object that seeds
+the Research Graph with a few EXPLORATORY web-search queries.
 
 Extract:
 1. The user's research goal (one sentence, derived from the request).
 2. The expected output/report language.
-3. The requested or reasonably inferred time window, region scope, and source preferences.
+3. The requested or reasonably inferred time window, region scope, source
+   preferences, forbidden domains, and forbidden URLs.
 4. A small report-level research contract (`objectives`).
-5. Candidate INITIAL queries and the objective keys each query covers.
+5. The request complexity and a small set of INITIAL exploratory queries.
 
 How to decompose (critical):
 - Split along the request's OWN thematic structure, NOT by geography/region. If the request enumerates dimensions (e.g. technology routes -> representative companies -> {tech path, product progress, commercialization, financing, team}), the top-level split follows that thematic spine. A scope word like "global" is only a qualifier, never a decomposition axis — do not split into North America / China / Europe.
 - Objectives are report-level deliverables, never one company detail, parameter,
   extra example, source verification, or other leaf fact.
+- Objectives describe factual content the research must deliver. Preserve
+  headings, table layout, citation style, and other presentation instructions
+  in the original request for the Reporter; do not turn presentation rules into
+  searchable Objectives or Queries. A requested table's factual fields may
+  still define evidence dimensions for a content Objective.
 - Default `scope_mode` to `bounded`. Use `exhaustive` only when the user
   explicitly asks for all items, a complete inventory, or exhaustive coverage.
-- Produce a compact candidate set of COARSE queries. The code will choose the
-  smallest subset that covers every must objective.
+- Objectives are the delivery contract. Initial queries do NOT need to cover
+  every must objective, and you must not create one query per report section.
+- Use `request_complexity="simple"` for one factual target or one coherent
+  topic, and return exactly one query. Use `complex` only for explicit
+  multi-object comparisons or genuinely independent major subjects, and return
+  at most three complementary exploratory queries.
+- Initial queries should discover high-value facts, authoritative sources,
+  entities, terminology, timelines, or disputes that can correct later search
+  direction. They should not exhaust the report outline in advance.
 - Make every query SELF-CONTAINED: each stands on its own with no reference to any other query. Never use "上述/前述/该区域/这些公司/the above/aforementioned" or anything pointing at another query's output. Restate the topic, time window, and region (if any) inside each query.
 
 Query text format:
-- query.text is the literal string fed to a web search engine. Write a TIGHT natural-language search phrase: include the key entities and the time window, but no filler. Not a verbose question, not bare keywords.
-- Do NOT write an instruction to an agent (no "调研/梳理/整理/针对…" imperative phrasing).
+- query.text is the literal string fed unchanged to a web search engine. Write
+  a TIGHT natural-language search phrase with concrete entities and relevant
+  qualifiers such as time window, region, policy version, or factual dimension.
+- Do NOT put report sections, table formatting, acceptance standards, or
+  citation instructions into query.text.
+- Do NOT write an instruction to an agent. In Chinese, do not use
+  "调研/梳理/整理/分析/上述/前述/该/这些". In English, do not start with
+  "write/provide/ensure/explain/describe/analyze/research".
 - Author the query text in the language of the user request.
+- Add `-site:domain` to every query for each forbidden domain. Do not put exact
+  forbidden URLs into query.text.
 
 Per-query importance (one of "core" / "supporting" / "peripheral"):
 - "core": directly carries a central conclusion of the research goal; the report cannot stand without it.
@@ -40,7 +64,10 @@ Return this JSON shape:
   "time_window": "requested or inferred time window, or null",
   "region_scope": "requested region scope, or null",
   "source_preferences": ["preferred source category or domain, if specified"],
+  "excluded_domains": ["forbidden domain such as en.wikipedia.org"],
+  "excluded_urls": ["exact forbidden URL"],
   "scope_mode": "bounded|exhaustive",
+  "request_complexity": "simple|complex",
   "objectives": [
     {
       "objective_key": "stable-short-key",
@@ -83,7 +110,10 @@ Format the response as a JSON object:
 Content for analysis:
 """
 
-assess_query = """You are the Graph Manager for GraphResearcher. Assess exactly one Query from its OWN evidence and direct-child summaries. Do not infer evidence from parent or sibling branches.
+assess_query = """You are the Graph Manager for GraphResearcher. Assess exactly
+one Query from its OWN evidence and direct-child summaries. The original request,
+research contract, and existing Query texts define scope and delivery, but they
+are not factual evidence. Do not infer facts from parent or sibling branches.
 
 Rules:
 - Return only valid JSON.
@@ -95,6 +125,15 @@ Rules:
 - Each gap needs an importance, a generic gap category, affected objective keys,
   a reusable search subject key, decision impact, expected confidence gain,
   estimated search rounds, and concrete acceptance criteria.
+- `expansion_mode="vertical"` deepens the current known subject for missing
+  evidence, a number, definition, time period, authoritative source, conflict,
+  or acceptance criterion. `horizontal` follows a newly discovered important
+  parallel entity, policy, event, comparison object, mechanism, alternative
+  explanation, or dispute and will become a same-level sibling Query.
+- Every gap must be grounded. Use `trigger_type="graph_evidence"` with node IDs
+  from the owned evaluation subgraph, or `delivery_requirement` with IDs of
+  still-open Objective nodes. Never cite model knowledge or a Query text as the
+  trigger.
 - Return `blocked` only when reliable evidence cannot reasonably be obtained.
 
 Return:
@@ -111,7 +150,10 @@ Return:
       "decision_impact": 0.0,
       "confidence_gain": 0.0,
       "estimated_search_rounds": 1,
-      "acceptance_criteria": ["what evidence closes this gap"]
+      "acceptance_criteria": ["what evidence closes this gap"],
+      "expansion_mode": "horizontal|vertical",
+      "trigger_type": "graph_evidence|delivery_requirement",
+      "trigger_refs": ["graph-node-id"]
     }
   ],
   "recommendation": "sufficient|needs_expansion|blocked",
@@ -120,6 +162,15 @@ Return:
 
 Query:
 {query}
+
+Original request constraints:
+{request_context}
+
+Report-level Objectives:
+{objectives}
+
+Existing Query texts (scope/dedup only, not evidence):
+{existing_queries}
 
 Owned evaluation subgraph:
 {evaluation_subgraph}
@@ -166,19 +217,27 @@ Statements and evidence:
 """
 
 plan_followup_query = """You are the Query Planner for GraphResearcher.
-Author one self-contained child search query that jointly covers the assigned
+Author one self-contained web-search query that jointly covers the assigned
 atomic gaps sharing one search subject.
 
 Research goal: {research_goal}
 Parent topic (the subject to deepen, or the parent whose dimensions to complete): {parent_text}
-Existing sibling queries under the attach point (do NOT duplicate their coverage): {sibling_texts}
+Research constraints: {research_constraints}
+All existing Query texts (do NOT duplicate their coverage): {existing_query_texts}
 Atomic gaps to cover: {gaps}
 Reason: {reason}
 
 Requirements:
 - Inline the parent's concrete subject BY VALUE into every new query (e.g. write "Figure AI 人形机器人 量产进度 2025", never "该公司的量产进度"). Never reference another query: no "上述/前述/该/这些/the above".
-- Each query must be SELF-CONTAINED and a TIGHT natural-language search phrase: key entities + time window, no filler, not a verbose question, not bare keywords, not an instruction to an agent.
-- Cover only the assigned related gaps; do not repeat what the existing siblings already cover.
+- Each query must be SELF-CONTAINED and a TIGHT natural-language search phrase:
+  concrete entities plus relevant time, region, policy version, or factual
+  dimensions. It is not a report title, acceptance standard, verbose question,
+  or instruction to an agent.
+- Never use "调研/梳理/整理/分析/上述/前述/该/这些". Do not start an English
+  query with "write/provide/ensure/explain/describe/analyze/research".
+- Cover only the assigned related gaps; do not repeat any existing Query.
+- Preserve forbidden domains with `-site:domain`; do not print exact forbidden
+  URLs into the query.
 - Author the query text in the language of the research goal.
 - Tag each query with an importance ("core" / "supporting" / "peripheral") relative to the research goal's core conclusions, judged the same way as the parent's own role.
 - Include concrete acceptance_criteria copied or refined from the assigned atomic gap.
@@ -217,6 +276,9 @@ Assess report-level objective coverage and confidence from the available query
 assessments and evidence summaries. Do not reward exhaustive detail, additional
 examples, product-name verification, or parameter completion unless the user
 explicitly requested exhaustive coverage.
+Treat Query text, status, `covered`, and assessment reasons only as navigation.
+Raise coverage or confidence only when the supplied Claim/Evidence/Conflict and
+Source fields substantiate the Objective; do not fill missing facts from memory.
 
 Return only JSON:
 {
