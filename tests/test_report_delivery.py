@@ -14,6 +14,18 @@ from tools import graph_manager_tools, graph_tools, report_tools  # noqa: E402
 
 
 def main():
+    assert app_main._delivery_contract_mode({
+        "research_state": "REPORTING",
+        "reporting_from_state": "REPORT_READY",
+    }) == "complete"
+    assert app_main._delivery_contract_mode({
+        "research_state": "REPORTING",
+        "reporting_from_state": "LIMITED_REPORT_READY",
+    }) == "limited"
+    assert app_main._delivery_contract_mode({
+        "research_state": "BUDGET_EXHAUSTED",
+    }) == "limited"
+
     nodes = {
         "goal": {
             "id": "goal",
@@ -120,6 +132,86 @@ def main():
         assert len(str(context)) < 5000
         assert context["disclosed_conflicts"] == []
 
+        nodes["goal"]["request"] = "请撰写一篇关于机器人公司的维基百科条目。"
+        wikipedia_context = mm.export_report_context()
+        assert wikipedia_context["writing_hints"]["task_style"] == "wikipedia_article", wikipedia_context
+        nodes["goal"]["request"] = "机器人公司研究"
+
+        nodes["goal"].update({
+            "research_state": "REPORTING",
+            "reporting_from_state": "LIMITED_REPORT_READY",
+            "report_authorized_reason": "bounded recovery was exhausted",
+        })
+        nodes["objective"].update({
+            "objective_key": "company-comparison",
+            "acceptance_criteria": [
+                "identify the product scope",
+                "identify the undisclosed funding amount",
+            ],
+            "unmet_acceptance_criteria": ["identify the undisclosed funding amount"],
+            "supported_boundary": "Public sources establish product scope but not funding amount.",
+            "status": "blocked",
+        })
+        nodes["q1"]["objective_keys"] = ["company-comparison"]
+        nodes["conflict"] = {
+            "id": "conflict",
+            "type": "Conflict",
+            "description": "Public sources disagree on the announced deployment date.",
+            "conflict_type": "date_disagreement",
+            "resolution_status": "disclosed",
+        }
+        nodes["unsupported-evidence"] = {
+            "id": "unsupported-evidence",
+            "type": "Evidence",
+            "claim": "An unsupported uncertainty must remain internal.",
+        }
+        nodes["unsupported-conflict"] = {
+            "id": "unsupported-conflict",
+            "type": "Conflict",
+            "description": "A claim lacks a URL-backed source.",
+            "conflict_type": "unsupported_claim",
+            "resolution_status": "disclosed",
+        }
+        edges.append({"source": "conflict", "target": "e1", "type": "HAS_CONFLICT"})
+        edges.append({
+            "source": "unsupported-conflict",
+            "target": "unsupported-evidence",
+            "type": "HAS_CONFLICT",
+        })
+        limited_context = mm.export_report_context()
+        assert limited_context["delivery_mode"] == "limited", limited_context
+        assert limited_context["unmet_objectives"] == [{
+            "objective_key": "company-comparison",
+            "unmet_acceptance_criteria": ["identify the undisclosed funding amount"],
+            "supported_boundary": "Public sources establish product scope but not funding amount.",
+            "related_query_ids": ["q1"],
+        }], limited_context
+        assert limited_context["substantive_uncertainties"] == [{
+            "reader_facing_topic": "date_disagreement",
+            "neutral_description": "Public sources disagree on the announced deployment date.",
+            "evidence_ids": ["e1"],
+            "source_ids": ["s1"],
+        }], limited_context
+        assert "limitations" not in limited_context
+        assert "bounded recovery was exhausted" not in str(limited_context)
+        nodes["goal"]["request"] = "Write a Wikipedia article about robot companies."
+        wikipedia_fallback = report_tools.build_context_fallback_report()
+        assert "Public sources disagree on the announced deployment date" in wikipedia_fallback
+        assert "A claim lacks a URL-backed source" not in wikipedia_fallback
+        assert "## Disclosed Conflicts" not in wikipedia_fallback
+        assert "## 冲突披露" not in wikipedia_fallback
+        nodes["goal"]["request"] = "机器人公司研究"
+        fallback_with_unsupported_conflict = report_tools.build_context_fallback_report(
+            "机器人公司研究"
+        )
+        assert "A claim lacks a URL-backed source" not in fallback_with_unsupported_conflict
+        edges.pop()
+        edges.pop()
+        nodes.pop("unsupported-conflict")
+        nodes.pop("unsupported-evidence")
+        nodes.pop("conflict")
+        nodes["objective"]["status"] = "satisfied"
+
         first_page = mm.get_report_evidence("q1", offset=0, limit=1)
         second_page = mm.get_report_evidence("q1", offset=1, limit=1)
         assert first_page["total"] == 2 and first_page["next_offset"] == 1
@@ -189,7 +281,8 @@ def main():
         )
         assert mode == "context_fallback", (mode, issues)
         assert "## 融资与资本进展" in context_only
-        assert "## 研究范围与局限" in context_only
+        assert "## 研究范围与局限" not in context_only
+        assert "本轮" not in context_only and "无法进一步核实" not in context_only
         assert "公司未公开具体融资金额" in context_only
         assert not report_tools.validate_delivery_invariants(context_only)
 

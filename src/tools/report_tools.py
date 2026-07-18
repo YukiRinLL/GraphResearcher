@@ -48,6 +48,14 @@ _INTERNAL_TERMS = (
 _FORBIDDEN_META_RE = re.compile(
     r"research graph|研究图谱|本次图谱|图谱覆盖范围|导出片段|"
     r"由于引用系统限制|引用系统限制|无法.{0,20}引用|正文不逐条打|"
+    r"\b(?:report_ready|limited_report_ready|budget_exhausted)\b|"
+    r"report-level objectives reached marginal-utility convergence|"
+    r"bounded research reached best-effort convergence|"
+    r"exhaustive objective remained open after targeted recovery|"
+    r"(?:search|research)\s+budget\s+(?:was\s+|is\s+|has\s+been\s+)?exhausted|"
+    r"targeted\s+recovery(?:\s+query)?\s+(?:was\s+|has\s+)?failed|"
+    r"(?:搜索|检索|研究)预算(?:已经|已)?(?:耗尽|用尽)|"
+    r"定向(?:恢复|检索)(?:查询)?(?:已经|已)?失败|"
     r"如果你(?:后续|接下来|希望|需要|想)|可以指定维度|可直接进\s*ppt|"
     r"帮你补全|如需.{0,40}可",
     re.IGNORECASE,
@@ -582,15 +590,19 @@ def validate_report_quality(report_text: str) -> list[str]:
     return list(dict.fromkeys(issues))
 
 
-def _conflict_source_ids(conflict_id: str, nodes: dict[str, dict], edges: list[dict]) -> list[str]:
-    """Return URL-backed Source IDs supporting one disclosed conflict."""
-    evidence_ids = [
+def _conflict_evidence_ids(conflict_id: str, edges: list[dict]) -> list[str]:
+    """返回与一个披露冲突关联的 Evidence ID."""
+    return list(dict.fromkeys(
         edge.get("target")
         for edge in edges
         if edge.get("source") == conflict_id and str(edge.get("type") or "").lower() == "has_conflict"
-    ]
+    ))
+
+
+def _conflict_source_ids(conflict_id: str, nodes: dict[str, dict], edges: list[dict]) -> list[str]:
+    """返回支撑一个披露冲突且包含 URL 的 Source ID."""
     source_ids: list[str] = []
-    for evidence_id in evidence_ids:
+    for evidence_id in _conflict_evidence_ids(conflict_id, edges):
         source_ids.extend(_source_ids_for_item(evidence_id, nodes, edges))
     return list(dict.fromkeys(source_id for source_id in source_ids if source_id in nodes))
 
@@ -607,6 +619,7 @@ def get_disclosed_conflicts() -> list[dict[str, Any]]:
             "id": item.get("id"),
             "description": str(item.get("description") or "").strip(),
             "conflict_type": item.get("conflict_type"),
+            "evidence_ids": _conflict_evidence_ids(str(item.get("id") or ""), edges),
             "source_ids": _conflict_source_ids(str(item.get("id") or ""), nodes, edges),
         })
     conflicts.sort(key=lambda item: item.get("id") or "")
@@ -616,6 +629,12 @@ def get_disclosed_conflicts() -> list[dict[str, Any]]:
 def _conflict_section_title(is_chinese: bool) -> str:
     """Return the localized conflict-disclosure section title."""
     return "冲突披露" if is_chinese else "Disclosed Conflicts"
+
+
+def is_wikipedia_task(request_text: str) -> bool:
+    """判断用户是否要求 Wikipedia 风格的条目."""
+    normalized = str(request_text or "").casefold()
+    return "wikipedia" in normalized or "维基百科" in normalized
 
 
 def _conflict_section_paragraph(conflict: dict[str, Any], registry_by_source: dict[str, dict], is_chinese: bool) -> tuple[str, set[str]]:
@@ -638,11 +657,19 @@ def _append_missing_conflicts(
     compiled_sections: list[dict[str, Any]],
     registry_by_source: dict[str, dict],
     is_chinese: bool,
-) -> tuple[list[dict[str, Any]], list[str]]:
+    auto_append: bool = True,
+) -> tuple[list[dict[str, Any]], list[str], list[str]]:
     """Ensure every disclosed conflict is structurally covered in the compiled report."""
-    disclosed_conflicts = [item for item in get_disclosed_conflicts() if item.get("id") and item.get("description")]
+    disclosed_conflicts = [
+        item
+        for item in get_disclosed_conflicts()
+        if item.get("id")
+        and item.get("description")
+        and item.get("evidence_ids")
+        and item.get("source_ids")
+    ]
     if not disclosed_conflicts:
-        return compiled_sections, []
+        return compiled_sections, [], []
 
     covered_ids: set[str] = set()
     conflict_section_index: Optional[int] = None
@@ -657,27 +684,32 @@ def _append_missing_conflicts(
 
     missing = [item for item in disclosed_conflicts if item["id"] not in covered_ids]
     if not missing:
-        return compiled_sections, []
+        return compiled_sections, [], []
+    if not auto_append:
+        return compiled_sections, [], [str(item["id"]) for item in missing]
 
     added_ids: list[str] = []
     paragraphs: list[str] = []
+    evidence_ids: set[str] = set()
     source_ids: set[str] = set()
     for conflict in missing:
         paragraph, conflict_sources = _conflict_section_paragraph(conflict, registry_by_source, is_chinese)
         if not paragraph or not conflict_sources:
             continue
         paragraphs.append(paragraph)
+        evidence_ids.update(str(item_id) for item_id in conflict.get("evidence_ids") or [] if item_id)
         source_ids.update(conflict_sources)
         added_ids.append(str(conflict["id"]))
 
     if not paragraphs:
-        return compiled_sections, []
+        return compiled_sections, [], [str(item["id"]) for item in missing]
 
     if conflict_section_index is None:
         compiled_sections.append({
             "title": _conflict_section_title(is_chinese),
             "content": "\n\n".join(paragraphs),
             "source_ids": sorted(source_ids),
+            "evidence_ids": sorted(evidence_ids),
             "section_type": "conflict_disclosure",
             "disclosed_conflict_ids": added_ids,
         })
@@ -685,11 +717,12 @@ def _append_missing_conflicts(
         section = compiled_sections[conflict_section_index]
         section["content"] = "\n\n".join([section["content"], *paragraphs]).strip()
         section["source_ids"] = sorted(set(section.get("source_ids") or []) | source_ids)
+        section["evidence_ids"] = sorted(set(section.get("evidence_ids") or []) | evidence_ids)
         existing_ids = [str(conflict_id) for conflict_id in section.get("disclosed_conflict_ids") or [] if conflict_id]
         section["disclosed_conflict_ids"] = list(dict.fromkeys(existing_ids + added_ids))
         section["section_type"] = "conflict_disclosure"
 
-    return compiled_sections, added_ids
+    return compiled_sections, added_ids, []
 
 
 def _issue(
@@ -715,6 +748,36 @@ def _is_reserved_section_title(title: str) -> bool:
     """Return True when a section title collides with the references area."""
     normalized = re.sub(r"\s+", " ", str(title or "").strip()).lower()
     return normalized in _RESERVED_SECTION_TITLES
+
+
+def _unmet_objective_fragments() -> list[str]:
+    """返回不得复制到正文的标准化内部契约文本."""
+    objectives = graph_tools.search_nodes("analysis", {"analysis_type": "objective"})
+    raw_fragments = [
+        value
+        for objective in objectives
+        if objective.get("requirement") == "must" and objective.get("status") != "satisfied"
+        for value in [
+            objective.get("description") or objective.get("text"),
+            *(
+                objective.get("unmet_acceptance_criteria")
+                if isinstance(objective.get("unmet_acceptance_criteria"), list)
+                else objective.get("acceptance_criteria") or []
+            ),
+        ]
+        if isinstance(value, str)
+    ]
+    normalized = {
+        re.sub(r"\s+", " ", value).strip().casefold()
+        for value in raw_fragments
+        if len(re.sub(r"\s+", " ", value).strip()) >= 12
+    }
+    return sorted(normalized, key=len, reverse=True)
+
+
+def _normalize_disclosure_text(value: Any) -> str:
+    """标准化读者可见的不确定性文本，供精确内容校验."""
+    return re.sub(r"\s+", " ", str(value or "")).strip().rstrip("。.").casefold()
 
 
 def _strip_embedded_references(content: str) -> tuple[str, bool]:
@@ -852,6 +915,21 @@ def compile_structured_report(title: str, sections: list[dict]) -> dict:
     kept_chars = 0
     auto_appended_conflict_ids: list[str] = []
     is_chinese = bool(re.search(r"[\u4e00-\u9fff]", title or ""))
+    goals = graph_tools.search_nodes("user_request", {})
+    request_text = " ".join(
+        str(goal.get("request") or goal.get("research_goal") or "")
+        for goal in goals
+    ).casefold()
+    wikipedia_task = is_wikipedia_task(request_text)
+    unmet_fragments = _unmet_objective_fragments()
+    disclosed_conflicts = {
+        str(conflict["id"]): conflict
+        for conflict in get_disclosed_conflicts()
+        if conflict.get("id")
+        and conflict.get("description")
+        and conflict.get("evidence_ids")
+        and conflict.get("source_ids")
+    }
 
     for section_index, section in enumerate(sections or []):
         section_title = str(section.get("title") or "").strip()
@@ -863,6 +941,16 @@ def compile_structured_report(title: str, sections: list[dict]) -> dict:
             for conflict_id in dict.fromkeys(section.get("disclosed_conflict_ids") or [])
             if conflict_id
         ]
+        normalized_content = re.sub(r"\s+", " ", content).strip().casefold()
+        if any(fragment in normalized_content for fragment in unmet_fragments):
+            issues.append(_issue(
+                "internal_unmet_objective_prose",
+                "hard",
+                f"section {section_title!r} copies an internal unmet Objective",
+                "Rewrite from cited evidence and disclose only evidence-bound substantive uncertainty.",
+                section_title=section_title,
+            ))
+            continue
         if "blocks" in section:
             issues.append(_issue(
                 "legacy_block_schema",
@@ -909,6 +997,26 @@ def compile_structured_report(title: str, sections: list[dict]) -> dict:
                 if str(node_type or "").lower() in {"evidence", "claim"}:
                     valid_evidence_ids.append(evidence_id)
             evidence_ids = valid_evidence_ids
+        invalid_conflict_ids = []
+        for conflict_id in disclosed_conflict_ids:
+            conflict = disclosed_conflicts.get(conflict_id)
+            if (
+                not conflict
+                or not set(evidence_ids) & set(conflict.get("evidence_ids") or [])
+                or not set(source_ids) & set(conflict.get("source_ids") or [])
+                or _normalize_disclosure_text(conflict.get("description"))
+                not in _normalize_disclosure_text(content)
+            ):
+                invalid_conflict_ids.append(conflict_id)
+        if invalid_conflict_ids:
+            issues.append(_issue(
+                "invalid_conflict_disclosure_binding",
+                "hard",
+                f"section {section_title!r} has invalid conflict disclosures: {invalid_conflict_ids}",
+                "Use the conflict's bound Evidence and Source IDs and include its neutral description in the section prose.",
+                section_title=section_title,
+            ))
+            continue
         submitted_chars += len(content)
         blocks, removed_indexes, had_embedded_refs = _sanitize_section_blocks(content)
         submitted_paragraphs += len(blocks) + len(removed_indexes)
@@ -973,11 +1081,19 @@ def compile_structured_report(title: str, sections: list[dict]) -> dict:
             "Rewrite the report with valid section titles and URL-backed citations.",
         ))
     else:
-        compiled_sections, auto_appended_conflict_ids = _append_missing_conflicts(
+        compiled_sections, auto_appended_conflict_ids, missing_conflict_ids = _append_missing_conflicts(
             compiled_sections,
             registry_by_source,
             is_chinese,
+            auto_append=not wikipedia_task,
         )
+        if missing_conflict_ids:
+            issues.append(_issue(
+                "missing_substantive_uncertainty",
+                "hard",
+                f"Wikipedia report omitted evidence-bound uncertainties: {missing_conflict_ids}",
+                "Integrate each uncertainty into its relevant topic section and bind its disclosed_conflict_id.",
+            ))
         cited_source_ids = {
             source_id
             for section in compiled_sections
@@ -1149,21 +1265,6 @@ def _render_fact_paragraph(chunk: list[dict], registry_by_source: dict[str, dict
     return paragraph, set(unique_source_ids)
 
 
-def _source_ids_for_conflict(conflict_text: str, items: list[dict], fallback_ids: list[str]) -> list[str]:
-    """Find likely supporting sources for a disclosed conflict description."""
-    fragments = [
-        fragment.lower()
-        for fragment in re.split(r"[\s,，。:：;；/]+", conflict_text or "")
-        if len(fragment) >= 4
-    ][:4]
-    matched: list[str] = []
-    for item in items:
-        item_text = str(item.get("text") or "").lower()
-        if fragments and any(fragment in item_text for fragment in fragments):
-            matched.extend(item.get("source_ids") or [])
-    return list(dict.fromkeys(matched or fallback_ids[:3]))
-
-
 def build_context_fallback_report(request: str = "") -> str:
     """Build a prose-first fallback report from report context and validated evidence."""
     registry = build_reference_registry()
@@ -1179,8 +1280,7 @@ def build_context_fallback_report(request: str = "") -> str:
     queries = graph_tools.search_nodes("query", {})
     queries.sort(key=lambda query: (query.get("importance") or 0), reverse=True)
 
-    topic_sections: list[tuple[str, list[str], set[str]]] = []
-    all_items: list[dict] = []
+    topic_sections: list[dict[str, Any]] = []
     all_source_ids: list[str] = []
     for index, query in enumerate(queries, start=1):
         items: list[dict] = []
@@ -1193,7 +1293,6 @@ def build_context_fallback_report(request: str = "") -> str:
             offset = page["next_offset"]
         if not items:
             continue
-        all_items.extend(items)
         title = _guess_topic_title(query, index, is_chinese)
         paragraphs: list[str] = []
         section_source_ids: set[str] = set()
@@ -1203,7 +1302,12 @@ def build_context_fallback_report(request: str = "") -> str:
                 paragraphs.append(paragraph)
                 section_source_ids.update(chunk_source_ids)
         if paragraphs:
-            topic_sections.append((title, paragraphs, section_source_ids))
+            topic_sections.append({
+                "title": title,
+                "paragraphs": paragraphs,
+                "source_ids": section_source_ids,
+                "evidence_ids": {item["id"] for item in items if item.get("id")},
+            })
             all_source_ids.extend(section_source_ids)
 
     deduped_fallback_ids = list(dict.fromkeys(all_source_ids))
@@ -1216,56 +1320,66 @@ def build_context_fallback_report(request: str = "") -> str:
     cited_source_ids: set[str] = set()
     parts = [f"# {report_title}"]
 
-    time_window = str(goal.get("time_window") or "").strip()
-    region_scope = str(goal.get("region_scope") or "").strip()
-    limitations = [
-        str(item.get("description") or item.get("text") or "").strip()
-        for item in graph_tools.search_nodes("analysis", {"analysis_type": "objective"})
-        if item.get("status") == "blocked_best_effort"
+    conflicts = [
+        item
+        for item in get_disclosed_conflicts()
+        if item.get("description") and item.get("evidence_ids") and item.get("source_ids")
     ]
-    limitations = [item for item in limitations if item]
-    scope_citations = "".join(
-        f"[{registry_by_source[source_id]['n']}]"
-        for source_id in deduped_fallback_ids[:3]
-        if source_id in registry_by_source
-    )
-    scope_bits = [bit for bit in (time_window, region_scope) if bit]
-    if limitations:
-        scope_bits.append("；".join(limitations[:3]) if is_chinese else "; ".join(limitations[:3]))
-    scope_paragraph = (
-        f"本报告主要依据{ '，'.join(scope_bits) }范围内已核实的公开资料展开；"
-        f"对于公开信息不足的维度，正文仅保留已能确认的结论。{scope_citations}"
-    ) if scope_bits and is_chinese else (
-        f"This report is based on verified public information within the following scope: "
-        f"{', '.join(scope_bits)}. Where public information remains limited, the report keeps only"
-        f" the conclusions that can be verified. {scope_citations}"
-    ) if scope_bits else (
-        f"本报告基于本轮已核实的公开资料组织为主题化综述；对于无法进一步核实的维度，"
-        f"正文仅保留可确认的事实与明确披露的限制。{scope_citations}"
-    ) if is_chinese else (
-        f"This report is organized as a topic-based synthesis of the verified public information collected in the"
-        f" current run. Where verification remains incomplete, the report keeps only confirmed facts and explicitly"
-        f" disclosed limitations. {scope_citations}"
-    )
-    parts.extend([
-        "## 研究范围与局限" if is_chinese else "## Scope and Limitations",
-        scope_paragraph,
-    ])
-    cited_source_ids.update(source_id for source_id in deduped_fallback_ids[:3] if source_id in registry_by_source)
+    wikipedia_task = is_wikipedia_task(request_text)
+    lead_uncertainties: list[str] = []
+    lead_source_ids: set[str] = set()
+    if conflicts and wikipedia_task:
+        for conflict in conflicts:
+            source_ids = {
+                source_id
+                for source_id in conflict.get("source_ids") or []
+                if source_id in registry_by_source
+            }
+            if not source_ids:
+                continue
+            paragraph, conflict_source_ids = _conflict_section_paragraph(
+                {**conflict, "source_ids": sorted(source_ids)},
+                registry_by_source,
+                is_chinese,
+            )
+            evidence_ids = set(conflict.get("evidence_ids") or [])
+            ranked_sections = sorted(
+                topic_sections,
+                key=lambda section: (
+                    len(evidence_ids & section["evidence_ids"]),
+                    len(source_ids & section["source_ids"]),
+                ),
+                reverse=True,
+            )
+            best = ranked_sections[0] if ranked_sections else None
+            if best and (
+                evidence_ids & best["evidence_ids"]
+                or source_ids & best["source_ids"]
+            ):
+                best["paragraphs"].append(paragraph)
+                best["source_ids"].update(conflict_source_ids)
+            else:
+                lead_uncertainties.append(paragraph)
+                lead_source_ids.update(conflict_source_ids)
 
-    for title, paragraphs, section_source_ids in topic_sections:
-        parts.append(f"## {title}")
-        parts.extend(paragraphs)
-        cited_source_ids.update(section_source_ids)
+    if lead_uncertainties:
+        parts.extend(lead_uncertainties)
+        cited_source_ids.update(lead_source_ids)
 
-    conflicts = [item for item in get_disclosed_conflicts() if item.get("description")]
-    if conflicts:
+    for section in topic_sections:
+        parts.append(f"## {section['title']}")
+        parts.extend(section["paragraphs"])
+        cited_source_ids.update(section["source_ids"])
+
+    if conflicts and not wikipedia_task:
         parts.append(f"## {_conflict_section_title(is_chinese)}")
         for conflict in conflicts:
             source_ids = [
                 source_id for source_id in dict.fromkeys(conflict.get("source_ids") or [])
                 if source_id in registry_by_source
-            ] or _source_ids_for_conflict(str(conflict.get("description") or ""), all_items, deduped_fallback_ids)
+            ]
+            if not source_ids:
+                continue
             paragraph, conflict_source_ids = _conflict_section_paragraph(
                 {**conflict, "source_ids": source_ids},
                 registry_by_source,

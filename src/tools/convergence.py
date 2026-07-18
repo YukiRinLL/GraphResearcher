@@ -110,10 +110,7 @@ def structurally_converged() -> bool:
     objectives = graph_tools.search_nodes("analysis", {"analysis_type": "objective"})
     must = [objective for objective in objectives if objective.get("requirement") == "must"]
     if must:
-        return all(
-            objective.get("status") in {"satisfied", "blocked_best_effort"}
-            for objective in must
-        )
+        return all(objective.get("status") == "satisfied" for objective in must)
 
     queries = graph_tools.search_nodes("query", {})
     required = [q for q in queries if research_state.is_required_path(q["id"])]

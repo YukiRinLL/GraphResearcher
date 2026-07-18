@@ -136,6 +136,19 @@ def test_structurally_converged():
         }],
     )
     assert convergence.structurally_converged() is True
+    _set(
+        queries=[q("h1", "sufficient", 0.9, tier="high")],
+        objectives=[{
+            "id": "o1",
+            "type": "analysis",
+            "analysis_type": "objective",
+            "requirement": "must",
+            "status": "blocked",
+        }],
+    )
+    assert convergence.structurally_converged() is False
+    _FAKE["analysis"][0]["status"] = "blocked_best_effort"
+    assert convergence.structurally_converged() is False
     print("structurally_converged OK")
 
 

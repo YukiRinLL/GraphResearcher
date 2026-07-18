@@ -10,18 +10,20 @@ from tools import graph_tools
 INITIALIZING = "INITIALIZING"
 RESEARCHING = "RESEARCHING"
 REPORT_READY = "REPORT_READY"
+LIMITED_REPORT_READY = "LIMITED_REPORT_READY"
 BUDGET_EXHAUSTED = "BUDGET_EXHAUSTED"
 REPORTING = "REPORTING"
 COMPLETED = "COMPLETED"
 FAILED = "FAILED"
 
-REPORT_ALLOWED = {REPORT_READY, BUDGET_EXHAUSTED, REPORTING, COMPLETED}
+REPORT_ALLOWED = {REPORT_READY, LIMITED_REPORT_READY, BUDGET_EXHAUSTED, REPORTING, COMPLETED}
 TERMINAL_QUERY_STATUSES = {"sufficient", "blocked", "failed", "deferred"}
 OPEN_GAP_STATUSES = {"candidate", "selected", "assigned"}
 _TRANSITIONS = {
     INITIALIZING: {INITIALIZING, RESEARCHING, FAILED},
-    RESEARCHING: {RESEARCHING, REPORT_READY, BUDGET_EXHAUSTED, FAILED},
+    RESEARCHING: {RESEARCHING, REPORT_READY, LIMITED_REPORT_READY, BUDGET_EXHAUSTED, FAILED},
     REPORT_READY: {REPORT_READY, REPORTING, FAILED},
+    LIMITED_REPORT_READY: {LIMITED_REPORT_READY, REPORTING, FAILED},
     BUDGET_EXHAUSTED: {BUDGET_EXHAUSTED, REPORTING, FAILED},
     REPORTING: {REPORTING, COMPLETED, FAILED},
     COMPLETED: {COMPLETED, FAILED},
@@ -134,7 +136,7 @@ def get_status(goal_id: Optional[str] = None) -> dict[str, Any]:
         "portfolio_revision": goal.get("portfolio_revision", 0),
         "evaluated_portfolio_revision": goal.get("evaluated_portfolio_revision", 0),
         "last_max_marginal_utility": goal.get("last_max_marginal_utility", 0.0),
-        "report_readiness_score": goal.get("report_readiness_score", 0.0),
+        "report_completeness_score": goal.get("report_completeness_score", 0.0),
         "objectives": [
             {
                 "objective_key": objective.get("objective_key"),

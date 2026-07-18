@@ -287,10 +287,18 @@ Return only JSON:
       "objective_key": "existing key",
       "coverage": 0.0,
       "confidence": 0.0,
+      "supported_boundary": "what the cited evidence does establish, without workflow commentary",
+      "unmet_acceptance_criteria": ["exact unmet criterion copied from the Research contract"],
       "reason": "short evidence-based explanation"
     }
   ]
 }
+
+For each Objective, state the supported evidence boundary without mentioning
+search rounds, budgets, agents, graph state, or stopping reasons. Copy only
+still-unmet acceptance criteria exactly from the Research contract; do not
+paraphrase or invent criteria. Return an empty unmet list when all criteria are
+supported.
 
 Research contract:
 {objectives}

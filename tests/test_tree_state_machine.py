@@ -321,7 +321,8 @@ def main():
     assert NODES["ohard"]["low_gain_streak"] == 1
     NODES["goal"]["successful_search_rounds"] = 4
     mm.evaluate_research_portfolio("goal")
-    assert NODES["ohard"]["status"] == "blocked_best_effort"
+    assert NODES["ohard"]["status"] == "open"
+    assert NODES["ohard"]["low_gain_streak"] >= 2
 
     NODES["oexhaustive"] = {
         "id": "oexhaustive", "type": "Analysis", "analysis_type": "objective",
@@ -376,10 +377,10 @@ def main():
     assert recovery["action"] == "evaluate_research_portfolio" and recovery["query_id"] is None, recovery
     recovery_gaps = [
         node for node in NODES.values()
-        if node.get("analysis_type") == "gap" and node.get("recovery_objective_key") == "recover-answer"
+        if node.get("analysis_type") == "gap" and node.get("recovery_objective_key") == "hard-answer"
     ]
     assert len(recovery_gaps) == 1, recovery_gaps
-    assert recovery_gaps[0]["trigger_refs"] == ["orecover"]
+    assert recovery_gaps[0]["trigger_refs"] == ["ohard"]
     assert recovery_gaps[0]["expansion_mode"] == "horizontal"
     recovery_portfolio = mm.evaluate_research_portfolio("goal")
     assert recovery_gaps[0]["id"] in recovery_portfolio["selected_gap_ids"], recovery_portfolio
@@ -387,6 +388,21 @@ def main():
     recovery_expanded = mm.expand_gaps("goal", [recovery_gaps[0]["id"]])
     assert recovery_expanded["created"][0]["attach_parent_id"] == "goal", recovery_expanded
     assert recovery_expanded["created"][0]["text"] == "recover answer authoritative evidence", recovery_expanded
+    recovery_query_id = recovery_expanded["created"][0]["id"]
+    for node in NODES.values():
+        if node.get("type") == "Query" and node["id"] != recovery_query_id:
+            node["status"] = "sufficient"
+            node["sufficiency_score"] = 0.8
+    NODES["goal"]["evaluated_portfolio_revision"] = NODES["goal"]["portfolio_revision"]
+    before_recovery = mm.get_next_actions()
+    assert before_recovery[0]["action"] == "dispatch_searcher", before_recovery
+    assert NODES["ohard"]["status"] == "open"
+    NODES[recovery_query_id]["status"] = "sufficient"
+    NODES[recovery_query_id]["sufficiency_score"] = 0.2
+    NODES["goal"]["evaluated_portfolio_revision"] = NODES["goal"]["portfolio_revision"]
+    after_recovery = mm.get_next_actions()
+    assert NODES["ohard"]["status"] == "blocked", (after_recovery, NODES["ohard"])
+    NODES["ohard"].update({"coverage": 0.8, "confidence": 0.75, "status": "satisfied"})
     NODES["orecover"].update({"coverage": 0.8, "confidence": 0.75, "status": "satisfied"})
 
     for node in NODES.values():

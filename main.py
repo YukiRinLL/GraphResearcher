@@ -166,6 +166,16 @@ def _evidence_fallback_report(request: str, status_summary: dict) -> str:
         return "# Research Report\n\n## Conclusion\n\nNo verifiable findings are available.\n"
 
 
+def _delivery_contract_mode(status_summary: dict) -> str | None:
+    """将报告授权状态映射为 v2 交付契约."""
+    state = status_summary.get("reporting_from_state") or status_summary.get("research_state")
+    if state == "REPORT_READY":
+        return "complete"
+    if state in {"LIMITED_REPORT_READY", "BUDGET_EXHAUSTED"}:
+        return "limited"
+    return None
+
+
 def _prepare_report_for_delivery(
     final_text: str,
     request: str,
@@ -215,7 +225,7 @@ def _prepare_report_for_delivery(
                 issues.append(f"report attempt: {message}")
     else:
         state = status_summary.get("research_state")
-        if state in {"REPORT_READY", "BUDGET_EXHAUSTED"}:
+        if state in {"REPORT_READY", "LIMITED_REPORT_READY", "BUDGET_EXHAUSTED"}:
             issues.append("Reporter was authorized but never submitted a structured report")
         elif state == "REPORTING":
             issues.append("Reporter was invoked but did not submit a structured report")
@@ -376,7 +386,7 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
                 for key, value in attempt_summary.items()
                 if key not in {"report", "salvaged_report"}
             }
-            report_text, validation_issues, delivery_mode = _prepare_report_for_delivery(
+            report_text, validation_issues, artifact_delivery_mode = _prepare_report_for_delivery(
                 final_text,
                 request,
                 status_summary,
@@ -397,8 +407,10 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
                     f"[yellow]Report delivered with {len(validation_issues)} validation warning(s).[/]"
                 )
             try:
+                report_delivery_mode = _delivery_contract_mode(status_summary)
+                attempt_summary_brief["artifact_delivery_mode"] = artifact_delivery_mode
                 goal_update = {
-                    "report_delivery_mode": delivery_mode,
+                    "report_delivery_mode": report_delivery_mode,
                     "report_validation_issues": validation_issues,
                     "report_attempt_summary": attempt_summary_brief,
                 }

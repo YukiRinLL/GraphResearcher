@@ -77,7 +77,11 @@ class ResearchStateMiddleware(AgentMiddleware):
 
         status = research_state.get_status()
         state = status.get("research_state")
-        if state not in {research_state.REPORT_READY, research_state.BUDGET_EXHAUSTED}:
+        if state not in {
+            research_state.REPORT_READY,
+            research_state.LIMITED_REPORT_READY,
+            research_state.BUDGET_EXHAUSTED,
+        }:
             return ToolMessage(
                 content=json.dumps({
                     "error": "Reporter is not authorized while research is incomplete",
@@ -174,7 +178,11 @@ class ResearchStateMiddleware(AgentMiddleware):
         from tools import graph_manager_tools, research_state
 
         state = research_state.get_status().get("research_state")
-        if state not in {research_state.REPORT_READY, research_state.BUDGET_EXHAUSTED}:
+        if state not in {
+            research_state.REPORT_READY,
+            research_state.LIMITED_REPORT_READY,
+            research_state.BUDGET_EXHAUSTED,
+        }:
             return False
         return not graph_manager_tools.get_compiled_report().strip()
 

@@ -91,6 +91,13 @@ OBJECTIVE_CONFIDENCE_THRESHOLD = 0.65
 EXPANSION_UTILITY_THRESHOLD = 0.25
 LOW_REALIZED_GAIN_THRESHOLD = 0.05
 LOW_GAIN_WINDOW = 2
+_ACTIVE_QUERY_WORK_STATUSES = {
+    "searching",
+    "assessing",
+    "needs_expansion",
+    "waiting_children",
+}
+_BLOCKING_GAP_WORK_STATUSES = {"selected", "assigned"}
 _GAP_CATEGORIES = {
     "missing_core_evidence",
     "fatal_conflict",
@@ -339,7 +346,8 @@ class MemoryManager:
                 portfolio_revision=1,
                 evaluated_portfolio_revision=1,
                 last_max_marginal_utility=0.0,
-                report_readiness_score=0.0,
+                state_contract_version=2,
+                report_completeness_score=0.0,
             )
 
         objectives = self._create_objectives(goal_id, parsed.get("objectives"), user_request)
@@ -553,8 +561,9 @@ class MemoryManager:
                     "reason": reason,
                 })
 
+        gaps = graph_tools.search_nodes("analysis", {"analysis_type": "gap"})
         selected_by_owner: dict[str, list[str]] = {}
-        for gap in graph_tools.search_nodes("analysis", {"analysis_type": "gap"}):
+        for gap in gaps:
             owner_id = gap.get("expansion_parent_id")
             if gap.get("status") == "selected" and owner_id:
                 selected_by_owner.setdefault(owner_id, []).append(gap["id"])
@@ -628,7 +637,59 @@ class MemoryManager:
         elif any(action["action"] == "evaluate_research_portfolio" for action in actions):
             actions = [action for action in actions if action["action"] == "evaluate_research_portfolio"]
         remaining = research_state.remaining_budget()
-        if remaining == 0 and any(a["action"] == "dispatch_searcher" for a in actions):
+        dispatch_pending = any(action["action"] == "dispatch_searcher" for action in actions)
+        must = [
+            objective
+            for objective in self.get_research_objectives(goal.get("id"))
+            if objective.get("requirement") == "must"
+        ]
+        objectives_ready = bool(must) and all(
+            objective.get("status") == "satisfied" for objective in must
+        )
+        portfolio_current = int(goal.get("evaluated_portfolio_revision") or 0) >= int(
+            goal.get("portfolio_revision") or 0
+        )
+        has_active_queries = any(
+            query.get("status") in _ACTIVE_QUERY_WORK_STATUSES
+            for query in queries
+        )
+        has_blocking_gap_work = any(
+            gap.get("status") in _BLOCKING_GAP_WORK_STATUSES for gap in gaps
+        )
+        if (
+            remaining > 0
+            and goal.get("scope_mode") == "exhaustive"
+            and portfolio_current
+            and objectives_ready
+            and dispatch_pending
+            and not has_active_queries
+            and not has_blocking_gap_work
+            and all(action["action"] == "dispatch_searcher" for action in actions)
+        ):
+            return [{
+                "action": "assess_convergence",
+                "query_id": None,
+                "goal_id": goal.get("id"),
+                "priority": 1.0,
+                "required_for_parent": False,
+                "required_path": False,
+                "semantic_importance": 1.0,
+                "gap_ids": [],
+                "reason": "must Objectives are satisfied; assess convergence before optional pending work",
+            }]
+        if remaining == 0 and dispatch_pending:
+            if must and all(objective.get("status") == "satisfied" for objective in must):
+                return [{
+                    "action": "assess_convergence",
+                    "query_id": None,
+                    "goal_id": goal.get("id"),
+                    "priority": 1.0,
+                    "required_for_parent": False,
+                    "required_path": False,
+                    "semantic_importance": 1.0,
+                    "gap_ids": [],
+                    "reason": "must Objectives are satisfied; defer optional pending work before reporting",
+                }]
             research_state.mark_budget_exhausted()
             return []
         return actions[:limit]
@@ -637,15 +698,13 @@ class MemoryManager:
         """Create one Objective-grounded recovery Gap or close an exhausted Objective."""
         from tools import research_state
 
-        del queries  # Recovery is tracked by root-owned Gap nodes, not Query flags.
-
         if int(goal.get("evaluated_portfolio_revision") or 0) < int(goal.get("portfolio_revision") or 0):
             return None
         open_must = [
             objective
             for objective in self.get_research_objectives(goal.get("id"))
             if objective.get("requirement") == "must"
-            and objective.get("status") not in {"satisfied", "blocked_best_effort"}
+            and objective.get("status") not in {"satisfied", "blocked"}
         ]
         if not open_must:
             return None
@@ -661,9 +720,42 @@ class MemoryManager:
                 if graph_tools.get_node(gap_id).get("recovery_objective_key") == key
             ]
             if prior:
+                recovery_queries = [
+                    graph_tools.get_node(edge.get("source"))
+                    for gap in prior
+                    for edge in graph_tools.get_node_edges(gap["id"], direction="in")
+                    if str(edge.get("type") or "").lower() == "addresses_gap"
+                    and graph_tools.get_node(edge.get("source")).get("type") == NodeType.QUERY.value
+                ]
+                recovery_completed = any(
+                    query.get("status") in {"sufficient", "blocked", "failed"}
+                    for query in recovery_queries
+                )
+                if not recovery_completed:
+                    if any(
+                        query.get("status") in {"pending", "searching", "assessing", "needs_expansion", "waiting_children"}
+                        for query in recovery_queries
+                    ):
+                        return None
+                    graph_tools.upsert_node(NodeType.ANALYSIS, {
+                        "status": "candidate",
+                        "resolution_reason": None,
+                    }, prior[0]["id"])
+                    self._bump_portfolio_revision()
+                    return {
+                        "action": "evaluate_research_portfolio",
+                        "query_id": None,
+                        "goal_id": goal.get("id"),
+                        "priority": 1.0,
+                        "required_for_parent": False,
+                        "required_path": False,
+                        "semantic_importance": 1.0,
+                        "gap_ids": [],
+                        "reason": f"reopened incomplete targeted recovery for Objective {key}",
+                    }
                 if goal.get("scope_mode") == "bounded":
                     graph_tools.upsert_node(NodeType.ANALYSIS, {
-                        "status": "blocked_best_effort",
+                        "status": "blocked",
                         "resolution_reason": "targeted recovery query did not satisfy the objective",
                     }, objective["id"])
                     continue
@@ -1008,7 +1100,7 @@ class MemoryManager:
             elif trigger_type == "delivery_requirement":
                 if not trigger_refs or any(
                     ref not in objective_by_id
-                    or objective_by_id[ref].get("status") in {"satisfied", "blocked_best_effort"}
+                    or objective_by_id[ref].get("status") in {"satisfied", "blocked"}
                     for ref in trigger_refs
                 ):
                     continue
@@ -1243,20 +1335,40 @@ class MemoryManager:
             if new_successful_rounds and not meets:
                 streak = streak + new_successful_rounds if realized_gain < LOW_REALIZED_GAIN_THRESHOLD else 0
             status = "satisfied" if meets else (
-                "blocked_best_effort"
-                if objective.get("status") == "blocked_best_effort"
-                else "open"
+                "blocked" if objective.get("status") == "blocked" else "open"
             )
-            if (
-                status != "satisfied"
-                and streak >= LOW_GAIN_WINDOW
-                and goal.get("scope_mode", "bounded") != "exhaustive"
-            ):
-                status = "blocked_best_effort"
+            acceptance_criteria = [
+                criterion
+                for criterion in (objective.get("acceptance_criteria") or [])
+                if isinstance(criterion, str)
+            ]
+            raw_unmet = item.get("unmet_acceptance_criteria")
+            unmet_acceptance_criteria = (
+                []
+                if meets
+                else [criterion for criterion in acceptance_criteria if criterion in (raw_unmet or [])]
+                if isinstance(raw_unmet, list)
+                else objective.get("unmet_acceptance_criteria") or acceptance_criteria
+            )
+            covered_boundary = " ".join(
+                str(summary).strip()
+                for query in queries
+                if key in (query.get("objective_keys") or [])
+                for summary in (query.get("covered") or [])
+                if str(summary).strip()
+            )
+            supported_boundary = str(
+                item.get("supported_boundary")
+                or objective.get("supported_boundary")
+                or covered_boundary
+                or ""
+            ).strip()
             graph_tools.upsert_node(NodeType.ANALYSIS, {
                 "coverage": coverage,
                 "confidence": confidence,
                 "status": status,
+                "supported_boundary": supported_boundary,
+                "unmet_acceptance_criteria": unmet_acceptance_criteria,
                 "low_gain_streak": streak,
                 "last_realized_gain": realized_gain,
                 "last_evaluated_successful_rounds": successful_rounds,
@@ -1320,7 +1432,7 @@ class MemoryManager:
                     OBJECTIVE_CONFIDENCE_THRESHOLD - float(item.get("confidence") or 0.0),
                 )
                 for item in must_impacted
-                if item.get("status") not in {"satisfied", "blocked_best_effort"}
+                if item.get("status") not in {"satisfied", "blocked"}
             ]
             deficit = max(deficits, default=0.0)
             redundancy = 0.75 if subject in existing_subjects else 0.0
@@ -1374,16 +1486,33 @@ class MemoryManager:
                     for key in query.get("objective_keys") or []
                     if key in objective_by_key
                 ]
-                if linked and all(item.get("status") in {"satisfied", "blocked_best_effort"} for item in linked):
+                if linked and all(item.get("status") in {"satisfied", "blocked"} for item in linked):
                     graph_tools.transition_query(query["id"], "deferred")
                     self._propagate_child_completion(query["id"], "deferred")
 
         objectives = self.get_research_objectives(goal_id)
         must = [item for item in objectives if item.get("requirement") == "must"]
-        readiness = (
-            sum(float(item.get("weight") or 1.0) for item in must if item.get("status") in {"satisfied", "blocked_best_effort"})
-            / sum(float(item.get("weight") or 1.0) for item in must)
-            if must else 1.0
+        weighted_must = [
+            (
+                item,
+                float(item["weight"]) if item.get("weight") is not None else 1.0,
+            )
+            for item in must
+        ]
+        total_must_weight = sum(weight for _, weight in weighted_must)
+        completeness = (
+            sum(
+                weight
+                * min(
+                    float(item.get("coverage") or 0.0) / OBJECTIVE_COVERAGE_THRESHOLD,
+                    float(item.get("confidence") or 0.0) / OBJECTIVE_CONFIDENCE_THRESHOLD,
+                    1.0,
+                )
+                for item, weight in weighted_must
+            )
+            / total_must_weight
+            if total_must_weight > 0.0
+            else 0.0 if must else 1.0
         )
         revision = int(goal.get("portfolio_revision") or 0)
         max_utility = max(
@@ -1393,13 +1522,13 @@ class MemoryManager:
         graph_tools.upsert_node(NodeType.USER_REQUEST, {
             "evaluated_portfolio_revision": revision,
             "last_max_marginal_utility": max_utility,
-            "report_readiness_score": readiness,
+            "report_completeness_score": completeness,
         }, goal["id"])
         return {
             "selected_gap_ids": [item["id"] for item in selected],
             "deferred_gap_ids": [item["id"] for item in deferred],
             "objectives": objectives,
-            "report_readiness_score": readiness,
+            "report_completeness_score": completeness,
             "last_max_marginal_utility": max_utility,
             "next_action": "get_next_actions",
         }
@@ -1599,7 +1728,11 @@ class MemoryManager:
         current_state = research_state.get_status(goal_id).get("research_state")
         if current_state != research_state.RESEARCHING:
             return {
-                "converged": current_state in {research_state.REPORT_READY, research_state.BUDGET_EXHAUSTED},
+                "converged": current_state in {
+                    research_state.REPORT_READY,
+                    research_state.LIMITED_REPORT_READY,
+                    research_state.BUDGET_EXHAUSTED,
+                },
                 "recommendation": "stop" if current_state in research_state.REPORT_ALLOWED else "failed",
                 "research_state": current_state,
                 "next_actions": [],
@@ -1717,16 +1850,25 @@ class MemoryManager:
         objectives = self.get_research_objectives(goal_id)
         must = [item for item in objectives if item.get("requirement") == "must"]
         objectives_ready = bool(must) and all(
-            item.get("status") in {"satisfied", "blocked_best_effort"}
+            item.get("status") == "satisfied"
             for item in must
+        )
+        objectives_limited = (
+            bool(must)
+            and any(item.get("status") == "blocked" for item in must)
+            and all(item.get("status") in {"satisfied", "blocked"} for item in must)
         )
         active = [
             query for query in all_queries
-            if query.get("status") in {"searching", "assessing"}
+            if query.get("status") in _ACTIVE_QUERY_WORK_STATUSES
+        ]
+        pending = [
+            query for query in all_queries
+            if query.get("status") == "pending"
         ]
         selected_gaps = [
             gap for gap in graph_tools.search_nodes("analysis", {"analysis_type": "gap"})
-            if gap.get("status") in {"selected", "assigned"}
+            if gap.get("status") in _BLOCKING_GAP_WORK_STATUSES
         ]
         portfolio_current = int(goal.get("evaluated_portfolio_revision") or 0) >= int(goal.get("portfolio_revision") or 0)
         exhaustive_open = [
@@ -1734,23 +1876,34 @@ class MemoryManager:
             if query.get("status") not in research_state.TERMINAL_QUERY_STATUSES
         ] if goal.get("scope_mode") == "exhaustive" else []
         remaining = research_state.remaining_budget(goal_id)
-        if remaining == 0 and (active or selected_gaps or not objectives_ready or exhaustive_open):
-            research_state.mark_budget_exhausted(goal_id)
-            recommendation = "stop"
-            state = research_state.BUDGET_EXHAUSTED
+        if active:
+            research_state.update_goal({
+                "research_state": research_state.RESEARCHING,
+                "last_convergence_recommendation": "continue",
+                "report_authorized_reason": None,
+            }, goal_id)
+            recommendation = "continue"
+            state = research_state.RESEARCHING
         elif (
             tree["valid"]
             and portfolio_current
             and objectives_ready
             and not active
             and not selected_gaps
+            and not fatal
             and not created_fatal_gaps
-            and not exhaustive_open
         ):
             for query in all_queries:
                 if query.get("status") == "pending":
                     graph_tools.transition_query(query["id"], "deferred")
                     self._propagate_child_completion(query["id"], "deferred")
+            for objective in objectives:
+                if objective.get("requirement") == "should" and objective.get("status") == "open":
+                    graph_tools.upsert_node(
+                        NodeType.ANALYSIS,
+                        {"status": "deferred"},
+                        objective["id"],
+                    )
             research_state.update_goal({
                 "research_state": research_state.REPORT_READY,
                 "last_convergence_recommendation": "stop",
@@ -1758,6 +1911,28 @@ class MemoryManager:
             }, goal_id)
             recommendation = "stop"
             state = research_state.REPORT_READY
+        elif remaining == 0 and (selected_gaps or not objectives_ready or exhaustive_open):
+            research_state.mark_budget_exhausted(goal_id)
+            recommendation = "stop"
+            state = research_state.BUDGET_EXHAUSTED
+        elif (
+            goal.get("scope_mode", "bounded") == "bounded"
+            and tree["valid"]
+            and portfolio_current
+            and objectives_limited
+            and not active
+            and not pending
+            and not selected_gaps
+            and not fatal
+            and not created_fatal_gaps
+        ):
+            research_state.update_goal({
+                "research_state": research_state.LIMITED_REPORT_READY,
+                "last_convergence_recommendation": "stop",
+                "report_authorized_reason": "bounded research reached best-effort convergence",
+            }, goal_id)
+            recommendation = "stop"
+            state = research_state.LIMITED_REPORT_READY
         else:
             research_state.update_goal({
                 "research_state": research_state.RESEARCHING,
@@ -2333,22 +2508,59 @@ class MemoryManager:
                 goal = requests[0]
                 goal_id = goal["id"]
         objectives = self.get_research_objectives(goal_id)
-        from tools import report_tools
+        from tools import report_tools, research_state
 
-        limitations = [
-            str(item.get("description") or item.get("text") or "").strip()
-            for item in objectives
-            if item.get("status") == "blocked_best_effort"
-        ]
-        limitations = [item for item in limitations if item]
+        authorization_state = goal.get("reporting_from_state") or goal.get("research_state")
+        delivery_mode = (
+            "complete"
+            if authorization_state == research_state.REPORT_READY
+            else "limited"
+            if authorization_state in {
+                research_state.LIMITED_REPORT_READY,
+                research_state.BUDGET_EXHAUSTED,
+            }
+            else None
+        )
         request_text = str(goal.get("request") or goal.get("research_goal") or "")
-        is_wikipedia_task = "wikipedia" in request_text.lower()
+        wikipedia_task = report_tools.is_wikipedia_task(request_text)
         sorted_queries = sorted(
             graph_tools.search_nodes("query", {}),
             key=lambda query: (query.get("importance") or 0, query.get("id") or ""),
             reverse=True,
         )
+        unmet_objectives = [
+            {
+                "objective_key": objective.get("objective_key"),
+                "unmet_acceptance_criteria": (
+                    objective.get("unmet_acceptance_criteria")
+                    if isinstance(objective.get("unmet_acceptance_criteria"), list)
+                    else objective.get("acceptance_criteria") or []
+                ),
+                "supported_boundary": str(objective.get("supported_boundary") or "").strip(),
+                "related_query_ids": sorted(
+                    query["id"]
+                    for query in sorted_queries
+                    if objective.get("objective_key") in (query.get("objective_keys") or [])
+                ),
+            }
+            for objective in objectives
+            if objective.get("requirement") == "must" and objective.get("status") != "satisfied"
+        ]
+        disclosed_conflicts = report_tools.get_disclosed_conflicts()
+        substantive_uncertainties = [
+            {
+                "reader_facing_topic": conflict.get("conflict_type") or "source disagreement",
+                "neutral_description": conflict.get("description"),
+                "evidence_ids": conflict.get("evidence_ids") or [],
+                "source_ids": conflict.get("source_ids") or [],
+            }
+            for conflict in disclosed_conflicts
+            if conflict.get("description")
+            and conflict.get("evidence_ids")
+            and conflict.get("source_ids")
+        ]
         return {
+            "delivery_mode": delivery_mode,
             "goal": {
                 key: goal.get(key)
                 for key in (
@@ -2373,16 +2585,17 @@ class MemoryManager:
                 }
                 for objective in objectives
             ],
-            "limitations": limitations,
-            "disclosed_conflicts": report_tools.get_disclosed_conflicts(),
+            "unmet_objectives": unmet_objectives,
+            "substantive_uncertainties": substantive_uncertainties,
+            "disclosed_conflicts": disclosed_conflicts,
             "reference_registry": report_tools.build_reference_registry(),
             "writing_hints": {
                 "default_structure": (
-                    "lead + topic sections + conflict/limitation coverage + unified references"
+                    "lead + topic sections + evidence-bound uncertainty coverage + unified references"
                 ),
                 "prefer_paragraph_prose": True,
                 "avoid_references_as_section_title": True,
-                "task_style": "wikipedia_article" if is_wikipedia_task else "research_report",
+                "task_style": "wikipedia_article" if wikipedia_task else "research_report",
             },
         }
 
