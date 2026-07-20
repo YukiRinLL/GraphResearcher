@@ -286,7 +286,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--wlc-python", default=sys.executable, help="Python executable used to run WLC scripts.")
     parser.add_argument("--json-steps", default="extract,fetch", help="WLC JSON generation steps.")
     parser.add_argument("--json-concurrency", type=int, default=None, help="WLC JSON generation concurrency.")
-    parser.add_argument("--eval-max-workers", type=int, default=20, help="WLC evaluation max workers.")
+    parser.add_argument("--eval-max-workers", type=int, default=5, help="WLC evaluation max workers.")
     parser.add_argument("--eval-top-k", type=int, default=10, help="Top-k similar statements for WLC verifiability.")
     parser.add_argument("--allow-tie", action="store_true", help="Allow tie results in WLC writing evaluation.")
     parser.add_argument(
