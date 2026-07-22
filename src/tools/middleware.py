@@ -9,6 +9,7 @@ import time
 from typing import Optional
 
 from langchain.agents.middleware import AgentMiddleware
+from langchain.agents.middleware.types import ModelResponse
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 
 logger = logging.getLogger(__name__)
@@ -37,6 +38,11 @@ def get_max_search_rounds() -> int:
 class ResearchStateMiddleware(AgentMiddleware):
     """Enforce the persistent research-state gate around Reporter and terminal text."""
 
+    _REPORTER_HANDOFF = (
+        "读取 export_report_context 中逐字保存的原始 User Request 和报告材料，"
+        "严格按 Reporter 工作流完成报告。"
+    )
+
     _RESEARCH_NUDGE = (
         "研究状态仍为 RESEARCHING，禁止生成最终报告或结束流程。"
         "请调用 get_next_actions，并严格执行返回的 assess_query、evaluate_research_portfolio、"
@@ -46,7 +52,8 @@ class ResearchStateMiddleware(AgentMiddleware):
     _REPORTER_NUDGE = (
         "研究状态已经允许生成最终报告，但规范报告必须由 reporter 子代理通过 "
         "submit_final_report 提交。禁止直接输出报告正文、摘要、表格或结论。"
-        "请立即调用 task(subagent_type=\"reporter\", ...)；只向 reporter 传递用户研究目标。"
+        "请立即调用 task(subagent_type=\"reporter\", ...)；系统会使用固定 handoff，"
+        "Reporter 将自行读取原始 User Request。"
     )
 
     def __init__(self, max_repeated_failures: int = 3, max_reporter_nudges: int = 2):
@@ -100,6 +107,7 @@ class ResearchStateMiddleware(AgentMiddleware):
             research_state.update_goal({
                 "reporter_warnings": [warning],
             })
+        tool_call.setdefault("args", {})["description"] = self._REPORTER_HANDOFF
         research_state.update_goal({
             "research_state": research_state.REPORTING,
             "reporting_from_state": state,
@@ -453,12 +461,13 @@ class ReportValidationMiddleware(AgentMiddleware):
         return response
 
 
-class ReporterRevisionMiddleware(AgentMiddleware):
-    """Force the Reporter subagent to repair and resubmit failed report attempts."""
+class ReporterWorkflowMiddleware(AgentMiddleware):
+    """Bound the Reporter run and force a complete final submission."""
 
-    def __init__(self, max_retries: int = 2):
-        self.max_retries = max_retries
-        self._retries_used = 0
+    def __init__(self, remind_at: int = 20, force_at: int = 24):
+        """Configure the reminder and forced-submission model-call limits."""
+        self.remind_at = remind_at
+        self.force_at = force_at
 
     @staticmethod
     def _latest_attempt() -> dict:
@@ -467,46 +476,20 @@ class ReporterRevisionMiddleware(AgentMiddleware):
         return graph_manager_tools.get_last_report_attempt()
 
     @staticmethod
-    def _needs_revision(response) -> bool:
-        last = _last_ai_message(response)
-        if last is None or last.tool_calls:
-            return False
-        attempt = ReporterRevisionMiddleware._latest_attempt()
-        if not attempt:
-            return True
-        return (not bool(attempt.get("accepted"))) or bool(attempt.get("revision_requested"))
+    def _forced_submit() -> ModelResponse:
+        return ModelResponse(result=[AIMessage(
+            content="",
+            tool_calls=[{
+                "name": "submit_final_report",
+                "args": {},
+                "id": f"forced-report-submit-{time.time_ns()}",
+                "type": "tool_call",
+            }],
+        )])
 
     @staticmethod
-    def _build_prompt(attempt: dict) -> str:
-        if not attempt:
-            return (
-                "你尚未成功调用 submit_final_report。请立即读取已收集的证据并提交结构化报告；"
-                "不要直接结束，也不要输出报告正文。"
-            )
-
-        submitted_sections = int(attempt.get("submitted_sections") or 0)
-        dropped_sections = int(attempt.get("dropped_sections") or 0)
-        allow_rewrite = (
-            not str(attempt.get("salvaged_report") or "").strip()
-            or attempt.get("severity") == "hard"
-            or (submitted_sections > 0 and dropped_sections * 2 > submitted_sections)
-        )
-        action = (
-            "仅在没有可保留的 prose 报告、受影响 section 超过一半、或错误属于全局硬错误时，才允许较大范围重写。"
-            if allow_rewrite else
-            "默认保留已通过的 section 与章节 prose，只修复被点名的问题，不要从头重写整篇。"
-        )
-        lines = [
-            "submit_final_report 尚未达到可结束状态，请继续修订并重新提交。",
-            f"- accepted={bool(attempt.get('accepted'))}",
-            f"- revision_requested={bool(attempt.get('revision_requested'))}",
-            f"- severity={attempt.get('severity') or 'unknown'}",
-            f"- retention_ratio={attempt.get('retention_ratio')}",
-            f"- kept_sections={attempt.get('kept_sections')} / submitted_sections={attempt.get('submitted_sections')}",
-            f"- kept_paragraphs={attempt.get('kept_paragraphs')} / submitted_paragraphs={attempt.get('submitted_paragraphs')}",
-            action,
-            "按以下问题定点修复：",
-        ]
+    def _revision_prompt(attempt: dict) -> str:
+        lines = ["首次报告已生成。你只有一次修订机会。", "按以下问题定点更新候选章节："]
         for issue in attempt.get("issues", [])[:8]:
             if not isinstance(issue, dict):
                 lines.append(f"- {issue}")
@@ -521,23 +504,51 @@ class ReporterRevisionMiddleware(AgentMiddleware):
                 f"- [{issue.get('severity', 'soft')}] {issue.get('code', 'issue')}{location_text}: "
                 f"{issue.get('message')} 修复建议：{issue.get('repair_hint')}"
             )
-        lines.append("修复后再次调用 submit_final_report；如果仍需修订，继续迭代，不要直接结束。")
+        lines.append("修订后调用一次无参数的 submit_final_report()；第二次提交将直接交付。")
         return "\n".join(lines)
 
     def wrap_model_call(self, request, handler):
-        """Retry terminal Reporter responses until the structured submit passes or retries are exhausted."""
-        response = handler(request)
-        while self._retries_used < self.max_retries and self._needs_revision(response):
-            prompt = HumanMessage(content=self._build_prompt(self._latest_attempt()))
-            self._retries_used += 1
-            response = handler(request.override(messages=[*request.messages, prompt]))
+        """Bound synchronous Reporter calls and force a terminal submission."""
+        from tools import graph_manager_tools
+
+        count = graph_manager_tools.increment_reporter_model_call_count()
+        attempt = self._latest_attempt()
+        if attempt.get("delivered") and not attempt.get("revision_requested"):
+            return ModelResponse(result=[AIMessage(content="报告已提交。")])
+        if count >= self.force_at:
+            return self._forced_submit()
+        messages = list(request.messages)
+        if count == self.remind_at:
+            messages.append(HumanMessage(content=(
+                "你已接近 Reporter 运行上限。停止扩大章节范围，优先完成候选章节并调用 submit_final_report。"
+            )))
+        elif attempt.get("revision_requested"):
+            messages.append(HumanMessage(content=self._revision_prompt(attempt)))
+        response = handler(request.override(messages=messages))
+        last = _last_ai_message(response)
+        if last is not None and not last.tool_calls:
+            return self._forced_submit()
         return response
 
     async def awrap_model_call(self, request, handler):
-        """Async counterpart of :meth:`wrap_model_call`."""
-        response = await handler(request)
-        while self._retries_used < self.max_retries and self._needs_revision(response):
-            prompt = HumanMessage(content=self._build_prompt(self._latest_attempt()))
-            self._retries_used += 1
-            response = await handler(request.override(messages=[*request.messages, prompt]))
+        """Bound asynchronous Reporter calls and force a terminal submission."""
+        from tools import graph_manager_tools
+
+        count = graph_manager_tools.increment_reporter_model_call_count()
+        attempt = self._latest_attempt()
+        if attempt.get("delivered") and not attempt.get("revision_requested"):
+            return ModelResponse(result=[AIMessage(content="报告已提交。")])
+        if count >= self.force_at:
+            return self._forced_submit()
+        messages = list(request.messages)
+        if count == self.remind_at:
+            messages.append(HumanMessage(content=(
+                "你已接近 Reporter 运行上限。停止扩大章节范围，优先完成候选章节并调用 submit_final_report。"
+            )))
+        elif attempt.get("revision_requested"):
+            messages.append(HumanMessage(content=self._revision_prompt(attempt)))
+        response = await handler(request.override(messages=messages))
+        last = _last_ai_message(response)
+        if last is not None and not last.tool_calls:
+            return self._forced_submit()
         return response

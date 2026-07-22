@@ -8,17 +8,17 @@ Orchestrator via the built-in `task` tool.
 
 import config
 from tools.graph_manager_tools import REPORTER_TOOLS
-from tools.middleware import ReporterRevisionMiddleware
+from tools.middleware import ReporterWorkflowMiddleware
 
 reporter = {
     "name": "reporter",
     "description": (
         "Writes the final, citation-bound research report strictly from the "
-        "Research Graph. Reads the exported report context, binds each section "
-        "to the evidence/claims it uses, and returns the full report with "
+        "Research Graph. Reads the verbatim request, commits evidence-bound chapters, "
+        "and returns the full report with "
         "numbered citations and a references list."
     ),
     "system_prompt": config.reporter_system_prompt,
     "tools": REPORTER_TOOLS,
-    "middleware": [ReporterRevisionMiddleware()],
+    "middleware": [ReporterWorkflowMiddleware()],
 }

@@ -1,20 +1,17 @@
-"""Standalone checks for ReporterRevisionMiddleware retry behavior."""
+"""Standalone checks for the run-scoped Reporter workflow guard."""
 
 import sys
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
+from langchain.agents.middleware.types import ModelResponse
 from langchain_core.messages import AIMessage, HumanMessage
 
 repo_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(repo_dir / "src"))
 
-from tools import graph_manager_tools  # noqa: E402
-from tools.middleware import ReporterRevisionMiddleware  # noqa: E402
-
-
-class _Response:
-    def __init__(self, message):
-        self.result = [message]
+from tools import graph_manager_tools, graph_tools  # noqa: E402
+from tools.middleware import ReporterWorkflowMiddleware  # noqa: E402
 
 
 class _Request:
@@ -25,57 +22,66 @@ class _Request:
         return _Request(messages)
 
 
+def _tool_response(name="assemble_report_draft"):
+    return ModelResponse(result=[AIMessage(content="", tool_calls=[{
+        "name": name,
+        "args": {},
+        "id": f"call-{name}",
+        "type": "tool_call",
+    }])])
+
+
 def main():
-    original = graph_manager_tools.get_last_report_attempt
+    original_clear = graph_tools.clear_current_context
+    original_set = graph_tools.set_context
+    graph_tools.clear_current_context = lambda: None
+    graph_tools.set_context = lambda _context: None
     try:
-        attempt = {
-            "accepted": True,
-            "revision_requested": True,
-            "severity": "soft",
-            "retention_ratio": 0.5,
-            "submitted_sections": 2,
-            "dropped_sections": 0,
-            "submitted_paragraphs": 4,
-            "kept_paragraphs": 2,
-            "salvaged_report": "# Report\n\n## Section\n\nFact [1]\n\n## References\n\n[1] https://example.com\n",
-            "issues": [{
-                "code": "forbidden_meta_prose",
-                "severity": "soft",
-                "section_title": "Section A",
-                "block_index": 2,
-                "message": "meta prose leaked into one block",
-                "repair_hint": "delete the meta sentence and resubmit",
-            }],
-        }
-        graph_manager_tools.get_last_report_attempt = lambda: attempt
+        with TemporaryDirectory() as temp_dir:
+            graph_manager_tools.configure(temp_dir, user_request="write report")
+            middleware = ReporterWorkflowMiddleware(remind_at=2, force_at=3)
+            requests = []
 
-        calls = []
+            def handler(request):
+                requests.append(request)
+                return _tool_response()
 
-        def handler(request):
-            calls.append(request)
-            last = request.messages[-1]
-            if isinstance(last, HumanMessage) and "submit_final_report 尚未达到可结束状态" in str(last.content):
-                graph_manager_tools.get_last_report_attempt = lambda: {
-                    **attempt,
-                    "revision_requested": False,
-                    "severity": "clean",
-                    "issues": [],
-                }
-                return _Response(AIMessage(content="已重新提交"))
-            return _Response(AIMessage(content="报告已生成"))
+            request = _Request([HumanMessage(content="write report")])
+            first = middleware.wrap_model_call(request, handler)
+            assert first.result[-1].tool_calls[0]["name"] == "assemble_report_draft"
 
-        middleware = ReporterRevisionMiddleware(max_retries=2)
-        response = middleware.wrap_model_call(_Request([HumanMessage(content="write report")]), handler)
-        assert response.result[-1].content == "已重新提交"
-        assert len(calls) == 2
-        assert isinstance(calls[-1].messages[-1], HumanMessage)
-        prompt = str(calls[-1].messages[-1].content)
-        assert "Section A" in prompt
-        assert "kept_paragraphs=2 / submitted_paragraphs=4" in prompt
+            second = middleware.wrap_model_call(request, handler)
+            assert second.result[-1].tool_calls[0]["name"] == "assemble_report_draft"
+            assert "接近 Reporter 运行上限" in str(requests[-1].messages[-1].content)
+
+            third = middleware.wrap_model_call(request, handler)
+            assert third.result[-1].tool_calls[0]["name"] == "submit_final_report"
+            assert len(requests) == 2
+            assert graph_manager_tools.get_reporter_model_call_count() == 3
+
+            graph_manager_tools.configure(temp_dir, user_request="write report")
+            terminal = ReporterWorkflowMiddleware().wrap_model_call(
+                request,
+                lambda _request: ModelResponse(result=[AIMessage(content="done")]),
+            )
+            assert terminal.result[-1].tool_calls[0]["name"] == "submit_final_report"
+
+            graph_manager_tools._last_report_attempt = {
+                "delivered": True,
+                "revision_requested": False,
+            }
+            handler_called = []
+            completed = ReporterWorkflowMiddleware().wrap_model_call(
+                request,
+                lambda _request: handler_called.append(True),
+            )
+            assert completed.result[-1].content == "报告已提交。"
+            assert not handler_called
     finally:
-        graph_manager_tools.get_last_report_attempt = original
+        graph_tools.clear_current_context = original_clear
+        graph_tools.set_context = original_set
 
-    print("ALL REPORTER REVISION MIDDLEWARE CHECKS PASSED")
+    print("ALL REPORTER WORKFLOW MIDDLEWARE CHECKS PASSED")
 
 
 if __name__ == "__main__":

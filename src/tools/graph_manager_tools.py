@@ -1,13 +1,16 @@
 """State-machine Graph Manager tools exposed to GraphResearcher agents."""
 
 import json
+import logging
 from pathlib import Path
 from threading import Lock
-from typing import Any, Optional
+from typing import Annotated, Any, Optional
 
 from langchain_core.tools import tool
+from pydantic import Field
 
-from agents.memory_manager import AmbiguousQueryReference, MemoryManager
+from agents.memory_manager import MemoryManager
+from tools.graph_tools import AmbiguousQueryReference
 
 _manager: Optional[MemoryManager] = None
 _cache_dir: Optional[str] = None
@@ -16,13 +19,25 @@ _salvaged_report: str = ""
 _best_report: str = ""
 _last_report_attempt: dict[str, Any] = {}
 _report_lock = Lock()
+_user_request: Optional[str] = None
+_report_review_completed = False
+_report_review_had_issues = False
+_report_submit_count = 0
+_report_model_call_count = 0
+
+logger = logging.getLogger(__name__)
 
 
-def configure(output_dir: Optional[str] = None) -> None:
+def configure(output_dir: Optional[str] = None, user_request: Optional[str] = None) -> None:
     """Clear and scope graph storage, then rebuild the shared manager for a run."""
-    global _best_report, _cache_dir, _compiled_report, _last_report_attempt, _manager, _salvaged_report
+    global _best_report, _cache_dir, _compiled_report, _last_report_attempt, _manager, _report_model_call_count, _report_review_completed, _report_review_had_issues, _report_submit_count, _salvaged_report, _user_request
     _cache_dir = output_dir
+    _user_request = user_request
     _manager = None
+    _report_review_completed = False
+    _report_review_had_issues = False
+    _report_submit_count = 0
+    _report_model_call_count = 0
     with _report_lock:
         _compiled_report = ""
         _salvaged_report = ""
@@ -58,7 +73,7 @@ def configure(output_dir: Optional[str] = None) -> None:
 def _mm() -> MemoryManager:
     global _manager
     if _manager is None:
-        _manager = MemoryManager(cache_dir=_cache_dir)
+        _manager = MemoryManager(cache_dir=_cache_dir, user_request=_user_request)
     return _manager
 
 
@@ -135,6 +150,60 @@ def _write_optional_text(path: Optional[Path], text: str) -> None:
     path.write_text(text, encoding="utf-8")
 
 
+def _record_report_result(result: dict[str, Any], *, finalized: bool) -> None:
+    """Persist one run-scoped report result without writing graph sections."""
+    global _best_report, _compiled_report, _last_report_attempt, _salvaged_report
+    with _report_lock:
+        report = str(result.get("report") or "")
+        salvaged = str(result.get("salvaged_report") or "")
+        _compiled_report = report if finalized else ""
+        _salvaged_report = "" if finalized else salvaged or report
+        _best_report = _compiled_report or _salvaged_report
+        _last_report_attempt = dict(result)
+        _write_optional_text(_compiled_report_path(), _compiled_report)
+        _write_optional_text(_salvaged_report_path(), _salvaged_report)
+        _write_optional_text(_best_report_path(), _best_report)
+        path = _report_attempt_path()
+        if path:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def _parse_review_issues(content: Any) -> list[str]:
+    """Parse the reviewer's deliberately small JSON response."""
+    text = str(getattr(content, "content", content) or "").strip()
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError:
+        start, end = text.find("{"), text.rfind("}")
+        if start < 0 or end <= start:
+            raise ValueError("Report Review returned no JSON object") from None
+        payload = json.loads(text[start : end + 1])
+    if not isinstance(payload.get("issues"), list):
+        raise ValueError("Report Review returned no issues list")
+    if set(payload) != {"issues"}:
+        raise ValueError("Report Review returned fields other than issues")
+    return [str(item).strip() for item in payload["issues"] if str(item).strip()]
+
+
+def _review_report_once(report: str) -> list[str]:
+    """Invoke the isolated reviewer with only the agreed report context."""
+    import config
+    from tools import report_tools
+
+    context = report_tools.get_committed_review_context(_cache_dir)
+    prompt = (
+        config.report_reviewer_system_prompt
+        + "\n\nUser Request:\n"
+        + str(_user_request or "")
+        + "\n\nCandidate report:\n"
+        + report
+        + "\n\nUsed report material:\n"
+        + json.dumps(context, ensure_ascii=False)
+    )
+    return _parse_review_issues(config.report_reviewer_model.invoke(prompt))
+
+
 def prepare_search(query_id: str, source_preferences: Optional[list[str]] = None) -> dict:
     """Prepare an internal structured Searcher dispatch."""
     return _mm().prepare_search(query_id, source_preferences)
@@ -153,9 +222,9 @@ def set_research_state(state: str, **attributes: Any) -> dict:
 
 
 @tool
-def init_research(user_request: str) -> dict:
+def init_research() -> dict:
     """Initialize a strict Query tree and persistent research state."""
-    return _mm().init_research(user_request)
+    return _mm().init_research()
 
 
 @tool
@@ -227,14 +296,14 @@ def create_analysis(text: str, query_id: Optional[str] = None) -> dict:
 @tool
 def get_query_evaluation_subgraph(query_id: str) -> dict:
     """Read the evidence owned by one Query, excluding parent and sibling evidence."""
+    from tools import graph_tools
+
     try:
-        resolved = _mm()._resolve_query_id(query_id)  # central resolver; read-only tool
+        resolved = graph_tools.resolve_query_reference(query_id)
     except AmbiguousQueryReference as exc:
         return {"error": str(exc)}
     if resolved is None:
         return {"error": f"Unknown query reference: {query_id!r}"}
-    from tools import graph_tools
-
     return graph_tools.get_query_evaluation_subgraph(resolved)
 
 
@@ -267,20 +336,6 @@ def export_report_context(goal_id: Optional[str] = None) -> dict:
 
 
 @tool
-def get_report_evidence(query_id: str, offset: int = 0, limit: int = 20) -> dict:
-    """Return one compact page of citation-ready Claim/Evidence items."""
-    return _mm().get_report_evidence(query_id, offset=offset, limit=limit)
-
-
-@tool
-def get_reference_registry() -> list[dict]:
-    """Return the complete stable Source ID, citation number and URL registry."""
-    from tools import report_tools
-
-    return report_tools.get_reference_registry()
-
-
-@tool
 def commit_report_outline(title: str, chapters: list[dict]) -> dict:
     """Persist the reporter's chapter-level outline for the current run."""
     from tools import report_tools
@@ -289,36 +344,23 @@ def commit_report_outline(title: str, chapters: list[dict]) -> dict:
 
 
 @tool
-def prepare_report_chapter_bundle(chapter_id: int, extra_query_ids: Optional[list[str]] = None) -> dict:
-    """Load one chapter plan together with its evidence bundle."""
+def prepare_report_chapter_batch(
+    chapters: Annotated[list[dict], Field(min_length=1, max_length=3)],
+) -> dict:
+    """Load one to three chapter plans with chapter-local evidence references."""
     from tools import report_tools
 
-    return report_tools.prepare_report_chapter_bundle(_cache_dir, chapter_id, extra_query_ids)
+    return report_tools.prepare_report_chapter_batch(_cache_dir, chapters)
 
 
 @tool
-def commit_report_chapter(
-    chapter_id: int,
-    title: str,
-    content: str,
-    source_ids: list[str],
-    evidence_ids: Optional[list[str]] = None,
-    disclosed_conflict_ids: Optional[list[str]] = None,
-    section_type: Optional[str] = None,
+def commit_report_chapter_batch(
+    chapters: Annotated[list[dict], Field(min_length=1, max_length=3)],
 ) -> dict:
-    """Persist one chapter draft and its source/evidence bindings."""
+    """Save and validate one to three complete chapter candidates."""
     from tools import report_tools
 
-    return report_tools.commit_report_chapter(
-        _cache_dir,
-        chapter_id,
-        title,
-        content,
-        source_ids,
-        evidence_ids=evidence_ids,
-        disclosed_conflict_ids=disclosed_conflict_ids,
-        section_type=section_type,
-    )
+    return report_tools.commit_report_chapter_batch(_cache_dir, chapters)
 
 
 @tool
@@ -330,33 +372,74 @@ def assemble_report_draft() -> dict:
 
 
 @tool
-def submit_final_report(title: str, sections: list[dict]) -> dict:
-    """Validate and compile the canonical report from cited chapter sections.
-
-    Every section requires ``title``, prose ``content``, and URL-backed
-    ``source_ids``. Optional ``evidence_ids`` and ``disclosed_conflict_ids``
-    preserve graph traceability. ``section_type="conflict_disclosure"`` marks
-    a dedicated conflict section.
-    """
-    global _best_report, _compiled_report, _last_report_attempt, _salvaged_report
+def submit_final_report() -> dict:
+    """Review once, revise once, and always deliver the latest complete report."""
+    global _report_review_completed, _report_review_had_issues, _report_submit_count
     from tools import report_tools
 
-    result = report_tools.compile_structured_report(title, sections)
+    _report_submit_count += 1
+    candidate = report_tools.submit_committed_report(_cache_dir)
+    if not _report_review_completed:
+        _report_review_completed = True
+        try:
+            review_issues = _review_report_once(candidate["report"])
+        except Exception as exc:  # noqa: BLE001 - review is explicitly fail-open
+            logger.warning("Report Review failed open: %s", exc)
+            final = report_tools.submit_committed_report(_cache_dir, persist=True)
+            final["review_status"] = "failed_open"
+            final["review_error"] = str(exc)
+            final["revision_requested"] = False
+            _record_report_result(final, finalized=True)
+            return final
+        combined_issues = list(candidate.get("issues") or []) + [
+            {
+                "code": "report_review_issue",
+                "severity": "soft",
+                "section_title": "",
+                "block_index": None,
+                "message": issue,
+                "repair_hint": "Update the affected chapter candidate, then submit once more.",
+            }
+            for issue in review_issues
+        ]
+        if combined_issues:
+            _report_review_had_issues = True
+            result = dict(candidate)
+            result.update({
+                "revision_requested": True,
+                "severity": "hard" if any(
+                    issue.get("severity") == "hard" for issue in combined_issues
+                ) else "soft",
+                "review_status": "issues",
+                "issues": combined_issues,
+            })
+            _record_report_result(result, finalized=False)
+            return result
+
+    final = report_tools.submit_committed_report(_cache_dir, persist=True)
+    final["review_status"] = "revised_once" if _report_review_had_issues else "passed"
+    final["revision_requested"] = False
+    _record_report_result(final, finalized=True)
+    return final
+
+
+def get_report_submit_count() -> int:
+    """Return the run-scoped number of final report submissions."""
+    return _report_submit_count
+
+
+def increment_reporter_model_call_count() -> int:
+    """Increment and return the run-scoped Reporter model-call count."""
+    global _report_model_call_count
     with _report_lock:
-        _compiled_report = str(result.get("report") or "")
-        _salvaged_report = str(result.get("salvaged_report") or "")
-        _best_report = _compiled_report or _salvaged_report
-        _last_report_attempt = dict(result)
+        _report_model_call_count += 1
+        return _report_model_call_count
 
-        _write_optional_text(_compiled_report_path(), _compiled_report)
-        _write_optional_text(_salvaged_report_path(), _salvaged_report)
-        _write_optional_text(_best_report_path(), _best_report)
 
-        path = _report_attempt_path()
-        if path:
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
-    return result
+def get_reporter_model_call_count() -> int:
+    """Return the run-scoped Reporter model-call count."""
+    with _report_lock:
+        return _report_model_call_count
 
 
 ORCHESTRATOR_TOOLS: list[Any] = [
@@ -379,11 +462,9 @@ SEARCHER_TOOLS: list[Any] = [submit_search_result]
 
 REPORTER_TOOLS: list[Any] = [
     export_report_context,
-    get_report_evidence,
-    get_reference_registry,
     commit_report_outline,
-    prepare_report_chapter_bundle,
-    commit_report_chapter,
+    prepare_report_chapter_batch,
+    commit_report_chapter_batch,
     assemble_report_draft,
     submit_final_report,
 ]

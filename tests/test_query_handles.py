@@ -55,7 +55,7 @@ _check.failed = 0
 
 def main():
     _install_fakes()
-    mm = MemoryManager(model=object())
+    mm = MemoryManager(model=object(), user_request="another request")
 
     # --- _resolve_query_id -------------------------------------------------
     _check("handle 'q3.1' -> real id", mm._resolve_query_id("q3.1") == Q31["id"])
@@ -79,7 +79,7 @@ def main():
     _check("duplicate handle is rejected as ambiguous", True)
 
     # A second root initialization in one run context must be rejected before planning.
-    duplicate_init = mm.init_research("another request")
+    duplicate_init = mm.init_research()
     _check("second init_research is rejected", duplicate_init.get("existing_goal_id") == GOAL["id"])
 
     # --- insight binding resolves handles and rejects unknown refs ----------

@@ -27,6 +27,7 @@ from memory.graph import EdgeType, NodeType
 from tools import graph_tools
 
 logger = logging.getLogger(__name__)
+AmbiguousQueryReference = graph_tools.AmbiguousQueryReference
 
 
 def _parse_json(text: str) -> dict:
@@ -106,18 +107,6 @@ _GAP_CATEGORIES = {
     "verification",
     "detail",
 }
-
-
-class AmbiguousQueryReference(ValueError):
-    """Raised when a short Query reference matches more than one node."""
-
-    def __init__(self, reference: str, matches: list[str]):
-        """Describe the ambiguous reference and every matching exact ID."""
-        super().__init__(
-            f"Ambiguous query reference {reference!r}; use one exact query ID from {matches}"
-        )
-        self.reference = reference
-        self.matches = matches
 
 
 def _strip_internal_fields(node: dict) -> dict:
@@ -240,15 +229,22 @@ def _query_text_issue(text: Any) -> Optional[str]:
 class MemoryManager:
     """LLM-powered manager of the Research Graph."""
 
-    def __init__(self, model: Optional[Any] = None, cache_dir: Optional[str] = None):
+    def __init__(
+        self,
+        model: Optional[Any] = None,
+        cache_dir: Optional[str] = None,
+        user_request: Optional[str] = None,
+    ):
         """Initialize the manager.
 
         Args:
             model: A chat model; defaults to ``config.build_model()``.
             cache_dir: Graph storage directory passed through to the toolkit.
+            user_request: The verbatim request captured at the run boundary.
         """
         self.cache_dir = cache_dir
         self.model = model if model is not None else config.build_model()
+        self.user_request = user_request
         self._state_lock = threading.RLock()
 
     def _invoke_json(self, prompt: str) -> dict:
@@ -262,20 +258,21 @@ class MemoryManager:
     # -----------------------------
     # Orchestrator-facing
     # -----------------------------
-    def init_research(self, user_request: str) -> dict:
+    def init_research(self) -> dict:
         """Parse the user request and seed the Research Graph.
 
         Creates a ``user_request`` node and a set of parallel initial ``query``
         nodes under it.
-
-        Args:
-            user_request: The original research request from the user.
 
         Returns:
             dict with ``goal_id``, ``research_goal``, ``language`` and the list
             of created ``queries`` (each ``{id, text}``).
         """
         from tools import middleware, research_state
+
+        user_request = self.user_request
+        if not isinstance(user_request, str) or not user_request:
+            return {"error": "The run context has no canonical User Request"}
 
         with self._state_lock:
             existing_goals = graph_tools.search_nodes("user_request", {})
@@ -346,7 +343,7 @@ class MemoryManager:
                 portfolio_revision=1,
                 evaluated_portfolio_revision=1,
                 last_max_marginal_utility=0.0,
-                state_contract_version=2,
+                state_contract_version=4,
                 report_completeness_score=0.0,
             )
 
@@ -1061,6 +1058,25 @@ class MemoryManager:
             .replace("{evaluation_subgraph}", json.dumps(evaluation, ensure_ascii=False))
         )
         verdict = self._invoke_json(prompt)
+        acceptance_criteria = [
+            str(item).strip()
+            for item in query.get("acceptance_criteria") or []
+            if str(item).strip()
+        ]
+        if not verdict or (acceptance_criteria and not verdict.get("criteria")):
+            verdict = self._invoke_json(
+                prompt
+                + "\n\nCorrection: return the complete valid JSON response. Include one "
+                "criteria result for every acceptance criterion and copy its text exactly."
+            )
+        criterion_results = self._validate_criterion_results(
+            acceptance_criteria,
+            verdict.get("criteria"),
+            evaluation,
+        )
+        criteria_satisfied = all(
+            item["status"] == "satisfied" for item in criterion_results
+        )
         try:
             score = max(0.0, min(1.0, float(verdict.get("sufficiency_score", 0.0))))
         except (TypeError, ValueError):
@@ -1161,7 +1177,12 @@ class MemoryManager:
 
         recommendation = verdict.get("recommendation")
         open_gap_ids = self._query_gap_ids(resolved, {"candidate", "selected"})
-        if recommendation == "sufficient" and score >= 0.7 and not open_gap_ids:
+        if (
+            recommendation == "sufficient"
+            and score >= 0.7
+            and criteria_satisfied
+            and not open_gap_ids
+        ):
             new_status = "sufficient"
         elif open_gap_ids:
             new_status = "needs_expansion"
@@ -1172,6 +1193,7 @@ class MemoryManager:
             resolved,
             new_status,
             sufficiency_score=score,
+            criterion_results=criterion_results,
             covered=verdict.get("covered") or [],
             assessment_reason=verdict.get("reason") or "",
         )
@@ -1187,10 +1209,94 @@ class MemoryManager:
             "query_id": resolved,
             "query_handle": query.get("handle"),
             "sufficiency_score": score,
+            "criterion_results": criterion_results,
             "status": new_status,
             "created_gaps": created_gaps,
             "next_action": "evaluate_research_portfolio" if new_status == "needs_expansion" else "get_next_actions",
         }
+
+    @staticmethod
+    def _validate_criterion_results(
+        criteria: list[str],
+        raw_results: Any,
+        evaluation: dict,
+    ) -> list[dict]:
+        """Keep only direct, Query-owned, URL-backed support for each criterion."""
+        nodes = {
+            item.get("id"): item
+            for item in evaluation.get("nodes", [])
+            if item.get("id")
+        }
+        edges = evaluation.get("edges", [])
+        source_ids = {
+            node_id for node_id, node in nodes.items()
+            if node.get("type") == NodeType.SOURCE.value and node.get("url")
+        }
+
+        def is_unsupported_nonmention(item_id: str) -> bool:
+            text = str(
+                nodes.get(item_id, {}).get("canonical_text")
+                or nodes.get(item_id, {}).get("statement")
+                or nodes.get(item_id, {}).get("claim")
+                or nodes.get(item_id, {}).get("text")
+                or ""
+            ).casefold()
+            explicit_absence = (
+                "未公开", "未知", "无法获得", "不可用", "不存在",
+                "not public", "not disclosed", "unknown", "unavailable",
+                "does not exist", "did not exist",
+            )
+            mere_nonmention = (
+                "未提及", "没有提及", "未说明", "没有说明",
+                "does not mention", "did not mention", "not mentioned",
+            )
+            return any(term in text for term in mere_nonmention) and not any(
+                term in text for term in explicit_absence
+            )
+
+        def has_source(item_id: str) -> bool:
+            frontier = {item_id}
+            visited = set(frontier)
+            for _ in range(4):
+                parents = {
+                    edge.get("source")
+                    for edge in edges
+                    if edge.get("target") in frontier and edge.get("source") in nodes
+                }
+                if parents & source_ids:
+                    return True
+                frontier = parents - visited
+                visited.update(frontier)
+                if not frontier:
+                    break
+            return False
+
+        indexed = {
+            str(item.get("criterion") or "").strip(): item
+            for item in raw_results or []
+            if isinstance(item, dict) and str(item.get("criterion") or "").strip()
+        }
+        results = []
+        for criterion in criteria:
+            raw = indexed.get(criterion, {})
+            refs = [
+                ref
+                for ref in dict.fromkeys(_string_list(raw.get("supporting_refs")))
+                if nodes.get(ref, {}).get("type") in {
+                    NodeType.CLAIM.value,
+                    NodeType.EVIDENCE.value,
+                }
+                and has_source(ref)
+                and not is_unsupported_nonmention(ref)
+            ]
+            satisfied = raw.get("status") == "satisfied" and bool(refs)
+            results.append({
+                "criterion": criterion,
+                "status": "satisfied" if satisfied else "unmet",
+                "supporting_refs": refs if satisfied else [],
+                "reason": str(raw.get("reason") or "").strip(),
+            })
+        return results
 
     def _gap_key_in_ancestors(self, query_id: str, gap_key: str) -> bool:
         """Return whether a gap fingerprint already exists on the ancestor path."""
@@ -1247,6 +1353,7 @@ class MemoryManager:
             "objective_keys": query.get("objective_keys") or [],
             "status": query.get("status"),
             "sufficiency_score": query.get("sufficiency_score"),
+            "criterion_results": query.get("criterion_results") or [],
             "covered": query.get("covered") or [],
             "assessment_reason": query.get("assessment_reason") or "",
             "claims": [
@@ -1283,6 +1390,23 @@ class MemoryManager:
                 for node in nodes if node.get("type") == NodeType.SOURCE.value
             ],
         }
+
+    @staticmethod
+    def _linked_criteria_complete(objective_key: str, queries: list[dict]) -> bool:
+        """Return whether every Query linked to an Objective passed all criteria."""
+        linked_queries = [
+            query for query in queries
+            if objective_key in (query.get("objective_keys") or [])
+        ]
+
+        def complete(query: dict) -> bool:
+            criteria = query.get("acceptance_criteria") or []
+            results = query.get("criterion_results") or []
+            if criteria and len(results) != len(criteria):
+                return False
+            return all(result.get("status") == "satisfied" for result in results)
+
+        return bool(linked_queries) and all(complete(query) for query in linked_queries)
 
     def evaluate_research_portfolio(self, goal_id: Optional[str] = None) -> dict:
         """Select candidate gaps by report-level marginal utility."""
@@ -1327,7 +1451,24 @@ class MemoryManager:
             old_coverage = float(objective.get("coverage") or 0.0)
             old_confidence = float(objective.get("confidence") or 0.0)
             realized_gain = max(0.0, coverage - old_coverage) + max(0.0, confidence - old_confidence)
-            meets = coverage >= OBJECTIVE_COVERAGE_THRESHOLD and confidence >= OBJECTIVE_CONFIDENCE_THRESHOLD
+            acceptance_criteria = [
+                criterion
+                for criterion in (objective.get("acceptance_criteria") or [])
+                if isinstance(criterion, str)
+            ]
+            raw_unmet = item.get("unmet_acceptance_criteria")
+            unmet_acceptance_criteria = (
+                [criterion for criterion in acceptance_criteria if criterion in raw_unmet]
+                if isinstance(raw_unmet, list)
+                else list(acceptance_criteria)
+            )
+            linked_criteria_complete = self._linked_criteria_complete(key, queries)
+            meets = (
+                coverage >= OBJECTIVE_COVERAGE_THRESHOLD
+                and confidence >= OBJECTIVE_CONFIDENCE_THRESHOLD
+                and not unmet_acceptance_criteria
+                and linked_criteria_complete
+            )
             successful_rounds = int(goal.get("successful_search_rounds") or 0)
             last_evaluated_rounds = int(objective.get("last_evaluated_successful_rounds") or 0)
             streak = int(objective.get("low_gain_streak") or 0)
@@ -1336,19 +1477,6 @@ class MemoryManager:
                 streak = streak + new_successful_rounds if realized_gain < LOW_REALIZED_GAIN_THRESHOLD else 0
             status = "satisfied" if meets else (
                 "blocked" if objective.get("status") == "blocked" else "open"
-            )
-            acceptance_criteria = [
-                criterion
-                for criterion in (objective.get("acceptance_criteria") or [])
-                if isinstance(criterion, str)
-            ]
-            raw_unmet = item.get("unmet_acceptance_criteria")
-            unmet_acceptance_criteria = (
-                []
-                if meets
-                else [criterion for criterion in acceptance_criteria if criterion in (raw_unmet or [])]
-                if isinstance(raw_unmet, list)
-                else objective.get("unmet_acceptance_criteria") or acceptance_criteria
             )
             covered_boundary = " ".join(
                 str(summary).strip()
@@ -1757,6 +1885,29 @@ class MemoryManager:
                 "tree_validation": tree,
                 "next_actions": [],
             }
+
+        with self._state_lock:
+            goal = research_state.get_goal(goal_id)
+            portfolio_stale = int(goal.get("evaluated_portfolio_revision") or 0) < int(
+                goal.get("portfolio_revision") or 0
+            )
+            if portfolio_stale:
+                portfolio = self.evaluate_research_portfolio(goal_id)
+                if portfolio.get("error"):
+                    return {
+                        "error": f"Portfolio refresh before convergence failed: {portfolio['error']}",
+                        "converged": False,
+                        "recommendation": "continue",
+                        "research_state": research_state.RESEARCHING,
+                        "next_actions": [{
+                            "action": "evaluate_research_portfolio",
+                            "query_id": None,
+                            "goal_id": goal.get("id"),
+                            "reason": "portfolio refresh failed before convergence",
+                        }],
+                    }
+                all_queries = graph_tools.search_nodes("query", {})
+
         conflicts = [
             {
                 "id": c.get("id"),
@@ -2074,58 +2225,8 @@ class MemoryManager:
             return {"search_run_id": search_run_id, "query_id": resolved, "status": next_status, "error": error}
 
     def _resolve_query_id(self, query_id: str) -> Optional[str]:
-        """Map a query reference (handle, exact, truncated or corrupted ID) to a real node ID.
-
-        Workflow actions pass exact node IDs. Human callers may still use short
-        handles, truncated IDs, corrupted timestamp prefixes, or query text.
-        Non-exact references are accepted only when they resolve uniquely.
-
-        Args:
-            query_id: The query reference from the caller.
-
-        Returns:
-            The matching ``query`` node ID, or ``None`` if nothing matches.
-        """
-        if not query_id:
-            return None
-        node = graph_tools.get_node(query_id)
-        if node and str(node.get("type", "")).lower() == "query":
-            return query_id
-
-        queries = graph_tools.search_nodes("query", {})
-
-        def unique(matches: list[dict]) -> Optional[str]:
-            ids = [match.get("id") for match in matches if match.get("id")]
-            if len(ids) > 1:
-                raise AmbiguousQueryReference(query_id, ids)
-            return ids[0] if ids else None
-
-        # Short handles remain accepted for humans, but ambiguity is never guessed.
-        resolved = unique([q for q in queries if q.get("handle") == query_id])
-        if resolved:
-            return resolved
-        # Truncated ID (the ``_<uuid8>`` suffix dropped).
-        resolved = unique([
-            q for q in queries
-            if q.get("id", "").startswith(query_id) or query_id.startswith(q.get("id", ""))
-        ])
-        if resolved:
-            return resolved
-        # Corrupted timestamp prefix but intact ``_<uuid8>`` suffix — the uuid8
-        # is the unique discriminator, so match on it.
-        ref_suffix = query_id.rsplit("_", 1)[-1]
-        if ref_suffix and ref_suffix != query_id:
-            resolved = unique([
-                q for q in queries
-                if q.get("id", "").rsplit("_", 1)[-1] == ref_suffix
-            ])
-            if resolved:
-                return resolved
-        return unique([
-            q for q in queries
-            if (q.get("text") or "")
-            and ((q.get("text") or "") == query_id or query_id in (q.get("text") or "") or (q.get("text") or "") in query_id)
-        ])
+        """Resolve a Query reference through the shared graph boundary."""
+        return graph_tools.resolve_query_reference(query_id)
 
     def get_query_context(self, query_id: str) -> dict:
         """Return existing context for a query to avoid duplicate searching.
@@ -2507,7 +2608,6 @@ class MemoryManager:
             if requests:
                 goal = requests[0]
                 goal_id = goal["id"]
-        objectives = self.get_research_objectives(goal_id)
         from tools import report_tools, research_state
 
         authorization_state = goal.get("reporting_from_state") or goal.get("research_state")
@@ -2521,38 +2621,16 @@ class MemoryManager:
             }
             else None
         )
-        request_text = str(goal.get("request") or goal.get("research_goal") or "")
-        wikipedia_task = report_tools.is_wikipedia_task(request_text)
         sorted_queries = sorted(
             graph_tools.search_nodes("query", {}),
             key=lambda query: (query.get("importance") or 0, query.get("id") or ""),
             reverse=True,
         )
-        unmet_objectives = [
-            {
-                "objective_key": objective.get("objective_key"),
-                "unmet_acceptance_criteria": (
-                    objective.get("unmet_acceptance_criteria")
-                    if isinstance(objective.get("unmet_acceptance_criteria"), list)
-                    else objective.get("acceptance_criteria") or []
-                ),
-                "supported_boundary": str(objective.get("supported_boundary") or "").strip(),
-                "related_query_ids": sorted(
-                    query["id"]
-                    for query in sorted_queries
-                    if objective.get("objective_key") in (query.get("objective_keys") or [])
-                ),
-            }
-            for objective in objectives
-            if objective.get("requirement") == "must" and objective.get("status") != "satisfied"
-        ]
         disclosed_conflicts = report_tools.get_disclosed_conflicts()
         substantive_uncertainties = [
             {
                 "reader_facing_topic": conflict.get("conflict_type") or "source disagreement",
                 "neutral_description": conflict.get("description"),
-                "evidence_ids": conflict.get("evidence_ids") or [],
-                "source_ids": conflict.get("source_ids") or [],
             }
             for conflict in disclosed_conflicts
             if conflict.get("description")
@@ -2563,40 +2641,28 @@ class MemoryManager:
             "delivery_mode": delivery_mode,
             "goal": {
                 key: goal.get(key)
-                for key in (
-                    "id", "request", "research_goal", "language", "time_window",
-                    "region_scope", "source_preferences",
-                )
+                for key in ("request",)
             } if goal else {},
             "queries": [
                 {
-                    key: query.get(key)
-                    for key in ("id", "handle", "text", "importance")
+                    "ref": query.get("handle"),
+                    "text": query.get("text"),
+                    "importance": query.get("importance"),
                 }
                 for query in sorted_queries
             ],
-            "objectives": [
-                {
-                    key: objective.get(key)
-                    for key in (
-                        "id", "objective_key", "description", "text",
-                        "requirement", "acceptance_criteria",
-                    )
-                }
-                for objective in objectives
-            ],
-            "unmet_objectives": unmet_objectives,
             "substantive_uncertainties": substantive_uncertainties,
-            "disclosed_conflicts": disclosed_conflicts,
-            "reference_registry": report_tools.build_reference_registry(),
-            "writing_hints": {
-                "default_structure": (
-                    "lead + topic sections + evidence-bound uncertainty coverage + unified references"
-                ),
-                "prefer_paragraph_prose": True,
-                "avoid_references_as_section_title": True,
-                "task_style": "wikipedia_article" if wikipedia_task else "research_report",
-            },
+            "disclosed_conflicts": [
+                {
+                    "description": conflict.get("description"),
+                    "conflict_type": conflict.get("conflict_type"),
+                }
+                for conflict in disclosed_conflicts
+            ],
+            "reference_registry": [
+                {key: entry.get(key) for key in ("n", "title", "url", "source_type", "published_at")}
+                for entry in report_tools.build_reference_registry()
+            ],
         }
 
     def get_report_evidence(self, query_id: str, offset: int = 0, limit: int = 20) -> dict:

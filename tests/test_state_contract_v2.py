@@ -50,7 +50,7 @@ def _assess(
         "goal": {
             "id": "goal",
             "type": "UserRequest",
-            "state_contract_version": 2,
+            "state_contract_version": 4,
             "research_state": research_state.RESEARCHING,
             "max_search_rounds": maximum,
             "dispatched_search_rounds": dispatched,
@@ -343,7 +343,14 @@ def test_completed_failed_recovery_fails_exhaustive_run():
 
 
 def test_limited_report_ready_authorizes_reporter():
-    call = {"name": "task", "id": "reporter", "args": {"subagent_type": "reporter"}}
+    call = {
+        "name": "task",
+        "id": "reporter",
+        "args": {
+            "subagent_type": "reporter",
+            "description": "错误事实摘要和章节建议",
+        },
+    }
     with (
         patch.object(
             research_state,
@@ -355,6 +362,8 @@ def test_limited_report_ready_authorizes_reporter():
     ):
         blocked = ResearchStateMiddleware()._gate_reporter(call)
     assert blocked is None, blocked
+    assert call["args"]["description"] == ResearchStateMiddleware._REPORTER_HANDOFF
+    assert "错误事实摘要" not in call["args"]["description"]
     update_goal.assert_called_once_with({
         "research_state": research_state.REPORTING,
         "reporting_from_state": research_state.LIMITED_REPORT_READY,
@@ -366,9 +375,12 @@ def test_agent_prompts_enforce_report_visibility_contract():
     reporter = (repo_dir / "src/prompts/reporter.md").read_text(encoding="utf-8")
     assert "LIMITED_REPORT_READY" in orchestrator
     assert "LIMITED_REPORT_READY" in reporter
-    assert "unmet_objectives" in reporter
+    assert "不得在同一个模型回合中并行调用" in orchestrator
+    assert "只有当它明确返回 `assess_convergence`" in orchestrator
+    assert "unmet_objectives" not in reporter
+    assert "原始 User Request" in reporter
+    assert "无参数的 `submit_final_report()`" in reporter
     assert "substantive_uncertainties" in reporter
-    assert "不得直接复制到正文" in reporter
     assert "不自动创建局限章节" in reporter
 
 

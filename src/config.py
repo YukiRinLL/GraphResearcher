@@ -85,6 +85,7 @@ def load_prompt(name: str) -> str:
 orchestrator_system_prompt = load_prompt("orchestrator")
 searcher_system_prompt = load_prompt("searcher")
 reporter_system_prompt = load_prompt("reporter")
+report_reviewer_system_prompt = load_prompt("report_reviewer")
 web_searcher_system_prompt = load_prompt("web_searcher")
 analyzer_system_prompt = load_prompt("analyzer")
 
@@ -105,6 +106,12 @@ def _reporter_model() -> ChatOpenAI:
     return _model_cache["reporter"]
 
 
+def _report_reviewer_model() -> ChatOpenAI:
+    if "report_reviewer" not in _model_cache:
+        _model_cache["report_reviewer"] = build_model(temperature=0.0)
+    return _model_cache["report_reviewer"]
+
+
 def __getattr__(name: str) -> ChatOpenAI:
     """Lazily provide ``orchestrator_model`` / ``searcher_model`` / ``reporter_model``.
 
@@ -116,4 +123,6 @@ def __getattr__(name: str) -> ChatOpenAI:
         return _shared_model()
     if name == "reporter_model":
         return _reporter_model()
+    if name == "report_reviewer_model":
+        return _report_reviewer_model()
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

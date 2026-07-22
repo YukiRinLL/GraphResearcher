@@ -370,6 +370,7 @@ def main():
         "coverage": 0.0, "confidence": 0.0, "status": "open",
     }
     EDGES.append({"source": "goal", "target": "orecover", "type": "HAS_OBJECTIVE"})
+    NODES["o1"]["status"] = "satisfied"
     NODES["oexhaustive"].update({"coverage": 0.8, "confidence": 0.75, "status": "satisfied"})
     recovery = mm._recover_unactionable_research(NODES["goal"], [
         dict(node) for node in NODES.values() if node.get("type") == "Query"
@@ -384,6 +385,8 @@ def main():
     assert recovery_gaps[0]["expansion_mode"] == "horizontal"
     recovery_portfolio = mm.evaluate_research_portfolio("goal")
     assert recovery_gaps[0]["id"] in recovery_portfolio["selected_gap_ids"], recovery_portfolio
+    NODES["o1"]["status"] = "satisfied"
+    NODES["oexhaustive"]["status"] = "satisfied"
     assert NODES[recovery_gaps[0]["id"]]["expansion_parent_id"] == "goal"
     recovery_expanded = mm.expand_gaps("goal", [recovery_gaps[0]["id"]])
     assert recovery_expanded["created"][0]["attach_parent_id"] == "goal", recovery_expanded

@@ -1,19 +1,17 @@
-"""Deterministic report finalization for GraphResearcher.
+"""Deterministic report evidence, chapter, citation, and delivery helpers.
 
-The final report is the Orchestrator's terminal message — the graph stores only
-nodes/edges, never the report text. LLM-authored reference lists drift over a
-long report: duplicates, "同上" / "见 [x]" cross-references, and URL-less
-pseudo-sources (figures, sub-sections). This module rebuilds citations
-deterministically from the graph's ``Source`` nodes so every reference maps to a
-real, unique, URL-bearing node, and restores the ``ReportSection``→``Source``
-traceability the Reporter often skips.
+The v4 delivery path compiles the latest Reporter chapter candidates. Reporter-authored
+inline citations are validated against Sources derived from the selected Report
+Evidence and are preserved in place; the compiler generates the single final
+references section and persists ReportSection bindings only for the accepted
+delivery artifact.
 
-``finalize_report`` is conservative: it only rewrites ``[n]`` citation tokens
-and the references section; body prose is never altered, and on any failure (no
-sources, nothing resolvable, parse error) it returns the input unchanged so the
-report is never broken.
+``finalize_report`` remains a conservative utility for callers outside the v4
+committed-chapter path. The main delivery flow does not call it because that
+would renumber citations and write a second set of ReportSection nodes.
 """
 
+import hashlib
 import json
 import logging
 import re
@@ -150,9 +148,9 @@ def _render_outline_markdown(title: str, chapters: list[dict[str, Any]]) -> str:
         plan = str(chapter.get("section_plan") or "").strip()
         if plan:
             lines.extend(["", plan])
-        query_ids = [str(query_id).strip() for query_id in chapter.get("query_ids") or [] if str(query_id).strip()]
-        if query_ids:
-            lines.extend(["", f"Queries: {', '.join(query_ids)}"])
+        query_refs = [str(query_ref).strip() for query_ref in chapter.get("query_refs") or [] if str(query_ref).strip()]
+        if query_refs:
+            lines.extend(["", f"Queries: {', '.join(query_refs)}"])
         lines.append("")
     return "\n".join(lines).strip() + "\n"
 
@@ -208,7 +206,6 @@ def _source_ids_for_item(item_id: str, nodes: dict[str, dict], edges: list[dict]
     for edge in edges:
         source = edge.get("source")
         target = edge.get("target")
-        edge_type = str(edge.get("type") or "").lower()
         if target == item_id and is_type(source, "Source"):
             source_ids.add(source)
         if target == item_id and is_type(source, "Document"):
@@ -243,13 +240,19 @@ def _source_ids_for_item(item_id: str, nodes: dict[str, dict], edges: list[dict]
 
 def get_report_evidence(query_id: str, offset: int = 0, limit: int = 20) -> dict:
     """Return one compact, citation-ready page of a Query's evidence."""
+    try:
+        resolved_query_id = graph_tools.resolve_query_reference(query_id)
+    except graph_tools.AmbiguousQueryReference as exc:
+        return {"error": str(exc)}
+    if resolved_query_id is None:
+        return {"error": f"Unknown query reference: {query_id!r}"}
     offset = max(0, int(offset or 0))
     limit = min(100, max(1, int(limit or 20)))
     nodes = {node["id"]: node for node in graph_tools.get_all_nodes()}
     edges = graph_tools.get_all_edges()
     registry = build_reference_registry()
     registry_by_source = {entry["source_id"]: entry for entry in registry}
-    evaluation = graph_tools.get_query_evaluation_subgraph(query_id)
+    evaluation = graph_tools.get_query_evaluation_subgraph(resolved_query_id)
     items: list[dict] = []
     for node in evaluation.get("nodes", []):
         if str(node.get("type") or "").lower() not in {"claim", "evidence"}:
@@ -263,10 +266,45 @@ def get_report_evidence(query_id: str, offset: int = 0, limit: int = 20) -> dict
         text = node.get("statement") or node.get("claim") or node.get("text")
         if not str(text or "").strip():
             continue
+        stance_by_edge = {
+            "supported_by": "supports",
+            "contradicted_by": "contradicts",
+            "qualified_by": "qualifies",
+        }
+        claim_relations = [
+            {
+                "claim_id": edge.get("target"),
+                "stance": stance_by_edge[str(edge.get("type") or "").lower()],
+            }
+            for edge in edges
+            if edge.get("source") == node["id"]
+            and nodes.get(edge.get("target"), {}).get("type") == "Claim"
+            and str(edge.get("type") or "").lower() in {
+                "supported_by", "contradicted_by", "qualified_by",
+            }
+        ]
+        evidence_relations = [
+            {
+                "evidence_id": edge.get("source"),
+                "stance": stance_by_edge[str(edge.get("type") or "").lower()],
+            }
+            for edge in edges
+            if edge.get("target") == node["id"]
+            and nodes.get(edge.get("source"), {}).get("type") == "Evidence"
+            and str(edge.get("type") or "").lower() in {
+                "supported_by", "contradicted_by", "qualified_by",
+            }
+        ]
         items.append({
             "id": node["id"],
             "type": node["type"],
             "text": str(text).strip(),
+            "confidence": node.get("confidence"),
+            "qualifiers": node.get("qualifiers") or [],
+            "limitations": node.get("limitations") or [],
+            "locator": node.get("locator"),
+            "claim_relations": claim_relations,
+            "evidence_relations": evidence_relations,
             "source_ids": source_ids,
             "citations": [registry_by_source[source_id]["n"] for source_id in source_ids],
             "sources": [
@@ -308,16 +346,28 @@ def commit_report_outline(output_dir: Optional[str], title: str, chapters: list[
         if chapter_id in seen_ids:
             chapter_id = max(seen_ids) + 1 if seen_ids else chapter_id
         seen_ids.add(chapter_id)
+        query_refs = [
+            str(query_id).strip()
+            for query_id in chapter.get("query_refs") or []
+            if str(query_id).strip()
+        ]
+        for query_ref in query_refs:
+            try:
+                resolved = graph_tools.resolve_query_reference(query_ref)
+            except graph_tools.AmbiguousQueryReference:
+                return {
+                    "status": "error",
+                    "message": f"Ambiguous query reference: {query_ref!r}",
+                }
+            if resolved is None:
+                return {"status": "error", "message": f"Unknown query reference: {query_ref!r}"}
         normalized.append({
             "chapter_id": chapter_id,
             "title": str(chapter.get("title") or "").strip() or f"Section {chapter_id}",
             "goals": [str(goal).strip() for goal in chapter.get("goals") or [] if str(goal).strip()],
-            "query_ids": [
-                str(query_id).strip()
-                for query_id in chapter.get("query_ids") or []
-                if str(query_id).strip()
-            ],
+            "query_refs": list(dict.fromkeys(query_refs)),
             "section_plan": str(chapter.get("section_plan") or "").strip(),
+            "section_type": chapter.get("section_type"),
             "status": str(chapter.get("status") or "pending"),
         })
     outline = {"title": str(title).strip() or "Research Report", "chapters": normalized}
@@ -334,10 +384,62 @@ def commit_report_outline(output_dir: Optional[str], title: str, chapters: list[
     }
 
 
-def prepare_report_chapter_bundle(
+def _public_evidence_items(
+    evidence_items: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], dict[str, str]]:
+    """Project graph evidence into chapter-local references."""
+    counters = {"Claim": 0, "Evidence": 0}
+    id_to_ref: dict[str, str] = {}
+    for item in evidence_items:
+        item_type = str(item.get("type") or "Evidence")
+        counters[item_type] = counters.get(item_type, 0) + 1
+        prefix = "c" if item_type == "Claim" else "e"
+        id_to_ref[str(item["id"])] = f"{prefix}{counters[item_type]}"
+
+    projected = []
+    for item in evidence_items:
+        projected.append({
+            "ref": id_to_ref[str(item["id"])],
+            "type": item.get("type"),
+            "text": item.get("text"),
+            "confidence": item.get("confidence"),
+            "qualifiers": item.get("qualifiers") or [],
+            "limitations": item.get("limitations") or [],
+            "locator": item.get("locator"),
+            "claim_relations": [
+                {
+                    "target_ref": id_to_ref.get(str(relation.get("claim_id"))),
+                    "stance": relation.get("stance"),
+                }
+                for relation in item.get("claim_relations") or []
+                if id_to_ref.get(str(relation.get("claim_id")))
+            ],
+            "evidence_relations": [
+                {
+                    "target_ref": id_to_ref.get(str(relation.get("evidence_id"))),
+                    "stance": relation.get("stance"),
+                }
+                for relation in item.get("evidence_relations") or []
+                if id_to_ref.get(str(relation.get("evidence_id")))
+            ],
+            "source_numbers": item.get("citations") or [],
+            "sources": [
+                {key: source.get(key) for key in ("title", "url", "source_type", "published_at")}
+                for source in item.get("sources") or []
+            ],
+        })
+    return projected, {ref: item_id for item_id, ref in id_to_ref.items()}
+
+
+def _bundle_token(chapter_id: int, resolved_query_ids: list[str], evidence_ids: list[str]) -> str:
+    payload = "|".join([str(chapter_id), *resolved_query_ids, *evidence_ids])
+    return f"b{chapter_id}-{hashlib.sha256(payload.encode('utf-8')).hexdigest()[:8]}"
+
+
+def _prepare_report_chapter_bundle(
     output_dir: Optional[str],
     chapter_id: int,
-    extra_query_ids: Optional[list[str]] = None,
+    extra_query_refs: Optional[list[str]] = None,
 ) -> dict[str, Any]:
     """Load one chapter plan together with the evidence needed to write it."""
     outline = _read_json_file(_outline_path(output_dir))
@@ -346,16 +448,32 @@ def prepare_report_chapter_bundle(
     if chapter is None:
         return {"status": "error", "message": f"Unknown chapter_id: {chapter_id}"}
 
-    query_ids = list(dict.fromkeys([
-        *[str(query_id).strip() for query_id in chapter.get("query_ids") or [] if str(query_id).strip()],
-        *[str(query_id).strip() for query_id in extra_query_ids or [] if str(query_id).strip()],
+    query_refs = list(dict.fromkeys([
+        *[str(query_ref).strip() for query_ref in chapter.get("query_refs") or [] if str(query_ref).strip()],
+        *[str(query_ref).strip() for query_ref in extra_query_refs or [] if str(query_ref).strip()],
     ]))
     evidence_items: list[dict[str, Any]] = []
     seen_items: set[str] = set()
-    for query_id in query_ids:
+    resolved_query_ids: list[str] = []
+    for query_ref in query_refs:
+        try:
+            resolved_query_id = graph_tools.resolve_query_reference(query_ref)
+        except graph_tools.AmbiguousQueryReference:
+            return {
+                "status": "error",
+                "message": f"Ambiguous query reference: {query_ref!r}",
+                "chapter_id": int(chapter_id),
+            }
+        if resolved_query_id is None:
+            return {
+                "status": "error",
+                "message": f"Unknown query reference: {query_ref!r}",
+                "chapter_id": int(chapter_id),
+            }
+        resolved_query_ids.append(resolved_query_id)
         offset = 0
         while True:
-            page = get_report_evidence(query_id, offset=offset, limit=100)
+            page = get_report_evidence(resolved_query_id, offset=offset, limit=100)
             if page.get("error"):
                 return {"status": "error", "message": page["error"], "chapter_id": int(chapter_id)}
             for item in page.get("items", []):
@@ -367,95 +485,253 @@ def prepare_report_chapter_bundle(
                 break
             offset = int(page["next_offset"])
 
+    if not evidence_items:
+        return {
+            "status": "error",
+            "message": "Chapter bundle contains no URL-backed Report Evidence.",
+            "chapter_id": int(chapter_id),
+        }
+
     source_ids = sorted({
         source_id
         for item in evidence_items
         for source_id in item.get("source_ids") or []
     })
+    public_items, evidence_ref_map = _public_evidence_items(evidence_items)
+    conflicts = [
+        conflict
+        for conflict in get_disclosed_conflicts()
+        if set(conflict.get("source_ids") or []).intersection(source_ids)
+    ]
+    conflict_ref_map = {f"x{index}": str(conflict["id"]) for index, conflict in enumerate(conflicts, start=1)}
+    token = _bundle_token(int(chapter_id), resolved_query_ids, [item["id"] for item in evidence_items])
     bundle = {
         "status": "ok",
         "chapter_id": int(chapter_id),
+        "bundle_token": token,
         "chapter_title": chapter.get("title"),
         "chapter_goals": chapter.get("goals") or [],
         "section_plan": chapter.get("section_plan") or "",
-        "query_ids": query_ids,
-        "evidence_items": evidence_items,
+        "query_refs": query_refs,
+        "evidence_items": public_items,
         "reference_registry_subset": [
-            entry for entry in build_reference_registry()
+            {key: entry.get(key) for key in ("n", "title", "url", "source_type", "published_at")}
+            for entry in build_reference_registry()
             if entry.get("source_id") in source_ids
         ],
         "disclosed_conflicts": [
-            conflict
-            for conflict in get_disclosed_conflicts()
-            if set(conflict.get("source_ids") or []).intersection(source_ids)
+            {
+                "ref": ref,
+                "description": next(
+                    conflict.get("description")
+                    for conflict in conflicts
+                    if str(conflict.get("id")) == conflict_id
+                ),
+                "conflict_type": next(
+                    conflict.get("conflict_type")
+                    for conflict in conflicts
+                    if str(conflict.get("id")) == conflict_id
+                ),
+            }
+            for ref, conflict_id in conflict_ref_map.items()
         ],
     }
     meta = {
         "chapter_id": int(chapter_id),
         "title": chapter.get("title"),
-        "query_ids": query_ids,
-        "source_ids": source_ids,
-        "evidence_ids": [item["id"] for item in evidence_items],
+        "bundle_token": token,
+        "query_refs": query_refs,
+        "resolved_query_ids": resolved_query_ids,
+        "evidence_ref_map": evidence_ref_map,
+        "conflict_ref_map": conflict_ref_map,
     }
     _write_json_file(_chapter_meta_path(output_dir, int(chapter_id)), meta)
     return bundle
 
 
-def commit_report_chapter(
+def prepare_report_chapter_batch(
     output_dir: Optional[str],
-    chapter_id: int,
-    title: str,
-    content: str,
-    source_ids: list[str],
-    evidence_ids: Optional[list[str]] = None,
-    disclosed_conflict_ids: Optional[list[str]] = None,
-    section_type: Optional[str] = None,
+    chapters: list[dict[str, Any]],
 ) -> dict[str, Any]:
-    """Persist one chapter draft and its traceability metadata."""
-    outline_path = _outline_path(output_dir)
-    outline = _read_json_file(outline_path)
-    chapters = outline.get("chapters") or []
-    chapter = next((item for item in chapters if int(item.get("chapter_id") or 0) == int(chapter_id)), None)
-    if chapter is None:
-        return {"status": "error", "message": f"Unknown chapter_id: {chapter_id}"}
-
-    chapter["title"] = str(title).strip() or chapter.get("title") or f"Section {chapter_id}"
-    chapter["status"] = "completed"
-    chapter["source_ids"] = list(dict.fromkeys(source_ids or []))
-    chapter["evidence_ids"] = list(dict.fromkeys(evidence_ids or []))
-    chapter["disclosed_conflict_ids"] = list(dict.fromkeys(disclosed_conflict_ids or []))
-    chapter["section_type"] = section_type
-    _write_json_file(outline_path, outline)
-    _outline_markdown_path(output_dir).write_text(
-        _render_outline_markdown(outline.get("title") or "Research Report", chapters),
-        encoding="utf-8",
-    )
-
-    chapter_file = _chapter_path(output_dir, int(chapter_id))
-    chapter_file.write_text(str(content).strip() + "\n", encoding="utf-8")
-    _write_json_file(_chapter_meta_path(output_dir, int(chapter_id)), {
-        "chapter_id": int(chapter_id),
-        "title": chapter["title"],
-        "source_ids": chapter["source_ids"],
-        "evidence_ids": chapter["evidence_ids"],
-        "disclosed_conflict_ids": chapter["disclosed_conflict_ids"],
-        "section_type": chapter["section_type"],
-    })
+    """Prepare up to three chapter-scoped evidence bundles."""
+    if not chapters or len(chapters) > 3:
+        return {"status": "error", "message": "Prepare between one and three chapters per batch."}
+    prepared = [
+        _prepare_report_chapter_bundle(
+            output_dir,
+            int(chapter.get("chapter_id") or 0),
+            chapter.get("extra_query_refs") or [],
+        )
+        for chapter in chapters
+    ]
+    errors = [item for item in prepared if item.get("status") != "ok"]
     return {
-        "status": "ok",
-        "chapter_id": int(chapter_id),
-        "path": str(chapter_file),
-        "content_length": len(str(content or "")),
+        "status": "error" if errors else "ok",
+        "chapters": prepared,
+        "errors": errors,
     }
 
 
-def assemble_report_draft(output_dir: Optional[str]) -> dict[str, Any]:
-    """Assemble all completed chapters into one draft markdown report."""
+def _chapter_candidate_validation(
+    output_dir: Optional[str],
+    chapter: dict[str, Any],
+) -> dict[str, Any]:
+    chapter_id = int(chapter.get("chapter_id") or 0)
+    prepared_meta = _read_json_file(_chapter_meta_path(output_dir, chapter_id))
+    issues: list[dict[str, Any]] = []
+    token_matches = bool(prepared_meta) and chapter.get("bundle_token") == prepared_meta.get("bundle_token")
+    if not token_matches:
+        issues.append(_issue(
+            "stale_bundle_token",
+            "hard",
+            f"chapter {chapter_id} used an unknown or stale bundle token",
+            "Reload this chapter bundle and use its local references.",
+        ))
+
+    evidence_ref_map = prepared_meta.get("evidence_ref_map") or {}
+    conflict_ref_map = prepared_meta.get("conflict_ref_map") or {}
+    evidence_refs = list(dict.fromkeys(chapter.get("evidence_refs") or []))
+    conflict_refs = list(dict.fromkeys(chapter.get("disclosed_conflict_refs") or []))
+    unknown_evidence_refs = [ref for ref in evidence_refs if ref not in evidence_ref_map]
+    unknown_conflict_refs = [ref for ref in conflict_refs if ref not in conflict_ref_map]
+    if unknown_evidence_refs:
+        issues.append(_issue(
+            "unknown_evidence_refs",
+            "hard",
+            f"chapter {chapter_id} used unknown local evidence refs: {unknown_evidence_refs}",
+            "Use only refs returned by this chapter bundle.",
+        ))
+    if unknown_conflict_refs:
+        issues.append(_issue(
+            "unknown_conflict_refs",
+            "hard",
+            f"chapter {chapter_id} used unknown local conflict refs: {unknown_conflict_refs}",
+            "Use only conflict refs returned by this chapter bundle.",
+        ))
+    if not evidence_refs:
+        issues.append(_issue(
+            "missing_evidence_refs",
+            "hard",
+            f"chapter {chapter_id} selected no local evidence refs",
+            "Select the local refs actually used by this chapter.",
+        ))
+
+    evidence_ids = [evidence_ref_map[ref] for ref in evidence_refs if ref in evidence_ref_map] if token_matches else []
+    conflict_ids = [conflict_ref_map[ref] for ref in conflict_refs if ref in conflict_ref_map] if token_matches else []
+    nodes = {node["id"]: node for node in graph_tools.get_all_nodes()}
+    edges = graph_tools.get_all_edges()
+    registry = build_reference_registry()
+    registry_by_url = {entry["url"]: entry for entry in registry}
+    source_ids = sorted({
+        registry_by_url[nodes[source_id]["url"]]["source_id"]
+        for item_id in evidence_ids
+        for source_id in _source_ids_for_item(item_id, nodes, edges)
+        if nodes.get(source_id, {}).get("url") in registry_by_url
+    })
+    registry_by_number = {entry["n"]: entry for entry in registry}
+    cited_numbers = {int(value) for value in _CITE_TOKEN_RE.findall(str(chapter.get("content") or ""))}
+    invalid_citations = sorted(
+        number for number in cited_numbers
+        if registry_by_number.get(number, {}).get("source_id") not in source_ids
+    )
+    if invalid_citations:
+        issues.append(_issue(
+            "unsupported_inline_citations",
+            "hard",
+            f"chapter {chapter_id} cites sources not supported by its local evidence refs: {invalid_citations}",
+            "Use citation numbers attached to the selected local evidence refs.",
+        ))
+    return {
+        "validated": not issues,
+        "issues": issues,
+        "evidence_ids": evidence_ids,
+        "source_ids": source_ids,
+        "disclosed_conflict_ids": conflict_ids,
+        "unknown_evidence_refs": unknown_evidence_refs,
+        "unknown_conflict_refs": unknown_conflict_refs,
+    }
+
+
+def commit_report_chapter_batch(
+    output_dir: Optional[str],
+    chapters: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Save and validate up to three chapter candidates."""
+    if not chapters or len(chapters) > 3:
+        return {"status": "error", "message": "Commit between one and three chapters per batch."}
+    outline_path = _outline_path(output_dir)
+    outline = _read_json_file(outline_path)
+    outline_by_id = {
+        int(item.get("chapter_id") or 0): item
+        for item in outline.get("chapters") or []
+    }
+    results = []
+    for candidate in chapters:
+        chapter_id = int(candidate.get("chapter_id") or 0)
+        outline_chapter = outline_by_id.get(chapter_id)
+        if outline_chapter is None:
+            results.append({
+                "chapter_id": chapter_id,
+                "candidate_saved": False,
+                "validated": False,
+                "issues": [_issue(
+                    "unknown_chapter",
+                    "hard",
+                    f"unknown chapter_id: {chapter_id}",
+                    "Use a chapter from the committed outline.",
+                )],
+            })
+            continue
+
+        content = str(candidate.get("content") or "").strip()
+        _chapter_path(output_dir, chapter_id).write_text(content + "\n", encoding="utf-8")
+        validation = _chapter_candidate_validation(output_dir, candidate)
+        outline_chapter.update({
+            "title": str(candidate.get("title") or outline_chapter.get("title") or f"Section {chapter_id}"),
+            "status": "completed",
+            "section_type": candidate.get("section_type") or outline_chapter.get("section_type"),
+            "validated": validation["validated"],
+            "source_ids": validation["source_ids"],
+            "evidence_ids": validation["evidence_ids"],
+            "disclosed_conflict_ids": validation["disclosed_conflict_ids"],
+            "validation_issues": validation["issues"],
+        })
+        meta = _read_json_file(_chapter_meta_path(output_dir, chapter_id))
+        meta.update({
+            "title": outline_chapter["title"],
+            "section_type": outline_chapter["section_type"],
+            "validated": validation["validated"],
+            "source_ids": validation["source_ids"],
+            "evidence_ids": validation["evidence_ids"],
+            "disclosed_conflict_ids": validation["disclosed_conflict_ids"],
+            "validation_issues": validation["issues"],
+        })
+        _write_json_file(_chapter_meta_path(output_dir, chapter_id), meta)
+        results.append({
+            "chapter_id": chapter_id,
+            "candidate_saved": True,
+            "validated": validation["validated"],
+            "issues": validation["issues"],
+            "unknown_evidence_refs": validation["unknown_evidence_refs"],
+            "unknown_conflict_refs": validation["unknown_conflict_refs"],
+        })
+
+    _write_json_file(outline_path, outline)
+    _outline_markdown_path(output_dir).write_text(
+        _render_outline_markdown(outline.get("title") or "Research Report", outline.get("chapters") or []),
+        encoding="utf-8",
+    )
+    return {
+        "status": "ok",
+        "chapters": results,
+        "validated": all(item.get("validated") for item in results),
+    }
+
+
+def _load_committed_report(output_dir: Optional[str]) -> tuple[str, list[dict], list[int]]:
+    """Load the outline title and every committed chapter in outline order."""
     outline = _read_json_file(_outline_path(output_dir))
     chapters = outline.get("chapters") or []
-    if not chapters:
-        return {"status": "error", "message": "Report outline not found."}
-
     sections: list[dict[str, Any]] = []
     missing: list[int] = []
     for chapter in sorted(chapters, key=lambda item: int(item.get("chapter_id") or 0)):
@@ -473,25 +749,279 @@ def assemble_report_draft(output_dir: Optional[str]) -> dict[str, Any]:
             "disclosed_conflict_ids": list(dict.fromkeys(chapter.get("disclosed_conflict_ids") or [])),
             "section_type": chapter.get("section_type"),
         })
-    if missing:
-        return {"status": "error", "message": f"Missing chapter drafts: {missing}"}
+    return str(outline.get("title") or "Research Report"), sections, missing
 
-    draft = compile_structured_report(str(outline.get("title") or "Research Report"), sections)
-    draft_text = str(draft.get("report") or draft.get("salvaged_report") or "")
-    if not draft_text:
-        return {
-            "status": "error",
-            "message": "Draft assembly produced no report text.",
-            "issues": draft.get("issues", []),
-        }
+
+def _fallback_chapter_content(bundle: dict[str, Any], *, lead: bool) -> str:
+    """Render a deterministic, citation-ready chapter when the Reporter omitted one."""
+    items = [
+        item for item in bundle.get("evidence_items") or []
+        if str(item.get("text") or "").strip()
+    ]
+    limit = 4 if lead else 8
+    paragraphs = []
+    seen_text: set[str] = set()
+    for item in items:
+        text = str(item.get("text") or "").strip().rstrip("。.")
+        normalized = re.sub(r"\s+", " ", text).casefold()
+        if not text or normalized in seen_text:
+            continue
+        seen_text.add(normalized)
+        citations = "".join(f"[{number}]" for number in item.get("source_numbers") or [])
+        paragraphs.append(f"{text}。{citations}" if re.search(r"[\u4e00-\u9fff]", text) else f"{text}.{citations}")
+        if len(paragraphs) >= limit:
+            break
+    if paragraphs:
+        return "\n\n".join(paragraphs)
+    return "暂无可核实结论。" if lead else "暂无可核实的补充资料。"
+
+
+def _ensure_candidate_chapters(output_dir: Optional[str]) -> list[dict[str, Any]]:
+    """Create deterministic candidate files for any outlined chapter the Reporter omitted."""
+    outline_path = _outline_path(output_dir)
+    outline = _read_json_file(outline_path)
+    generated_issues = []
+    for chapter in sorted(outline.get("chapters") or [], key=lambda item: int(item.get("chapter_id") or 0)):
+        chapter_id = int(chapter.get("chapter_id") or 0)
+        if _chapter_path(output_dir, chapter_id).exists():
+            continue
+        bundle = _prepare_report_chapter_bundle(output_dir, chapter_id)
+        content = _fallback_chapter_content(
+            bundle,
+            lead=chapter.get("section_type") == "lead" or chapter_id == 1,
+        )
+        _chapter_path(output_dir, chapter_id).write_text(content + "\n", encoding="utf-8")
+        issue = _issue(
+            "deterministic_fallback_chapter",
+            "hard",
+            f"chapter {chapter_id} was generated from its evidence bundle because no Reporter candidate existed",
+            "Provide a Reporter-authored chapter in a future run.",
+            section_title=str(chapter.get("title") or ""),
+        )
+        chapter.update({
+            "status": "completed",
+            "section_type": chapter.get("section_type") or ("lead" if chapter_id == 1 else "body"),
+            "validated": False,
+            "source_ids": [],
+            "evidence_ids": [],
+            "disclosed_conflict_ids": [],
+            "validation_issues": [issue],
+        })
+        meta = _read_json_file(_chapter_meta_path(output_dir, chapter_id))
+        meta.update({
+            "chapter_id": chapter_id,
+            "title": chapter.get("title"),
+            "section_type": chapter.get("section_type"),
+            "validated": False,
+            "source_ids": [],
+            "evidence_ids": [],
+            "disclosed_conflict_ids": [],
+            "validation_issues": [issue],
+        })
+        _write_json_file(_chapter_meta_path(output_dir, chapter_id), meta)
+        generated_issues.append(issue)
+    if outline:
+        _write_json_file(outline_path, outline)
+    return generated_issues
+
+
+def _best_effort_report(title: str, sections: list[dict[str, Any]]) -> tuple[str, list[dict[str, Any]]]:
+    """Compile every candidate section without discarding prose on validation failure."""
+    registry = build_reference_registry()
+    registry_by_number = {entry["n"]: entry for entry in registry}
+    compiled_sections = []
+    cited_source_ids: set[str] = set()
+    issues: list[dict[str, Any]] = []
+    for section in sections:
+        content = str(section.get("content") or "").strip()
+        invalid_numbers = sorted({
+            int(value)
+            for value in _CITE_TOKEN_RE.findall(content)
+            if int(value) not in registry_by_number
+        })
+        if invalid_numbers:
+            invalid_set = set(invalid_numbers)
+            content = _CITE_TOKEN_RE.sub(
+                lambda match: "" if int(match.group(1)) in invalid_set else match.group(0),
+                content,
+            )
+            issues.append(_issue(
+                "unknown_inline_citations_removed",
+                "hard",
+                f"section {section.get('title')!r} contained unknown citation numbers: {invalid_numbers}",
+                "Use citation numbers from the chapter bundle.",
+                section_title=str(section.get("title") or ""),
+            ))
+        cited_numbers = {int(value) for value in _CITE_TOKEN_RE.findall(content)}
+        source_ids = sorted({
+            registry_by_number[number]["source_id"]
+            for number in cited_numbers
+            if number in registry_by_number
+        })
+        cited_source_ids.update(source_ids)
+        compiled_sections.append({
+            "title": str(section.get("title") or "").strip() or "Section",
+            "content": _compile_section_content(content, source_ids, {}),
+            "source_ids": source_ids,
+            "evidence_ids": list(section.get("evidence_ids") or []),
+            "section_type": section.get("section_type"),
+            "disclosed_conflict_ids": list(section.get("disclosed_conflict_ids") or []),
+        })
+    request_text = " ".join(
+        str(goal.get("request") or goal.get("research_goal") or "")
+        for goal in graph_tools.search_nodes("user_request", {})
+    )
+    report = _compile_section_report(
+        title,
+        compiled_sections,
+        registry,
+        cited_source_ids,
+        wikipedia_task=is_wikipedia_task(request_text),
+    )
+    return report, issues
+
+
+def assemble_report_draft(output_dir: Optional[str]) -> dict[str, Any]:
+    """Assemble the latest chapter candidates into one draft markdown report."""
+    result = submit_committed_report(output_dir)
+    if not result.get("delivered"):
+        return {"status": "error", "message": "Report outline not found."}
+    draft_text = str(result.get("report") or "")
     path = _draft_path(output_dir)
     path.write_text(draft_text, encoding="utf-8")
     return {
         "status": "ok",
         "draft_path": str(path),
         "draft": draft_text,
-        "issues": draft.get("issues", []),
-        "revision_requested": bool(draft.get("revision_requested")),
+        "issues": result.get("issues", []),
+        "validated": bool(result.get("validated")),
+    }
+
+
+def submit_committed_report(output_dir: Optional[str], *, persist: bool = False) -> dict[str, Any]:
+    """Compile and always deliver the latest chapter candidates."""
+    generated_issues = _ensure_candidate_chapters(output_dir)
+    title, sections, missing = _load_committed_report(output_dir)
+    if not sections and not missing:
+        request_text = " ".join(
+            str(goal.get("request") or goal.get("research_goal") or "")
+            for goal in graph_tools.search_nodes("user_request", {})
+        )
+        fallback = build_cited_evidence_report(request_text)
+        issue = _issue(
+            "missing_report_outline",
+            "hard",
+            "Reporter created no outline; delivered the deterministic evidence report",
+            "Create an outline and chapter candidates in a future run.",
+        )
+        return {
+            "delivered": bool(fallback.strip()),
+            "validated": False,
+            "accepted": False,
+            "revision_requested": False,
+            "severity": "hard",
+            "report": fallback,
+            "salvaged_report": fallback,
+            "graph_persisted": False,
+            "issues": [issue],
+        }
+    chapter_issues = [
+        issue
+        for chapter in _read_json_file(_outline_path(output_dir)).get("chapters") or []
+        for issue in chapter.get("validation_issues") or []
+    ]
+    chapters_validated = bool(sections) and not missing and all(
+        bool(chapter.get("validated"))
+        for chapter in _read_json_file(_outline_path(output_dir)).get("chapters") or []
+    )
+    strict = compile_structured_report(
+        title,
+        sections,
+        persist=False,
+    )
+    validated = bool(
+        chapters_validated
+        and strict.get("report")
+        and not strict.get("issues")
+    )
+    graph_persisted = False
+    if persist and validated:
+        persisted = compile_structured_report(title, sections, persist=True)
+        graph_persisted = bool(
+            persisted.get("report")
+            and not persisted.get("issues")
+        )
+    best_effort, best_effort_issues = _best_effort_report(title, sections)
+    report = str(strict.get("report") or best_effort)
+    issues = [*generated_issues, *chapter_issues, *strict.get("issues", []), *best_effort_issues]
+    severity = "hard" if any(item.get("severity") == "hard" for item in issues) else ("soft" if issues else "clean")
+    return {
+        **{key: value for key, value in strict.items() if key not in {
+            "accepted", "revision_requested", "severity", "report", "salvaged_report", "issues",
+            "auto_appended_conflict_ids",
+        }},
+        "delivered": bool(report.strip()),
+        "validated": validated,
+        "accepted": validated,
+        "revision_requested": False,
+        "severity": severity,
+        "report": report,
+        "salvaged_report": "" if validated else report,
+        "graph_persisted": graph_persisted,
+        "issues": issues,
+    }
+
+
+def get_committed_review_context(output_dir: Optional[str]) -> dict[str, Any]:
+    """Return only the evidence and references used by committed chapters."""
+    _, sections, missing = _load_committed_report(output_dir)
+    selected_ids = {
+        item_id
+        for section in sections
+        for item_id in section.get("evidence_ids") or []
+    }
+    source_ids = {
+        source_id
+        for section in sections
+        for source_id in section.get("source_ids") or []
+    }
+    selected_items: dict[str, dict] = {}
+    for query in graph_tools.search_nodes("query", {}):
+        offset = 0
+        while True:
+            page = get_report_evidence(query["id"], offset=offset, limit=100)
+            if page.get("error"):
+                break
+            for item in page.get("items", []):
+                if item.get("id") in selected_ids:
+                    selected_items[item["id"]] = item
+            if page.get("next_offset") is None:
+                break
+            offset = int(page["next_offset"])
+    return {
+        "missing_chapter_ids": missing,
+        "report_evidence": [
+            {
+                "type": item.get("type"),
+                "text": item.get("text"),
+                "confidence": item.get("confidence"),
+                "qualifiers": item.get("qualifiers") or [],
+                "limitations": item.get("limitations") or [],
+                "locator": item.get("locator"),
+                "citation_numbers": item.get("citations") or [],
+                "sources": [
+                    {key: source.get(key) for key in ("title", "url", "source_type", "published_at")}
+                    for source in item.get("sources") or []
+                ],
+            }
+            for item_id in sorted(selected_items)
+            for item in [selected_items[item_id]]
+        ],
+        "reference_registry": [
+            {key: item.get(key) for key in ("n", "title", "url", "source_type", "published_at")}
+            for item in build_reference_registry()
+            if item.get("source_id") in source_ids
+        ],
     }
 
 
@@ -804,37 +1334,11 @@ def _sanitize_section_blocks(content: str) -> tuple[list[str], list[int], bool]:
     return blocks, removed_indexes, had_embedded_refs
 
 
-def _append_citations_to_block(block: str, citations: str) -> str:
-    """Append one section-level citation cluster to the last substantive line."""
-    block = _CITE_TOKEN_RE.sub("", str(block or "")).strip()
-    if not block or not citations:
-        return block
-    if _CITE_TOKEN_RE.search(block):
-        return block
-    lines = block.splitlines()
-    for index in range(len(lines) - 1, -1, -1):
-        if not lines[index].strip():
-            continue
-        lines[index] = f"{lines[index].rstrip()} {citations}".rstrip()
-        return "\n".join(lines).strip()
-    return block
-
-
 def _compile_section_content(content: str, source_ids: list[str], registry_by_source: dict[str, dict]) -> str:
-    """Normalize one chapter body into cited prose blocks."""
-    citations = "".join(
-        f"[{registry_by_source[source_id]['n']}]"
-        for source_id in source_ids
-        if source_id in registry_by_source
-    )
+    """Sanitize one chapter body while preserving Reporter-authored citations."""
+    del source_ids, registry_by_source
     blocks, _, _ = _sanitize_section_blocks(content)
-    rendered: list[str] = []
-    for block in blocks:
-        if _ANY_HEADING_RE.match(block):
-            rendered.append(_CITE_TOKEN_RE.sub("", block).strip())
-            continue
-        rendered.append(_append_citations_to_block(block, citations))
-    return "\n\n".join(item for item in rendered if item).strip()
+    return "\n\n".join(item.strip() for item in blocks if item.strip()).strip()
 
 
 def _compile_section_report(
@@ -842,13 +1346,17 @@ def _compile_section_report(
     compiled_sections: list[dict[str, Any]],
     registry: list[dict],
     cited_source_ids: set[str],
+    wikipedia_task: bool = False,
 ) -> str:
     """Render a structured report from already-validated sections."""
     is_chinese = bool(re.search(r"[\u4e00-\u9fff]", title or ""))
     report_title = str(title or ("调研报告" if is_chinese else "Research Report")).strip()
     parts = [f"# {report_title}"]
     for section in compiled_sections:
-        parts.extend([f"## {section['title']}", section["content"]])
+        if wikipedia_task and section.get("section_type") == "lead":
+            parts.append(section["content"])
+        else:
+            parts.extend([f"## {section['title']}", section["content"]])
     parts.append(_render_references(
         registry,
         cited_source_ids,
@@ -900,7 +1408,7 @@ def _persist_compiled_sections(compiled_sections: list[dict[str, Any]]) -> None:
             graph_tools.add_edge(section_id, source_id, EdgeType.USES)
 
 
-def compile_structured_report(title: str, sections: list[dict]) -> dict:
+def compile_structured_report(title: str, sections: list[dict], *, persist: bool = False) -> dict:
     """Validate and deterministically compile a chapter-level cited report."""
     registry = build_reference_registry()
     registry_by_source = {entry["source_id"]: entry for entry in registry}
@@ -987,6 +1495,21 @@ def compile_structured_report(title: str, sections: list[dict]) -> dict:
                 section_title=section_title,
             ))
             continue
+        cited_numbers = {int(value) for value in _CITE_TOKEN_RE.findall(content)}
+        registry_by_number = {entry["n"]: entry for entry in registry}
+        invalid_citations = sorted(
+            number for number in cited_numbers
+            if registry_by_number.get(number, {}).get("source_id") not in source_ids
+        )
+        if invalid_citations:
+            issues.append(_issue(
+                "invalid_inline_citations",
+                "soft",
+                f"section {section_title!r} cites sources outside its Evidence-derived source set: {invalid_citations}",
+                "Use only citation numbers returned for the selected Report Evidence.",
+                section_title=section_title,
+            ))
+            continue
         if evidence_ids:
             valid_evidence_ids = []
             for evidence_id in evidence_ids:
@@ -1012,8 +1535,8 @@ def compile_structured_report(title: str, sections: list[dict]) -> dict:
             issues.append(_issue(
                 "invalid_conflict_disclosure_binding",
                 "hard",
-                f"section {section_title!r} has invalid conflict disclosures: {invalid_conflict_ids}",
-                "Use the conflict's bound Evidence and Source IDs and include its neutral description in the section prose.",
+                f"section {section_title!r} has {len(invalid_conflict_ids)} invalid conflict disclosure binding(s)",
+                "Use the chapter bundle's local conflict ref and include its neutral description in the section prose.",
                 section_title=section_title,
             ))
             continue
@@ -1091,15 +1614,33 @@ def compile_structured_report(title: str, sections: list[dict]) -> dict:
             issues.append(_issue(
                 "missing_substantive_uncertainty",
                 "hard",
-                f"Wikipedia report omitted evidence-bound uncertainties: {missing_conflict_ids}",
-                "Integrate each uncertainty into its relevant topic section and bind its disclosed_conflict_id.",
+                f"Wikipedia report omitted {len(missing_conflict_ids)} evidence-bound substantive uncertainty item(s)",
+                "Integrate each uncertainty into its relevant topic section and select its local conflict ref.",
             ))
         cited_source_ids = {
             source_id
             for section in compiled_sections
             for source_id in section.get("source_ids") or []
         }
-        candidate = _compile_section_report(title, compiled_sections, registry, cited_source_ids)
+        if wikipedia_task:
+            lead_count = sum(
+                section.get("section_type") == "lead" for section in compiled_sections
+            )
+            lead_is_first = compiled_sections[0].get("section_type") == "lead"
+            if lead_count != 1 or not lead_is_first:
+                issues.append(_issue(
+                    "invalid_wikipedia_lead",
+                    "hard",
+                    f"Wikipedia reports require exactly one opening lead chapter; found {lead_count}",
+                    "Mark exactly the first chapter as section_type='lead'.",
+                ))
+        candidate = _compile_section_report(
+            title,
+            compiled_sections,
+            registry,
+            cited_source_ids,
+            wikipedia_task=wikipedia_task,
+        )
         for item in validate_delivery_invariants(candidate):
             issues.append(_issue(
                 "delivery_invariant_failed",
@@ -1140,7 +1681,7 @@ def compile_structured_report(title: str, sections: list[dict]) -> dict:
     revision_requested = accepted and bool(issues)
     severity = "hard" if any(item["severity"] == "hard" for item in issues) else ("soft" if issues else "clean")
 
-    if accepted:
+    if accepted and persist:
         _persist_compiled_sections(compiled_sections)
 
     return {

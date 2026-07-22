@@ -48,6 +48,18 @@ _manager_cache = {}
 _context: Optional[str] = None
 
 
+class AmbiguousQueryReference(ValueError):
+    """Raised when one Query reference matches multiple nodes."""
+
+    def __init__(self, reference: str, matches: list[str]):
+        """Store the ambiguous reference and all matching Query IDs."""
+        super().__init__(
+            f"Ambiguous query reference {reference!r}; use one exact query ID from {matches}"
+        )
+        self.reference = reference
+        self.matches = matches
+
+
 def set_context(context: Optional[str]) -> None:
     """Scope all graph access to a per-run ``context``.
 
@@ -123,6 +135,50 @@ def get_node(node_id: str) -> dict[str, Any]:
 def search_nodes(node_type: str, filter: dict[str, Any]) -> list[dict[str, Any]]:
     manager = _get_manager()
     return _run_async(manager.search_node(node_type, filter))
+
+
+def resolve_query_reference(reference: str) -> Optional[str]:
+    """Resolve a Query handle or node-ID variant without guessing ambiguity."""
+    if not reference:
+        return None
+    node = get_node(reference) or {}
+    if str(node.get("type") or "").lower() == "query":
+        return reference
+    queries = search_nodes("query", {})
+
+    def unique(matches: list[dict[str, Any]]) -> Optional[str]:
+        ids = [item.get("id") for item in matches if item.get("id")]
+        if len(ids) > 1:
+            raise AmbiguousQueryReference(reference, ids)
+        return ids[0] if ids else None
+
+    resolved = unique([item for item in queries if item.get("handle") == reference])
+    if resolved:
+        return resolved
+    resolved = unique([
+        item for item in queries
+        if str(item.get("id") or "").startswith(reference)
+        or reference.startswith(str(item.get("id") or ""))
+    ])
+    if resolved:
+        return resolved
+    suffix = reference.rsplit("_", 1)[-1]
+    if suffix and suffix != reference:
+        resolved = unique([
+            item for item in queries
+            if str(item.get("id") or "").rsplit("_", 1)[-1] == suffix
+        ])
+        if resolved:
+            return resolved
+    return unique([
+        item for item in queries
+        if item.get("text")
+        and (
+            item["text"] == reference
+            or reference in item["text"]
+            or item["text"] in reference
+        )
+    ])
 
 
 def get_subgraph(node_id: str, depth: int = 2) -> dict[str, Any]:

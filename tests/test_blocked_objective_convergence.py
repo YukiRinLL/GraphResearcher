@@ -47,7 +47,7 @@ def test_blocked_objective_with_budget_authorizes_limited_report():
         "goal": {
             "id": "goal",
             "type": "UserRequest",
-            "state_contract_version": 2,
+            "state_contract_version": 4,
             "research_state": research_state.RESEARCHING,
             "max_search_rounds": 20,
             "dispatched_search_rounds": 8,

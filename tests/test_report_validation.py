@@ -97,21 +97,30 @@ def main():
     )
     compiled = report_tools.compile_structured_report("具身智能报告", [{
         "title": "Findings",
-        "content": ("A supported factual sentence. " * 5).strip(),
+        "content": (("A supported factual sentence. " * 5) + "[1]").strip(),
         "source_ids": ["s1"],
         "evidence_ids": ["e1"],
     }])
     assert compiled["accepted"] is True, compiled
     assert compiled["auto_appended_conflict_ids"] == ["conflict"], compiled
     assert "## 冲突披露" in compiled["report"], compiled["report"]
+    assert bound_evidence == [], bound_evidence
+    persisted = report_tools.compile_structured_report("具身智能报告", [{
+        "title": "Findings",
+        "content": (("A supported factual sentence. " * 5) + "[1]").strip(),
+        "source_ids": ["s1"],
+        "evidence_ids": ["e1"],
+    }], persist=True)
+    assert persisted["accepted"] is True, persisted
     assert [item["evidence_ids"] for item in bound_evidence] == [["e1"], ["e1"]], bound_evidence
 
     nodes["goal"]["request"] = "Write a Wikipedia article about embodied intelligence."
     wikipedia_missing_uncertainty = report_tools.compile_structured_report("具身智能报告", [{
         "title": "Findings",
-        "content": ("A supported factual sentence. " * 5).strip(),
+        "content": (("A supported factual sentence. " * 5) + "[1]").strip(),
         "source_ids": ["s1"],
         "evidence_ids": ["e1"],
+        "section_type": "lead",
     }])
     assert wikipedia_missing_uncertainty["accepted"] is False, wikipedia_missing_uncertainty
     assert wikipedia_missing_uncertainty["severity"] == "hard", wikipedia_missing_uncertainty
@@ -129,10 +138,12 @@ def main():
         "content": (
             "Tesla Optimus hand parameter conflict remains unresolved in the cited sources. "
             + "A supported factual sentence. " * 4
+            + "[1]"
         ).strip(),
         "source_ids": ["s1"],
         "evidence_ids": ["e1"],
         "disclosed_conflict_ids": ["conflict"],
+        "section_type": "lead",
     }])
     assert wikipedia_integrated_uncertainty["accepted"] is True, wikipedia_integrated_uncertainty
     assert wikipedia_integrated_uncertainty["auto_appended_conflict_ids"] == []
@@ -141,7 +152,7 @@ def main():
 
     conflict_with_unrelated_source = report_tools.compile_structured_report("具身智能报告", [{
         "title": "Evidence disagreement",
-        "content": "Tesla Optimus hand parameter conflict remains unresolved.",
+        "content": "Tesla Optimus hand parameter conflict remains unresolved.[2]",
         "source_ids": ["s2"],
         "evidence_ids": ["e1"],
         "disclosed_conflict_ids": ["conflict"],
@@ -154,7 +165,7 @@ def main():
 
     conflict_without_evidence = report_tools.compile_structured_report("具身智能报告", [{
         "title": "Evidence disagreement",
-        "content": "Tesla Optimus hand parameter conflict remains unresolved.",
+        "content": "Tesla Optimus hand parameter conflict remains unresolved.[1]",
         "source_ids": ["s1"],
         "evidence_ids": [],
         "disclosed_conflict_ids": ["conflict"],
@@ -167,7 +178,7 @@ def main():
 
     conflict_without_description = report_tools.compile_structured_report("具身智能报告", [{
         "title": "Evidence disagreement",
-        "content": "The available source supports a generic finding.",
+        "content": "The available source supports a generic finding.[1]",
         "source_ids": ["s1"],
         "evidence_ids": ["e1"],
         "disclosed_conflict_ids": ["conflict"],
@@ -292,7 +303,7 @@ def main():
 
     supported_criterion = report_tools.compile_structured_report("具身智能报告", [{
         "title": "Contract parties",
-        "content": "The cited source identifies the contract parties.",
+        "content": "The cited source identifies the contract parties.[1]",
         "source_ids": ["s1"],
         "evidence_ids": ["e1"],
     }])

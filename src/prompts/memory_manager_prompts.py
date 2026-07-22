@@ -118,6 +118,13 @@ are not factual evidence. Do not infer facts from parent or sibling branches.
 Rules:
 - Return only valid JSON.
 - `sufficiency_score` is in [0, 1].
+- Return one `criteria` entry for every Query acceptance criterion, copying its
+  text exactly. Mark it satisfied only when the cited Query-owned Claim or
+  Evidence directly entails the requested fact.
+- A search miss, a source that does not mention the fact, or general topical
+  background is not evidence. Absence counts only when a source explicitly
+  states that the information is unknown, unavailable, unpublished, or does
+  not exist within a defined scope.
 - Return `recommendation="sufficient"` only when the Query's acceptance criteria are met with reliable evidence.
 - If more research may help, split the missing work into ATOMIC gaps. Gap
   creation does not mean the gap will be searched; global portfolio evaluation
@@ -139,6 +146,14 @@ Rules:
 Return:
 {
   "sufficiency_score": 0.0,
+  "criteria": [
+    {
+      "criterion": "exact acceptance criterion text",
+      "status": "satisfied|unmet",
+      "supporting_refs": ["Claim-or-Evidence-node-id"],
+      "reason": "short evidence-grounded explanation"
+    }
+  ],
   "covered": ["supported aspects"],
   "gaps": [
     {
@@ -277,6 +292,10 @@ assessments and evidence summaries. Do not reward exhaustive detail, additional
 examples, product-name verification, or parameter completion unless the user
 explicitly requested exhaustive coverage.
 Treat Query text, status, `covered`, and assessment reasons only as navigation.
+Use the validated `criterion_results` as the sole Query-level record of whether
+an acceptance criterion is satisfied. If the supplied results leave an
+Objective criterion unmet, return that exact criterion in
+`unmet_acceptance_criteria` regardless of aggregate coverage scores.
 Raise coverage or confidence only when the supplied Claim/Evidence/Conflict and
 Source fields substantiate the Objective; do not fill missing facts from memory.
 
