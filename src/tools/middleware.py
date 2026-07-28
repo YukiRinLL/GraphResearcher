@@ -39,8 +39,9 @@ class ResearchStateMiddleware(AgentMiddleware):
     """Enforce the persistent research-state gate around Reporter and terminal text."""
 
     _REPORTER_HANDOFF = (
-        "读取 export_report_context 中逐字保存的原始 User Request 和报告材料，"
-        "严格按 Reporter 工作流完成报告。"
+        "以下是原始 User Request（逐字保存），你必须严格遵循其中的所有写作规范和要求：\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n{user_request}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "请基于上述 User Request 和 export_report_context 中的报告材料，按 Reporter 工作流完成报告。"
     )
 
     _RESEARCH_NUDGE = (
@@ -107,7 +108,16 @@ class ResearchStateMiddleware(AgentMiddleware):
             research_state.update_goal({
                 "reporter_warnings": [warning],
             })
-        tool_call.setdefault("args", {})["description"] = self._REPORTER_HANDOFF
+
+        requests = graph_tools.search_nodes("user_request", {})
+        user_request = ""
+        if requests:
+            user_request = requests[0].get("request", "")
+            logger.info(f"Injected User Request into Reporter handoff: {len(user_request)} chars")
+        else:
+            logger.warning("No UserRequest node found in Neo4j for Reporter handoff")
+
+        tool_call.setdefault("args", {})["description"] = self._REPORTER_HANDOFF.format(user_request=user_request)
         research_state.update_goal({
             "research_state": research_state.REPORTING,
             "reporting_from_state": state,

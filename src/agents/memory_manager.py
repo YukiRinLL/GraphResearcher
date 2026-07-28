@@ -2610,6 +2610,12 @@ class MemoryManager:
                 goal_id = goal["id"]
         from tools import report_tools, research_state
 
+        request_text = goal.get("request", "")
+        if request_text:
+            logger.info(f"User Request passed to Reporter: {len(request_text)} characters")
+        else:
+            logger.warning("User Request is empty in export_report_context")
+
         authorization_state = goal.get("reporting_from_state") or goal.get("research_state")
         delivery_mode = (
             "complete"
