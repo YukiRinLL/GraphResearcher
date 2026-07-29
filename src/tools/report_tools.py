@@ -25,6 +25,8 @@ logger = logging.getLogger(__name__)
 
 # In-text citation token, e.g. ``[12]``; adjacency ``[1][3]`` is two matches.
 _CITE_TOKEN_RE = re.compile(r"\[(\d{1,4})\]")
+# Local reference token (bundle-internal refs), e.g. ``[e17]``, ``[c4]``, ``[d5]``.
+_LOCAL_REF_RE = re.compile(r"\[([ecd])\d+\]")
 # The references-section heading line (any ATX level, zh/en, case-insensitive).
 _REF_HEADING_RE = re.compile(r"(?mi)^#{1,6}\s*(参考文献|References)\s*$")
 # Any ATX heading line (chapters/sections/sub-sections mix ``#`` / ``##`` / ``###``).
@@ -1041,8 +1043,10 @@ def _render_references(registry: list[dict], cited_source_ids: set[str], label: 
 
 def sanitize_report(report_text: str) -> str:
     """Remove internal-process explanations and service-offer paragraphs."""
+    text = report_text or ""
+    text = _LOCAL_REF_RE.sub("", text)
     kept: list[str] = []
-    for block in re.split(r"\n\s*\n", report_text or ""):
+    for block in re.split(r"\n\s*\n", text):
         stripped = block.strip()
         if not stripped or _FORBIDDEN_META_RE.search(stripped):
             continue

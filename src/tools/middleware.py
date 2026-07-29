@@ -70,7 +70,9 @@ class ResearchStateMiddleware(AgentMiddleware):
         return tool_call.get("name") == "task" and tool_call.get("args", {}).get("subagent_type") == "reporter"
 
     def _gate_reporter(self, tool_call: dict):
+        logger.info(f"_gate_reporter called with tool_call: name={tool_call.get('name')}, args_keys={list(tool_call.get('args', {}).keys())}")
         if tool_call.get("name") != "task":
+            logger.info(f"Not a task tool call (name={tool_call.get('name')}), skipping gate")
             return None
         if not self._reporter_call(tool_call):
             return ToolMessage(
@@ -169,12 +171,14 @@ class ResearchStateMiddleware(AgentMiddleware):
 
     def wrap_tool_call(self, request, handler):
         """Gate Reporter tool calls using the persistent research state."""
+        logger.info(f"wrap_tool_call: tool_call={request.tool_call.get('name')}")
         blocked = self._gate_reporter(request.tool_call)
         result = blocked if blocked is not None else handler(request)
         return self._record_tool_result(request.tool_call, result)
 
     async def awrap_tool_call(self, request, handler):
         """Gate Reporter tool calls asynchronously."""
+        logger.info(f"awrap_tool_call: tool_call={request.tool_call.get('name')}")
         blocked = self._gate_reporter(request.tool_call)
         result = blocked if blocked is not None else await handler(request)
         return self._record_tool_result(request.tool_call, result)
