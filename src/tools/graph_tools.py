@@ -9,6 +9,99 @@ from typing import Any, Optional
 
 from memory.graph import EdgeType, NodeType
 
+# Source credibility scoring based on source type
+# Higher score = more credible
+_SOURCE_CREDIBILITY_MAP = {
+    # Academic sources (highest credibility)
+    "peer_reviewed_paper": 0.95,
+    "academic_paper": 0.90,
+    "academic_journal": 0.90,
+    "conference_paper": 0.88,
+    "thesis": 0.85,
+    # Authoritative institutions
+    "museum_official": 0.85,
+    "museum_website": 0.82,
+    "government_publication": 0.85,
+    "research_institution": 0.85,
+    # Educational
+    "edu": 0.80,
+    "academic_book": 0.88,
+    "university_press": 0.87,
+    # Media
+    "major_newspaper": 0.65,
+    "major_news": 0.65,
+    "news": 0.55,
+    # Preprints and working papers
+    "preprint": 0.55,
+    "working_paper": 0.55,
+    # Low credibility sources
+    "blog": 0.35,
+    "personal_website": 0.30,
+    "social_media": 0.15,
+    "forum": 0.25,
+    "wiki": 0.40,
+}
+
+# URL pattern-based credibility estimation for auto-detection
+_URL_CREDIBILITY_PATTERNS = [
+    # Academic domains
+    (r"\.edu$", 0.80),
+    (r"\.ac\.", 0.82),
+    (r"arxiv\.org", 0.55),
+    (r"biorxiv\.org", 0.55),
+    (r"scholar\.google", 0.75),
+    # Museum and cultural institution domains
+    (r"museum", 0.82),
+    (r"britannica", 0.45),
+    # Major news outlets
+    (r"nytimes\.com", 0.68),
+    (r"bbc\.com", 0.65),
+    (r"reuters\.com", 0.68),
+    (r"theguardian\.com", 0.65),
+    (r"wsj\.com", 0.65),
+    (r"economist\.com", 0.68),
+    # University presses
+    (r"cambridge\.org", 0.87),
+    (r"oxford\.org", 0.87),
+    (r"springer\.com", 0.88),
+    (r"nature\.com", 0.85),
+    (r"science\.org", 0.88),
+    # Low credibility domains
+    (r"instagram\.com", 0.15),
+    (r"facebook\.com", 0.15),
+    (r"twitter\.com", 0.15),
+    (r"x\.com", 0.15),
+    (r"reddit\.com", 0.25),
+    (r"youtube\.com", 0.20),
+    (r"blogspot\.com", 0.30),
+    (r"medium\.com", 0.35),
+    (r"wordpress\.com", 0.30),
+    (r"weebly\.com", 0.20),
+    (r"wix\.com", 0.20),
+]
+
+
+def _estimate_source_credibility(url: str, source_type: Optional[str] = None) -> float:
+    """Estimate source credibility based on type and URL patterns.
+
+    Returns a score from 0.0 (lowest) to 1.0 (highest).
+    """
+    # First try explicit source_type mapping
+    if source_type:
+        normalized_type = source_type.lower().replace("-", "_").replace(" ", "_")
+        if normalized_type in _SOURCE_CREDIBILITY_MAP:
+            return _SOURCE_CREDIBILITY_MAP[normalized_type]
+
+    # Fall back to URL pattern matching
+    url_lower = url.lower() if url else ""
+    for pattern, score in _URL_CREDIBILITY_PATTERNS:
+        if re.search(pattern, url_lower):
+            return score
+
+    # Default: moderate credibility
+    return 0.50
+
+
 _QUERY_TRANSITIONS = {
     "pending": {"searching", "deferred"},
     "searching": {"assessing", "pending", "blocked", "failed"},
@@ -371,6 +464,9 @@ def create_source(
         attributes["title"] = title
     if source_type:
         attributes["source_type"] = source_type
+    # Auto-estimate and store source credibility score
+    credibility = _estimate_source_credibility(url, source_type)
+    attributes["credibility_score"] = credibility
     return _run_async(manager.add_node(NodeType.SOURCE, attributes))
 
 

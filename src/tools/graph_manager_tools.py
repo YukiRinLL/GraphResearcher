@@ -337,7 +337,24 @@ def export_report_context(goal_id: Optional[str] = None) -> dict:
 
 @tool
 def commit_report_outline(title: str, chapters: list[dict]) -> dict:
-    """Persist the reporter's chapter-level outline for the current run."""
+    """Persist the reporter's chapter-level outline for the current run.
+    
+    Args:
+        title: Report title string.
+        chapters: List of chapter dicts, each must contain:
+            - chapter_id (int, REQUIRED): Chapter number starting from 1.
+            - title (str, REQUIRED): Chapter title.
+            - goals (list[str]): Writing goals for this chapter.
+            - query_refs (list[str], REQUIRED): Query handles (e.g. ["q1"]).
+            - section_plan (str): Brief plan for this chapter.
+            - section_type (str): "lead" or "body".
+    
+    Example:
+        commit_report_outline("Ring of Nestor", [
+            {"chapter_id": 1, "title": "Lead", "goals": ["..."], "query_refs": ["q1"], "section_plan": "...", "section_type": "lead"},
+            {"chapter_id": 2, "title": "Discovery", "goals": ["..."], "query_refs": ["q1"], "section_plan": "...", "section_type": "body"},
+        ])
+    """
     from tools import report_tools
 
     return report_tools.commit_report_outline(_cache_dir, title, chapters)
@@ -347,7 +364,21 @@ def commit_report_outline(title: str, chapters: list[dict]) -> dict:
 def prepare_report_chapter_batch(
     chapters: Annotated[list[dict], Field(min_length=1, max_length=3)],
 ) -> dict:
-    """Load one to three chapter plans with chapter-local evidence references."""
+    """Load one to three chapter plans with chapter-local evidence references.
+    
+    Args:
+        chapters: List of chapter dicts, each MUST contain:
+            - chapter_id (int, REQUIRED): Must match the chapter_id from commit_report_outline (e.g. 1, 2, 3).
+            - extra_query_refs (list[str]): Additional query handles to load.
+    
+    Example:
+        prepare_report_chapter_batch([
+            {"chapter_id": 1, "extra_query_refs": []},
+            {"chapter_id": 2, "extra_query_refs": ["q1"]},
+        ])
+    
+    Returns chapter-local refs like e1/e2 (Evidence), c1/c2 (Claims), x1/x2 (Conflicts).
+    """
     from tools import report_tools
 
     return report_tools.prepare_report_chapter_batch(_cache_dir, chapters)
@@ -357,7 +388,27 @@ def prepare_report_chapter_batch(
 def commit_report_chapter_batch(
     chapters: Annotated[list[dict], Field(min_length=1, max_length=3)],
 ) -> dict:
-    """Save and validate one to three complete chapter candidates."""
+    """Save and validate one to three complete chapter candidates.
+    
+    Args:
+        chapters: List of chapter dicts, each MUST contain:
+            - chapter_id (int, REQUIRED): Must match the chapter_id from outline.
+            - bundle_token (str, REQUIRED): Token from prepare_report_chapter_batch.
+            - content (str, REQUIRED): Full chapter text with inline [n] citations.
+            - evidence_refs (list[str], REQUIRED): All e*/c* refs used in content.
+            - disclosed_conflict_refs (list[str]): x* refs for disclosed conflicts.
+    
+    Example:
+        commit_report_chapter_batch([
+            {
+                "chapter_id": 1,
+                "bundle_token": "token_from_prepare",
+                "content": "Full chapter text with [1] citations...",
+                "evidence_refs": ["e1", "e2", "c1"],
+                "disclosed_conflict_refs": ["x1"]
+            },
+        ])
+    """
     from tools import report_tools
 
     return report_tools.commit_report_chapter_batch(_cache_dir, chapters)

@@ -551,6 +551,42 @@ def _prepare_report_chapter_bundle(
     return bundle
 
 
+def _resolve_chapter_id_from_outline(
+    output_dir: Optional[str],
+    chapter: dict[str, Any],
+) -> int:
+    """Resolve chapter_id from outline when not explicitly provided."""
+    provided_id = int(chapter.get("chapter_id") or 0)
+    if provided_id > 0:
+        return provided_id
+
+    outline = _read_json_file(_outline_path(output_dir))
+    outline_chapters = outline.get("chapters") or []
+    if not outline_chapters:
+        return 0
+
+    key = str(chapter.get("key") or "").strip().lower()
+    title = str(chapter.get("title") or "").strip().lower()
+
+    for i, oc in enumerate(outline_chapters, start=1):
+        oc_id = int(oc.get("chapter_id") or i)
+        oc_title = str(oc.get("title") or "").strip().lower()
+        oc_section_type = str(oc.get("section_type") or "").strip().lower()
+
+        # Match by key or title
+        if key and (key == oc_title or key == oc_section_type):
+            return oc_id
+        if title and title == oc_title:
+            return oc_id
+
+        # Match by section_type (e.g. "lead" matches "lead" section)
+        if key and oc_section_type and key == oc_section_type:
+            return oc_id
+
+    # Fallback: use sequential index
+    return 0
+
+
 def prepare_report_chapter_batch(
     output_dir: Optional[str],
     chapters: list[dict[str, Any]],
@@ -558,14 +594,22 @@ def prepare_report_chapter_batch(
     """Prepare up to three chapter-scoped evidence bundles."""
     if not chapters or len(chapters) > 3:
         return {"status": "error", "message": "Prepare between one and three chapters per batch."}
-    prepared = [
-        _prepare_report_chapter_bundle(
-            output_dir,
-            int(chapter.get("chapter_id") or 0),
-            chapter.get("extra_query_refs") or [],
-        )
-        for chapter in chapters
-    ]
+    prepared = []
+    for chapter in chapters:
+        chapter_id = _resolve_chapter_id_from_outline(output_dir, chapter)
+        if chapter_id <= 0:
+            prepared.append({
+                "status": "error",
+                "message": f"Cannot resolve chapter_id from outline. Provide chapter_id explicitly.",
+            })
+        else:
+            prepared.append(
+                _prepare_report_chapter_bundle(
+                    output_dir,
+                    chapter_id,
+                    chapter.get("extra_query_refs") or [],
+                )
+            )
     errors = [item for item in prepared if item.get("status") != "ok"]
     return {
         "status": "error" if errors else "ok",
