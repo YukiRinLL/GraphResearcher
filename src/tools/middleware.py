@@ -1,4 +1,4 @@
-# 参考 /mnt/h/DeepResearch/aiq/src/aiq_agent/agents/deep_researcher/custom_middleware.py 关于中间件的设计和实现
+# 参考/Users/yindq/projects/DeepResearch/aiq/src/aiq_agent/agents/deep_researcher/custom_middleware.py 关于中间件的设计和实现
 """System guardrail middleware for GraphResearcher."""
 
 import json
@@ -39,8 +39,9 @@ class ResearchStateMiddleware(AgentMiddleware):
     """Enforce the persistent research-state gate around Reporter and terminal text."""
 
     _REPORTER_HANDOFF = (
-        "读取 export_report_context 中逐字保存的原始 User Request 和报告材料，"
-        "严格按 Reporter 工作流完成报告。"
+        "以下是原始 User Request（逐字保存），你必须严格遵循其中的所有写作规范和要求：\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n{user_request}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "请基于上述 User Request 和 export_report_context 中的报告材料，按 Reporter 工作流完成报告。"
     )
 
     _RESEARCH_NUDGE = (
@@ -69,7 +70,9 @@ class ResearchStateMiddleware(AgentMiddleware):
         return tool_call.get("name") == "task" and tool_call.get("args", {}).get("subagent_type") == "reporter"
 
     def _gate_reporter(self, tool_call: dict):
+        logger.info(f"_gate_reporter called with tool_call: name={tool_call.get('name')}, args_keys={list(tool_call.get('args', {}).keys())}")
         if tool_call.get("name") != "task":
+            logger.info(f"Not a task tool call (name={tool_call.get('name')}), skipping gate")
             return None
         if not self._reporter_call(tool_call):
             return ToolMessage(
@@ -107,7 +110,16 @@ class ResearchStateMiddleware(AgentMiddleware):
             research_state.update_goal({
                 "reporter_warnings": [warning],
             })
-        tool_call.setdefault("args", {})["description"] = self._REPORTER_HANDOFF
+
+        requests = graph_tools.search_nodes("user_request", {})
+        user_request = ""
+        if requests:
+            user_request = requests[0].get("request", "")
+            logger.info(f"Injected User Request into Reporter handoff: {len(user_request)} chars")
+        else:
+            logger.warning("No UserRequest node found in Neo4j for Reporter handoff")
+
+        tool_call.setdefault("args", {})["description"] = self._REPORTER_HANDOFF.format(user_request=user_request)
         research_state.update_goal({
             "research_state": research_state.REPORTING,
             "reporting_from_state": state,
@@ -159,12 +171,14 @@ class ResearchStateMiddleware(AgentMiddleware):
 
     def wrap_tool_call(self, request, handler):
         """Gate Reporter tool calls using the persistent research state."""
+        logger.info(f"wrap_tool_call: tool_call={request.tool_call.get('name')}")
         blocked = self._gate_reporter(request.tool_call)
         result = blocked if blocked is not None else handler(request)
         return self._record_tool_result(request.tool_call, result)
 
     async def awrap_tool_call(self, request, handler):
         """Gate Reporter tool calls asynchronously."""
+        logger.info(f"awrap_tool_call: tool_call={request.tool_call.get('name')}")
         blocked = self._gate_reporter(request.tool_call)
         result = blocked if blocked is not None else await handler(request)
         return self._record_tool_result(request.tool_call, result)

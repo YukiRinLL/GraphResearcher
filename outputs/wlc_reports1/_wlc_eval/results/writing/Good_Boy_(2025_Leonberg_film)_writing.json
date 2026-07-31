@@ -1,0 +1,394 @@
+{
+  "topic": "Good Boy (2025 film)",
+  "mode": "winrate",
+  "allow_tie": false,
+  "aggregate": {
+    "Broad in its coverage": {
+      "gen_wins": 0,
+      "gt_wins": 8,
+      "ties": 0,
+      "total": 8,
+      "gen_win_rate": 0.0
+    },
+    "Neutral": {
+      "gen_wins": 1,
+      "gt_wins": 9,
+      "ties": 0,
+      "total": 10,
+      "gen_win_rate": 0.1
+    },
+    "Well-written": {
+      "gen_wins": 1,
+      "gt_wins": 20,
+      "ties": 0,
+      "total": 21,
+      "gen_win_rate": 0.047619047619047616
+    },
+    "overall": {
+      "gen_wins": 2,
+      "gt_wins": 37,
+      "ties": 0,
+      "total": 39,
+      "gen_win_rate": 0.05128205128205128
+    }
+  },
+  "details": {
+    "Broad in its coverage": [
+      {
+        "criterion_id": "bc_1",
+        "criterion_index": 21,
+        "criterion_text": "It addresses the main aspects of the topic.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 is far more comprehensive, addressing key aspects like box office performance, specific critical aggregator scores, and a formal accolades list, all of which are either missing or poorly covered in Article 2."
+      },
+      {
+        "criterion_id": "bc_2",
+        "criterion_index": 22,
+        "criterion_text": "The lead, ideally the introductory sentence or at least introductory paragraph, of an article, should make clear what the scope of the article is.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "While both articles state the topic in the first sentence, Article 1's lead paragraph is a complete summary that better establishes the full scope and context of the article, including production, release, and reception highlights."
+      },
+      {
+        "criterion_id": "bc_3",
+        "criterion_index": 23,
+        "criterion_text": "All material that is notable, referenced, and that a reader would be likely to agree matches the specified scope must be covered (at least in a summarized fashion).",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 covers a wide range of notable material expected for a film article, such as the budget, specific box office figures, and multiple review aggregator scores. Article 2 omits most of this standard, notable information."
+      },
+      {
+        "criterion_id": "bc_4",
+        "criterion_index": 24,
+        "criterion_text": "What reliable sources say about material that is out of scope for the decided-upon subject is largely irrelevant to that article and can be removed.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Both articles stay on topic, but Article 2 includes material from unreliable and non-notable sources like Facebook groups. In an encyclopedic context, such information is irrelevant. Article 1 correctly excludes this type of material."
+      },
+      {
+        "criterion_id": "bc_5",
+        "criterion_index": 25,
+        "criterion_text": "It stays focused on the topic without going into unnecessary detail.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 provides a high level of detail that is consistently relevant and purposeful, such as the specifics of filming with an animal. Article 2 is too sparse and lacks necessary detail, failing to strike the right balance."
+      },
+      {
+        "criterion_id": "bc_6",
+        "criterion_index": 26,
+        "criterion_text": "The lead contains a quick summary of the topic's most important points.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1's lead is an exemplary summary, touching upon the premise, cast, production, budget, release, box office, and critical reception. Article 2's lead is a minimal introduction that omits nearly all of these important points."
+      },
+      {
+        "criterion_id": "bc_7",
+        "criterion_index": 27,
+        "criterion_text": "Each major subtopic is detailed in its own section of the article.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 uses a standard, logical, and highly effective sectional structure (Plot, Cast, Production, Release, Reception). Article 2's structure is less clear, with redundant sections like 'Release' and 'Distribution' and a less organized 'Reception' section."
+      },
+      {
+        "criterion_id": "bc_8",
+        "criterion_index": 28,
+        "criterion_text": "It contains no irrelevant (nor only loosely relevant) information.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 2 contains irrelevant information by citing opinions from Facebook groups, which are not notable or reliable sources for an encyclopedia. Article 1 contains no such irrelevant information, sticking to verifiable facts and established critics."
+      }
+    ],
+    "Neutral": [
+      {
+        "criterion_id": "n_1",
+        "criterion_index": 29,
+        "criterion_text": "It represents viewpoints fairly and without editorial bias, giving due weight to each.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 presents a well-balanced summary of critical reception, citing numerous professional critics for both praise and criticism. Article 2 gives undue weight to non-expert opinions from social media and user reviews, failing to represent the professional viewpoint fairly or proportionately."
+      },
+      {
+        "criterion_id": "n_2",
+        "criterion_index": 30,
+        "criterion_text": "Avoid stating opinions as facts. Opinions should be attributed in the text to particular sources, or where justified, described as widespread views, etc.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 is meticulous in attributing every opinionated statement to a specific, named critic or publication. Article 2 also attributes opinions, but often to vague sources ('A review notes...') or unreliable ones (Facebook groups), and is less precise overall."
+      },
+      {
+        "criterion_id": "n_3",
+        "criterion_index": 31,
+        "criterion_text": "Avoid stating seriously contested assertions as facts. If different reliable sources make conflicting assertions about a matter, treat these assertions as opinions rather than facts.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 correctly treats the mixed critical reception as a series of differing opinions from reliable sources. Article 2 handles a conflicting release date fact but creates a false impression of a contested critical consensus by juxtaposing professional reviews with unreliable social media posts without proper context."
+      },
+      {
+        "criterion_id": "n_4",
+        "criterion_index": 32,
+        "criterion_text": "Avoid stating facts as opinions. Uncontested and uncontroversial factual assertions made by reliable sources should normally be directly stated in Wikipedia's voice.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 confidently states uncontested facts (budget, filming locations, cast) in Wikipedia's voice. Article 2 often frames basic facts as opinions or attributions to specific sources (e.g., 'Letterboxd credits...'), which is an improper use of the encyclopedic voice for uncontroversial information."
+      },
+      {
+        "criterion_id": "n_5",
+        "criterion_index": 33,
+        "criterion_text": "Prefer nonjudgmental language. A neutral point of view neither sympathizes with nor disparages its subject. Present opinions and conflicting findings in a disinterested tone. Do not editorialize.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 maintains a consistently neutral, disinterested, and professional tone throughout. Article 2 contains minor instances of judgmental language ('unwanted and unwelcome supernatural presences') and its structure, which heavily relies on quoting various sources, feels less like a disinterested summary."
+      },
+      {
+        "criterion_id": "n_6",
+        "criterion_index": 34,
+        "criterion_text": "Indicate the relative prominence of opposing views. Ensure that the reporting of different views on a subject adequately reflects the relative levels of support for those views and does not give a false impression of parity.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 clearly indicates the prominence of the positive critical view by stating it is 'generally positive' and providing aggregate scores (91% on RT). Article 2 completely fails here, creating a false impression of parity by presenting negative social media comments alongside positive professional reviews without context."
+      },
+      {
+        "criterion_id": "n_7",
+        "criterion_index": 35,
+        "criterion_text": "An article should not give undue weight to minor aspects of its subject but should strive to treat each aspect with a weight proportional to its treatment in the body of reliable, published material on the subject.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 is structured logically with sections weighted proportionally to their importance in reliable sources. Article 2 gives undue weight to minor aspects like a separate 'Distribution and home media' section and poorly sourced reception, while its plot summary is underdeveloped."
+      },
+      {
+        "criterion_id": "n_8",
+        "criterion_index": 36,
+        "criterion_text": "Any inclusion of fringe or pseudoscientific views should not give them undue weight. The fringe or pseudoscientific view should be clearly described as such.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 uses only reliable, mainstream sources. Article 2 gives undue weight to fringe sources for critical reception, such as Facebook groups and IMDb user reviews, presenting them alongside professional criticism without clearly identifying them as user-generated content."
+      },
+      {
+        "criterion_id": "n_9",
+        "criterion_index": 37,
+        "criterion_text": "In the case of beliefs and practices, Wikipedia content should not only encompass what motivates individuals who hold these beliefs and practices but also account for how such beliefs and practices developed.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Applying this criterion to the filmmaker's motivation, Article 1 provides a more comprehensive account of why the director conceived the film (the 'Poltergeist' influence) and how the unique production practices developed in response to specific challenges."
+      },
+      {
+        "criterion_id": "n_10",
+        "criterion_index": 38,
+        "criterion_text": "Article titles that combine alternative names are discouraged. Alternative names should be given their due prominence within the article itself, and redirects created as appropriate.",
+        "category": "Neutral",
+        "winner": "gen",
+        "winner_code": 2,
+        "reason": "Both articles use acceptable titles. However, Article 2's title, 'Good Boy (2025 film)', uses a more standard and conventional disambiguation format than Article 1's 'Good Boy (2025 Leonberg film)', which is slightly unusual for Wikipedia."
+      }
+    ],
+    "Well-written": [
+      {
+        "criterion_id": "ww_cc_1",
+        "criterion_index": 0,
+        "criterion_text": "Articles should be written in encyclopedic style, which differs from the technically dense style found in scholarly writing aimed at specialists.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 is written in a formal, objective, and structured encyclopedic style, typical of a high-quality Wikipedia entry. Article 2 reads more like a collection of summarized reviews and notes, lacking a cohesive encyclopedic voice and using odd structural choices like repeating the title as a heading."
+      },
+      {
+        "criterion_id": "ww_cc_2",
+        "criterion_index": 1,
+        "criterion_text": "Articles should address the topic without twisting the truth or telling \"lies-to-children\", but should also minimize (unexplained) jargon and not take prior knowledge for granted.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Both articles avoid overly technical jargon. However, Article 1 introduces a relevant technical term ('Kuleshov effect') and briefly explains its use in context, which is better encyclopedic practice than oversimplifying. It strikes an excellent balance between being informative and accessible."
+      },
+      {
+        "criterion_id": "ww_cc_3",
+        "criterion_index": 2,
+        "criterion_text": "Articles should be self-contained as much as possible, rather than relying on excessive links to explain unfamiliar concepts.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 presents a comprehensive and holistic overview of the film, from conception to reception, making it a complete, self-contained resource. Article 2 feels fragmented, presenting information as a series of disconnected points from various sources, which makes it feel less whole."
+      },
+      {
+        "criterion_id": "ww_ls_1",
+        "criterion_index": 3,
+        "criterion_text": "An article's content should begin with an introductory lead section – a concise summary of the article – which is never divided into sections. The remainder of the article is typically divided into sections.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 perfectly follows Wikipedia's manual of style with a single, un-sectioned lead followed by clearly demarcated sections. Article 2 has a confusing structure, with the article title repeated as a subheading, which is incorrect formatting."
+      },
+      {
+        "criterion_id": "ww_ls_2",
+        "criterion_index": 4,
+        "criterion_text": "The lead section gives the basics in a nutshell, introduces the article, and cultivates interest in reading on—though not by teasing the reader or hinting at what follows.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1's lead is a comprehensive summary of the film's premise, production, release, and reception, giving the reader a full overview that cultivates interest. Article 2's lead is sparse, providing only the most basic details and failing to adequately summarize the article's content."
+      },
+      {
+        "criterion_id": "ww_ls_3",
+        "criterion_index": 5,
+        "criterion_text": "The lead section should be written in a clear, accessible style with a neutral point of view.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1's lead is a model of clarity, accessibility, and neutrality. It summarizes the film's positive reception but also notes the existence of criticism, presenting a balanced view. Article 2's lead is also neutral but is too brief to be as effective."
+      },
+      {
+        "criterion_id": "ww_ls_4",
+        "criterion_index": 6,
+        "criterion_text": "The lead should stand on its own as a concise overview of the article's topic. It should identify the topic, establish context, explain why the topic is notable, and summarize the most important points, including any prominent controversies. The notability of the article's subject is usually established in the first few sentences.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "The lead of Article 1 functions perfectly as a standalone summary. It establishes notability through its festival run, distributors, box office performance, and critical acclaim. Article 2's lead is too brief to establish notability or summarize the most important points effectively."
+      },
+      {
+        "criterion_id": "ww_ls_5",
+        "criterion_index": 7,
+        "criterion_text": "As in the body of the article itself, the emphasis given to material in the lead should roughly reflect its importance to the topic, according to reliable, published sources. Apart from basic facts, significant information should not appear in the lead if it is not covered in the remainder of the article.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "The emphasis in Article 1's lead on the unique premise, low-budget production, and critical/commercial reception accurately reflects the weight and detail given to these topics in the article body. Article 2's lead is too short to properly reflect the importance of the content that follows."
+      },
+      {
+        "criterion_id": "ww_ls_6",
+        "criterion_index": 8,
+        "criterion_text": "A lead section should be carefully sourced as appropriate, although it is common for citations to appear in the body and not the lead.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "While neither article has citations, Article 1 follows the standard Wikipedia convention where the lead summarizes information that is detailed and sourced in the body, making citations in the lead itself unnecessary. Its structure correctly implies this relationship."
+      },
+      {
+        "criterion_id": "ww_ls_7",
+        "criterion_index": 9,
+        "criterion_text": "Significant information should not appear in the lead, apart from basic facts, if it is not covered in the remainder of the article, although not everything in the lead must be repeated in the body of the text. Exceptions include specific facts such as quotations, examples, birth dates, taxonomic names and typological classifications, case numbers, and titles.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 ensures that all significant information mentioned in its comprehensive lead—such as the budget, director's debut, and specific reception details—is expanded upon in the body of the article. It perfectly adheres to this principle."
+      },
+      {
+        "criterion_id": "ww_wtw_1",
+        "criterion_index": 10,
+        "criterion_text": "Puffery: Words such as legendary, best, great, greatest, acclaimed, iconic, visionary, outstanding, leading, celebrated, popular, award-winning, landmark, cutting-edge, innovative, revolutionary, extraordinary, brilliant, hit, famous, renowned, remarkable, prestigious, world-class, respected, notable, virtuoso, honorable, awesome, unique, pioneering, phenomenal, prominent are often used without attribution to promote the subject of an article. Instead of making subjective proclamations about a subject's importance, use facts and attribution to demonstrate it.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 strictly avoids puffery, using neutral language and attributing all praise to specific sources (e.g., critics, review aggregators). Article 2, while also attributing, quotes phrases like 'teaches the haunted-house genre some new tricks,' which can sound more promotional."
+      },
+      {
+        "criterion_id": "ww_wtw_2",
+        "criterion_index": 11,
+        "criterion_text": "Contentious labels: Value-laden labels – such as calling an organization a cult, an individual a racist, sexist, terrorist, or freedom fighter, or a sexual practice a perversion – may express contentious opinion and are best avoided unless widely used by reliable sources to describe the subject, in which case use in-text attribution.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "The topic does not lend itself to contentious labels, and neither article uses them. Article 1 wins as it exemplifies superior writing quality and adherence to encyclopedic standards in every other respect, making it the stronger example of professional, neutral writing."
+      },
+      {
+        "criterion_id": "ww_wtw_3",
+        "criterion_index": 12,
+        "criterion_text": "Unsupported attributions: Words like \"some people say\", \"many scholars state\", \"it is believed/regarded/considered\", \"experts declare\", \"it is widely thought\", \"research has shown\" may disguise a biased view. Claims about what people say, think, feel, or believe should be clearly attributed.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 attributes claims to specific, named sources (e.g., 'Chase Hutchison of TheWrap'). Article 2 frequently uses vague, unsupported attributions like 'A review of the film notes that...' and 'A separate review and discussion segment stated that...', which is poor encyclopedic practice."
+      },
+      {
+        "criterion_id": "ww_wtw_4",
+        "criterion_index": 13,
+        "criterion_text": "Expressions of doubt: When words like supposed, apparent, purported, alleged, accused, so-called are used, ensure that the source of the accusation is clear. Also avoid scare-quoting and undue emphasis.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 presents information with a confident, factual tone, avoiding any expressions of doubt. Article 2's style of reporting on its sources sometimes creates uncertainty, as when it discusses 'variation in reported rollout plans,' which is less direct than stating the facts."
+      },
+      {
+        "criterion_id": "ww_wtw_5",
+        "criterion_index": 14,
+        "criterion_text": "Editorializing: Words like notably, it should be noted, arguably, interestingly, essentially, utterly, actually, only, clearly, absolutely, of course, without a doubt, indeed, happily, sadly, tragically, aptly, fortunately, unfortunately, untimely should usually be avoided to maintain an impartial tone.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1's prose is clinical and objective, completely avoiding editorializing words like 'notably' or 'interestingly'. Its tone is consistently impartial. Article 2's tone is less formal and feels more like a commentary, which detracts from its impartiality."
+      },
+      {
+        "criterion_id": "ww_wtw_6",
+        "criterion_index": 15,
+        "criterion_text": "Synonyms for said: Words like reveal, point out, clarify, expose, explain, find, note, observe, insist, speculate, surmise, claim, assert, admit, confess, deny, confirm may make undue implications. On Wikipedia, it is more important to avoid language that makes undue implications.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 uses a variety of standard, neutral attribution verbs like 'said,' 'called,' 'described,' and 'noted.' Article 2 uses 'argues,' which can imply a contentious point, and its overall use of attribution is less polished and neutral than in Article 1."
+      },
+      {
+        "criterion_id": "ww_wtw_7",
+        "criterion_index": 16,
+        "criterion_text": "Euphemisms: Euphemisms like passed away, gave her life, eternal rest, make love, an issue with, collateral damage, differently abled should generally be avoided in favor of more neutral and precise terms.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Both articles avoid euphemisms. Article 1 wins because its plot summary is more detailed and consistently uses direct, precise terms like 'corpse' and 'dead body' instead of softer alternatives, making it a stronger example of direct writing."
+      },
+      {
+        "criterion_id": "ww_wtw_8",
+        "criterion_index": 17,
+        "criterion_text": "Clichés and idioms: Clichés and idioms like lion's share, tip of the iceberg, white elephant, gild the lily, take the plunge, ace up the sleeve should generally be avoided in favor of direct, literal expressions.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "The prose in Article 1 is direct and free of clichés or idioms. Article 2 includes a direct quote containing an idiom ('teaches the haunted-house genre some new tricks'). While attributed, a superior article would avoid relying on idiomatic quotes."
+      },
+      {
+        "criterion_id": "ww_wtw_9",
+        "criterion_index": 18,
+        "criterion_text": "Relative time references: Prefer specific statements to general ones. Words like recently, lately, currently, today, presently, to date, X years ago, formerly, in the past, traditionally should be avoided.",
+        "category": "Well-written",
+        "winner": "gen",
+        "winner_code": 2,
+        "reason": "Article 1 uses the phrase 'To date, it has grossed...', which is a relative time reference that should be avoided. Article 2 successfully avoids all such references, making its information more durable over time."
+      },
+      {
+        "criterion_id": "ww_wtw_10",
+        "criterion_index": 19,
+        "criterion_text": "Unspecified places or events: Prefer specific statements to general ones. Words like this country, here, there, somewhere, sometimes, often, occasionally, somehow should be avoided.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 is highly specific with its locations, naming 'Harding Township, New Jersey,' and 'New York City.' Article 2 is more general, using phrases like 'city life' and 'rural family home,' making it less precise."
+      },
+      {
+        "criterion_id": "ww_wtw_11",
+        "criterion_index": 20,
+        "criterion_text": "Survived by: Phrasing such as \"Smith died in 1982, survived by her husband Jack and two sons\" should be avoided; this information can be made more complete and spread out through the article.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "This criterion, which pertains to obituaries, is not applicable to the topic. Neither article uses the 'survived by' phrasing. Article 1 is chosen as the winner because it is the far superior article in terms of overall writing quality and adherence to encyclopedic standards."
+      }
+    ]
+  }
+}

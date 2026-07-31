@@ -1,0 +1,1872 @@
+{
+  "title": "Good Boy (2025 film)",
+  "status": "completed",
+  "total_statements": 132,
+  "total_citations": 17,
+  "valid_citations": 14,
+  "evaluated_statements": 121,
+  "skipped_statements": 11,
+  "support": 99,
+  "not_support": 21,
+  "conflict": 1,
+  "support_ratio": 0.8181818181818182,
+  "conflict_ratio": 0.008264462809917356,
+  "results": [
+    {
+      "statement_index": 0,
+      "statement": "Good Boy is a 2025 horror film written and directed by Ben Leonberg and told primarily from the point of view of a dog named Indy, who accompanies his owner Todd to a haunted rural family home threatened by supernatural forces.",
+      "citation_num": "3",
+      "citation_url": "https://filmthreat.com/reviews/good-boy-horror-review",
+      "verdict": "not_support",
+      "reason": "While the citation confirms the film is a 2025 horror movie told from the dog's perspective, it does not specify the setting as a 'rural' home or that it is 'threatened by supernatural forces' beyond stating the house is haunted."
+    },
+    {
+      "statement_index": 0,
+      "statement": "Good Boy is a 2025 horror film written and directed by Ben Leonberg and told primarily from the point of view of a dog named Indy, who accompanies his owner Todd to a haunted rural family home threatened by supernatural forces.",
+      "citation_num": "2",
+      "citation_url": "https://www.imdb.com/title/tt35521922",
+      "verdict": "support",
+      "reason": "The citation confirms the film is a 2025 horror release, directed and co-written by Ben Leonberg, and told from the perspective of the dog Indy who moves to a haunted house with his owner, Todd."
+    },
+    {
+      "statement_index": 0,
+      "statement": "Good Boy is a 2025 horror film written and directed by Ben Leonberg and told primarily from the point of view of a dog named Indy, who accompanies his owner Todd to a haunted rural family home threatened by supernatural forces.",
+      "citation_num": "4",
+      "citation_url": "https://www.rottentomatoes.com/m/good_boy_2025",
+      "verdict": "support",
+      "reason": "The synopsis confirms the film is a 2025 horror movie directed by Ben Leonberg, featuring a dog named Indy and his owner Todd in a house with supernatural forces."
+    },
+    {
+      "statement_index": 0,
+      "statement": "Good Boy is a 2025 horror film written and directed by Ben Leonberg and told primarily from the point of view of a dog named Indy, who accompanies his owner Todd to a haunted rural family home threatened by supernatural forces.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "support",
+      "reason": "The citation confirms the film title, year, director/writer, and that the story is told from the perspective of Indy, a dog, regarding supernatural forces at a family home."
+    },
+    {
+      "statement_index": 0,
+      "statement": "Good Boy is a 2025 horror film written and directed by Ben Leonberg and told primarily from the point of view of a dog named Indy, who accompanies his owner Todd to a haunted rural family home threatened by supernatural forces.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "support",
+      "reason": "The citation confirms the film is a 2025 horror movie directed/co-written by Ben Leonberg and details the plot regarding a dog named Indy protecting his owner Todd in a rural home."
+    },
+    {
+      "statement_index": 1,
+      "statement": "The film is Ben Leonberg's feature directorial debut.",
+      "citation_num": "3",
+      "citation_url": "https://filmthreat.com/reviews/good-boy-horror-review",
+      "verdict": "support",
+      "reason": "The citation explicitly refers to the film as an 'impressive feature debut for director Leonberg'."
+    },
+    {
+      "statement_index": 1,
+      "statement": "The film is Ben Leonberg's feature directorial debut.",
+      "citation_num": "7",
+      "citation_url": "https://www.youtube.com/watch?v=QT5_fo8PODA",
+      "verdict": "support",
+      "reason": "The description explicitly states that 'GOOD BOY (2025) is the feature film debut from Ben Leonberg.'"
+    },
+    {
+      "statement_index": 1,
+      "statement": "The film is Ben Leonberg's feature directorial debut.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "not_support",
+      "reason": "The provided text lists Ben Leonberg as the director but does not explicitly state it is his feature directorial debut."
+    },
+    {
+      "statement_index": 1,
+      "statement": "The film is Ben Leonberg's feature directorial debut.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "not_support",
+      "reason": "The citation identifies Ben Leonberg as the director, but does not state that this is his feature directorial debut."
+    },
+    {
+      "statement_index": 2,
+      "statement": "The film was first shown at the South by Southwest (SXSW) Film & TV Festival in March 2025.",
+      "citation_num": "3",
+      "citation_url": "https://filmthreat.com/reviews/good-boy-horror-review",
+      "verdict": "not_support",
+      "reason": "The citation contains no mention of the South by Southwest Film & TV Festival."
+    },
+    {
+      "statement_index": 2,
+      "statement": "The film was first shown at the South by Southwest (SXSW) Film & TV Festival in March 2025.",
+      "citation_num": "7",
+      "citation_url": "https://www.youtube.com/watch?v=QT5_fo8PODA",
+      "verdict": "not_support",
+      "reason": "The provided text mentions 'Top Films from SXSW 2025' but does not explicitly confirm that the film was first shown there in March 2025."
+    },
+    {
+      "statement_index": 2,
+      "statement": "The film was first shown at the South by Southwest (SXSW) Film & TV Festival in March 2025.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "support",
+      "reason": "The release dates list states the premiere was 08 Mar 2025 at the South by Southwest Film & TV Festival."
+    },
+    {
+      "statement_index": 2,
+      "statement": "The film was first shown at the South by Southwest (SXSW) Film & TV Festival in March 2025.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "support",
+      "reason": "The article is titled 'SXSW 2025 Review: GOOD BOY' and dated March 11, 2025, confirming its SXSW screening."
+    },
+    {
+      "statement_index": 3,
+      "statement": "The film screened at additional international genre festivals.",
+      "citation_num": "3",
+      "citation_url": "https://filmthreat.com/reviews/good-boy-horror-review",
+      "verdict": "not_support",
+      "reason": "The citation does not provide information regarding screenings at additional international genre festivals."
+    },
+    {
+      "statement_index": 3,
+      "statement": "The film screened at additional international genre festivals.",
+      "citation_num": "7",
+      "citation_url": "https://www.youtube.com/watch?v=QT5_fo8PODA",
+      "verdict": "not_support",
+      "reason": "The provided text contains no information regarding the film's screening at additional international genre festivals."
+    },
+    {
+      "statement_index": 3,
+      "statement": "The film screened at additional international genre festivals.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "support",
+      "reason": "The release dates section lists numerous international festival screenings, including in Canada, South Korea, Poland, and Australia."
+    },
+    {
+      "statement_index": 3,
+      "statement": "The film screened at additional international genre festivals.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "not_support",
+      "reason": "The provided text does not mention any international festival screenings beyond the SXSW premiere."
+    },
+    {
+      "statement_index": 4,
+      "statement": "Good Boy was later released digitally.",
+      "citation_num": "11",
+      "citation_url": "https://www.amazon.com/Good-Boy-DVD-Ben-Leonberg/dp/B0G5SBXC3F",
+      "verdict": "not_support",
+      "reason": "The provided citation does not mention a digital release."
+    },
+    {
+      "statement_index": 4,
+      "statement": "Good Boy was later released digitally.",
+      "citation_num": "2",
+      "citation_url": "https://www.imdb.com/title/tt35521922",
+      "verdict": "not_support",
+      "reason": "The citation does not explicitly state that the film was released digitally."
+    },
+    {
+      "statement_index": 4,
+      "statement": "Good Boy was later released digitally.",
+      "citation_num": "4",
+      "citation_url": "https://www.rottentomatoes.com/m/good_boy_2025",
+      "verdict": "not_support",
+      "reason": "The citation mentions a streaming release date but does not explicitly describe a separate digital release process."
+    },
+    {
+      "statement_index": 4,
+      "statement": "Good Boy was later released digitally.",
+      "citation_num": "10",
+      "citation_url": "https://www.youtube.com/watch?v=ORiPMZcg-24",
+      "verdict": "support",
+      "reason": "The citation content explicitly states 'Good Boy | Official International Trailer (2025) | Now On Digital' and 'Now On Digital' in the description."
+    },
+    {
+      "statement_index": 5,
+      "statement": "Good Boy has a listed runtime of approximately 1 hour and 12 minutes.",
+      "citation_num": "11",
+      "citation_url": "https://www.amazon.com/Good-Boy-DVD-Ben-Leonberg/dp/B0G5SBXC3F",
+      "verdict": "support",
+      "reason": "The product details and description explicitly state a runtime of 1 hour and 12 minutes."
+    },
+    {
+      "statement_index": 5,
+      "statement": "Good Boy has a listed runtime of approximately 1 hour and 12 minutes.",
+      "citation_num": "2",
+      "citation_url": "https://www.imdb.com/title/tt35521922",
+      "verdict": "support",
+      "reason": "The citation lists the runtime as 1h 12m (72 min)."
+    },
+    {
+      "statement_index": 5,
+      "statement": "Good Boy has a listed runtime of approximately 1 hour and 12 minutes.",
+      "citation_num": "4",
+      "citation_url": "https://www.rottentomatoes.com/m/good_boy_2025",
+      "verdict": "conflict",
+      "reason": "The citation explicitly lists the runtime as 1h 13m, which contradicts 1 hour and 12 minutes."
+    },
+    {
+      "statement_index": 5,
+      "statement": "Good Boy has a listed runtime of approximately 1 hour and 12 minutes.",
+      "citation_num": "10",
+      "citation_url": "https://www.youtube.com/watch?v=ORiPMZcg-24",
+      "verdict": "support",
+      "reason": "The description section of the citation clearly lists 'Run Time: 1h 12m'."
+    },
+    {
+      "statement_index": 6,
+      "statement": "Good Boy has been made available on streaming platforms including Hulu and AMC+.",
+      "citation_num": "11",
+      "citation_url": "https://www.amazon.com/Good-Boy-DVD-Ben-Leonberg/dp/B0G5SBXC3F",
+      "verdict": "not_support",
+      "reason": "The citation does not contain information regarding Hulu or AMC+."
+    },
+    {
+      "statement_index": 6,
+      "statement": "Good Boy has been made available on streaming platforms including Hulu and AMC+.",
+      "citation_num": "2",
+      "citation_url": "https://www.imdb.com/title/tt35521922",
+      "verdict": "not_support",
+      "reason": "The citation shows logos for Hulu, Disney+, and Max, but makes no mention of AMC+."
+    },
+    {
+      "statement_index": 6,
+      "statement": "Good Boy has been made available on streaming platforms including Hulu and AMC+.",
+      "citation_num": "4",
+      "citation_url": "https://www.rottentomatoes.com/m/good_boy_2025",
+      "verdict": "support",
+      "reason": "The 'Where to Watch' section explicitly lists Hulu and AMC+ as subscription options."
+    },
+    {
+      "statement_index": 6,
+      "statement": "Good Boy has been made available on streaming platforms including Hulu and AMC+.",
+      "citation_num": "10",
+      "citation_url": "https://www.youtube.com/watch?v=ORiPMZcg-24",
+      "verdict": "not_support",
+      "reason": "The citation mentions 'Now On Digital' and a release date, but does not specify any streaming platforms like Hulu or AMC+."
+    },
+    {
+      "statement_index": 7,
+      "statement": "Good Boy follows Indy, a Nova Scotia Duck Tolling Retriever.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "support",
+      "reason": "The text explicitly identifies Indy as a Nova Scotia duck tolling retriever."
+    },
+    {
+      "statement_index": 8,
+      "statement": "Indy lives with his human owner Todd.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "support",
+      "reason": "The text identifies Todd as Indy's owner."
+    },
+    {
+      "statement_index": 9,
+      "statement": "Todd becomes gravely ill following the mysterious death of his grandfather.",
+      "citation_num": "11",
+      "citation_url": "https://www.amazon.com/Good-Boy-DVD-Ben-Leonberg/dp/B0G5SBXC3F",
+      "verdict": "not_support",
+      "reason": "The text states Todd moves to his late grandfather's cabin due to a lung ailment, but it does not specify that the grandfather's death was mysterious or that Todd became ill after the death."
+    },
+    {
+      "statement_index": 9,
+      "statement": "Todd becomes gravely ill following the mysterious death of his grandfather.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "support",
+      "reason": "The text confirms Todd falls gravely ill after the grandfather's mysterious death."
+    },
+    {
+      "statement_index": 10,
+      "statement": "Todd and Indy leave city life.",
+      "citation_num": "11",
+      "citation_url": "https://www.amazon.com/Good-Boy-DVD-Ben-Leonberg/dp/B0G5SBXC3F",
+      "verdict": "support",
+      "reason": "The product description states that Indy and his owner Todd leave city life for a family home in the country."
+    },
+    {
+      "statement_index": 10,
+      "statement": "Todd and Indy leave city life.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "not_support",
+      "reason": "The text states they 'retreat' to the grandfather's house to escape troubles, but does not explicitly mention leaving 'city life'."
+    },
+    {
+      "statement_index": 11,
+      "statement": "Todd and Indy move to the late grandfather's long-vacant rural family home in search of a quieter place to recover.",
+      "citation_num": "11",
+      "citation_url": "https://www.amazon.com/Good-Boy-DVD-Ben-Leonberg/dp/B0G5SBXC3F",
+      "verdict": "not_support",
+      "reason": "While it mentions they move to the country to a late grandfather's house, the citation does not explicitly state the move was 'in search of a quieter place to recover' beyond mentioning Todd has a lung ailment."
+    },
+    {
+      "statement_index": 11,
+      "statement": "Todd and Indy move to the late grandfather's long-vacant rural family home in search of a quieter place to recover.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "not_support",
+      "reason": "The text mentions moving to the grandfather's house, but does not state the house was 'long-vacant' or that they moved specifically for a 'quieter place to recover'."
+    },
+    {
+      "statement_index": 12,
+      "statement": "The inherited house is presented as an isolated, dusty property filled with unwanted and unwelcome supernatural presences.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "not_support",
+      "reason": "The text confirms the house has unwelcome guests, but does not describe the house as 'isolated' or 'dusty'."
+    },
+    {
+      "statement_index": 12,
+      "statement": "The inherited house is presented as an isolated, dusty property filled with unwanted and unwelcome supernatural presences.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "support",
+      "reason": "The text describes the house as abandoned, filled with cobwebs and vinyl sheeting, and harboring a spectre of death."
+    },
+    {
+      "statement_index": 13,
+      "statement": "The inherited house has neglected rooms and an atmosphere of decay.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "not_support",
+      "reason": "The text does not mention 'neglected rooms' or an 'atmosphere of decay'."
+    },
+    {
+      "statement_index": 13,
+      "statement": "The inherited house has neglected rooms and an atmosphere of decay.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "support",
+      "reason": "The text confirms the house was 'abandoned for years' and is 'nothing but cobwebs and vinyl sheeting hanging from the walls' and 'unfit for living'."
+    },
+    {
+      "statement_index": 14,
+      "statement": "Soon after arriving at the house, Indy begins to see shadows and figures.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "support",
+      "reason": "The text states that Indy begins to see shadows and figures."
+    },
+    {
+      "statement_index": 14,
+      "statement": "Soon after arriving at the house, Indy begins to see shadows and figures.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "not_support",
+      "reason": "The text mentions Indy investigates dark corners and discovers history, but does not explicitly state he sees 'shadows and figures'."
+    },
+    {
+      "statement_index": 15,
+      "statement": "Indy suffers nightmares that suggest the house is haunted.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "support",
+      "reason": "The text mentions Indy starts experiencing nightmares."
+    },
+    {
+      "statement_index": 15,
+      "statement": "Indy suffers nightmares that suggest the house is haunted.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "support",
+      "reason": "The text states that 'Indy has visions, nightmares, memories that don’t seem to be his'."
+    },
+    {
+      "statement_index": 16,
+      "statement": "Todd remains largely unaware of the full extent of the threat.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "not_support",
+      "reason": "The citation does not explicitly state that Todd is 'largely unaware' of the threat."
+    },
+    {
+      "statement_index": 16,
+      "statement": "Todd remains largely unaware of the full extent of the threat.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "support",
+      "reason": "The text states that the camera follows Indy as he investigates corners that Todd ignores and discoveries that Todd can't see."
+    },
+    {
+      "statement_index": 17,
+      "statement": "The film is structured so that most scenes are shown from Indy's eye level.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "support",
+      "reason": "The text explicitly states: 'Shot almost exclusively from Indy’s perspective'."
+    },
+    {
+      "statement_index": 18,
+      "statement": "The film cuts between Indy's reactions and apparitions visible only to him.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "not_support",
+      "reason": "The text mentions Indy discovers things Todd cannot see, but does not specifically detail the film's editing technique of cutting between reactions and apparitions."
+    },
+    {
+      "statement_index": 19,
+      "statement": "The film creates a dog's-eye view of a haunted house story.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "support",
+      "reason": "The text describes the film as a haunted house movie shot from the dog's perspective."
+    },
+    {
+      "statement_index": 20,
+      "statement": "Dark entities increasingly menace the property.",
+      "citation_num": "2",
+      "citation_url": "https://www.imdb.com/title/tt35521922",
+      "verdict": "support",
+      "reason": "The plot summary mentions that supernatural forces are lurking in the shadows and threatening the human companion."
+    },
+    {
+      "statement_index": 20,
+      "statement": "Dark entities increasingly menace the property.",
+      "citation_num": "4",
+      "citation_url": "https://www.rottentomatoes.com/m/good_boy_2025",
+      "verdict": "support",
+      "reason": "The synopsis mentions 'dark forces swirling around the house' and a 'malevolence' menacing the protagonists."
+    },
+    {
+      "statement_index": 20,
+      "statement": "Dark entities increasingly menace the property.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "not_support",
+      "reason": "While the film mentions a 'supernatural presence', the specific phrasing 'dark entities increasingly menace the property' is not present."
+    },
+    {
+      "statement_index": 20,
+      "statement": "Dark entities increasingly menace the property.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "support",
+      "reason": "The synopsis mentions supernatural forces lurking in the shadows and dark entities threatening the human companion."
+    },
+    {
+      "statement_index": 20,
+      "statement": "Dark entities increasingly menace the property.",
+      "citation_num": "10",
+      "citation_url": "https://www.youtube.com/watch?v=ORiPMZcg-24",
+      "verdict": "not_support",
+      "reason": "The citation states 'As dark entities threaten his human companion,' but does not explicitly mention that they 'increasingly menace the property'."
+    },
+    {
+      "statement_index": 21,
+      "statement": "Todd's health deteriorates.",
+      "citation_num": "2",
+      "citation_url": "https://www.imdb.com/title/tt35521922",
+      "verdict": "not_support",
+      "reason": "The citation mentions that dark entities threaten Todd, but it does not specify that his physical health deteriorates."
+    },
+    {
+      "statement_index": 21,
+      "statement": "Todd's health deteriorates.",
+      "citation_num": "4",
+      "citation_url": "https://www.rottentomatoes.com/m/good_boy_2025",
+      "verdict": "support",
+      "reason": "The synopsis states that 'Todd begins succumbing to the dark forces,' which implies a deterioration of his state."
+    },
+    {
+      "statement_index": 21,
+      "statement": "Todd's health deteriorates.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "support",
+      "reason": "The text notes that Todd falls gravely ill."
+    },
+    {
+      "statement_index": 21,
+      "statement": "Todd's health deteriorates.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "not_support",
+      "reason": "The citation mentions supernatural forces and threats to the owner, but it does not mention the health of the owner deteriorating."
+    },
+    {
+      "statement_index": 21,
+      "statement": "Todd's health deteriorates.",
+      "citation_num": "10",
+      "citation_url": "https://www.youtube.com/watch?v=ORiPMZcg-24",
+      "verdict": "not_support",
+      "reason": "The citation's plot summary focuses on Indy protecting Todd from supernatural forces, but does not mention Todd's health deteriorating."
+    },
+    {
+      "statement_index": 22,
+      "statement": "Indy becomes convinced that a supernatural presence is targeting his human companion.",
+      "citation_num": "2",
+      "citation_url": "https://www.imdb.com/title/tt35521922",
+      "verdict": "support",
+      "reason": "The plot summary states that Indy discovers supernatural forces and fights to protect his human companion from dark entities."
+    },
+    {
+      "statement_index": 22,
+      "statement": "Indy becomes convinced that a supernatural presence is targeting his human companion.",
+      "citation_num": "4",
+      "citation_url": "https://www.rottentomatoes.com/m/good_boy_2025",
+      "verdict": "support",
+      "reason": "The synopsis describes Indy battling a 'malevolence intent on dragging his beloved Todd into the afterlife.'"
+    },
+    {
+      "statement_index": 22,
+      "statement": "Indy becomes convinced that a supernatural presence is targeting his human companion.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "support",
+      "reason": "The text states Indy strives to save his owner from supernatural forces."
+    },
+    {
+      "statement_index": 22,
+      "statement": "Indy becomes convinced that a supernatural presence is targeting his human companion.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "support",
+      "reason": "The synopsis states the dog discovers supernatural forces and fights to protect his human companion."
+    },
+    {
+      "statement_index": 22,
+      "statement": "Indy becomes convinced that a supernatural presence is targeting his human companion.",
+      "citation_num": "10",
+      "citation_url": "https://www.youtube.com/watch?v=ORiPMZcg-24",
+      "verdict": "support",
+      "reason": "The plot summary states Indy 'discover[s] supernatural forces lurking in the shadows' and 'must fight to protect the one he loves most,' implying he is convinced of the threat to his human companion."
+    },
+    {
+      "statement_index": 23,
+      "statement": "Indy lacks any supernatural abilities himself.",
+      "citation_num": "7",
+      "citation_url": "https://www.youtube.com/watch?v=QT5_fo8PODA",
+      "verdict": "not_support",
+      "reason": "The provided text describes Indy's actions in protecting his owner from forces only he can see, but does not clarify whether he possesses or lacks supernatural abilities."
+    },
+    {
+      "statement_index": 23,
+      "statement": "Indy lacks any supernatural abilities himself.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "not_support",
+      "reason": "The citation does not make a claim about whether or not Indy has supernatural abilities."
+    },
+    {
+      "statement_index": 23,
+      "statement": "Indy lacks any supernatural abilities himself.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "not_support",
+      "reason": "The text mentions Indy has a 'sixth sense about the malevolent aura,' which implies a supernatural capability, so the statement lacks support."
+    },
+    {
+      "statement_index": 23,
+      "statement": "Indy lacks any supernatural abilities himself.",
+      "citation_num": "10",
+      "citation_url": "https://www.youtube.com/watch?v=ORiPMZcg-24",
+      "verdict": "not_support",
+      "reason": "The citation describes Indy as a 'loyal dog' and 'brave pup' but does not provide information about whether he possesses or lacks supernatural abilities."
+    },
+    {
+      "statement_index": 23,
+      "statement": "Indy lacks any supernatural abilities himself.",
+      "citation_num": "13",
+      "citation_url": "https://www.youtube.com/watch?v=Zziet4t-38Q",
+      "verdict": "not_support",
+      "reason": "The citation describes the making of the movie 'Good Boy' and the real dog Indy's natural behavior, but does not provide information about the character Indy's supernatural abilities within the film's plot."
+    },
+    {
+      "statement_index": 24,
+      "statement": "Indy relies on his instincts to investigate the house.",
+      "citation_num": "7",
+      "citation_url": "https://www.youtube.com/watch?v=QT5_fo8PODA",
+      "verdict": "not_support",
+      "reason": "The provided text mentions Indy protects his owner from unseen forces, but does not state he relies on instincts to 'investigate the house'."
+    },
+    {
+      "statement_index": 24,
+      "statement": "Indy relies on his instincts to investigate the house.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "not_support",
+      "reason": "The text says Indy relies on his instincts, but not specifically to 'investigate the house'."
+    },
+    {
+      "statement_index": 24,
+      "statement": "Indy relies on his instincts to investigate the house.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "not_support",
+      "reason": "While it describes his investigative actions, the text does not explicitly mention him relying on 'instincts' as a formal investigative method."
+    },
+    {
+      "statement_index": 24,
+      "statement": "Indy relies on his instincts to investigate the house.",
+      "citation_num": "10",
+      "citation_url": "https://www.youtube.com/watch?v=ORiPMZcg-24",
+      "verdict": "not_support",
+      "reason": "The citation describes Indy's role in protecting Todd but does not specify that he relies on his instincts to investigate the house."
+    },
+    {
+      "statement_index": 24,
+      "statement": "Indy relies on his instincts to investigate the house.",
+      "citation_num": "13",
+      "citation_url": "https://www.youtube.com/watch?v=Zziet4t-38Q",
+      "verdict": "not_support",
+      "reason": "The citation focuses on how the movie was made using the real dog Indy's instincts, not on the plot details of the character Indy investigating a house."
+    },
+    {
+      "statement_index": 25,
+      "statement": "Indy patrols the house's dark corners and hallways.",
+      "citation_num": "7",
+      "citation_url": "https://www.youtube.com/watch?v=QT5_fo8PODA",
+      "verdict": "not_support",
+      "reason": "The provided text does not contain any mention of Indy patrolling the house's dark corners or hallways."
+    },
+    {
+      "statement_index": 25,
+      "statement": "Indy patrols the house's dark corners and hallways.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "not_support",
+      "reason": "The text does not mention Indy patrolling 'dark corners and hallways'."
+    },
+    {
+      "statement_index": 25,
+      "statement": "Indy patrols the house's dark corners and hallways.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "support",
+      "reason": "The text mentions the camera follows him as he investigates dark corners and the house."
+    },
+    {
+      "statement_index": 25,
+      "statement": "Indy patrols the house's dark corners and hallways.",
+      "citation_num": "10",
+      "citation_url": "https://www.youtube.com/watch?v=ORiPMZcg-24",
+      "verdict": "not_support",
+      "reason": "The citation provides a general plot summary of Indy fighting to protect Todd, but does not detail specific actions like patrolling dark corners and hallways."
+    },
+    {
+      "statement_index": 25,
+      "statement": "Indy patrols the house's dark corners and hallways.",
+      "citation_num": "13",
+      "citation_url": "https://www.youtube.com/watch?v=Zziet4t-38Q",
+      "verdict": "not_support",
+      "reason": "The citation does not provide any plot details about the movie 'Good Boy,' including whether Indy patrols dark corners and hallways."
+    },
+    {
+      "statement_index": 26,
+      "statement": "Indy confronts the apparitions he perceives in order to protect Todd from an unseen but persistent presence.",
+      "citation_num": "7",
+      "citation_url": "https://www.youtube.com/watch?v=QT5_fo8PODA",
+      "verdict": "not_support",
+      "reason": "The text states Indy protects his owner from forces only he can see, but does not specifically state he 'confronts apparitions' or that the presence is 'persistent'."
+    },
+    {
+      "statement_index": 26,
+      "statement": "Indy confronts the apparitions he perceives in order to protect Todd from an unseen but persistent presence.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "not_support",
+      "reason": "The text says Indy strives to save Todd, but does not describe him 'confronting apparitions' in a specific way to protect him."
+    },
+    {
+      "statement_index": 26,
+      "statement": "Indy confronts the apparitions he perceives in order to protect Todd from an unseen but persistent presence.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "support",
+      "reason": "The text states Indy does his 'doggie best to protect his owner from the spectre of death'."
+    },
+    {
+      "statement_index": 26,
+      "statement": "Indy confronts the apparitions he perceives in order to protect Todd from an unseen but persistent presence.",
+      "citation_num": "10",
+      "citation_url": "https://www.youtube.com/watch?v=ORiPMZcg-24",
+      "verdict": "not_support",
+      "reason": "While the citation states Indy 'must fight to protect' Todd from 'dark entities,' it does not specifically use the term 'apparitions' or explicitly describe the presence as 'unseen but persistent'."
+    },
+    {
+      "statement_index": 26,
+      "statement": "Indy confronts the apparitions he perceives in order to protect Todd from an unseen but persistent presence.",
+      "citation_num": "13",
+      "citation_url": "https://www.youtube.com/watch?v=Zziet4t-38Q",
+      "verdict": "not_support",
+      "reason": "The citation does not mention any plot points involving apparitions, a character named Todd, or Indy protecting anyone from an unseen presence."
+    },
+    {
+      "statement_index": 27,
+      "statement": "Human characters around Todd, including his worried sister and an uneasy neighbor, are sketched in only briefly.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "support",
+      "reason": "The text states: 'the neighbor is also unenthused... his sister is worried... we never get a really good look at any of them'."
+    },
+    {
+      "statement_index": 28,
+      "statement": "The perspectives and backstories of human characters remain largely underdeveloped.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "support",
+      "reason": "The text notes: 'The human characters in the film are only the barest of sketches.'"
+    },
+    {
+      "statement_index": 29,
+      "statement": "The narrative focuses on Indy's perceptions and efforts.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "support",
+      "reason": "The text states: 'This isn’t their story; its Indy’s and he’s got some snooping to do.'"
+    },
+    {
+      "statement_index": 30,
+      "statement": "Indy plays the central canine role in Good Boy.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "support",
+      "reason": "The review focuses on Indy as the primary dog character."
+    },
+    {
+      "statement_index": 30,
+      "statement": "Indy plays the central canine role in Good Boy.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "support",
+      "reason": "The cast list includes Indy as the first actor, and the synopsis establishes the dog's central role."
+    },
+    {
+      "statement_index": 30,
+      "statement": "Indy plays the central canine role in Good Boy.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "support",
+      "reason": "The text identifies Indy as the dog who provides the 'stellar performance' and lead role."
+    },
+    {
+      "statement_index": 31,
+      "statement": "Indy is presented as the dog through whose perspective the story is told.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "support",
+      "reason": "The review explicitly states the film offers a horror experience from the perspective of the pet."
+    },
+    {
+      "statement_index": 31,
+      "statement": "Indy is presented as the dog through whose perspective the story is told.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "not_support",
+      "reason": "While the synopsis implies the dog is the protagonist, it does not explicitly state the story is told from the dog's 'perspective' or point of view."
+    },
+    {
+      "statement_index": 31,
+      "statement": "Indy is presented as the dog through whose perspective the story is told.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "support",
+      "reason": "The text confirms: 'Good Boy is Indy’s story' and is 'shot almost exclusively from Indy’s perspective'."
+    },
+    {
+      "statement_index": 32,
+      "statement": "Shane Jensen portrays Todd.",
+      "citation_num": "11",
+      "citation_url": "https://www.amazon.com/Good-Boy-DVD-Ben-Leonberg/dp/B0G5SBXC3F",
+      "verdict": "support",
+      "reason": "The product description identifies Shane Jensen as the actor portraying Todd."
+    },
+    {
+      "statement_index": 32,
+      "statement": "Shane Jensen portrays Todd.",
+      "citation_num": "4",
+      "citation_url": "https://www.rottentomatoes.com/m/good_boy_2025",
+      "verdict": "support",
+      "reason": "The 'Cast & Crew' section identifies Shane Jensen as the actor playing Todd."
+    },
+    {
+      "statement_index": 32,
+      "statement": "Shane Jensen portrays Todd.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "support",
+      "reason": "Shane Jensen is listed in the cast section, and the synopsis identifies him as the character Todd."
+    },
+    {
+      "statement_index": 33,
+      "statement": "Todd is Indy's human owner.",
+      "citation_num": "11",
+      "citation_url": "https://www.amazon.com/Good-Boy-DVD-Ben-Leonberg/dp/B0G5SBXC3F",
+      "verdict": "support",
+      "reason": "The description refers to Indy as being with his human owner—and best friend—Todd."
+    },
+    {
+      "statement_index": 33,
+      "statement": "Todd is Indy's human owner.",
+      "citation_num": "4",
+      "citation_url": "https://www.rottentomatoes.com/m/good_boy_2025",
+      "verdict": "support",
+      "reason": "The synopsis identifies Indy as a canine whose human owner is Todd."
+    },
+    {
+      "statement_index": 33,
+      "statement": "Todd is Indy's human owner.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "support",
+      "reason": "The synopsis explicitly states the loyal dog moves with his owner Todd."
+    },
+    {
+      "statement_index": 34,
+      "statement": "Todd moves with Indy to the rural family home.",
+      "citation_num": "11",
+      "citation_url": "https://www.amazon.com/Good-Boy-DVD-Ben-Leonberg/dp/B0G5SBXC3F",
+      "verdict": "support",
+      "reason": "The description confirms that Todd moves into the rural family home accompanied by Indy."
+    },
+    {
+      "statement_index": 34,
+      "statement": "Todd moves with Indy to the rural family home.",
+      "citation_num": "4",
+      "citation_url": "https://www.rottentomatoes.com/m/good_boy_2025",
+      "verdict": "support",
+      "reason": "The synopsis confirms that Indy and Todd move from city life to a vacant family home in the country."
+    },
+    {
+      "statement_index": 34,
+      "statement": "Todd moves with Indy to the rural family home.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "support",
+      "reason": "The synopsis confirms the dog moves to a rural family home with his owner Todd."
+    },
+    {
+      "statement_index": 35,
+      "statement": "Larry Fessenden appears as Todd's grandfather.",
+      "citation_num": "4",
+      "citation_url": "https://www.rottentomatoes.com/m/good_boy_2025",
+      "verdict": "support",
+      "reason": "The 'Cast & Crew' section lists Larry Fessenden with the role of Grandpa."
+    },
+    {
+      "statement_index": 35,
+      "statement": "Larry Fessenden appears as Todd's grandfather.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "not_support",
+      "reason": "The citation lists Larry Fessenden as a cast member but does not specify that he plays Todd's grandfather."
+    },
+    {
+      "statement_index": 36,
+      "statement": "Todd's grandfather is identified as Grandpa in cast listings.",
+      "citation_num": "4",
+      "citation_url": "https://www.rottentomatoes.com/m/good_boy_2025",
+      "verdict": "support",
+      "reason": "The 'Cast & Crew' section lists Larry Fessenden as 'Grandpa'."
+    },
+    {
+      "statement_index": 36,
+      "statement": "Todd's grandfather is identified as Grandpa in cast listings.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "not_support",
+      "reason": "The cast list provides names but does not assign specific character roles like 'Grandpa' to them."
+    },
+    {
+      "statement_index": 37,
+      "statement": "Arielle Friedman, Stuart Rudin, Anya Krawcheck, Hunter Goetz, and Bandit are credited among the principal cast.",
+      "citation_num": "4",
+      "citation_url": "https://www.rottentomatoes.com/m/good_boy_2025",
+      "verdict": "not_support",
+      "reason": "While Arielle Friedman, Stuart Rudin, and Anya Krawcheck are listed, Hunter Goetz and Bandit are not mentioned in the provided citation."
+    },
+    {
+      "statement_index": 37,
+      "statement": "Arielle Friedman, Stuart Rudin, Anya Krawcheck, Hunter Goetz, and Bandit are credited among the principal cast.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "support",
+      "reason": "These individuals are all listed in the 'Cast' section of the citation."
+    },
+    {
+      "statement_index": 37,
+      "statement": "Arielle Friedman, Stuart Rudin, Anya Krawcheck, Hunter Goetz, and Bandit are credited among the principal cast.",
+      "citation_num": "14",
+      "citation_url": "https://www.youtube.com/watch?v=q4-CRkd_74g",
+      "verdict": "conflict",
+      "reason": "The citation lists Larry Fessenden, Arielle Friedman, Indy, Shane Jensen, Anya Krawcheck, and Stuart Rudin as starring, but does not mention Hunter Goetz or Bandit."
+    },
+    {
+      "statement_index": 38,
+      "statement": "Ben Leonberg directed Good Boy.",
+      "citation_num": "3",
+      "citation_url": "https://filmthreat.com/reviews/good-boy-horror-review",
+      "verdict": "support",
+      "reason": "The citation identifies Ben Leonberg as the director of the film."
+    },
+    {
+      "statement_index": 38,
+      "statement": "Ben Leonberg directed Good Boy.",
+      "citation_num": "4",
+      "citation_url": "https://www.rottentomatoes.com/m/good_boy_2025",
+      "verdict": "support",
+      "reason": "The 'Movie Info' section credits Ben Leonberg as the director."
+    },
+    {
+      "statement_index": 38,
+      "statement": "Ben Leonberg directed Good Boy.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "support",
+      "reason": "The 'Director' section explicitly identifies Ben Leonberg as the director."
+    },
+    {
+      "statement_index": 39,
+      "statement": "Ben Leonberg co-wrote the film with Alex Cannon.",
+      "citation_num": "3",
+      "citation_url": "https://filmthreat.com/reviews/good-boy-horror-review",
+      "verdict": "support",
+      "reason": "The citation explicitly states that the film was co-written by Alex Cannon."
+    },
+    {
+      "statement_index": 39,
+      "statement": "Ben Leonberg co-wrote the film with Alex Cannon.",
+      "citation_num": "4",
+      "citation_url": "https://www.rottentomatoes.com/m/good_boy_2025",
+      "verdict": "conflict",
+      "reason": "The 'Movie Info' section lists Alex Cannon as the screenwriter, but does not identify him as a co-writer with Ben Leonberg."
+    },
+    {
+      "statement_index": 39,
+      "statement": "Ben Leonberg co-wrote the film with Alex Cannon.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "support",
+      "reason": "The 'Writers' section explicitly identifies Alex Cannon and Ben Leonberg as the writers."
+    },
+    {
+      "statement_index": 40,
+      "statement": "Letterboxd credits Kari Fischer, Ben Leonberg, and Brian Goodheart as producers of the film.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "support",
+      "reason": "The 'Producers' section explicitly lists these three individuals."
+    },
+    {
+      "statement_index": 41,
+      "statement": "Curtis Roberts is credited as editor.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "support",
+      "reason": "The 'Editor' section explicitly lists Curtis Roberts."
+    },
+    {
+      "statement_index": 42,
+      "statement": "Wade Grebnoel is credited as responsible for cinematography.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "support",
+      "reason": "The 'Cinematography' section explicitly lists Wade Grebnoel."
+    },
+    {
+      "statement_index": 43,
+      "statement": "Ben Leonberg has stated that Indy in the film is his real Nova Scotia Duck Tolling Retriever.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "support",
+      "reason": "The text confirms the director said Indy is his actual dog."
+    },
+    {
+      "statement_index": 44,
+      "statement": "Ben Leonberg was careful not to traumatize the dog during production despite the character's on-screen distress.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "not_support",
+      "reason": "The text states the director didn't want to kill the dog, but does not mention the dog's comfort or being 'careful not to traumatize' it during production."
+    },
+    {
+      "statement_index": 45,
+      "statement": "In an interview feature about the making of Good Boy, Ben Leonberg explained that the film was developed over about three years by a small family team.",
+      "citation_num": "13",
+      "citation_url": "https://www.youtube.com/watch?v=Zziet4t-38Q",
+      "verdict": "support",
+      "reason": "The citation states, 'Over three years, the small family team built the entire movie around Indy’s natural charm and unpredictable instincts,' directly supporting the statement."
+    },
+    {
+      "statement_index": 46,
+      "statement": "The production was built around Indy's natural behavior and instincts.",
+      "citation_num": "13",
+      "citation_url": "https://www.youtube.com/watch?v=Zziet4t-38Q",
+      "verdict": "support",
+      "reason": "The citation explicitly mentions that the 'small family team built the entire movie around Indy’s natural charm and unpredictable instincts.'"
+    },
+    {
+      "statement_index": 47,
+      "statement": "The production captured genuine moments between man and dog rather than training Indy as a conventional movie animal.",
+      "citation_num": "13",
+      "citation_url": "https://www.youtube.com/watch?v=Zziet4t-38Q",
+      "verdict": "support",
+      "reason": "The citation states they captured 'genuine moments between man and dog' and 'authentic “performances” without traditional animal training,' which supports the statement."
+    },
+    {
+      "statement_index": 48,
+      "statement": "Ben Leonberg described the process as learning how to make a movie around a dog who does not know he is in a film.",
+      "citation_num": "13",
+      "citation_url": "https://www.youtube.com/watch?v=Zziet4t-38Q",
+      "verdict": "support",
+      "reason": "The citation opens with the question, 'How do you make a movie when your lead actor doesn’t even know he’s in one?' which reflects Ben Leonberg's description of the process."
+    },
+    {
+      "statement_index": 49,
+      "statement": "The process emphasized flexible problem-solving.",
+      "citation_num": "13",
+      "citation_url": "https://www.youtube.com/watch?v=Zziet4t-38Q",
+      "verdict": "support",
+      "reason": "The citation describes building the movie around 'unpredictable instincts' and 'inventing new on-set “commands,”' which inherently implies a need for flexible problem-solving."
+    },
+    {
+      "statement_index": 50,
+      "statement": "The process involved inventing new commands and tricks on set.",
+      "citation_num": "13",
+      "citation_url": "https://www.youtube.com/watch?v=Zziet4t-38Q",
+      "verdict": "support",
+      "reason": "The citation explicitly states, 'From inventing new on-set “commands” to capturing genuine moments between man and dog...'"
+    },
+    {
+      "statement_index": 51,
+      "statement": "The process involved devising methods to guide Indy's movement and blocking within scenes.",
+      "citation_num": "13",
+      "citation_url": "https://www.youtube.com/watch?v=Zziet4t-38Q",
+      "verdict": "support",
+      "reason": "The citation mentions 'inventing new on-set “commands,”' which are methods devised to guide Indy's actions and movements within scenes."
+    },
+    {
+      "statement_index": 52,
+      "statement": "According to the same feature, everyday routines with Indy were incorporated directly into scenes.",
+      "citation_num": "13",
+      "citation_url": "https://www.youtube.com/watch?v=Zziet4t-38Q",
+      "verdict": "support",
+      "reason": "The citation states, 'Discover how a daily routine became a cinematic story,' indicating that everyday routines were incorporated into scenes."
+    },
+    {
+      "statement_index": 53,
+      "statement": "An example of incorporated routines is the dog weaving between Ben Leonberg's legs in the morning.",
+      "citation_num": "13",
+      "citation_url": "https://www.youtube.com/watch?v=Zziet4t-38Q",
+      "verdict": "not_support",
+      "reason": "While the citation mentions daily routines were incorporated, it does not provide the specific example of the dog weaving between Ben Leonberg's legs in the morning."
+    },
+    {
+      "statement_index": 54,
+      "statement": "Ben Leonberg sometimes physically stood in for Todd during filming.",
+      "citation_num": "13",
+      "citation_url": "https://www.youtube.com/watch?v=Zziet4t-38Q",
+      "verdict": "not_support",
+      "reason": "The citation does not mention a character named Todd or Ben Leonberg physically standing in for anyone during filming."
+    },
+    {
+      "statement_index": 55,
+      "statement": "Critics have noted that the film's narrative is shot largely from Indy's perspective at knee height.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "not_support",
+      "reason": "The text mentions it is shot from Indy's perspective, but does not specifically use the term 'knee height'."
+    },
+    {
+      "statement_index": 56,
+      "statement": "The film's editing alternates between close views of the dog and the ghostly manifestations he perceives.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "not_support",
+      "reason": "The text describes the perspective, but does not explicitly explain the film's specific editing patterns regarding ghostly manifestations."
+    },
+    {
+      "statement_index": 57,
+      "statement": "The film's editing reflects the production's focus on dog-level framing.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "not_support",
+      "reason": "The text describes the framing as being from Indy's perspective, but does not explicitly state that the 'editing reflects' this."
+    },
+    {
+      "statement_index": 58,
+      "statement": "Good Boy had its world premiere on 8 March 2025 at the South by Southwest (SXSW) Film & TV Festival in the United States.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "support",
+      "reason": "The premiere section confirms the date, location, and event."
+    },
+    {
+      "statement_index": 58,
+      "statement": "Good Boy had its world premiere on 8 March 2025 at the South by Southwest (SXSW) Film & TV Festival in the United States.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "not_support",
+      "reason": "The text confirms the SXSW screening in March 2025, but does not provide the specific date of March 8."
+    },
+    {
+      "statement_index": 59,
+      "statement": "Following its SXSW premiere, Good Boy screened at several international film festivals.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "not_support",
+      "reason": "The provided text does not mention SXSW or film festival screenings."
+    },
+    {
+      "statement_index": 59,
+      "statement": "Following its SXSW premiere, Good Boy screened at several international film festivals.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "support",
+      "reason": "The release dates section lists screenings in various countries following the premiere."
+    },
+    {
+      "statement_index": 59,
+      "statement": "Following its SXSW premiere, Good Boy screened at several international film festivals.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "not_support",
+      "reason": "The text does not mention any international screenings."
+    },
+    {
+      "statement_index": 60,
+      "statement": "International film festivals where Good Boy screened include the Calgary Underground Film Festival in Canada, the Bucheon International Fantastic Film Festival in South Korea, the Octopus Film Festival in Poland, and the Melbourne International Film Festival in Australia.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "not_support",
+      "reason": "The provided text does not mention these specific international film festivals."
+    },
+    {
+      "statement_index": 60,
+      "statement": "International film festivals where Good Boy screened include the Calgary Underground Film Festival in Canada, the Bucheon International Fantastic Film Festival in South Korea, the Octopus Film Festival in Poland, and the Melbourne International Film Festival in Australia.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "support",
+      "reason": "The citation lists these specific festivals and countries in the release dates section."
+    },
+    {
+      "statement_index": 60,
+      "statement": "International film festivals where Good Boy screened include the Calgary Underground Film Festival in Canada, the Bucheon International Fantastic Film Festival in South Korea, the Octopus Film Festival in Poland, and the Melbourne International Film Festival in Australia.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "not_support",
+      "reason": "The text does not mention any of these specific international film festivals."
+    },
+    {
+      "statement_index": 64,
+      "statement": "An international trailer released by Vertigo Releasing advertised Good Boy as a horror and suspense film.",
+      "citation_num": "10",
+      "citation_url": "https://www.youtube.com/watch?v=ORiPMZcg-24",
+      "verdict": "support",
+      "reason": "The title of the video is 'Good Boy | Official International Trailer (2025) | Now On Digital', it is uploaded by 'Vertigo Releasing', and the description lists 'Genre: Horror, Suspense'."
+    },
+    {
+      "statement_index": 65,
+      "statement": "Good Boy had a planned digital release date of 10 October 2025.",
+      "citation_num": "10",
+      "citation_url": "https://www.youtube.com/watch?v=ORiPMZcg-24",
+      "verdict": "support",
+      "reason": "The description section explicitly states 'Release Date: 10th October 2025' and the title includes 'Now On Digital'."
+    },
+    {
+      "statement_index": 66,
+      "statement": "Good Boy had a runtime of 1 hour and 12 minutes.",
+      "citation_num": "10",
+      "citation_url": "https://www.youtube.com/watch?v=ORiPMZcg-24",
+      "verdict": "support",
+      "reason": "The description section clearly states 'Run Time: 1h 12m'."
+    },
+    {
+      "statement_index": 67,
+      "statement": "The same trailer synopsis reiterates the core premise of a loyal dog named Indy moving with his owner Todd to a rural family home and confronting supernatural forces lurking in the shadows.",
+      "citation_num": "10",
+      "citation_url": "https://www.youtube.com/watch?v=ORiPMZcg-24",
+      "verdict": "support",
+      "reason": "The description's plot summary matches the statement: 'A loyal dog named Indy moves to a rural family home with his owner Todd, only to discover supernatural forces lurking in the shadows. As dark entities threaten his human companion, the brave pup must fight to protect the one he loves most.'"
+    },
+    {
+      "statement_index": 68,
+      "statement": "A separate review and discussion segment stated that Good Boy was set for a theatrical release on 3 October 2025.",
+      "citation_num": "7",
+      "citation_url": "https://www.youtube.com/watch?v=QT5_fo8PODA",
+      "verdict": "support",
+      "reason": "The description in the citation explicitly states, 'GOOD BOY is set for a theatrical release on October 3, 2025.'"
+    },
+    {
+      "statement_index": 68,
+      "statement": "A separate review and discussion segment stated that Good Boy was set for a theatrical release on 3 October 2025.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "not_support",
+      "reason": "The citation provides release dates but does not contain a narrative review or discussion segment mentioning a theatrical release date of 3 October 2025 specifically as a topic for debate."
+    },
+    {
+      "statement_index": 68,
+      "statement": "A separate review and discussion segment stated that Good Boy was set for a theatrical release on 3 October 2025.",
+      "citation_num": "10",
+      "citation_url": "https://www.youtube.com/watch?v=ORiPMZcg-24",
+      "verdict": "not_support",
+      "reason": "The citation provides a digital release date but does not mention any theatrical release date or a 'separate review and discussion segment' with such information."
+    },
+    {
+      "statement_index": 69,
+      "statement": "The theatrical release date of 3 October 2025 was not repeated in the festival listings or digital-release materials.",
+      "citation_num": "7",
+      "citation_url": "https://www.youtube.com/watch?v=QT5_fo8PODA",
+      "verdict": "not_support",
+      "reason": "The provided citation does not contain a comprehensive set of 'festival listings' or 'digital-release materials' to verify if the date was repeated."
+    },
+    {
+      "statement_index": 69,
+      "statement": "The theatrical release date of 3 October 2025 was not repeated in the festival listings or digital-release materials.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "conflict",
+      "reason": "The release dates section explicitly lists '03 Oct 2025' as a theatrical release date for the USA, contradicting the claim that it was not repeated in the materials."
+    },
+    {
+      "statement_index": 69,
+      "statement": "The theatrical release date of 3 October 2025 was not repeated in the festival listings or digital-release materials.",
+      "citation_num": "10",
+      "citation_url": "https://www.youtube.com/watch?v=ORiPMZcg-24",
+      "verdict": "not_support",
+      "reason": "Since a theatrical release date of 3 October 2025 is not mentioned in the citation, there is no information to support or contradict whether it was repeated in other listings."
+    },
+    {
+      "statement_index": 70,
+      "statement": "There was some variation in reported rollout plans between early commentary and later distribution announcements.",
+      "citation_num": "7",
+      "citation_url": "https://www.youtube.com/watch?v=QT5_fo8PODA",
+      "verdict": "not_support",
+      "reason": "The provided citation only shows one set of information and does not provide evidence of how plans varied over time."
+    },
+    {
+      "statement_index": 70,
+      "statement": "There was some variation in reported rollout plans between early commentary and later distribution announcements.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "not_support",
+      "reason": "The provided text only lists metadata and release dates; it does not contain editorial commentary or discussion regarding the film's rollout plans."
+    },
+    {
+      "statement_index": 70,
+      "statement": "There was some variation in reported rollout plans between early commentary and later distribution announcements.",
+      "citation_num": "10",
+      "citation_url": "https://www.youtube.com/watch?v=ORiPMZcg-24",
+      "verdict": "not_support",
+      "reason": "The citation only presents information about the trailer and its digital release, without discussing variations in rollout plans or early commentary versus later announcements."
+    },
+    {
+      "statement_index": 71,
+      "statement": "By the time of its wider availability, the film had an established release path.",
+      "citation_num": "3",
+      "citation_url": "https://filmthreat.com/reviews/good-boy-horror-review",
+      "verdict": "not_support",
+      "reason": "The provided text does not contain any information regarding the film's release path."
+    },
+    {
+      "statement_index": 71,
+      "statement": "By the time of its wider availability, the film had an established release path.",
+      "citation_num": "4",
+      "citation_url": "https://www.rottentomatoes.com/m/good_boy_2025",
+      "verdict": "not_support",
+      "reason": "The citation provides release dates but does not document an 'established release path'."
+    },
+    {
+      "statement_index": 71,
+      "statement": "By the time of its wider availability, the film had an established release path.",
+      "citation_num": "10",
+      "citation_url": "https://www.youtube.com/watch?v=ORiPMZcg-24",
+      "verdict": "support",
+      "reason": "The citation explicitly states 'Now On Digital' and provides a 'Release Date: 10th October 2025', indicating an established release path for its availability."
+    },
+    {
+      "statement_index": 72,
+      "statement": "The release path combined festival screenings, digital release, and streaming distribution.",
+      "citation_num": "3",
+      "citation_url": "https://filmthreat.com/reviews/good-boy-horror-review",
+      "verdict": "not_support",
+      "reason": "The citation does not mention the film's distribution strategy or streaming availability."
+    },
+    {
+      "statement_index": 72,
+      "statement": "The release path combined festival screenings, digital release, and streaming distribution.",
+      "citation_num": "4",
+      "citation_url": "https://www.rottentomatoes.com/m/good_boy_2025",
+      "verdict": "not_support",
+      "reason": "The citation does not mention festival screenings."
+    },
+    {
+      "statement_index": 72,
+      "statement": "The release path combined festival screenings, digital release, and streaming distribution.",
+      "citation_num": "10",
+      "citation_url": "https://www.youtube.com/watch?v=ORiPMZcg-24",
+      "verdict": "not_support",
+      "reason": "The citation mentions a 'Digital' release but does not provide any information about 'festival screenings' or 'streaming distribution' as part of the release path."
+    },
+    {
+      "statement_index": 73,
+      "statement": "IFC Films promoted Good Boy with an official trailer.",
+      "citation_num": "14",
+      "citation_url": "https://www.youtube.com/watch?v=q4-CRkd_74g",
+      "verdict": "support",
+      "reason": "The video title is 'Good Boy - Official Trailer | HD | IFC Films', indicating IFC Films promoted the official trailer."
+    },
+    {
+      "statement_index": 74,
+      "statement": "The trailer credited Ben Leonberg as director.",
+      "citation_num": "14",
+      "citation_url": "https://www.youtube.com/watch?v=q4-CRkd_74g",
+      "verdict": "support",
+      "reason": "The description explicitly states 'Director: Ben Leonberg'."
+    },
+    {
+      "statement_index": 75,
+      "statement": "The trailer listed Larry Fessenden, Arielle Friedman, Indy, Shane Jensen, Anya Krawcheck, and Stuart Rudin among the starring cast.",
+      "citation_num": "14",
+      "citation_url": "https://www.youtube.com/watch?v=q4-CRkd_74g",
+      "verdict": "support",
+      "reason": "The description lists 'Starring: Larry Fessenden, Arielle Friedman, Indy, Shane Jensen, Anya Krawcheck & Stuart Rudin', which matches the statement."
+    },
+    {
+      "statement_index": 76,
+      "statement": "The trailer signaled IFC's involvement in the film's release.",
+      "citation_num": "14",
+      "citation_url": "https://www.youtube.com/watch?v=q4-CRkd_74g",
+      "verdict": "support",
+      "reason": "The video title 'Good Boy - Official Trailer | HD | IFC Films' and the hashtag #IFCFilms clearly signal IFC's involvement in the film."
+    },
+    {
+      "statement_index": 79,
+      "statement": "Rotten Tomatoes lists Good Boy as available to stream with a subscription on Hulu and AMC+.",
+      "citation_num": "2",
+      "citation_url": "https://www.imdb.com/title/tt35521922",
+      "verdict": "not_support",
+      "reason": "The provided citation content is from IMDb and does not contain information from Rotten Tomatoes."
+    },
+    {
+      "statement_index": 79,
+      "statement": "Rotten Tomatoes lists Good Boy as available to stream with a subscription on Hulu and AMC+.",
+      "citation_num": "4",
+      "citation_url": "https://www.rottentomatoes.com/m/good_boy_2025",
+      "verdict": "support",
+      "reason": "The 'Where to Watch' section confirms Hulu and AMC+ subscription availability."
+    },
+    {
+      "statement_index": 80,
+      "statement": "Rotten Tomatoes lists Good Boy as available to rent or buy via Fandango at Home.",
+      "citation_num": "2",
+      "citation_url": "https://www.imdb.com/title/tt35521922",
+      "verdict": "not_support",
+      "reason": "The provided citation content does not contain information from Rotten Tomatoes or Fandango at Home."
+    },
+    {
+      "statement_index": 80,
+      "statement": "Rotten Tomatoes lists Good Boy as available to rent or buy via Fandango at Home.",
+      "citation_num": "4",
+      "citation_url": "https://www.rottentomatoes.com/m/good_boy_2025",
+      "verdict": "support",
+      "reason": "The 'Where to Watch' section lists Fandango at Home as a place to rent or buy."
+    },
+    {
+      "statement_index": 81,
+      "statement": "IMDb indicates that viewers can watch Good Boy on Hulu.",
+      "citation_num": "2",
+      "citation_url": "https://www.imdb.com/title/tt35521922",
+      "verdict": "support",
+      "reason": "The citation includes images indicating that the film can be watched on Hulu."
+    },
+    {
+      "statement_index": 81,
+      "statement": "IMDb indicates that viewers can watch Good Boy on Hulu.",
+      "citation_num": "4",
+      "citation_url": "https://www.rottentomatoes.com/m/good_boy_2025",
+      "verdict": "not_support",
+      "reason": "The provided text does not contain information from IMDb."
+    },
+    {
+      "statement_index": 82,
+      "statement": "IMDb's indication aligns with the streaming availability reported by Rotten Tomatoes.",
+      "citation_num": "2",
+      "citation_url": "https://www.imdb.com/title/tt35521922",
+      "verdict": "not_support",
+      "reason": "The citation does not include information from Rotten Tomatoes to allow for a comparison."
+    },
+    {
+      "statement_index": 82,
+      "statement": "IMDb's indication aligns with the streaming availability reported by Rotten Tomatoes.",
+      "citation_num": "4",
+      "citation_url": "https://www.rottentomatoes.com/m/good_boy_2025",
+      "verdict": "not_support",
+      "reason": "The provided text does not contain information from IMDb to compare."
+    },
+    {
+      "statement_index": 83,
+      "statement": "An Amazon listing for a Good Boy DVD identifies the film as a 2025 release.",
+      "citation_num": "11",
+      "citation_url": "https://www.amazon.com/Good-Boy-DVD-Ben-Leonberg/dp/B0G5SBXC3F",
+      "verdict": "support",
+      "reason": "The 'From the manufacturer' section explicitly lists the film as a 2025 release."
+    },
+    {
+      "statement_index": 84,
+      "statement": "The DVD listing states Good Boy has a PG-13 rating.",
+      "citation_num": "11",
+      "citation_url": "https://www.amazon.com/Good-Boy-DVD-Ben-Leonberg/dp/B0G5SBXC3F",
+      "verdict": "support",
+      "reason": "The product details section confirms the film has a PG-13 rating."
+    },
+    {
+      "statement_index": 85,
+      "statement": "The DVD listing states Good Boy has a runtime of approximately 1 hour and 12 minutes.",
+      "citation_num": "11",
+      "citation_url": "https://www.amazon.com/Good-Boy-DVD-Ben-Leonberg/dp/B0G5SBXC3F",
+      "verdict": "support",
+      "reason": "The product details section confirms a run time of 1 hour and 12 minutes."
+    },
+    {
+      "statement_index": 86,
+      "statement": "The DVD listing summarizes the story as following Indy on a new adventure with Todd as they leave city life for a long-vacant family home.",
+      "citation_num": "11",
+      "citation_url": "https://www.amazon.com/Good-Boy-DVD-Ben-Leonberg/dp/B0G5SBXC3F",
+      "verdict": "support",
+      "reason": "The product description summarizes the story as Indy and his human owner Todd leaving city life for a long-vacant family home."
+    },
+    {
+      "statement_index": 87,
+      "statement": "Critics and reviewers have characterized Good Boy as a haunted-house horror and supernatural thriller.",
+      "citation_num": "4",
+      "citation_url": "https://www.rottentomatoes.com/m/good_boy_2025",
+      "verdict": "support",
+      "reason": "The genre is listed as 'Horror, Mystery & Thriller', and the synopsis describes a haunted house context."
+    },
+    {
+      "statement_index": 87,
+      "statement": "Critics and reviewers have characterized Good Boy as a haunted-house horror and supernatural thriller.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "support",
+      "reason": "The article classifies the film as a supernatural thriller and discusses the haunted house elements."
+    },
+    {
+      "statement_index": 87,
+      "statement": "Critics and reviewers have characterized Good Boy as a haunted-house horror and supernatural thriller.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "support",
+      "reason": "The 'Genres' and 'Themes' sections associate the film with horror and psychological thriller labels."
+    },
+    {
+      "statement_index": 87,
+      "statement": "Critics and reviewers have characterized Good Boy as a haunted-house horror and supernatural thriller.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "support",
+      "reason": "The review categorizes the film as a 'haunted house movie' and mentions a 'spectre of death'."
+    },
+    {
+      "statement_index": 88,
+      "statement": "Good Boy tells its ghost story largely from a dog's point of view.",
+      "citation_num": "4",
+      "citation_url": "https://www.rottentomatoes.com/m/good_boy_2025",
+      "verdict": "support",
+      "reason": "The audience reviews and synopsis highlight that the story is presented from the dog's perspective."
+    },
+    {
+      "statement_index": 88,
+      "statement": "Good Boy tells its ghost story largely from a dog's point of view.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "support",
+      "reason": "The text confirms the film tells the story from the dog's perspective."
+    },
+    {
+      "statement_index": 88,
+      "statement": "Good Boy tells its ghost story largely from a dog's point of view.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "not_support",
+      "reason": "The synopsis notes the dog is the protagonist, but the text does not characterize the film as being told from a dog's point of view."
+    },
+    {
+      "statement_index": 88,
+      "statement": "Good Boy tells its ghost story largely from a dog's point of view.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "support",
+      "reason": "The text states: 'Good Boy is Indy’s story' and 'Shot almost exclusively from Indy’s perspective'."
+    },
+    {
+      "statement_index": 89,
+      "statement": "The canine perspective is central to Good Boy's style and narrative.",
+      "citation_num": "4",
+      "citation_url": "https://www.rottentomatoes.com/m/good_boy_2025",
+      "verdict": "support",
+      "reason": "Multiple reviews and the 'What to Know' section emphasize the unique canine perspective."
+    },
+    {
+      "statement_index": 89,
+      "statement": "The canine perspective is central to Good Boy's style and narrative.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "support",
+      "reason": "The review highlights that the perspective is central to the unique concept of the film."
+    },
+    {
+      "statement_index": 89,
+      "statement": "The canine perspective is central to Good Boy's style and narrative.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "not_support",
+      "reason": "While the synopsis highlights the dog's actions, the citation does not explicitly state that the canine perspective is the film's narrative style."
+    },
+    {
+      "statement_index": 89,
+      "statement": "The canine perspective is central to Good Boy's style and narrative.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "support",
+      "reason": "The text emphasizes that the film 'lives and dies' with the dog's performance and is shot from his perspective."
+    },
+    {
+      "statement_index": 90,
+      "statement": "Letterboxd collections and genre tags associate Good Boy with haunted and supernatural horror.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "support",
+      "reason": "The themes section lists 'Horror, the undead and monster classics' and 'Terrifying, haunted, and supernatural horror'."
+    },
+    {
+      "statement_index": 91,
+      "statement": "Letterboxd collections and genre tags associate Good Boy with psychologically twisted thrillers.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "support",
+      "reason": "The themes section includes 'Twisted dark psychological thriller'."
+    },
+    {
+      "statement_index": 92,
+      "statement": "Letterboxd collections and genre tags associate Good Boy with gothic, eerie haunting stories.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "support",
+      "reason": "The themes section includes 'Gothic and eerie haunting horror'."
+    },
+    {
+      "statement_index": 93,
+      "statement": "The associations emphasize Good Boy's alignment with supernatural and haunted-house traditions.",
+      "citation_num": "1",
+      "citation_url": "https://letterboxd.com/film/good-boy-2025",
+      "verdict": "support",
+      "reason": "The thematic tags clearly categorize the film within supernatural and haunted-house horror traditions."
+    },
+    {
+      "statement_index": 94,
+      "statement": "A review in PopHorror highlights themes of loyalty and the human-pet bond in Good Boy.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "not_support",
+      "reason": "The text discusses the bond, but does not explicitly mention that the review 'highlights themes of loyalty'."
+    },
+    {
+      "statement_index": 95,
+      "statement": "The film invites viewers to consider what their pets might perceive beyond human awareness when they stare into empty corners or react to unseen stimuli.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "support",
+      "reason": "The text mentions the film makes you wonder what your pets might be witnessing that you are unaware of."
+    },
+    {
+      "statement_index": 96,
+      "statement": "PopHorror describes Good Boy as a supernatural thriller that favors tension, atmosphere, and emotional impact over frequent jump scares.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "support",
+      "reason": "The review states the film maintains a constant edge-of-your-seat feeling and that there aren't really any jump scares."
+    },
+    {
+      "statement_index": 97,
+      "statement": "Good Boy maintains a sustained sense of unease through Indy's perspective.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "support",
+      "reason": "The review emphasizes that the film maintains a chilling ambiance and constant tension through the dog's perspective."
+    },
+    {
+      "statement_index": 101,
+      "statement": "The ScreenAnarchy review notes that the human characters in Good Boy remain lightly sketched.",
+      "citation_num": "2",
+      "citation_url": "https://www.imdb.com/title/tt35521922",
+      "verdict": "not_support",
+      "reason": "The citation includes user reviews but does not contain a review from ScreenAnarchy."
+    },
+    {
+      "statement_index": 101,
+      "statement": "The ScreenAnarchy review notes that the human characters in Good Boy remain lightly sketched.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "support",
+      "reason": "The text explicitly states: 'The human characters in the film are only the barest of sketches.'"
+    },
+    {
+      "statement_index": 102,
+      "statement": "The ScreenAnarchy review notes that the film 'lives and dies' with Indy's performance.",
+      "citation_num": "2",
+      "citation_url": "https://www.imdb.com/title/tt35521922",
+      "verdict": "not_support",
+      "reason": "The citation does not contain a review from ScreenAnarchy."
+    },
+    {
+      "statement_index": 102,
+      "statement": "The ScreenAnarchy review notes that the film 'lives and dies' with Indy's performance.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "support",
+      "reason": "The text explicitly states: 'Good Boy lives and dies with Indy’s performance'."
+    },
+    {
+      "statement_index": 103,
+      "statement": "The story's tone and suspense depend on the dog's on-screen presence.",
+      "citation_num": "2",
+      "citation_url": "https://www.imdb.com/title/tt35521922",
+      "verdict": "support",
+      "reason": "The reviews and plot description consistently emphasize that the film's suspense and emotional stakes are tied to Indy's perspective and performance."
+    },
+    {
+      "statement_index": 103,
+      "statement": "The story's tone and suspense depend on the dog's on-screen presence.",
+      "citation_num": "8",
+      "citation_url": "https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html",
+      "verdict": "support",
+      "reason": "The text notes that the film relies on the dog's performance and Indy's perspective to create the experience."
+    },
+    {
+      "statement_index": 104,
+      "statement": "Rotten Tomatoes's movie information describes Good Boy as visually striking, emotionally resonant horror.",
+      "citation_num": "4",
+      "citation_url": "https://www.rottentomatoes.com/m/good_boy_2025",
+      "verdict": "support",
+      "reason": "The 'Critics Consensus' section describes it as a 'visually striking, emotionally devastating horror film'."
+    },
+    {
+      "statement_index": 105,
+      "statement": "Good Boy subverts some genre conventions.",
+      "citation_num": "4",
+      "citation_url": "https://www.rottentomatoes.com/m/good_boy_2025",
+      "verdict": "support",
+      "reason": "The 'Critics Consensus' specifically notes that the film 'eschews genre conventions'."
+    },
+    {
+      "statement_index": 106,
+      "statement": "Good Boy remains haunting and conceptually ambitious.",
+      "citation_num": "4",
+      "citation_url": "https://www.rottentomatoes.com/m/good_boy_2025",
+      "verdict": "support",
+      "reason": "The 'Critics Consensus' explicitly describes it as 'haunting and conceptually ambitious'."
+    },
+    {
+      "statement_index": 107,
+      "statement": "A review on RogerEbert.com refers to Good Boy as an 'ingenious' canine horror story.",
+      "citation_num": "15",
+      "citation_url": "https://www.rogerebert.com/reviews/good-boy-dog-horror-movie-review-2025",
+      "verdict": "support",
+      "reason": "The citation states, \"There is a brief scene in 'Good Boy,' the ingenious canine horror film by Ben Leonberg...\" directly referring to it as an 'ingenious' canine horror film."
+    },
+    {
+      "statement_index": 108,
+      "statement": "Good Boy briefly takes viewers inside the mind of a dreaming dog.",
+      "citation_num": "15",
+      "citation_url": "https://www.rogerebert.com/reviews/good-boy-dog-horror-movie-review-2025",
+      "verdict": "support",
+      "reason": "The citation explicitly mentions, \"There is a brief scene in 'Good Boy,'... that takes us inside the mind of a dreaming dog.\""
+    },
+    {
+      "statement_index": 109,
+      "statement": "The review emphasizes the subjective experience of Good Boy's animal protagonist.",
+      "citation_num": "15",
+      "citation_url": "https://www.rogerebert.com/reviews/good-boy-dog-horror-movie-review-2025",
+      "verdict": "support",
+      "reason": "The review frequently discusses the film from Indy's perspective, noting scenes \"seen from Indy’s eye level\" and questioning \"how much of this is in Indy’s head,\" indicating an emphasis on the animal protagonist's subjective experience."
+    },
+    {
+      "statement_index": 110,
+      "statement": "On Rotten Tomatoes, Good Boy is listed with critical commentary highlighting its visually striking presentation and emotionally impactful horror.",
+      "citation_num": "17",
+      "citation_url": "https://www.facebook.com/scaryhorrorstuff/posts/scary-movie-smashes-records-while-obsession-defies-gravity-and-backrooms-normali/1432546512229260",
+      "verdict": "not_support",
+      "reason": "The citation content is a generic Facebook login/footer page and contains no information about Rotten Tomatoes or the film Good Boy."
+    },
+    {
+      "statement_index": 110,
+      "statement": "On Rotten Tomatoes, Good Boy is listed with critical commentary highlighting its visually striking presentation and emotionally impactful horror.",
+      "citation_num": "16",
+      "citation_url": "https://www.facebook.com/groups/movie.talk.club/posts/1600626667378744",
+      "verdict": "not_support",
+      "reason": "The provided citation does not mention the movie 'Good Boy' or any Rotten Tomatoes commentary related to it."
+    },
+    {
+      "statement_index": 110,
+      "statement": "On Rotten Tomatoes, Good Boy is listed with critical commentary highlighting its visually striking presentation and emotionally impactful horror.",
+      "citation_num": "4",
+      "citation_url": "https://www.rottentomatoes.com/m/good_boy_2025",
+      "verdict": "support",
+      "reason": "The 'Critics Consensus' section contains this exact critical commentary."
+    },
+    {
+      "statement_index": 111,
+      "statement": "The specific numerical rating cited in at least one social media discussion reflects a relatively mixed aggregated score for Good Boy.",
+      "citation_num": "17",
+      "citation_url": "https://www.facebook.com/scaryhorrorstuff/posts/scary-movie-smashes-records-while-obsession-defies-gravity-and-backrooms-normali/1432546512229260",
+      "verdict": "not_support",
+      "reason": "The provided text does not mention any social media discussions or ratings regarding Good Boy."
+    },
+    {
+      "statement_index": 111,
+      "statement": "The specific numerical rating cited in at least one social media discussion reflects a relatively mixed aggregated score for Good Boy.",
+      "citation_num": "16",
+      "citation_url": "https://www.facebook.com/groups/movie.talk.club/posts/1600626667378744",
+      "verdict": "not_support",
+      "reason": "The provided citation does not contain any information regarding a numerical rating or discussion about 'Good Boy'."
+    },
+    {
+      "statement_index": 111,
+      "statement": "The specific numerical rating cited in at least one social media discussion reflects a relatively mixed aggregated score for Good Boy.",
+      "citation_num": "4",
+      "citation_url": "https://www.rottentomatoes.com/m/good_boy_2025",
+      "verdict": "not_support",
+      "reason": "The citation does not contain or reference social media discussions."
+    },
+    {
+      "statement_index": 112,
+      "statement": "A reviewer in the Movie Talk Club Facebook group reported that Good Boy held a rating of 32% on Rotten Tomatoes at the time of their post.",
+      "citation_num": "16",
+      "citation_url": "https://www.facebook.com/groups/movie.talk.club/posts/1600626667378744",
+      "verdict": "not_support",
+      "reason": "The citation contains no mention of a user reporting a Rotten Tomatoes rating for 'Good Boy'."
+    },
+    {
+      "statement_index": 113,
+      "statement": "The reviewer gave Good Boy a personal score of 5 out of 10.",
+      "citation_num": "16",
+      "citation_url": "https://www.facebook.com/groups/movie.talk.club/posts/1600626667378744",
+      "verdict": "not_support",
+      "reason": "The citation does not mention any score given by a reviewer for 'Good Boy'."
+    },
+    {
+      "statement_index": 114,
+      "statement": "The personal score indicates a lukewarm individual response.",
+      "citation_num": "16",
+      "citation_url": "https://www.facebook.com/groups/movie.talk.club/posts/1600626667378744",
+      "verdict": "not_support",
+      "reason": "The citation does not contain a personal score for 'Good Boy' or any context to evaluate an individual response."
+    },
+    {
+      "statement_index": 115,
+      "statement": "The Scary Horror Stuff Facebook page assigned Good Boy a 5 out of 10 score in a post summarizing recent horror releases.",
+      "citation_num": "17",
+      "citation_url": "https://www.facebook.com/scaryhorrorstuff/posts/scary-movie-smashes-records-while-obsession-defies-gravity-and-backrooms-normali/1432546512229260",
+      "verdict": "not_support",
+      "reason": "The citation content does not include any posts, reviews, or scores assigned by a 'Scary Horror Stuff' Facebook page."
+    },
+    {
+      "statement_index": 116,
+      "statement": "The Scary Horror Stuff Facebook page described Good Boy as almost successful but ultimately lacking sufficient momentum.",
+      "citation_num": "17",
+      "citation_url": "https://www.facebook.com/scaryhorrorstuff/posts/scary-movie-smashes-records-while-obsession-defies-gravity-and-backrooms-normali/1432546512229260",
+      "verdict": "not_support",
+      "reason": "The provided content does not contain any descriptive analysis or reviews of the film Good Boy."
+    },
+    {
+      "statement_index": 117,
+      "statement": "Film Threat reviewed Good Boy as an independent horror feature.",
+      "citation_num": "3",
+      "citation_url": "https://filmthreat.com/reviews/good-boy-horror-review",
+      "verdict": "support",
+      "reason": "The provided text is a review of the film Good Boy published on the Film Threat website."
+    },
+    {
+      "statement_index": 118,
+      "statement": "Film Threat awarded Good Boy a score of 8 out of 10.",
+      "citation_num": "3",
+      "citation_url": "https://filmthreat.com/reviews/good-boy-horror-review",
+      "verdict": "support",
+      "reason": "The citation explicitly lists the movie score as 8/10."
+    },
+    {
+      "statement_index": 119,
+      "statement": "Film Threat praised Good Boy as an impressive feature debut for Ben Leonberg.",
+      "citation_num": "3",
+      "citation_url": "https://filmthreat.com/reviews/good-boy-horror-review",
+      "verdict": "support",
+      "reason": "The citation describes the film as an 'impressive feature debut by director Leonberg'."
+    },
+    {
+      "statement_index": 120,
+      "statement": "Film Threat highlighted Good Boy's execution of the dog-centered haunted-house premise.",
+      "citation_num": "3",
+      "citation_url": "https://filmthreat.com/reviews/good-boy-horror-review",
+      "verdict": "support",
+      "reason": "The review praises the concept of the dog seeing haunted house elements as a 'great concept' and discusses the execution of this premise throughout the text."
+    },
+    {
+      "statement_index": 121,
+      "statement": "PopHorror's review describes Good Boy as a tense and chilling supernatural thriller.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "support",
+      "reason": "The text explicitly describes it as a 'tense and chilling' supernatural thriller."
+    },
+    {
+      "statement_index": 122,
+      "statement": "Good Boy maintains edge-of-the-seat tension without relying on frequent jump scares.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "support",
+      "reason": "The text confirms the film maintains an 'edge-of-your-seat' feeling without relying on jump scares."
+    },
+    {
+      "statement_index": 123,
+      "statement": "PopHorror presents Good Boy positively as a noteworthy entry in dog-centered horror.",
+      "citation_num": "5",
+      "citation_url": "https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review",
+      "verdict": "support",
+      "reason": "The review is highly positive and recommends the film, calling the concept 'remarkable' and 'brilliant'."
+    },
+    {
+      "statement_index": 127,
+      "statement": "RogerEbert.com discusses Good Boy as a canine horror film.",
+      "citation_num": "15",
+      "citation_url": "https://www.rogerebert.com/reviews/good-boy-dog-horror-movie-review-2025",
+      "verdict": "support",
+      "reason": "The citation refers to 'Good Boy' as \"the ingenious canine horror film\" and lists its genre as 'Horror'."
+    },
+    {
+      "statement_index": 128,
+      "statement": "Good Boy includes a sequence entering a dreaming dog's mind.",
+      "citation_num": "15",
+      "citation_url": "https://www.rogerebert.com/reviews/good-boy-dog-horror-movie-review-2025",
+      "verdict": "support",
+      "reason": "The citation states, \"There is a brief scene in 'Good Boy,'... that takes us inside the mind of a dreaming dog.\""
+    },
+    {
+      "statement_index": 129,
+      "statement": "RogerEbert.com treats Good Boy as an inventive genre piece centered on its animal protagonist.",
+      "citation_num": "15",
+      "citation_url": "https://www.rogerebert.com/reviews/good-boy-dog-horror-movie-review-2025",
+      "verdict": "support",
+      "reason": "The review calls 'Good Boy' an 'ingenious canine horror film' and extensively details how the film operates from Indy's perspective, making it an inventive genre piece centered on its animal protagonist."
+    },
+    {
+      "statement_index": 130,
+      "statement": "An IMDb user review quoted on the film's page suggests that Indy may be among the first canine actors to truly lead a horror movie.",
+      "citation_num": "2",
+      "citation_url": "https://www.imdb.com/title/tt35521922",
+      "verdict": "not_support",
+      "reason": "While user reviews praise the dog's performance as Oscar-worthy, none of the quoted reviews explicitly state that Indy is the first canine actor to lead a horror movie."
+    },
+    {
+      "statement_index": 131,
+      "statement": "The IMDb user review argues that Indy's performance makes the story feel believable and engaging for viewers.",
+      "citation_num": "2",
+      "citation_url": "https://www.imdb.com/title/tt35521922",
+      "verdict": "support",
+      "reason": "User reviews, such as the one by MrDHWong, highlight that the dog's performance carries the film and makes the stakes and emotional content believable."
+    }
+  ]
+}

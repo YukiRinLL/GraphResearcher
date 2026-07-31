@@ -36,7 +36,7 @@ dotenv.load_dotenv(".env")
 #   需要是一个 JSON list，每条数据至少包含 id / question / title。
 #   默认沿用 Wiki Live Challenge 的 ga_100.json；如需临时切换数据集，
 #   优先使用命令行参数 --prompt-path，避免频繁改代码。
-PROMPT_PATH = Path("/mnt/h/projects/Wiki_Live_Challenge/data/2025_Mar_Nov/wiki_data/ga_100.json")
+PROMPT_PATH = Path("/Users/yindq/projects/DeepResearch/Wiki_Live_Challenge/data/2025_Mar_Nov/wiki_data/ga_100.json")
 
 # 输出目录：
 #   顶层会保存与参考脚本一致的 `{title}.md`，方便直接评测最终报告。
@@ -48,7 +48,7 @@ PROMPT_PATH = Path("/mnt/h/projects/Wiki_Live_Challenge/data/2025_Mar_Nov/wiki_d
 OUTPUT_PATH = Path("outputs/wlc_reports")
 
 # Wiki Live Challenge 官方 benchmark 根目录。
-WLC_ROOT = Path("/mnt/h/projects/Wiki_Live_Challenge")
+WLC_ROOT = Path("/Users/yindq/projects/DeepResearch/Wiki_Live_Challenge")
 WLC_BENCHMARK = "2025_Mar_Nov"
 
 # 抽样数量：
@@ -286,7 +286,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--wlc-python", default=sys.executable, help="Python executable used to run WLC scripts.")
     parser.add_argument("--json-steps", default="extract,fetch", help="WLC JSON generation steps.")
     parser.add_argument("--json-concurrency", type=int, default=None, help="WLC JSON generation concurrency.")
-    parser.add_argument("--eval-max-workers", type=int, default=5, help="WLC evaluation max workers.")
+    parser.add_argument("--eval-max-workers", type=int, default=20, help="WLC evaluation max workers.")
     parser.add_argument("--eval-top-k", type=int, default=10, help="Top-k similar statements for WLC verifiability.")
     parser.add_argument("--allow-tie", action="store_true", help="Allow tie results in WLC writing evaluation.")
     parser.add_argument(

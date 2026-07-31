@@ -1,0 +1,394 @@
+{
+  "topic": "Midnight Sun (Zara Larsson album)",
+  "mode": "winrate",
+  "allow_tie": false,
+  "aggregate": {
+    "Broad in its coverage": {
+      "gen_wins": 1,
+      "gt_wins": 7,
+      "ties": 0,
+      "total": 8,
+      "gen_win_rate": 0.125
+    },
+    "Neutral": {
+      "gen_wins": 5,
+      "gt_wins": 5,
+      "ties": 0,
+      "total": 10,
+      "gen_win_rate": 0.5
+    },
+    "Well-written": {
+      "gen_wins": 0,
+      "gt_wins": 21,
+      "ties": 0,
+      "total": 21,
+      "gen_win_rate": 0.0
+    },
+    "overall": {
+      "gen_wins": 6,
+      "gt_wins": 33,
+      "ties": 0,
+      "total": 39,
+      "gen_win_rate": 0.15384615384615385
+    }
+  },
+  "details": {
+    "Broad in its coverage": [
+      {
+        "criterion_id": "bc_1",
+        "criterion_index": 21,
+        "criterion_text": "It addresses the main aspects of the topic.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 provides concrete details for all main aspects of an album, including specific commercial chart positions and tour information. Article 2 fails to provide this key information, instead stating that its sources lack the details, thus failing to fully address a main aspect of the topic."
+      },
+      {
+        "criterion_id": "bc_2",
+        "criterion_index": 22,
+        "criterion_text": "The lead, ideally the introductory sentence or at least introductory paragraph, of an article, should make clear what the scope of the article is.",
+        "category": "Broad in its coverage",
+        "winner": "gen",
+        "winner_code": 2,
+        "reason": "Article 2's lead mentions the subsequent remix album, 'Midnight Sun: Girls Trip.' This explicitly defines the scope of the current article as being about the original album, setting a clear boundary for the reader. Article 1 does not mention the remix album, leaving the scope slightly less defined by comparison."
+      },
+      {
+        "criterion_id": "bc_3",
+        "criterion_index": 23,
+        "criterion_text": "All material that is notable, referenced, and that a reader would be likely to agree matches the specified scope must be covered (at least in a summarized fashion).",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 covers notable information that a reader would expect, such as specific chart performance in multiple countries and the existence of a supporting tour. Article 2 omits this crucial information, stating it is unavailable, and therefore fails to cover notable material that falls within the article's scope."
+      },
+      {
+        "criterion_id": "bc_4",
+        "criterion_index": 24,
+        "criterion_text": "What reliable sources say about material that is out of scope for the decided-upon subject is largely irrelevant to that article and can be removed.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 remains strictly focused on the album 'Midnight Sun.' Article 2 repeatedly discusses a separate remix album ('Girls Trip'), which is out of scope for an article about the original LP, making portions of its content less relevant to the decided-upon subject."
+      },
+      {
+        "criterion_id": "bc_5",
+        "criterion_index": 25,
+        "criterion_text": "It stays focused on the topic without going into unnecessary detail.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 presents information about the album directly, in a standard encyclopedic style. Article 2 delves into unnecessary detail about its own sourcing and the process of its creation (e.g., 'A fan-run Zara Larsson wiki describes...', 'this characterization differs slightly from Genius...'), which is a distraction from the topic itself."
+      },
+      {
+        "criterion_id": "bc_6",
+        "criterion_index": 26,
+        "criterion_text": "The lead contains a quick summary of the topic's most important points.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1's lead provides a comprehensive summary of the album's most important points, touching on its genre, collaborators, singles, tour, critical acclaim, and specific chart success. Article 2's lead is less complete, omitting any mention of singles, the tour, or commercial performance."
+      },
+      {
+        "criterion_id": "bc_7",
+        "criterion_index": 27,
+        "criterion_text": "Each major subtopic is detailed in its own section of the article.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 uses a standard, logical structure with clear sections for Background, Composition, Promotion, Reception, and Performance. Article 2's structure is less conventional and more fragmented, with redundant sections ('Release and promotion' vs. 'Singles and music videos') and non-standard headings like 'Conflicting descriptions.'"
+      },
+      {
+        "criterion_id": "bc_8",
+        "criterion_index": 28,
+        "criterion_text": "It contains no irrelevant (nor only loosely relevant) information.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 2 includes irrelevant information, such as commentary from a random Instagram user and a Reddit thread, and features an entire section dedicated to meta-analysis of its sources. Article 1 contains only information that is directly relevant to the album."
+      }
+    ],
+    "Neutral": [
+      {
+        "criterion_id": "n_1",
+        "criterion_index": 29,
+        "criterion_text": "It represents viewpoints fairly and without editorial bias, giving due weight to each.",
+        "category": "Neutral",
+        "winner": "gen",
+        "winner_code": 2,
+        "reason": "Article 2 represents a wider and more conflicting range of viewpoints, including major critics, fan pages, and user reviews, thus painting a fuller picture of the reception. Article 1 presents a more homogenous, largely positive view with only one counterpoint."
+      },
+      {
+        "criterion_id": "n_2",
+        "criterion_index": 30,
+        "criterion_text": "Avoid stating opinions as facts. Opinions should be attributed in the text to particular sources, or where justified, described as widespread views, etc.",
+        "category": "Neutral",
+        "winner": "gen",
+        "winner_code": 2,
+        "reason": "Article 2 is meticulous in attributing nearly every subjective statement to a specific source (e.g., 'Rolling Stone describes...'). Article 1 makes some analytical statements in Wikipedia's voice that should be attributed."
+      },
+      {
+        "criterion_id": "n_3",
+        "criterion_index": 31,
+        "criterion_text": "Avoid stating seriously contested assertions as facts. If different reliable sources make conflicting assertions about a matter, treat these assertions as opinions rather than facts.",
+        "category": "Neutral",
+        "winner": "gen",
+        "winner_code": 2,
+        "reason": "Article 2 excels at this by not only identifying conflicting assertions (e.g., its place in the discography, its cultural impact) but dedicating an entire section to discussing these conflicts as differing opinions from sources."
+      },
+      {
+        "criterion_id": "n_4",
+        "criterion_index": 32,
+        "criterion_text": "Avoid stating facts as opinions. Uncontested and uncontroversial factual assertions made by reliable sources should normally be directly stated in Wikipedia's voice.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 correctly states uncontroversial facts like the release date and single releases in Wikipedia's voice. Article 2 is overly cautious, often attributing simple facts to a source (e.g., 'Sony Music Canada announced...'), which is contrary to this guideline."
+      },
+      {
+        "criterion_id": "n_5",
+        "criterion_index": 33,
+        "criterion_text": "Prefer nonjudgmental language. A neutral point of view neither sympathizes with nor disparages its subject. Present opinions and conflicting findings in a disinterested tone. Do not editorialize.",
+        "category": "Neutral",
+        "winner": "gen",
+        "winner_code": 2,
+        "reason": "Article 2 uses a consistently clinical and disinterested tone, reporting both positive and negative opinions neutrally. Article 1 contains some slightly positive, judgmental language like 'refreshing honesty' in its own voice."
+      },
+      {
+        "criterion_id": "n_6",
+        "criterion_index": 34,
+        "criterion_text": "Indicate the relative prominence of opposing views. Ensure that the reporting of different views on a subject adequately reflects the relative levels of support for those views and does not give a false impression of parity.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 better indicates the relative prominence of views by citing review aggregators (Metacritic) and using summary phrases like 'widespread acclaim'. Article 2 presents disparate sources without a clear hierarchy, giving a false impression of parity between major critics and user reviews."
+      },
+      {
+        "criterion_id": "n_7",
+        "criterion_index": 35,
+        "criterion_text": "An article should not give undue weight to minor aspects of its subject but should strive to treat each aspect with a weight proportional to its treatment in the body of reliable, published material on the subject.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 maintains a standard, proportional structure for an album article. Article 2 gives undue weight to minor aspects, such as the process of sourcing information itself and a separate remix album, creating an unbalanced article."
+      },
+      {
+        "criterion_id": "n_8",
+        "criterion_index": 36,
+        "criterion_text": "Any inclusion of fringe or pseudoscientific views should not give them undue weight. The fringe or pseudoscientific view should be clearly described as such.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 correctly avoids fringe views by sticking to reliable, professional sources. Article 2 includes and gives significant space to what Wikipedia would consider unreliable or non-expert sources (fan wikis, Instagram, Reddit), giving them undue weight."
+      },
+      {
+        "criterion_id": "n_9",
+        "criterion_index": 37,
+        "criterion_text": "In the case of beliefs and practices, Wikipedia content should not only encompass what motivates individuals who hold these beliefs and practices but also account for how such beliefs and practices developed.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 better accounts for the artist's motivation by including a direct quote from Zara Larsson explaining the album's concept and her personal connection to it. Article 2 only describes the concept through the lens of critics."
+      },
+      {
+        "criterion_id": "n_10",
+        "criterion_index": 38,
+        "criterion_text": "Article titles that combine alternative names are discouraged. Alternative names should be given their due prominence within the article itself, and redirects created as appropriate.",
+        "category": "Neutral",
+        "winner": "gen",
+        "winner_code": 2,
+        "reason": "While both have appropriate titles, Article 2 better fulfills the spirit of this criterion by giving due prominence to an alternative description within the text, noting the conflict between it being her 'fourth international album' or 'fifth overall'."
+      }
+    ],
+    "Well-written": [
+      {
+        "criterion_id": "ww_cc_1",
+        "criterion_index": 0,
+        "criterion_text": "Articles should be written in encyclopedic style, which differs from the technically dense style found in scholarly writing aimed at specialists.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 is written in a direct, encyclopedic style, presenting synthesized information as fact. Article 2 is written as a commentary on its sources (e.g., 'Sony Music Canada announced...'), which is not a standard encyclopedic style."
+      },
+      {
+        "criterion_id": "ww_cc_2",
+        "criterion_index": 1,
+        "criterion_text": "Articles should address the topic without twisting the truth or telling \"lies-to-children\", but should also minimize (unexplained) jargon and not take prior knowledge for granted.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 presents information directly and clearly for a broad audience. Article 2's constant citation of sources in the prose (e.g., 'A fan-run Zara Larsson wiki describes...') makes the text more dense and less straightforward to read."
+      },
+      {
+        "criterion_id": "ww_cc_3",
+        "criterion_index": 2,
+        "criterion_text": "Articles should be self-contained as much as possible, rather than relying on excessive links to explain unfamiliar concepts.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 synthesizes its sources into a self-contained narrative. Article 2 is the opposite, constantly referring the reader to what external sources like 'Album of the Year', 'Pitchfork', and 'Sony Music Canada' have said, making it reliant on outside context."
+      },
+      {
+        "criterion_id": "ww_ls_1",
+        "criterion_index": 3,
+        "criterion_text": "An article's content should begin with an introductory lead section – a concise summary of the article – which is never divided into sections. The remainder of the article is typically divided into sections.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 has a perfectly structured lead section and standard, logical body sections ('Background', 'Composition', etc.). Article 2 uses an unconventional structure with a section literally titled 'Lead' and another called 'Conflicting descriptions', which is not standard Wikipedia format."
+      },
+      {
+        "criterion_id": "ww_ls_2",
+        "criterion_index": 4,
+        "criterion_text": "The lead section gives the basics in a nutshell, introduces the article, and cultivates interest in reading on—though not by teasing the reader or hinting at what follows.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1's lead provides a comprehensive summary of the album's creation, reception, and performance, which effectively cultivates interest. Article 2's lead is extremely brief and omits most key details, making it less engaging."
+      },
+      {
+        "criterion_id": "ww_ls_3",
+        "criterion_index": 5,
+        "criterion_text": "The lead section should be written in a clear, accessible style with a neutral point of view.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1's lead is a clear, accessible, and neutral overview of the topic. Article 2's lead is too sparse to be as clear or accessible, failing to provide a comprehensive summary."
+      },
+      {
+        "criterion_id": "ww_ls_4",
+        "criterion_index": 6,
+        "criterion_text": "The lead should stand on its own as a concise overview of the article's topic. It should identify the topic, establish context, explain why the topic is notable, and summarize the most important points, including any prominent controversies. The notability of the article's subject is usually established in the first few sentences.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "The lead in Article 1 successfully stands on its own as a summary, covering the album's concept, singles, reception, and chart success. Article 2's lead is far too brief, omitting critical information like reception and commercial performance."
+      },
+      {
+        "criterion_id": "ww_ls_5",
+        "criterion_index": 7,
+        "criterion_text": "As in the body of the article itself, the emphasis given to material in the lead should roughly reflect its importance to the topic, according to reliable, published sources. Apart from basic facts, significant information should not appear in the lead if it is not covered in the remainder of the article.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "The emphasis in Article 1's lead on themes, reception, and chart performance is accurately reflected in the detailed sections of the article body. Article 2's lead is too short to properly reflect the emphasis of the body content."
+      },
+      {
+        "criterion_id": "ww_ls_6",
+        "criterion_index": 8,
+        "criterion_text": "A lead section should be carefully sourced as appropriate, although it is common for citations to appear in the body and not the lead.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Both articles follow the common practice of not having citations in the lead. However, Article 1's lead is a summary of information that is well-sourced in the body, better fulfilling the spirit of the guideline."
+      },
+      {
+        "criterion_id": "ww_ls_7",
+        "criterion_index": 9,
+        "criterion_text": "Significant information should not appear in the lead, apart from basic facts, if it is not covered in the remainder of the article, although not everything in the lead must be repeated in the body of the text. Exceptions include specific facts such as quotations, examples, birth dates, taxonomic names and typological classifications, case numbers, and titles.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 ensures that all significant information mentioned in its comprehensive lead is expanded upon in the body of the article. Article 2's lead is too sparse for a meaningful comparison, but Article 1's execution is flawless."
+      },
+      {
+        "criterion_id": "ww_wtw_1",
+        "criterion_index": 10,
+        "criterion_text": "Puffery: Words such as legendary, best, great, greatest, acclaimed, iconic, visionary, outstanding, leading, celebrated, popular, award-winning, landmark, cutting-edge, innovative, revolutionary, extraordinary, brilliant, hit, famous, renowned, remarkable, prestigious, world-class, respected, notable, virtuoso, honorable, awesome, unique, pioneering, phenomenal, prominent are often used without attribution to promote the subject of an article. Instead of making subjective proclamations about a subject's importance, use facts and attribution to demonstrate it.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 uses words like 'widespread acclaim' but immediately supports them with attributed facts (Metacritic score), which is standard practice. Article 2 quotes promotional language like 'hotly anticipated new album', which is closer to puffery."
+      },
+      {
+        "criterion_id": "ww_wtw_2",
+        "criterion_index": 11,
+        "criterion_text": "Contentious labels: Value-laden labels – such as calling an organization a cult, an individual a racist, sexist, terrorist, or freedom fighter, or a sexual practice a perversion – may express contentious opinion and are best avoided unless widely used by reliable sources to describe the subject, in which case use in-text attribution.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Neither article uses contentious labels. However, Article 1's professional, synthesized style is inherently more robust against this issue than Article 2's style of quoting a wide range of sources, which could include fan wikis or Reddit comments."
+      },
+      {
+        "criterion_id": "ww_wtw_3",
+        "criterion_index": 12,
+        "criterion_text": "Unsupported attributions: Words like \"some people say\", \"many scholars state\", \"it is believed/regarded/considered\", \"experts declare\", \"it is widely thought\", \"research has shown\" may disguise a biased view. Claims about what people say, think, feel, or believe should be clearly attributed.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 properly attributes claims to reliable sources within a smooth narrative. Article 2's entire structure is based on attribution, but it does so clunkily and includes attributions to unreliable sources like 'a user review on Musicboard' and 'a discussion thread on the r/popheads subreddit'."
+      },
+      {
+        "criterion_id": "ww_wtw_4",
+        "criterion_index": 13,
+        "criterion_text": "Expressions of doubt: When words like supposed, apparent, purported, alleged, accused, so-called are used, ensure that the source of the accusation is clear. Also avoid scare-quoting and undue emphasis.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 uses neutral attribution ('described as') without expressing doubt. Article 2's creation of a 'Conflicting descriptions' section, while attributing the conflict, frames the topic with a sense of doubt that is less encyclopedic than Article 1's direct presentation."
+      },
+      {
+        "criterion_id": "ww_wtw_5",
+        "criterion_index": 14,
+        "criterion_text": "Editorializing: Words like notably, it should be noted, arguably, interestingly, essentially, utterly, actually, only, clearly, absolutely, of course, without a doubt, indeed, happily, sadly, tragically, aptly, fortunately, unfortunately, untimely should usually be avoided to maintain an impartial tone.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 maintains an impartial tone throughout. Article 2's structure, particularly the 'Conflicting descriptions' section, feels more like an editorial analysis of the album's reception rather than a neutral presentation of facts."
+      },
+      {
+        "criterion_id": "ww_wtw_6",
+        "criterion_index": 15,
+        "criterion_text": "Synonyms for said: Words like reveal, point out, clarify, expose, explain, find, note, observe, insist, speculate, surmise, claim, assert, admit, confess, deny, confirm may make undue implications. On Wikipedia, it is more important to avoid language that makes undue implications.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 uses a variety of neutral attribution verbs like 'praised', 'described', and 'wrote' that are integrated smoothly into the prose. Article 2's prose is stilted by its repetitive 'Source X says Y' structure."
+      },
+      {
+        "criterion_id": "ww_wtw_7",
+        "criterion_index": 16,
+        "criterion_text": "Euphemisms: Euphemisms like passed away, gave her life, eternal rest, make love, an issue with, collateral damage, differently abled should generally be avoided in favor of more neutral and precise terms.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Neither article uses euphemisms as the topic does not require them. Article 1 wins by virtue of its more professional and direct writing style overall."
+      },
+      {
+        "criterion_id": "ww_wtw_8",
+        "criterion_index": 17,
+        "criterion_text": "Clichés and idioms: Clichés and idioms like lion's share, tip of the iceberg, white elephant, gild the lily, take the plunge, ace up the sleeve should generally be avoided in favor of direct, literal expressions.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 avoids clichés and idioms, using direct and formal language. Article 2 quotes sources that use idioms like 'comes into her own' and 'did not initially make waves', which is less ideal for a formal encyclopedic tone."
+      },
+      {
+        "criterion_id": "ww_wtw_9",
+        "criterion_index": 18,
+        "criterion_text": "Relative time references: Prefer specific statements to general ones. Words like recently, lately, currently, today, presently, to date, X years ago, formerly, in the past, traditionally should be avoided.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Both articles use specific dates. However, Article 2's focus on when sources were published ('retroactively assigns', 'issued ahead of the 2026 remix album') makes the timeline of the sourcing a core part of the article, which is an unconventional and less encyclopedic approach to time."
+      },
+      {
+        "criterion_id": "ww_wtw_10",
+        "criterion_index": 19,
+        "criterion_text": "Unspecified places or events: Prefer specific statements to general ones. Words like this country, here, there, somewhere, sometimes, often, occasionally, somehow should be avoided.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 is consistently specific, particularly in its 'Commercial performance' section which lists chart positions for numerous specific countries. Article 2 is less specific in this area, stating that figures 'have not been extensively detailed'."
+      },
+      {
+        "criterion_id": "ww_wtw_11",
+        "criterion_index": 20,
+        "criterion_text": "Survived by: Phrasing such as \"Smith died in 1982, survived by her husband Jack and two sons\" should be avoided; this information can be made more complete and spread out through the article.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "This criterion is not applicable to the topic. Article 1 wins because its overall writing style is far more professional, complete, and aligned with encyclopedic standards than Article 2's."
+      }
+    ]
+  }
+}

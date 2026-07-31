@@ -198,6 +198,7 @@ Definitions:
 - Statement: what one Document says, preserving source context.
 - Evidence: a concrete verifiable item from a Document.
 - Claim: a normalized research proposition synthesized from one or more Statements/Evidence. It is not a quote from one source.
+- source_credibility: A score from 0.0 (lowest) to 1.0 (highest) indicating source reliability. Academic papers and museum sources typically score 0.8-0.95, while social media and blogs score 0.15-0.35.
 
 Rules:
 - Return only valid JSON.
@@ -205,6 +206,15 @@ Rules:
 - Merge duplicate or paraphrased Statements into one Claim when they express the same proposition.
 - Use evidence stance: supports, contradicts, or qualifies.
 - If the material is weak, keep the Claim narrow and put limitations/qualifiers in fields.
+- **Source credibility weighting**: When synthesizing Claims, consider the source_credibility scores:
+  - Higher credibility sources (≥0.7) should have more influence on the normalized claim's confidence and text
+  - Lower credibility sources (<0.5) should reduce the claim's confidence and their contributions should be weighted less
+  - When high and low credibility sources contradict each other, prefer the high credibility source's version and disclose the conflict
+  - Claims supported only by low-credibility sources should have confidence ≤0.4
+- **Contradiction detection**: When multiple Statements/Evidence describe the same attribute (e.g., museum location, weight, dimensions) with contradictory information:
+  - This may indicate entity confusion (different entities being discussed)
+  - Mark such contradictions clearly and reduce the claim's confidence
+  - Include details about the contradiction in qualifiers/limitations
 
 Return:
 {

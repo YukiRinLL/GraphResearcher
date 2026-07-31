@@ -1,0 +1,248 @@
+{
+  "title": "2011 Sawyerville–Eoline tornado",
+  "status": "completed",
+  "total_statements": 24,
+  "total_citations": 3,
+  "valid_citations": 3,
+  "evaluated_statements": 24,
+  "skipped_statements": 0,
+  "support": 21,
+  "not_support": 3,
+  "conflict": 0,
+  "support_ratio": 0.875,
+  "conflict_ratio": 0.0,
+  "results": [
+    {
+      "statement_index": 0,
+      "statement": "The Sawyerville–Eoline tornado was a large, long-tracked, destructive EF3 tornado that occurred during the afternoon and early evening of April 27, 2011, as part of a major tornado outbreak affecting the eastern half of the United States from April 25 to 28, 2011.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "not_support",
+      "reason": "The citation provides details about the specific tornado, but it does not mention the broader April 25–28, 2011, tornado outbreak or its geographic extent."
+    },
+    {
+      "statement_index": 0,
+      "statement": "The Sawyerville–Eoline tornado was a large, long-tracked, destructive EF3 tornado that occurred during the afternoon and early evening of April 27, 2011, as part of a major tornado outbreak affecting the eastern half of the United States from April 25 to 28, 2011.",
+      "citation_num": "3",
+      "citation_url": "https://www.weather.gov/mob/2011_April27_Tornado",
+      "verdict": "not_support",
+      "reason": "The citation describes an EF-3 tornado in Northern Choctaw County, AL with similar characteristics and timing as part of the larger outbreak, but it does not mention a 'Sawyerville–Eoline tornado' by name."
+    },
+    {
+      "statement_index": 0,
+      "statement": "The Sawyerville–Eoline tornado was a large, long-tracked, destructive EF3 tornado that occurred during the afternoon and early evening of April 27, 2011, as part of a major tornado outbreak affecting the eastern half of the United States from April 25 to 28, 2011.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "support",
+      "reason": "The citation explicitly states the Sawyerville-Eoline tornado was an EF-3 with a path length of 72.13 miles, occurred from 5:30 pm to 6:55 pm on April 27th, and was part of the April 25-28, 2011, outbreak that wreaked havoc across the eastern half of the United States, causing 50 injuries and 7 fatalities."
+    },
+    {
+      "statement_index": 1,
+      "statement": "According to a post-event survey by the National Weather Service (NWS) office in Birmingham, Alabama, the tornado was rated EF-3 on the Enhanced Fujita scale, with estimated maximum winds of about 145 mph (233 km/h), a total path length of approximately 72.13 miles (116.1 km), and a maximum width of about 1,760 yards (1.0 mile).",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation explicitly confirms the EF-3 rating, 145 mph winds, 72.13-mile path, and 1,760-yard width."
+    },
+    {
+      "statement_index": 2,
+      "statement": "The Sawyerville–Eoline tornado resulted in 7 fatalities and 50 injuries as it moved across Greene, Hale, and Bibb counties in central Alabama.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation confirms 7 fatalities and 50 injuries occurred across Greene, Hale, and Bibb counties."
+    },
+    {
+      "statement_index": 3,
+      "statement": "The tornado affected multiple rural communities and small towns along its track, including areas near Tishabee and Forkland in Greene County, Sawyerville and nearby communities in Hale County, and the community of Eoline and surrounding areas in Bibb County.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation confirms the tornado track through these specific counties and mentions the referenced communities."
+    },
+    {
+      "statement_index": 4,
+      "statement": "Within the broader context of the April 25–28, 2011 tornado outbreak, the Sawyerville–Eoline tornado was one of numerous significant tornadoes that occurred on April 27, 2011, a day on which about 207 tornadoes were confirmed nationwide and four reached EF5 intensity, contributing to what has been described by the National Weather Service as one of the largest, deadliest, and most destructive tornado outbreaks in United States history.",
+      "citation_num": "3",
+      "citation_url": "https://www.weather.gov/mob/2011_April27_Tornado",
+      "verdict": "not_support",
+      "reason": "The citation confirms the details about the overall outbreak, including 207 tornadoes on April 27 and four EF5s, but it does not mention the 'Sawyerville–Eoline tornado' specifically."
+    },
+    {
+      "statement_index": 4,
+      "statement": "Within the broader context of the April 25–28, 2011 tornado outbreak, the Sawyerville–Eoline tornado was one of numerous significant tornadoes that occurred on April 27, 2011, a day on which about 207 tornadoes were confirmed nationwide and four reached EF5 intensity, contributing to what has been described by the National Weather Service as one of the largest, deadliest, and most destructive tornado outbreaks in United States history.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "not_support",
+      "reason": "While the citation confirms the Sawyerville-Eoline tornado was one of many significant tornadoes on April 27th and part of a large outbreak, it does not mention that about 207 tornadoes were confirmed nationwide or that four reached EF5 intensity on that day."
+    },
+    {
+      "statement_index": 5,
+      "statement": "The Sawyerville–Eoline tornado formed during a multi-day severe weather episode from April 25 to 28, 2011, during which a powerful storm system produced a widespread tornado outbreak across the eastern half of the United States.",
+      "citation_num": "3",
+      "citation_url": "https://www.weather.gov/mob/2011_April27_Tornado",
+      "verdict": "not_support",
+      "reason": "The citation confirms the multi-day severe weather episode from April 25 to 28, 2011, and the widespread tornado outbreak, but it does not mention the 'Sawyerville–Eoline tornado' by name."
+    },
+    {
+      "statement_index": 5,
+      "statement": "The Sawyerville–Eoline tornado formed during a multi-day severe weather episode from April 25 to 28, 2011, during which a powerful storm system produced a widespread tornado outbreak across the eastern half of the United States.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "support",
+      "reason": "The citation states that the April 27th tornado outbreak in Central Alabama was 'part of a system which wreaked havoc across the eastern half of the United States (April 25-28)', confirming the multi-day severe weather episode and widespread tornado outbreak."
+    },
+    {
+      "statement_index": 6,
+      "statement": "Across central Alabama, the NWS Birmingham office documented an extensive outbreak of tornadoes on April 27, 2011, including the Sawyerville–Eoline tornado, as part of this larger synoptic-scale event.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "support",
+      "reason": "The entire citation is from NWS Birmingham, Alabama, detailing the 'Historic Outbreak of April 27, 2011' in Central Alabama, listing the Sawyerville-Eoline tornado among the 29 confirmed tornadoes in the region, and placing it within the context of a larger system affecting the eastern US."
+    },
+    {
+      "statement_index": 7,
+      "statement": "Based on the Birmingham storm survey, the Sawyerville–Eoline tornado developed in far southwest Greene County near the Tombigbee River, just west of Tishabee on County Road 69 near Head Drive, around 5:30 p.m. Central Daylight Time, and tracked generally northeastward for over an hour before dissipating just northeast of Marvel in Bibb County by about 6:55 p.m. CDT.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation provides these specific coordinates, start and end times, and the start/end locations."
+    },
+    {
+      "statement_index": 8,
+      "statement": "The NWS Birmingham report states that tornado warnings were in effect for Greene, Hale, and Bibb counties from approximately 4:50 p.m. until 7:45 p.m. CDT, covering the period during which the Sawyerville–Eoline tornado was on the ground.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation states that warnings were in effect for these three counties from 4:50 p.m. to 7:45 p.m."
+    },
+    {
+      "statement_index": 9,
+      "statement": "According to the NWS Birmingham storm survey, the tornado initially produced EF1 damage after touching down near the Tombigbee River in far southwest Greene County and moving northeast across rural portions of Greene County north of Forkland, before intensifying to EF2 intensity while still in Greene County.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation describes the path starting as EF-1 and increasing to EF-2 while in Greene County."
+    },
+    {
+      "statement_index": 10,
+      "statement": "The tornado crossed the Black Warrior River and entered Hale County west of Sawyerville, then crossed Alabama Route 14 just north of Sawyerville, where surveyors concluded that it intensified to EF3 strength with estimated winds of 145 mph.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation confirms the tornado crossed the Black Warrior River into Hale County and intensified to EF-3 at AL Route 14."
+    },
+    {
+      "statement_index": 11,
+      "statement": "Continuing northeast, the tornado moved across County Road 18, County Road 21, Alabama Highway 69 south of Harper Hill, and County Road 29 east of Ingram in Hale County, maintaining EF3 strength and producing extensive structural damage in these areas.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation lists these exact locations and identifies the structural damage occurring in those areas."
+    },
+    {
+      "statement_index": 12,
+      "statement": "The storm survey indicates that the tornado then entered the Talladega National Forest near Ingram and tracked northeastward toward the Bibb County line, where it caused significant tree damage along its path within the national forest.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation confirms the tornado moved into the Talladega National Forest near Ingram and caused significant tree damage to the Bibb County line."
+    },
+    {
+      "statement_index": 13,
+      "statement": "Upon entering Bibb County, the tornado moved through the community of Eoline, where the NWS survey rated the damage as EF3 with estimated winds of 145 mph, before the tornado weakened to EF2 intensity as it crossed Alabama Highway 5 south of West Blocton and finally dissipated just northeast of Marvel.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation confirms the EF-3 damage in Eoline, the weakening to EF-2 at AL Hwy 5, and the dissipation northeast of Marvel."
+    },
+    {
+      "statement_index": 14,
+      "statement": "The Sawyerville–Eoline tornado caused 7 fatalities and 50 injuries along its 72.13-mile path through Greene, Hale, and Bibb counties, according to the NWS Birmingham survey.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation provides the statistics of 7 fatalities and 50 injuries along the 72.13-mile path."
+    },
+    {
+      "statement_index": 15,
+      "statement": "In Hale County, particularly in and near the community of Sawyerville, the tornado produced extensive structural damage as it crossed Alabama Route 14 and nearby roads, destroying numerous mobile homes and single-family residences as well as at least one church, and downing thousands of trees.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation details this specific damage in Hale County, including the destruction of homes, a church, and thousands of trees."
+    },
+    {
+      "statement_index": 16,
+      "statement": "The survey attributes roughly 40 injuries and 6 of the 7 total fatalities to this portion of the track in Hale County.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation confirms that 40 injuries and 6 fatalities occurred during the portion of the track in Hale County."
+    },
+    {
+      "statement_index": 17,
+      "statement": "Within the Talladega National Forest, the tornado caused widespread tree damage, with the NWS survey describing significant tree loss along its path in the forested areas of Hale and Bibb counties.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation confirms significant tree damage and loss along the path within the national forest."
+    },
+    {
+      "statement_index": 18,
+      "statement": "In Bibb County, the tornado inflicted severe damage in the Eoline area, where numerous mobile homes and single-family houses sustained minor to major damage and about a dozen such structures were destroyed.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation describes the structural damage in Eoline, noting that about a dozen mobile homes and single-family houses were destroyed."
+    },
+    {
+      "statement_index": 19,
+      "statement": "The tornado also demolished the Eoline Fire Department building and another business.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation states that the Eoline Fire Dept and another business were destroyed."
+    },
+    {
+      "statement_index": 20,
+      "statement": "One fatality occurred in a vehicle near the fire department, and at least 10 additional injuries were reported in this segment of the path in Bibb County.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation notes one fatality in a vehicle near the fire department and 10 additional injuries in that area."
+    },
+    {
+      "statement_index": 21,
+      "statement": "After leaving Eoline and crossing Alabama Highway 5 south of West Blocton, the tornado, then rated EF2 with estimated winds of about 125 mph, continued to damage or destroy several mobile homes and single-family residences near County Road 26 before weakening and lifting near Marvel; along the later portions of the path, thousands of additional trees were reported downed.",
+      "citation_num": "1",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011sawyerville",
+      "verdict": "support",
+      "reason": "The citation confirms the EF-2 rating with 125 mph winds at AL Hwy 5 and the damage/dissipation details described."
+    },
+    {
+      "statement_index": 22,
+      "statement": "The NWS Mobile/Pensacola office notes that the April 25–28, 2011 tornado outbreak produced a total of 343 tornadoes across the United States, including approximately 207 tornadoes on April 27 alone, and that four of the April 27 tornadoes reached EF5 intensity, underscoring the scale and severity of the event in which the Sawyerville–Eoline tornado occurred.",
+      "citation_num": "3",
+      "citation_url": "https://www.weather.gov/mob/2011_April27_Tornado",
+      "verdict": "not_support",
+      "reason": "The NWS Mobile/Pensacola office indeed notes the total number of tornadoes and EF5s for the outbreak, but the citation does not mention the 'Sawyerville–Eoline tornado' or its occurrence within this event."
+    },
+    {
+      "statement_index": 23,
+      "statement": "Within Alabama, the outbreak affected multiple National Weather Service County Warning Areas, with the NWS Mobile/Pensacola office documenting that only one of the 207 April 27 tornadoes occurred in its jurisdiction—an EF3 tornado in Choctaw County whose track spanned three different warning areas—while numerous other tornadoes, including the Sawyerville–Eoline tornado, were documented by the NWS Birmingham office in central Alabama.",
+      "citation_num": "3",
+      "citation_url": "https://www.weather.gov/mob/2011_April27_Tornado",
+      "verdict": "not_support",
+      "reason": "The citation confirms that the NWS Mobile/Pensacola office documented only one EF3 tornado in its jurisdiction that spanned three warning areas and that NWS Birmingham had local write-ups, but it does not explicitly mention the 'Sawyerville–Eoline tornado' or state that NWS Birmingham documented it."
+    },
+    {
+      "statement_index": 23,
+      "statement": "Within Alabama, the outbreak affected multiple National Weather Service County Warning Areas, with the NWS Mobile/Pensacola office documenting that only one of the 207 April 27 tornadoes occurred in its jurisdiction—an EF3 tornado in Choctaw County whose track spanned three different warning areas—while numerous other tornadoes, including the Sawyerville–Eoline tornado, were documented by the NWS Birmingham office in central Alabama.",
+      "citation_num": "2",
+      "citation_url": "https://www.weather.gov/bmx/event_04272011",
+      "verdict": "not_support",
+      "reason": "While the citation indicates the outbreak affected multiple NWS County Warning Areas and NWS Birmingham documented numerous tornadoes including Sawyerville-Eoline, it does not provide information about the NWS Mobile/Pensacola office documenting only one EF3 tornado in Choctaw County or its track spanning three warning areas, nor does it mention 207 tornadoes nationwide."
+    }
+  ]
+}

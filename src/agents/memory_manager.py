@@ -907,6 +907,17 @@ class MemoryManager:
             specs = self._fallback_claim_specs(query, statements, evidence)
             return self._write_claim_specs(query, specs, statements, evidence)
 
+        # Build source credibility lookup
+        source_credibility = {}
+        for node in nodes:
+            if node.get("type") == NodeType.SOURCE.value:
+                source_credibility[node.get("id")] = node.get("credibility_score", 0.5)
+
+        def _get_source_credibility(source_id: Optional[str]) -> float:
+            if source_id and source_id in source_credibility:
+                return source_credibility[source_id]
+            return 0.5  # Default moderate credibility
+
         compact = {
             "statements": [
                 {
@@ -914,6 +925,7 @@ class MemoryManager:
                     "text": item.get("text") or item.get("statement"),
                     "document_id": item.get("document_id"),
                     "source_id": item.get("source_id"),
+                    "source_credibility": _get_source_credibility(item.get("source_id")),
                     "qualifiers": item.get("qualifiers") or [],
                     "limitations": item.get("limitations") or [],
                     "confidence": item.get("confidence"),
@@ -926,6 +938,7 @@ class MemoryManager:
                     "text": item.get("text") or item.get("claim"),
                     "document_id": item.get("document_id"),
                     "source_id": item.get("source_id"),
+                    "source_credibility": _get_source_credibility(item.get("source_id")),
                     "statement_ref": item.get("statement_ref"),
                     "claim_ref": item.get("claim_ref"),
                     "stance": item.get("stance"),
@@ -2609,6 +2622,12 @@ class MemoryManager:
                 goal = requests[0]
                 goal_id = goal["id"]
         from tools import report_tools, research_state
+
+        request_text = goal.get("request", "")
+        if request_text:
+            logger.info(f"User Request passed to Reporter: {len(request_text)} characters")
+        else:
+            logger.warning("User Request is empty in export_report_context")
 
         authorization_state = goal.get("reporting_from_state") or goal.get("research_state")
         delivery_mode = (

@@ -1,0 +1,155 @@
+# Good Boy (2025 film)
+
+## Good Boy (2025 film)
+
+Good Boy is a 2025 horror film written and directed by Ben Leonberg and told primarily from the point of view of a dog named Indy, who accompanies his owner Todd to a haunted rural family home threatened by supernatural forces. [1][2][3][4][5][6]
+
+The film is Leonbergs feature directorial debut and was first shown at the South by Southwest (SXSW) Film & TV Festival in March 2025 before screening at additional international genre festivals. [1][7][8][3][9][6]
+
+Good Boy was later released digitally with a listed runtime of approximately 1 hour and 12 minutes and has been made available on streaming platforms including Hulu and AMC+. [2][10][4][11]
+
+## Plot
+
+Good Boy follows Indy, a Nova Scotia Duck Tolling Retriever who lives with his human owner Todd. [5][6]
+
+After Todd becomes gravely ill following the mysterious death of his grandfather, he and Indy leave city life and move to the late grandfathers long-vacant rural family home in search of a quieter place to recover. [5][11]
+
+The inherited house is presented as an isolated, dusty property filled with unwanted and unwelcome supernatural presences, with neglected rooms and an atmosphere of decay. [8][5][6]
+
+Soon after arriving, Indy begins to see shadows and figures and to suffer nightmares that suggest the house is haunted, while Todd remains largely unaware of the full extent of the threat. [8][5]
+
+The film is structured so that most scenes are shown from Indys eye level, cutting between his reactions and apparitions visible only to him, creating a dogs-eye view of a haunted house story. [8][6]
+
+As dark entities increasingly menace the property and Todds health deteriorates, Indy becomes convinced that a supernatural presence is targeting his human companion. [1][2][12][10][4][5]
+
+Lacking any supernatural abilities himself, Indy relies on his instincts to investigate the house, patrol its dark corners and hallways, and confront the apparitions he perceives in order to protect Todd from an unseen but persistent presence. [7][8][12][10][5][13]
+
+Human characters around Todd, including his worried sister and an uneasy neighbor, are sketched in only briefly, with their perspectives and backstories remaining largely underdeveloped as the narrative focuses on Indys perceptions and efforts. [8]
+
+## Cast
+
+Indy plays the central canine role in Good Boy and is presented as the dog through whose perspective the story is told. [1][8][5][6]
+
+Shane Jensen portrays Todd, Indys human owner, who moves with him to the rural family home. [1][4][11]
+
+Larry Fessenden appears as Todds grandfather, identified as Grandpa in cast listings. [1][4]
+
+Arielle Friedman, Stuart Rudin, Anya Krawcheck, Hunter Goetz, and Bandit are also credited among the principal cast. [1][14][4]
+
+## Production
+
+Ben Leonberg directed Good Boy and co-wrote the film with Alex Cannon. [1][3][4]
+
+Letterboxd credits Kari Fischer, Ben Leonberg, and Brian Goodheart as producers of the film. [1]
+
+Curtis Roberts is credited as editor and Wade Grebnoel as responsible for cinematography. [1]
+
+Leonberg has stated that Indy in the film is his real Nova Scotia Duck Tolling Retriever and that he was careful not to traumatize the dog during production despite the characters on-screen distress. [5][6]
+
+In an interview feature about the making of Good Boy, Leonberg explained that the film was developed over about three years by a small family team who built the production around Indys natural behavior and instincts, capturing genuine moments between man and dog rather than training Indy as a conventional movie animal. [6][13]
+
+Leonberg described the process as learning how to make a movie around a dog who does not know he is in a film, emphasizing flexible problem-solving, inventing new commands and tricks on set, and devising methods to guide Indys movement and blocking within scenes. [13]
+
+According to the same feature, everyday routines with Indy, such as the dog weaving between Leonbergs legs in the morning, were incorporated directly into scenes, sometimes with Leonberg physically standing in for Todd during filming. [13]
+
+Critics have noted that the films narrative is shot largely from Indys perspective at knee height, with editing that alternates between close views of the dog and the ghostly manifestations he perceives, reflecting the productions focus on dog-level framing. [8][6]
+
+## Release
+
+Good Boy had its world premiere on 8 March 2025 at the South by Southwest (SXSW) Film & TV Festival in the United States. [1][8][9][6]
+
+Following its SXSW premiere, the film screened at several international film festivals, including the Calgary Underground Film Festival in Canada, the Bucheon International Fantastic Film Festival in South Korea, the Octopus Film Festival in Poland, and the Melbourne International Film Festival in Australia. [1][8][5]
+
+A review of the film notes that SXSW created a special one-time canine performance prize for Indy, called the "Howl of Fame," likened to the Palme Dog award at the Cannes Film Festival. [6]
+
+An international trailer released by Vertigo Releasing advertised Good Boy as a horror and suspense film with a planned digital release date of 10 October 2025 and a runtime of 1 hour and 12 minutes. [10]
+
+The same trailer synopsis reiterates the core premise of a loyal dog named Indy moving with his owner Todd to a rural family home and confronting supernatural forces lurking in the shadows. [10]
+
+A separate review and discussion segment stated that Good Boy was set for a theatrical release on 3 October 2025, a date not repeated in the festival listings or digital-release materials, indicating some variation in reported rollout plans between early commentary and later distribution announcements. [1][7][10]
+
+By the time of its wider availability, the film had an established release path that combined festival screenings, digital release, and streaming distribution. [3][9][10][4]
+
+## Distribution and home media
+
+IFC Films promoted Good Boy with an official trailer crediting Ben Leonberg as director and listing Larry Fessenden, Arielle Friedman, Indy, Shane Jensen, Anya Krawcheck, and Stuart Rudin among the starring cast, signaling IFCs involvement in the films release. [14]
+
+According to an interview with Leonberg, IFC became involved in the films distribution after its festival debut, with the director noting that trailer preparation and release planning took place as the film "went into the world." [9]
+
+Rotten Tomatoes lists Good Boy as available to stream with a subscription on Hulu and AMC+, and to rent or buy via Fandango at Home. [2][4]
+
+IMDb similarly indicates that viewers can watch Good Boy on Hulu, aligning with the streaming availability reported by Rotten Tomatoes. [2][4]
+
+An Amazon listing for a Good Boy DVD identifies the film as a 2025 release with a PG-13 rating and a runtime of approximately 1 hour and 12 minutes, and summarizes the story as following Indy on a new adventure with Todd as they leave city life for a long-vacant family home. [11]
+
+## Themes and style
+
+Critics and reviewers have characterized Good Boy as a haunted-house horror and supernatural thriller that tells its ghost story largely from a dogs point of view, making the canine perspective central to its style and narrative. [1][8][4][5][6]
+
+Letterboxd collections and genre tags associate the film with haunted and supernatural horror, psychologically twisted thrillers, and gothic, eerie haunting stories, emphasizing its alignment with supernatural and haunted-house traditions. [1]
+
+A review in PopHorror highlights themes of loyalty and the humanpet bond, noting that the film invites viewers to consider what their pets might perceive beyond human awareness when they stare into empty corners or react to unseen stimuli. [5]
+
+PopHorror further describes the film as a supernatural thriller that favors tension, atmosphere, and emotional impact over frequent jump scares, maintaining a sustained sense of unease through Indys perspective. [5]
+
+Variety observes that the films high concept lies in presenting a familiar haunted-house setup almost entirely at knee height from the dogs vantage point, with editing that alternates between Indy and the ghostly phenomena he detects, which only he can see. [6]
+
+The ScreenAnarchy review notes that the human characters remain lightly sketched and that the film "lives and dies" with Indys performance, underscoring the extent to which the storys tone and suspense depend on the dogs on-screen presence. [8][2]
+
+Rotten Tomatoess movie information describes Good Boy as visually striking, emotionally resonant horror that subverts some genre conventions while remaining haunting and conceptually ambitious. [4]
+
+A review on RogerEbert.com refers to the film as an "ingenious" canine horror story that briefly takes viewers inside the mind of a dreaming dog, emphasizing the subjective experience of its animal protagonist. [15]
+
+## Reception
+
+On Rotten Tomatoes, Good Boy is listed with critical commentary highlighting its visually striking presentation and emotionally impactful horror, though the specific numerical rating cited in at least one social media discussion reflects a relatively mixed aggregated score. [16][17][4]
+
+A reviewer in the Movie Talk Club Facebook group reported that the film held a rating of 32% on Rotten Tomatoes at the time of their post and gave it a personal score of 5 out of 10, indicating a lukewarm individual response. [16]
+
+The Scary Horror Stuff Facebook page similarly assigned Good Boy a 5 out of 10 score in a post summarizing recent horror releases, describing it as almost successful but ultimately lacking sufficient momentum. [17]
+
+In contrast, Film Threat reviewed Good Boy as an independent horror feature and awarded it a score of 8 out of 10, praising it as an impressive feature debut for Leonberg and highlighting its execution of the dog-centered haunted-house premise. [3]
+
+PopHorrors review describes the film as a tense and chilling supernatural thriller that maintains edge-of-the-seat tension without relying on frequent jump scares, and presents it positively as a noteworthy entry in dog-centered horror. [5]
+
+Varietys review emphasizes the novelty of telling a ghost story from a dogs perspective and notes that the film teaches the haunted-house genre some new tricks, while also acknowledging limitations in the development of human characters. [6]
+
+RogerEbert.com discusses Good Boy as a canine horror film that includes a sequence entering a dreaming dogs mind, treating the film as an inventive genre piece centered on its animal protagonist. [15]
+
+An IMDb user review quoted on the films page suggests that Indy may be among the first canine actors to truly lead a horror movie and argues that his performance makes the story feel believable and engaging for viewers. [2]
+
+## References
+
+[1] Good Boy (2025) directed by Ben Leonberg • Reviews, film + cast • Letterboxd https://letterboxd.com/film/good-boy-2025
+
+[2] Good Boy (2025) ⭐ 6.1 | Horror, Thriller https://www.imdb.com/title/tt35521922
+
+[3] Good Boy | Film Threat https://filmthreat.com/reviews/good-boy-horror-review
+
+[4] Good Boy (2025) | Rotten Tomatoes https://www.rottentomatoes.com/m/good_boy_2025
+
+[5] Ben Leonberg’s ‘Good Boy’ (2025) – Movie Review https://pophorror.com/ben-leonbergs-good-boy-2025-movie-review
+
+[6] ‘Good Boy’ Review: Telling a Ghost Story From a Dog’s POV, Ben Leonberg Teaches an Old Genre Some Nifty New Tricks https://variety.com/2025/film/reviews/good-boy-review-1236537881
+
+[7] GOOD BOY Film Review | with Director Ben Leonberg https://www.youtube.com/watch?v=QT5_fo8PODA
+
+[8] SXSW 2025 Review: GOOD BOY, A Furry Ghost Hunter Leads This Haunted House Chiller https://screenanarchy.com/2025/03/sxsw-2025-review-good-boy.html
+
+[9] ‘Good Boy’ Director Ben Leonberg Reveals Secrets Behind Making A Horror-Thriller Film From The Perspective Of His Family Dog https://deadline.com/2026/01/good-boy-ben-leonberg-directing-secrets-dog-horror-film-1236660750
+
+[10] Good Boy | Official International Trailer (2025) | Now On Digital https://www.youtube.com/watch?v=ORiPMZcg-24
+
+[11] Good Boy – Ben Leonberg – Amazon.com (DVD listing) https://www.amazon.com/Good-Boy-DVD-Ben-Leonberg/dp/B0G5SBXC3F
+
+[12] Ben Leonberg Interview: GOOD BOY (2025) Through a Dog's POV https://www.reddit.com/r/moviecritic/comments/1k2e15o/ben_leonberg_interview_good_boy_2025_through_a
+
+[13] Good Boy: A Conversation with Indy (Yes, the Dog) | Set Stories w/ Ben Leonberg & Indy https://www.youtube.com/watch?v=Zziet4t-38Q
+
+[14] Good Boy - Official Trailer | HD | IFC Films https://www.youtube.com/watch?v=q4-CRkd_74g
+
+[15] Good Boy movie review & film summary - Roger Ebert https://www.rogerebert.com/reviews/good-boy-dog-horror-movie-review-2025
+
+[16] Loving 2024 movies so far – Movie Talk Club Facebook group post https://www.facebook.com/groups/movie.talk.club/posts/1600626667378744
+
+[17] 'Scary Movie' Smashes Records While 'Obsession' Defies Gravity ... – Scary Horror Stuff Facebook post https://www.facebook.com/scaryhorrorstuff/posts/scary-movie-smashes-records-while-obsession-defies-gravity-and-backrooms-normali/1432546512229260
