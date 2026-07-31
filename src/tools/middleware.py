@@ -1,4 +1,4 @@
-# 参考 /mnt/h/DeepResearch/aiq/src/aiq_agent/agents/deep_researcher/custom_middleware.py 关于中间件的设计和实现
+# 参考/Users/yindq/projects/DeepResearch/aiq/src/aiq_agent/agents/deep_researcher/custom_middleware.py 关于中间件的设计和实现
 """System guardrail middleware for GraphResearcher."""
 
 import json

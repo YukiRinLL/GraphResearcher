@@ -1,0 +1,520 @@
+{
+  "title": "Ring of Nestor",
+  "status": "completed",
+  "total_statements": 35,
+  "total_citations": 13,
+  "valid_citations": 11,
+  "evaluated_statements": 35,
+  "skipped_statements": 0,
+  "support": 29,
+  "not_support": 5,
+  "conflict": 1,
+  "support_ratio": 0.8285714285714286,
+  "conflict_ratio": 0.02857142857142857,
+  "results": [
+    {
+      "statement_index": 0,
+      "statement": "The Ring of Nestor is a gold signet ring attributed to the Aegean Bronze Age, notable for its engraved imagery and contested role in Minoan and Mycenaean traditions.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The citation confirms the 'Ring of Nestor' is a gold signet ring associated with Aegean Bronze Age studies and subject to ongoing authenticity debates."
+    },
+    {
+      "statement_index": 0,
+      "statement": "The Ring of Nestor is a gold signet ring attributed to the Aegean Bronze Age, notable for its engraved imagery and contested role in Minoan and Mycenaean traditions.",
+      "citation_num": "3",
+      "citation_url": "https://www.cambridge.org/core/journals/journal-of-hellenic-studies/article/ring-of-nestor-a-glimpse-into-the-minoan-afterworld-and-a-sepulchral-treasure-of-gold-signetrings-and-beadseals-from-thisbe-boeotia/5E465BD1031E9251C962E138498E6CFA",
+      "verdict": "not_support",
+      "reason": "While the citation refers to the ring, it does not contain the specific scholarly discourse on its 'contested role' in traditions."
+    },
+    {
+      "statement_index": 0,
+      "statement": "The Ring of Nestor is a gold signet ring attributed to the Aegean Bronze Age, notable for its engraved imagery and contested role in Minoan and Mycenaean traditions.",
+      "citation_num": "2",
+      "citation_url": "https://www.facebook.com/groups/archeologyandcivilizations/posts/26471243725875801",
+      "verdict": "not_support",
+      "reason": "The citation content is a Facebook login page and does not contain any information about the 'Ring of Nestor' or its historical context."
+    },
+    {
+      "statement_index": 0,
+      "statement": "The Ring of Nestor is a gold signet ring attributed to the Aegean Bronze Age, notable for its engraved imagery and contested role in Minoan and Mycenaean traditions.",
+      "citation_num": "4",
+      "citation_url": "https://en.wikipedia.org/wiki/Ring_of_Nestor",
+      "verdict": "support",
+      "reason": "The citation states, 'The Ring of Nestor is a gold signet ring first described by the archaeologist Arthur Evans in 1925,' and mentions its 'crowded and complex design, including human figures as well as real and mythical animals,' with its authenticity and Minoan attribution being disputed."
+    },
+    {
+      "statement_index": 1,
+      "statement": "Modern scholarship has focused on the ring’s iconography, Late Minoan dating, and debates regarding its authenticity and provenance.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The provided text and references focus on the ring's iconography, its dating, and the discourse surrounding its authenticity."
+    },
+    {
+      "statement_index": 1,
+      "statement": "Modern scholarship has focused on the ring’s iconography, Late Minoan dating, and debates regarding its authenticity and provenance.",
+      "citation_num": "3",
+      "citation_url": "https://www.cambridge.org/core/journals/journal-of-hellenic-studies/article/ring-of-nestor-a-glimpse-into-the-minoan-afterworld-and-a-sepulchral-treasure-of-gold-signetrings-and-beadseals-from-thisbe-boeotia/5E465BD1031E9251C962E138498E6CFA",
+      "verdict": "not_support",
+      "reason": "The citation text consists of an extract and notes; it does not provide an overview of modern scholarly debates on authenticity or provenance."
+    },
+    {
+      "statement_index": 1,
+      "statement": "Modern scholarship has focused on the ring’s iconography, Late Minoan dating, and debates regarding its authenticity and provenance.",
+      "citation_num": "2",
+      "citation_url": "https://www.facebook.com/groups/archeologyandcivilizations/posts/26471243725875801",
+      "verdict": "not_support",
+      "reason": "The citation content is a Facebook login page and does not discuss modern scholarship, iconography, dating, authenticity, or provenance of any ring."
+    },
+    {
+      "statement_index": 1,
+      "statement": "Modern scholarship has focused on the ring’s iconography, Late Minoan dating, and debates regarding its authenticity and provenance.",
+      "citation_num": "4",
+      "citation_url": "https://en.wikipedia.org/wiki/Ring_of_Nestor",
+      "verdict": "support",
+      "reason": "The citation details extensive scholarly focus on the ring's iconography (Interpretation section), its Late Minoan I dating (Description section), and a dedicated 'Debate over authenticity' section, which also touches upon its provenance."
+    },
+    {
+      "statement_index": 2,
+      "statement": "Arthur Evans described the Ring of Nestor in 1925 as part of a royal treasure of gold signet-rings and bead-seals found in a Mycenaean rock-cut tomb near Thisbë in Boeotia.",
+      "citation_num": "5",
+      "citation_url": "https://catalog.hathitrust.org/Record/000609034",
+      "verdict": "not_support",
+      "reason": "While the citation confirms the book title, author, and publication year (1925), it does not contain information about the 'royal' nature of the treasure or the specific 'rock-cut tomb' location."
+    },
+    {
+      "statement_index": 2,
+      "statement": "Arthur Evans described the Ring of Nestor in 1925 as part of a royal treasure of gold signet-rings and bead-seals found in a Mycenaean rock-cut tomb near Thisbë in Boeotia.",
+      "citation_num": "3",
+      "citation_url": "https://www.cambridge.org/core/journals/journal-of-hellenic-studies/article/ring-of-nestor-a-glimpse-into-the-minoan-afterworld-and-a-sepulchral-treasure-of-gold-signetrings-and-beadseals-from-thisbe-boeotia/5E465BD1031E9251C962E138498E6CFA",
+      "verdict": "support",
+      "reason": "The citation confirms Arthur Evans wrote about the 'Ring of Nestor' and the 'sepulchral treasure' from Thisbë, Boeotia, published in 1925."
+    },
+    {
+      "statement_index": 3,
+      "statement": "Evans associated the ring and its associated treasure with high-status or royal burial and emphasized the wealth the collection represented.",
+      "citation_num": "5",
+      "citation_url": "https://catalog.hathitrust.org/Record/000609034",
+      "verdict": "not_support",
+      "reason": "The citation provides the title and bibliographic details of the work but does not contain the text of the book, so it cannot confirm Evans's specific characterization of the treasure's status."
+    },
+    {
+      "statement_index": 3,
+      "statement": "Evans associated the ring and its associated treasure with high-status or royal burial and emphasized the wealth the collection represented.",
+      "citation_num": "3",
+      "citation_url": "https://www.cambridge.org/core/journals/journal-of-hellenic-studies/article/ring-of-nestor-a-glimpse-into-the-minoan-afterworld-and-a-sepulchral-treasure-of-gold-signetrings-and-beadseals-from-thisbe-boeotia/5E465BD1031E9251C962E138498E6CFA",
+      "verdict": "support",
+      "reason": "Evans explicitly characterizes the find as a 'truly royal treasure of gold rings and of bead-seals'."
+    },
+    {
+      "statement_index": 4,
+      "statement": "Evans dated the tomb group and its grave goods to the late Mycenaean period, correlating it with the Cretan Late Minoan III timeframe.",
+      "citation_num": "3",
+      "citation_url": "https://www.cambridge.org/core/journals/journal-of-hellenic-studies/article/ring-of-nestor-a-glimpse-into-the-minoan-afterworld-and-a-sepulchral-treasure-of-gold-signetrings-and-beadseals-from-thisbe-boeotia/5E465BD1031E9251C962E138498E6CFA",
+      "verdict": "support",
+      "reason": "Evans explicitly compares the date of the jewels and associated objects to 'early L.M. III. b, in Minoan terms'."
+    },
+    {
+      "statement_index": 5,
+      "statement": "Evans placed the treasure within the late phase of the Bronze Age based on associated weapons, glass, and ceramic finds.",
+      "citation_num": "3",
+      "citation_url": "https://www.cambridge.org/core/journals/journal-of-hellenic-studies/article/ring-of-nestor-a-glimpse-into-the-minoan-afterworld-and-a-sepulchral-treasure-of-gold-signetrings-and-beadseals-from-thisbe-boeotia/5E465BD1031E9251C962E138498E6CFA",
+      "verdict": "support",
+      "reason": "Evans lists items such as bronze spear-heads, a sword, a razor, and perforated glass-paste objects to place the hoard in a late epoch."
+    },
+    {
+      "statement_index": 6,
+      "statement": "The Ring of Nestor was discovered before 1907 at Kakovatos in Messenia, Greece.",
+      "citation_num": "4",
+      "citation_url": "https://en.wikipedia.org/wiki/Ring_of_Nestor",
+      "verdict": "support",
+      "reason": "The citation states, 'Discovered Before 1907 Kakovatos, Messenia, Greece (reported)' in the infobox and further explains that 'In 1907, a series of tholos tombs at Kakovatos... were excavated' and 'the ring was taken by a local peasant from one of these tombs... prior to the excavation'."
+    },
+    {
+      "statement_index": 7,
+      "statement": "The Ring of Nestor is housed in the Ashmolean Museum at the University of Oxford under inventory number AN1938.1130.",
+      "citation_num": "4",
+      "citation_url": "https://en.wikipedia.org/wiki/Ring_of_Nestor",
+      "verdict": "support",
+      "reason": "The infobox clearly lists 'Present location Ashmolean Museum' and 'Identification AN1938.1130'."
+    },
+    {
+      "statement_index": 8,
+      "statement": "The ring is catalogued in the Corpus der Minoischen und Mykenischen Siegel as CMS VI.229.",
+      "citation_num": "4",
+      "citation_url": "https://en.wikipedia.org/wiki/Ring_of_Nestor",
+      "verdict": "support",
+      "reason": "The infobox lists 'Identification ... CMS VI.229' and explanatory note [a] clarifies that it is 'after its number in the Corpus der minoischen und mykenischen Siegel (CMS)'."
+    },
+    {
+      "statement_index": 9,
+      "statement": "Arthur Evans donated the ring to the Ashmolean Museum in 1939.",
+      "citation_num": "4",
+      "citation_url": "https://en.wikipedia.org/wiki/Ring_of_Nestor",
+      "verdict": "support",
+      "reason": "The citation explicitly states, 'He gifted the ring to the Ashmolean Museum at the University of Oxford in 1939.'"
+    },
+    {
+      "statement_index": 10,
+      "statement": "The ring is made of gold and is characterized as a large signet ring.",
+      "citation_num": "4",
+      "citation_url": "https://en.wikipedia.org/wiki/Ring_of_Nestor",
+      "verdict": "support",
+      "reason": "The citation describes it as a 'gold signet ring' and provides its dimensions (Bezel: 3.29 cm ×2.18 cm), indicating it is a substantial piece."
+    },
+    {
+      "statement_index": 11,
+      "statement": "The ring is dated to the Late Minoan I period, approximately 1700–1450 BCE, and is attributed to Minoan culture, though this is disputed.",
+      "citation_num": "3",
+      "citation_url": "https://www.cambridge.org/core/journals/journal-of-hellenic-studies/article/ring-of-nestor-a-glimpse-into-the-minoan-afterworld-and-a-sepulchral-treasure-of-gold-signetrings-and-beadseals-from-thisbe-boeotia/5E465BD1031E9251C962E138498E6CFA",
+      "verdict": "not_support",
+      "reason": "The citation text provided does not mention the specific date of 1700–1450 BCE or the dispute over the culture's origin."
+    },
+    {
+      "statement_index": 11,
+      "statement": "The ring is dated to the Late Minoan I period, approximately 1700–1450 BCE, and is attributed to Minoan culture, though this is disputed.",
+      "citation_num": "4",
+      "citation_url": "https://en.wikipedia.org/wiki/Ring_of_Nestor",
+      "verdict": "support",
+      "reason": "The infobox and Description section state, 'Period Late Minoan I (c. 1700– c. 1450 BCE) (claimed)' and 'Culture Minoan (disputed)', with the text adding that 'Scholars who consider the ring to be ancient date it to the Late Minoan I period (c.1700– c.1450 BCE)'."
+    },
+    {
+      "statement_index": 12,
+      "statement": "Evans originally dated the ring to a late Mycenaean horizon corresponding to Late Minoan III.",
+      "citation_num": "3",
+      "citation_url": "https://www.cambridge.org/core/journals/journal-of-hellenic-studies/article/ring-of-nestor-a-glimpse-into-the-minoan-afterworld-and-a-sepulchral-treasure-of-gold-signetrings-and-beadseals-from-thisbe-boeotia/5E465BD1031E9251C962E138498E6CFA",
+      "verdict": "support",
+      "reason": "The title and extract link the treasure to a date the author associates with early L.M. III."
+    },
+    {
+      "statement_index": 12,
+      "statement": "Evans originally dated the ring to a late Mycenaean horizon corresponding to Late Minoan III.",
+      "citation_num": "4",
+      "citation_url": "https://en.wikipedia.org/wiki/Ring_of_Nestor",
+      "verdict": "not_support",
+      "reason": "The citation states Evans considered it 'made on Minoan Crete in the Late Bronze Age' and mentions LM I as a claimed period, but does not specifically state that Evans *originally* dated it to a Late Mycenaean horizon corresponding to Late Minoan III."
+    },
+    {
+      "statement_index": 13,
+      "statement": "Theodore Eliopoulos examined the Ring of Nestor in 2013, considering it a proposed Late Minoan I object and evaluating whether its iconography and style fit Minoan repertoire or suggest modern manufacture.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The author, Theodore Eliopoulos, published 'Some Observations on the Iconography of the Ring of Nestor' in 2013, which addresses these exact criteria."
+    },
+    {
+      "statement_index": 14,
+      "statement": "A social-media discussion describes the ring as a 3,700-year-old gold signet ring from Crete, dating to the Late Minoan period (c. 1700–1450 BCE), housed in the Ashmolean Museum.",
+      "citation_num": "2",
+      "citation_url": "https://www.facebook.com/groups/archeologyandcivilizations/posts/26471243725875801",
+      "verdict": "not_support",
+      "reason": "The citation content is a Facebook login page and does not contain any social-media discussion about a 3,700-year-old gold signet ring from Crete or its location in the Ashmolean Museum."
+    },
+    {
+      "statement_index": 15,
+      "statement": "The social-media summary associates the ring with Minoan Crete and emphasizes ongoing authenticity doubts.",
+      "citation_num": "2",
+      "citation_url": "https://www.facebook.com/groups/archeologyandcivilizations/posts/26471243725875801",
+      "verdict": "not_support",
+      "reason": "The citation content is a Facebook login page and does not provide any summary associating a ring with Minoan Crete or discussing authenticity doubts."
+    },
+    {
+      "statement_index": 16,
+      "statement": "Evans described the ring as belonging to a burial assemblage with weapons, glass, and pottery, reflecting elite funerary practice.",
+      "citation_num": "3",
+      "citation_url": "https://www.cambridge.org/core/journals/journal-of-hellenic-studies/article/ring-of-nestor-a-glimpse-into-the-minoan-afterworld-and-a-sepulchral-treasure-of-gold-signetrings-and-beadseals-from-thisbe-boeotia/5E465BD1031E9251C962E138498E6CFA",
+      "verdict": "support",
+      "reason": "Evans describes finding bronze weapons, glass-paste objects, and pottery in the tomb group."
+    },
+    {
+      "statement_index": 17,
+      "statement": "Some accounts link the discovery of the ring to Mycenaean tholos tombs near Pylos in Messenia, contrasting with the Boeotian origin provided by Evans.",
+      "citation_num": "4",
+      "citation_url": "https://en.wikipedia.org/wiki/Ring_of_Nestor",
+      "verdict": "conflict",
+      "reason": "The citation states that Evans reported the ring was discovered near Pylos in Messenia, and while it mentions Evans published the ring alongside the 'Thisbe Treasure' from Boeotia, it clarifies that this connection 'cast doubt upon the Ring of Nestor' due to the Treasure being a forgery, not that Evans claimed a Boeotian origin for the Ring of Nestor itself."
+    },
+    {
+      "statement_index": 18,
+      "statement": "Sources do not resolve the discrepancy regarding the discovery location, as modern studies focus on style and authenticity rather than re-documenting the findspot.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "not_support",
+      "reason": "The provided citation does not explicitly discuss a discrepancy regarding the discovery location or whether researchers have abandoned efforts to document the findspot."
+    },
+    {
+      "statement_index": 18,
+      "statement": "Sources do not resolve the discrepancy regarding the discovery location, as modern studies focus on style and authenticity rather than re-documenting the findspot.",
+      "citation_num": "3",
+      "citation_url": "https://www.cambridge.org/core/journals/journal-of-hellenic-studies/article/ring-of-nestor-a-glimpse-into-the-minoan-afterworld-and-a-sepulchral-treasure-of-gold-signetrings-and-beadseals-from-thisbe-boeotia/5E465BD1031E9251C962E138498E6CFA",
+      "verdict": "not_support",
+      "reason": "The provided text does not contain a comprehensive review of scholarly sources or their stance on the findspot discrepancy."
+    },
+    {
+      "statement_index": 18,
+      "statement": "Sources do not resolve the discrepancy regarding the discovery location, as modern studies focus on style and authenticity rather than re-documenting the findspot.",
+      "citation_num": "4",
+      "citation_url": "https://en.wikipedia.org/wiki/Ring_of_Nestor",
+      "verdict": "support",
+      "reason": "The citation details Evans's 'convoluted story of its origins' and the 'complicated chain of transmission' reported to Evans, which 'made it impossible to verify the truth of the ring's discovery,' indicating an unresolved discrepancy in provenance, and the 'Debate over authenticity' section focuses on iconographical consistency and manufacturing techniques rather than re-documenting the findspot."
+    },
+    {
+      "statement_index": 19,
+      "statement": "The palace at Ano Englianos, or \"Palace of Nestor,\" was the center of a Mycenaean kingdom associated with the Homeric figure Nestor.",
+      "citation_num": "7",
+      "citation_url": "https://www.odysseyadventures.ca/articles/mycenae/article_mycenae02-pylos.html",
+      "verdict": "support",
+      "reason": "The text states the site is at Ano Englianos and that according to Homer, Pylos was the home of the hero Nestor."
+    },
+    {
+      "statement_index": 19,
+      "statement": "The palace at Ano Englianos, or \"Palace of Nestor,\" was the center of a Mycenaean kingdom associated with the Homeric figure Nestor.",
+      "citation_num": "6",
+      "citation_url": "https://www.archaeology.wiki/blog/2026/05/20/pylos-of-nestor-a-mycenaean-kingdom-revealed",
+      "verdict": "support",
+      "reason": "The text explicitly states the Palace at Ano Englianos was identified as the Homeric Pylos of King Nestor."
+    },
+    {
+      "statement_index": 20,
+      "statement": "Excavations revealed the palace consisted of four main units built with stone rubble, ashlar, mudbrick, wood, plaster, and concrete.",
+      "citation_num": "7",
+      "citation_url": "https://www.odysseyadventures.ca/articles/mycenae/article_mycenae02-pylos.html",
+      "verdict": "support",
+      "reason": "The text confirms the palace consisted of four separate buildings and lists stone rubble, ashlar, mud brick, wood, plaster, and concrete as construction materials."
+    },
+    {
+      "statement_index": 21,
+      "statement": "The palace site replaced a Middle Helladic town and was built primarily in Late Helladic IIIA and IIIB.",
+      "citation_num": "7",
+      "citation_url": "https://www.odysseyadventures.ca/articles/mycenae/article_mycenae02-pylos.html",
+      "verdict": "support",
+      "reason": "The text notes evidence of a Middle Helladic town was found down the slope, while the palace was built during the Late Helladic IIIA and IIIB periods."
+    },
+    {
+      "statement_index": 22,
+      "statement": "The palace at Pylos lacks major cyclopean fortifications, though it contains some defensive elements.",
+      "citation_num": "7",
+      "citation_url": "https://www.odysseyadventures.ca/articles/mycenae/article_mycenae02-pylos.html",
+      "verdict": "support",
+      "reason": "The text states the site lacked the cyclopean masonry of other sites but contained a gateway and disconnected stretches of masonry suggesting fortifications."
+    },
+    {
+      "statement_index": 22,
+      "statement": "The palace at Pylos lacks major cyclopean fortifications, though it contains some defensive elements.",
+      "citation_num": "6",
+      "citation_url": "https://www.archaeology.wiki/blog/2026/05/20/pylos-of-nestor-a-mycenaean-kingdom-revealed",
+      "verdict": "not_support",
+      "reason": "The provided text mentions the Palace of Nestor and its features like the Throne Room and archives, but it does not contain information regarding cyclopean fortifications."
+    },
+    {
+      "statement_index": 23,
+      "statement": "Funerary goods from Pylian tholos tombs and the Grave of the Griffin Warrior demonstrate cross-cultural contact and elite identities in Messenia.",
+      "citation_num": "6",
+      "citation_url": "https://www.archaeology.wiki/blog/2026/05/20/pylos-of-nestor-a-mycenaean-kingdom-revealed",
+      "verdict": "support",
+      "reason": "The text discusses how funerary monuments and grave goods from the Grave of the Griffin Warrior and tholos tombs reflect the wealth, social status, and interconnections with the Minoan and wider Mediterranean worlds."
+    },
+    {
+      "statement_index": 23,
+      "statement": "Funerary goods from Pylian tholos tombs and the Grave of the Griffin Warrior demonstrate cross-cultural contact and elite identities in Messenia.",
+      "citation_num": "8",
+      "citation_url": "https://popular-archaeology.com/article/uncovering-the-early-mycenaeans",
+      "verdict": "support",
+      "reason": "The citation states that finds from the tholos tombs suggested wealth and status, and included materials from the Baltic, Egypt, and imported carnelian, while the Griffin Warrior tomb contained items of Minoan style and origin, all indicating elite identities and cross-cultural contact."
+    },
+    {
+      "statement_index": 24,
+      "statement": "The Griffin Warrior shaft grave yielded four gold signet rings with Minoan ritual scenes, used by Mycenaean elites to display authority and hybrid religious symbolism.",
+      "citation_num": "10",
+      "citation_url": "https://www.researchgate.net/publication/310467426_The_Lord_of_the_Gold_Rings_The_Griffin_Warrior_of_Pylos",
+      "verdict": "not_support",
+      "reason": "The provided citation content is a generic security challenge page from ResearchGate and does not contain any information regarding the Griffin Warrior shaft grave or Mycenaean artifacts."
+    },
+    {
+      "statement_index": 24,
+      "statement": "The Griffin Warrior shaft grave yielded four gold signet rings with Minoan ritual scenes, used by Mycenaean elites to display authority and hybrid religious symbolism.",
+      "citation_num": "8",
+      "citation_url": "https://popular-archaeology.com/article/uncovering-the-early-mycenaeans",
+      "verdict": "support",
+      "reason": "The citation explicitly mentions 'Four solid gold seal finger rings' found in the Griffin Warrior tomb, and the caption for Image 22 shows 'One of four solid gold rings found within the tomb. This one features a Cretan bull-jumping scene,' which is a Minoan ritual scene, and notes that possessing fine Minoan craftsmanship was a sign of status, wealth, and prestige for Mycenaean elites."
+    },
+    {
+      "statement_index": 24,
+      "statement": "The Griffin Warrior shaft grave yielded four gold signet rings with Minoan ritual scenes, used by Mycenaean elites to display authority and hybrid religious symbolism.",
+      "citation_num": "9",
+      "citation_url": "https://www.academia.edu/116392582/The_Lord_of_the_Gold_Rings",
+      "verdict": "conflict",
+      "reason": "The citation states that the Griffin Warrior's burial chamber 'lacked the structural ledges typical in Mycenaean shaft graves,' indicating it was not a shaft grave, which contradicts the statement's premise."
+    },
+    {
+      "statement_index": 25,
+      "statement": "Evans interpreted the ring’s imagery as representing a \"Minoan after-world\" and underworld religious concepts comparable to ancient Egyptian beliefs.",
+      "citation_num": "3",
+      "citation_url": "https://www.cambridge.org/core/journals/journal-of-hellenic-studies/article/ring-of-nestor-a-glimpse-into-the-minoan-afterworld-and-a-sepulchral-treasure-of-gold-signetrings-and-beadseals-from-thisbe-boeotia/5E465BD1031E9251C962E138498E6CFA",
+      "verdict": "support",
+      "reason": "The article title explicitly refers to the ring as 'A Glimpse into the Minoan After-World'."
+    },
+    {
+      "statement_index": 25,
+      "statement": "Evans interpreted the ring’s imagery as representing a \"Minoan after-world\" and underworld religious concepts comparable to ancient Egyptian beliefs.",
+      "citation_num": "4",
+      "citation_url": "https://en.wikipedia.org/wiki/Ring_of_Nestor",
+      "verdict": "support",
+      "reason": "The citation explicitly states, 'Evans considered the ring to depict scenes from the Minoan underworld,' 'specifically 'the admission of the departed into the realms of bliss',' and 'to illustrate connections between Minoan belief and ancient Egyptian religion'."
+    },
+    {
+      "statement_index": 26,
+      "statement": "The ring's imagery features human figures alongside real and fantastical animals.",
+      "citation_num": "4",
+      "citation_url": "https://en.wikipedia.org/wiki/Ring_of_Nestor",
+      "verdict": "support",
+      "reason": "The citation describes the ring's design as 'including human figures as well as real and mythical animals' and details specific examples like a lion, griffin, and various human figures."
+    },
+    {
+      "statement_index": 27,
+      "statement": "Eliopoulos analyzed the ring's iconography to evaluate if the composition belongs to genuine Bronze Age art or is a modern pastiche.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The abstract explicitly states that the paper aims to contribute to the discourse on authenticity by analyzing motifs and iconographic features."
+    },
+    {
+      "statement_index": 28,
+      "statement": "The study of the Isopata Ring cautions against interpreting complex Minoan glyptic scenes as specific, verifiable mythological narratives.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "not_support",
+      "reason": "The provided text does not mention the 'Isopata Ring' or provide a caution regarding its specific mythological interpretations."
+    },
+    {
+      "statement_index": 29,
+      "statement": "Minoan signet rings are viewed as portable objects for displaying religious and symbolic meaning rather than strictly as practical sealing devices.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The related paper by Tully and Crooks discusses how these signet rings functioned as inalienable possessions and mnemonic devices for elite identity rather than just practical sealing tools."
+    },
+    {
+      "statement_index": 30,
+      "statement": "The ring's cultural attribution and date are disputed, with some scholars alleging it is a modern forgery.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The abstract and several related papers explicitly refer to the 'ongoing discourse' and historical skepticism regarding the ring's genuineness."
+    },
+    {
+      "statement_index": 30,
+      "statement": "The ring's cultural attribution and date are disputed, with some scholars alleging it is a modern forgery.",
+      "citation_num": "2",
+      "citation_url": "https://www.facebook.com/groups/archeologyandcivilizations/posts/26471243725875801",
+      "verdict": "not_support",
+      "reason": "The citation content is a Facebook login page and does not mention any disputes regarding a ring's cultural attribution, date, or allegations of forgery."
+    },
+    {
+      "statement_index": 30,
+      "statement": "The ring's cultural attribution and date are disputed, with some scholars alleging it is a modern forgery.",
+      "citation_num": "4",
+      "citation_url": "https://en.wikipedia.org/wiki/Ring_of_Nestor",
+      "verdict": "support",
+      "reason": "The citation clearly states, 'Since its discovery, the ring's authenticity has been debated, with several scholars considering it a modern fake, and others defending it as a genuinely ancient artefact,' and lists 'Minoan (disputed)' under Culture in the infobox."
+    },
+    {
+      "statement_index": 31,
+      "statement": "Some scholars suspect the ring may be the work of Émile Gilliéron fils, a restorer and suspected forger.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "not_support",
+      "reason": "The provided citation does not mention Émile Gilliéron fils."
+    },
+    {
+      "statement_index": 31,
+      "statement": "Some scholars suspect the ring may be the work of Émile Gilliéron fils, a restorer and suspected forger.",
+      "citation_num": "2",
+      "citation_url": "https://www.facebook.com/groups/archeologyandcivilizations/posts/26471243725875801",
+      "verdict": "not_support",
+      "reason": "The citation content is a Facebook login page and does not mention Émile Gilliéron fils or any suspicions about a ring being his work."
+    },
+    {
+      "statement_index": 32,
+      "statement": "Proponents of the ring's authenticity point to wear patterns, metalworking analysis, and stylistic parallels to genuine Minoan art.",
+      "citation_num": "1",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The provided text and references mention that proponents use stylistic parallels, technical criteria (such as material analysis), and iconographic analysis to argue for the ring's authenticity."
+    },
+    {
+      "statement_index": 32,
+      "statement": "Proponents of the ring's authenticity point to wear patterns, metalworking analysis, and stylistic parallels to genuine Minoan art.",
+      "citation_num": "2",
+      "citation_url": "https://www.facebook.com/groups/archeologyandcivilizations/posts/26471243725875801",
+      "verdict": "not_support",
+      "reason": "The citation content is a Facebook login page and does not discuss proponents of a ring's authenticity, wear patterns, metalworking analysis, or stylistic parallels to Minoan art."
+    },
+    {
+      "statement_index": 32,
+      "statement": "Proponents of the ring's authenticity point to wear patterns, metalworking analysis, and stylistic parallels to genuine Minoan art.",
+      "citation_num": "4",
+      "citation_url": "https://en.wikipedia.org/wiki/Ring_of_Nestor",
+      "verdict": "support",
+      "reason": "The citation lists 'Arguments in favour of authenticity' including 'wear evident upon the ring and microscopic analysis of its engraving technique' and 'iconographical consistency with other Minoan artworks'."
+    },
+    {
+      "statement_index": 33,
+      "statement": "If authentic, the Ring of Nestor would likely have functioned as a marker of personal authority and status.",
+      "citation_num": "10",
+      "citation_url": "https://www.researchgate.net/publication/310467426_The_Lord_of_the_Gold_Rings_The_Griffin_Warrior_of_Pylos",
+      "verdict": "not_support",
+      "reason": "The provided citation content is a generic security challenge page from ResearchGate and does not contain any information regarding the Ring of Nestor."
+    },
+    {
+      "statement_index": 33,
+      "statement": "If authentic, the Ring of Nestor would likely have functioned as a marker of personal authority and status.",
+      "citation_num": "2",
+      "citation_url": "https://www.facebook.com/groups/archeologyandcivilizations/posts/26471243725875801",
+      "verdict": "not_support",
+      "reason": "The citation content is a Facebook login page and does not discuss the function of the 'Ring of Nestor' as a marker of personal authority and status."
+    },
+    {
+      "statement_index": 33,
+      "statement": "If authentic, the Ring of Nestor would likely have functioned as a marker of personal authority and status.",
+      "citation_num": "9",
+      "citation_url": "https://www.academia.edu/116392582/The_Lord_of_the_Gold_Rings",
+      "verdict": "not_support",
+      "reason": "While the citation discusses the significance of the Griffin Warrior's rings for status, it does not explicitly state that the 'Ring of Nestor,' particularly 'if authentic,' would function as a marker of personal authority and status, and one reference even calls it 'Pseudo-Minoan.'"
+    },
+    {
+      "statement_index": 34,
+      "statement": "The \"Pylos of Nestor\" exhibition illustrates the development of the Mycenaean kingdom and displays artifacts illustrating elite identity and cross-cultural exchange.",
+      "citation_num": "13",
+      "citation_url": "https://www.namuseum.gr/en/temporary_exhibition/pylos-of-nestor-a-mycenaean-kingdom-revealed",
+      "verdict": "support",
+      "reason": "The citation states that the exhibition traces the kingdom's development through archaeological evidence of social organization and highlights Messenia's interconnections with other Mediterranean regions, as well as the wealth and status of its rulers."
+    },
+    {
+      "statement_index": 34,
+      "statement": "The \"Pylos of Nestor\" exhibition illustrates the development of the Mycenaean kingdom and displays artifacts illustrating elite identity and cross-cultural exchange.",
+      "citation_num": "6",
+      "citation_url": "https://www.archaeology.wiki/blog/2026/05/20/pylos-of-nestor-a-mycenaean-kingdom-revealed",
+      "verdict": "support",
+      "reason": "The exhibition description confirms it traces the kingdom's development, displays prestigious grave goods, and highlights Messenia’s interconnections with the Minoan and Mediterranean worlds."
+    },
+    {
+      "statement_index": 34,
+      "statement": "The \"Pylos of Nestor\" exhibition illustrates the development of the Mycenaean kingdom and displays artifacts illustrating elite identity and cross-cultural exchange.",
+      "citation_num": "8",
+      "citation_url": "https://popular-archaeology.com/article/uncovering-the-early-mycenaeans",
+      "verdict": "not_support",
+      "reason": "While the citation discusses the Pylos of Nestor, the development of the Mycenaean kingdom, and artifacts illustrating elite identity and cross-cultural exchange, it does not mention the existence of an 'exhibition' by that name."
+    },
+    {
+      "statement_index": 34,
+      "statement": "The \"Pylos of Nestor\" exhibition illustrates the development of the Mycenaean kingdom and displays artifacts illustrating elite identity and cross-cultural exchange.",
+      "citation_num": "9",
+      "citation_url": "https://www.academia.edu/116392582/The_Lord_of_the_Gold_Rings",
+      "verdict": "not_support",
+      "reason": "The citation mentions the 'Palace of Nestor, Pylos' and related academic publications, but it does not refer to any 'Pylos of Nestor' exhibition."
+    }
+  ]
+}

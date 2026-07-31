@@ -1,0 +1,1744 @@
+{
+  "title": "Midnight Sun (Zara Larsson album)",
+  "status": "completed",
+  "total_statements": 73,
+  "total_citations": 15,
+  "valid_citations": 13,
+  "evaluated_statements": 73,
+  "skipped_statements": 0,
+  "support": 55,
+  "not_support": 18,
+  "conflict": 0,
+  "support_ratio": 0.7534246575342466,
+  "conflict_ratio": 0.0,
+  "results": [
+    {
+      "statement_index": 0,
+      "statement": "Midnight Sun is a studio album by Swedish pop singer Zara Larsson, released on 26 September 2025 through the Sommer House and Epic Records imprints, with distribution by Sony Music Entertainment.",
+      "citation_num": "3",
+      "citation_url": "https://www.discogs.com/master/3984226-Zara-Larsson-Midnight-Sun",
+      "verdict": "not_support",
+      "reason": "The citation provides the release year (2025) and labels (Sommer House, Epic, Sony Music) but does not explicitly state that the artist is Swedish or the specific release date of September 26."
+    },
+    {
+      "statement_index": 0,
+      "statement": "Midnight Sun is a studio album by Swedish pop singer Zara Larsson, released on 26 September 2025 through the Sommer House and Epic Records imprints, with distribution by Sony Music Entertainment.",
+      "citation_num": "9",
+      "citation_url": "https://www.euphoriazine.com/blog/2026/05/music/albums-zara-larsson-midnight-sun-girls-trip",
+      "verdict": "not_support",
+      "reason": "The citation content mentions the original album but does not provide its specific release date or the names of the record labels involved."
+    },
+    {
+      "statement_index": 0,
+      "statement": "Midnight Sun is a studio album by Swedish pop singer Zara Larsson, released on 26 September 2025 through the Sommer House and Epic Records imprints, with distribution by Sony Music Entertainment.",
+      "citation_num": "1",
+      "citation_url": "https://www.sonymusic.ca/press_release/zara-larsson-releases-new-album-midnight-sun",
+      "verdict": "support",
+      "reason": "The citation confirms the album name, artist, release date, and that it is released via Sommer House/Epic Records through DSPs."
+    },
+    {
+      "statement_index": 0,
+      "statement": "Midnight Sun is a studio album by Swedish pop singer Zara Larsson, released on 26 September 2025 through the Sommer House and Epic Records imprints, with distribution by Sony Music Entertainment.",
+      "citation_num": "7",
+      "citation_url": "https://beatroutemedia.com/i-cant-stop-talking-about-zara-larsson-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation provides the release date (Oct 03, 2025) but does not mention the record label or distribution details."
+    },
+    {
+      "statement_index": 0,
+      "statement": "Midnight Sun is a studio album by Swedish pop singer Zara Larsson, released on 26 September 2025 through the Sommer House and Epic Records imprints, with distribution by Sony Music Entertainment.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "not_support",
+      "reason": "The citation does not mention Sony Music Entertainment's distribution role."
+    },
+    {
+      "statement_index": 0,
+      "statement": "Midnight Sun is a studio album by Swedish pop singer Zara Larsson, released on 26 September 2025 through the Sommer House and Epic Records imprints, with distribution by Sony Music Entertainment.",
+      "citation_num": "8",
+      "citation_url": "https://www.iheartmedia.com/press/iheartradio-album-preview-zara-larsson-featuring-exclusive-music-her-remix-album-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation mentions 'Zara Larsson’s 2025 breakthrough Midnight Sun' but does not provide a specific release date like September 26, nor does it mention 'Sommer House', 'Epic Records', or 'Sony Music Entertainment'."
+    },
+    {
+      "statement_index": 0,
+      "statement": "Midnight Sun is a studio album by Swedish pop singer Zara Larsson, released on 26 September 2025 through the Sommer House and Epic Records imprints, with distribution by Sony Music Entertainment.",
+      "citation_num": "6",
+      "citation_url": "https://www.rollingstone.com/music/music-album-reviews/zara-larsson-midnight-sun-review-1235435727",
+      "verdict": "not_support",
+      "reason": "The citation confirms Zara Larsson's fifth album 'Midnight Sun' was released on September 26, 2025, but does not mention 'Sommer House', 'Epic Records', or 'Sony Music Entertainment' as labels or distributors."
+    },
+    {
+      "statement_index": 0,
+      "statement": "Midnight Sun is a studio album by Swedish pop singer Zara Larsson, released on 26 September 2025 through the Sommer House and Epic Records imprints, with distribution by Sony Music Entertainment.",
+      "citation_num": "4",
+      "citation_url": "https://www.facebook.com/ZaraLarsson/posts/midnight-sun-the-album-out-september-26-you-ready-for-the-track-list/1332902268194123",
+      "verdict": "not_support",
+      "reason": "The citation confirms the album title, artist, and release day, but does not provide information about the year 2025, record labels (Sommer House, Epic Records), distribution (Sony Music Entertainment), or the artist being a 'Swedish pop singer'."
+    },
+    {
+      "statement_index": 0,
+      "statement": "Midnight Sun is a studio album by Swedish pop singer Zara Larsson, released on 26 September 2025 through the Sommer House and Epic Records imprints, with distribution by Sony Music Entertainment.",
+      "citation_num": "2",
+      "citation_url": "https://genius.com/albums/Zara-larsson/Midnight-sun",
+      "verdict": "support",
+      "reason": "The citation states that 'Midnight Sun is Swedish pop singer Zara Larsson’s fourth international studio album (fifth overall), released on September 26, 2025' and later notes that 'Genius credits Epic Records, Sommer House and Sony Music Entertainment with copyright and distribution for Midnight Sun'."
+    },
+    {
+      "statement_index": 1,
+      "statement": "Midnight Sun is a ten‑track dance‑pop record that has been described by critics as a high‑energy, Euro summer‑inspired album, and as a notable milestone in Larsson's catalog.",
+      "citation_num": "3",
+      "citation_url": "https://www.discogs.com/master/3984226-Zara-Larsson-Midnight-Sun",
+      "verdict": "not_support",
+      "reason": "The citation lists genres and styles but does not contain critical descriptions of the album as a 'notable milestone' or 'high-energy, Euro summer-inspired'."
+    },
+    {
+      "statement_index": 1,
+      "statement": "Midnight Sun is a ten‑track dance‑pop record that has been described by critics as a high‑energy, Euro summer‑inspired album, and as a notable milestone in Larsson's catalog.",
+      "citation_num": "9",
+      "citation_url": "https://www.euphoriazine.com/blog/2026/05/music/albums-zara-larsson-midnight-sun-girls-trip",
+      "verdict": "not_support",
+      "reason": "The citation does not specify the track count or label it as a dance-pop record with Euro summer inspiration."
+    },
+    {
+      "statement_index": 1,
+      "statement": "Midnight Sun is a ten‑track dance‑pop record that has been described by critics as a high‑energy, Euro summer‑inspired album, and as a notable milestone in Larsson's catalog.",
+      "citation_num": "1",
+      "citation_url": "https://www.sonymusic.ca/press_release/zara-larsson-releases-new-album-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation confirms the 10-track length and the blend of pop/dance, but does not contain critic descriptions regarding it being a 'high-energy, Euro summer-inspired album' or a 'milestone'."
+    },
+    {
+      "statement_index": 1,
+      "statement": "Midnight Sun is a ten‑track dance‑pop record that has been described by critics as a high‑energy, Euro summer‑inspired album, and as a notable milestone in Larsson's catalog.",
+      "citation_num": "7",
+      "citation_url": "https://beatroutemedia.com/i-cant-stop-talking-about-zara-larsson-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation does not specify the track count or label it as a 'ten-track' record."
+    },
+    {
+      "statement_index": 1,
+      "statement": "Midnight Sun is a ten‑track dance‑pop record that has been described by critics as a high‑energy, Euro summer‑inspired album, and as a notable milestone in Larsson's catalog.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "support",
+      "reason": "The citation lists 10 tracks, labels it dance-pop, and quotes critics describing it as a high-energy, sun-drenched record and a catalog highlight."
+    },
+    {
+      "statement_index": 1,
+      "statement": "Midnight Sun is a ten‑track dance‑pop record that has been described by critics as a high‑energy, Euro summer‑inspired album, and as a notable milestone in Larsson's catalog.",
+      "citation_num": "8",
+      "citation_url": "https://www.iheartmedia.com/press/iheartradio-album-preview-zara-larsson-featuring-exclusive-music-her-remix-album-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation describes 'Midnight Sun' as inspired by an 'endless summer night' and 'Girls Trip' as 'pure pop energy', but it does not specify a ten-track count, describe it as 'dance-pop', 'high-energy, Euro summer-inspired', or provide specific critical descriptions beyond 'breakthrough'."
+    },
+    {
+      "statement_index": 1,
+      "statement": "Midnight Sun is a ten‑track dance‑pop record that has been described by critics as a high‑energy, Euro summer‑inspired album, and as a notable milestone in Larsson's catalog.",
+      "citation_num": "6",
+      "citation_url": "https://www.rollingstone.com/music/music-album-reviews/zara-larsson-midnight-sun-review-1235435727",
+      "verdict": "not_support",
+      "reason": "The citation describes the album as a high-energy, Euro summer-inspired dance-pop record, but does not state it is a 'ten-track' album or explicitly call it a 'notable milestone in Larsson's catalog'."
+    },
+    {
+      "statement_index": 1,
+      "statement": "Midnight Sun is a ten‑track dance‑pop record that has been described by critics as a high‑energy, Euro summer‑inspired album, and as a notable milestone in Larsson's catalog.",
+      "citation_num": "4",
+      "citation_url": "https://www.facebook.com/ZaraLarsson/posts/midnight-sun-the-album-out-september-26-you-ready-for-the-track-list/1332902268194123",
+      "verdict": "not_support",
+      "reason": "The citation does not contain any information about the album's track count, genre, critical reception, or its significance in Larsson's catalog."
+    },
+    {
+      "statement_index": 1,
+      "statement": "Midnight Sun is a ten‑track dance‑pop record that has been described by critics as a high‑energy, Euro summer‑inspired album, and as a notable milestone in Larsson's catalog.",
+      "citation_num": "2",
+      "citation_url": "https://genius.com/albums/Zara-larsson/Midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation confirms it is a ten-track album and mentions Zara Larsson's intention for it to feel 'Euro summer-inspired', but it does not describe it as a 'dance-pop record', 'high-energy', or a 'notable milestone in Larsson's catalog' from critics."
+    },
+    {
+      "statement_index": 2,
+      "statement": "The album was followed by a remix and expanded counterpart, Midnight Sun: Girls Trip, released in 2026.",
+      "citation_num": "3",
+      "citation_url": "https://www.discogs.com/master/3984226-Zara-Larsson-Midnight-Sun",
+      "verdict": "support",
+      "reason": "The citation lists 'Midnight Sun: Girls Trip' with a 2026 release date, consistent with it being an expanded counterpart."
+    },
+    {
+      "statement_index": 2,
+      "statement": "The album was followed by a remix and expanded counterpart, Midnight Sun: Girls Trip, released in 2026.",
+      "citation_num": "9",
+      "citation_url": "https://www.euphoriazine.com/blog/2026/05/music/albums-zara-larsson-midnight-sun-girls-trip",
+      "verdict": "support",
+      "reason": "The citation confirms that Midnight Sun: Girls Trip is a deluxe counterpart released in 2026."
+    },
+    {
+      "statement_index": 2,
+      "statement": "The album was followed by a remix and expanded counterpart, Midnight Sun: Girls Trip, released in 2026.",
+      "citation_num": "1",
+      "citation_url": "https://www.sonymusic.ca/press_release/zara-larsson-releases-new-album-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The provided text contains no mention of a remix album or an album titled 'Midnight Sun: Girls Trip'."
+    },
+    {
+      "statement_index": 2,
+      "statement": "The album was followed by a remix and expanded counterpart, Midnight Sun: Girls Trip, released in 2026.",
+      "citation_num": "7",
+      "citation_url": "https://beatroutemedia.com/i-cant-stop-talking-about-zara-larsson-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The provided text contains no mention of a remix album or an expanded counterpart."
+    },
+    {
+      "statement_index": 2,
+      "statement": "The album was followed by a remix and expanded counterpart, Midnight Sun: Girls Trip, released in 2026.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "support",
+      "reason": "The citation confirms the existence and 2026 release of 'Midnight Sun: Girls Trip' as a follow-up album."
+    },
+    {
+      "statement_index": 2,
+      "statement": "The album was followed by a remix and expanded counterpart, Midnight Sun: Girls Trip, released in 2026.",
+      "citation_num": "8",
+      "citation_url": "https://www.iheartmedia.com/press/iheartradio-album-preview-zara-larsson-featuring-exclusive-music-her-remix-album-midnight-sun",
+      "verdict": "support",
+      "reason": "The citation explicitly states that 'Midnight Sun: Girls Trip' is a 'remix album' and an 'expanded set' that follows 'Zara’s 2025 breakthrough Midnight Sun', and is 'set to be released on May 1' in 2026."
+    },
+    {
+      "statement_index": 2,
+      "statement": "The album was followed by a remix and expanded counterpart, Midnight Sun: Girls Trip, released in 2026.",
+      "citation_num": "6",
+      "citation_url": "https://www.rollingstone.com/music/music-album-reviews/zara-larsson-midnight-sun-review-1235435727",
+      "verdict": "not_support",
+      "reason": "The citation does not contain any information about a remix or expanded counterpart titled 'Midnight Sun: Girls Trip' released in 2026."
+    },
+    {
+      "statement_index": 2,
+      "statement": "The album was followed by a remix and expanded counterpart, Midnight Sun: Girls Trip, released in 2026.",
+      "citation_num": "4",
+      "citation_url": "https://www.facebook.com/ZaraLarsson/posts/midnight-sun-the-album-out-september-26-you-ready-for-the-track-list/1332902268194123",
+      "verdict": "not_support",
+      "reason": "The citation does not mention any follow-up albums, remixes, expanded versions, or specific titles like 'Midnight Sun: Girls Trip' released in 2026."
+    },
+    {
+      "statement_index": 2,
+      "statement": "The album was followed by a remix and expanded counterpart, Midnight Sun: Girls Trip, released in 2026.",
+      "citation_num": "2",
+      "citation_url": "https://genius.com/albums/Zara-larsson/Midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation lists 'Midnight Sun: Girls Trip 2026' under 'More Zara Larsson albums', confirming its existence and release year, but does not describe it as a 'remix and expanded counterpart'."
+    },
+    {
+      "statement_index": 3,
+      "statement": "Sony Music Canada announced Midnight Sun on 26 September 2025, describing it as Larsson's 'hotly anticipated new album' and a ten‑track set that 'ripples with personal confidence' while combining kaleidoscopic pop and euphoric dance sounds.",
+      "citation_num": "10",
+      "citation_url": "https://www.tiktok.com/@zaralarsson/video/7551202628122905858",
+      "verdict": "not_support",
+      "reason": "The provided citation does not contain any information regarding Sony Music Canada or their descriptions of the album."
+    },
+    {
+      "statement_index": 3,
+      "statement": "Sony Music Canada announced Midnight Sun on 26 September 2025, describing it as Larsson's 'hotly anticipated new album' and a ten‑track set that 'ripples with personal confidence' while combining kaleidoscopic pop and euphoric dance sounds.",
+      "citation_num": "1",
+      "citation_url": "https://www.sonymusic.ca/press_release/zara-larsson-releases-new-album-midnight-sun",
+      "verdict": "support",
+      "reason": "The press release from Sony Music Canada dated September 26, 2025, uses this exact terminology."
+    },
+    {
+      "statement_index": 3,
+      "statement": "Sony Music Canada announced Midnight Sun on 26 September 2025, describing it as Larsson's 'hotly anticipated new album' and a ten‑track set that 'ripples with personal confidence' while combining kaleidoscopic pop and euphoric dance sounds.",
+      "citation_num": "4",
+      "citation_url": "https://www.facebook.com/ZaraLarsson/posts/midnight-sun-the-album-out-september-26-you-ready-for-the-track-list/1332902268194123",
+      "verdict": "not_support",
+      "reason": "The citation does not mention Sony Music Canada, the specific year of release (2025), or any descriptive details about the album's anticipation, track count, or musical style."
+    },
+    {
+      "statement_index": 3,
+      "statement": "Sony Music Canada announced Midnight Sun on 26 September 2025, describing it as Larsson's 'hotly anticipated new album' and a ten‑track set that 'ripples with personal confidence' while combining kaleidoscopic pop and euphoric dance sounds.",
+      "citation_num": "2",
+      "citation_url": "https://genius.com/albums/Zara-larsson/Midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation does not mention Sony Music Canada or any announcement details, nor does it include the specific descriptive phrases attributed to them in the statement."
+    },
+    {
+      "statement_index": 4,
+      "statement": "Prior to release, Larsson used social media to promote the project, sharing the track listing on TikTok with the caption 'Midnight Sun TRACKLIIIIST' and noting that the album would be 'Out September 26,' and posting on her verified Facebook page that 'Midnight Sun, the album' would be released on that date.",
+      "citation_num": "10",
+      "citation_url": "https://www.tiktok.com/@zaralarsson/video/7551202628122905858",
+      "verdict": "not_support",
+      "reason": "The citation confirms the TikTok post, but provides no information regarding a Facebook page or its contents."
+    },
+    {
+      "statement_index": 4,
+      "statement": "Prior to release, Larsson used social media to promote the project, sharing the track listing on TikTok with the caption 'Midnight Sun TRACKLIIIIST' and noting that the album would be 'Out September 26,' and posting on her verified Facebook page that 'Midnight Sun, the album' would be released on that date.",
+      "citation_num": "1",
+      "citation_url": "https://www.sonymusic.ca/press_release/zara-larsson-releases-new-album-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation content does not show or describe any social media posts made by Zara Larsson on TikTok or Facebook."
+    },
+    {
+      "statement_index": 4,
+      "statement": "Prior to release, Larsson used social media to promote the project, sharing the track listing on TikTok with the caption 'Midnight Sun TRACKLIIIIST' and noting that the album would be 'Out September 26,' and posting on her verified Facebook page that 'Midnight Sun, the album' would be released on that date.",
+      "citation_num": "4",
+      "citation_url": "https://www.facebook.com/ZaraLarsson/posts/midnight-sun-the-album-out-september-26-you-ready-for-the-track-list/1332902268194123",
+      "verdict": "not_support",
+      "reason": "While the Facebook URL in the citation supports the claim of a Facebook post about 'Midnight Sun, the album' being 'Out September 26' and implying a track list, it does not provide information about TikTok promotion or the specific caption mentioned."
+    },
+    {
+      "statement_index": 4,
+      "statement": "Prior to release, Larsson used social media to promote the project, sharing the track listing on TikTok with the caption 'Midnight Sun TRACKLIIIIST' and noting that the album would be 'Out September 26,' and posting on her verified Facebook page that 'Midnight Sun, the album' would be released on that date.",
+      "citation_num": "2",
+      "citation_url": "https://genius.com/albums/Zara-larsson/Midnight-sun",
+      "verdict": "not_support",
+      "reason": "While the citation lists social media links, it does not provide any information about Zara Larsson's specific promotional posts on TikTok or Facebook with the mentioned captions."
+    },
+    {
+      "statement_index": 5,
+      "statement": "A fan‑run Zara Larsson wiki describes Midnight Sun as her fifth studio album and states that she announced the record on 5 June 2025 with a planned release date of 26 September 2025, although this characterization differs slightly from Genius, which refers to Midnight Sun as her fourth international album and fifth overall.",
+      "citation_num": "10",
+      "citation_url": "https://www.tiktok.com/@zaralarsson/video/7551202628122905858",
+      "verdict": "not_support",
+      "reason": "The citation does not mention fan-run wikis, Genius, or specific classifications of the album as fourth or fifth studio/international records."
+    },
+    {
+      "statement_index": 5,
+      "statement": "A fan‑run Zara Larsson wiki describes Midnight Sun as her fifth studio album and states that she announced the record on 5 June 2025 with a planned release date of 26 September 2025, although this characterization differs slightly from Genius, which refers to Midnight Sun as her fourth international album and fifth overall.",
+      "citation_num": "1",
+      "citation_url": "https://www.sonymusic.ca/press_release/zara-larsson-releases-new-album-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation does not contain information regarding fan-run wikis or comparisons to Genius."
+    },
+    {
+      "statement_index": 5,
+      "statement": "A fan‑run Zara Larsson wiki describes Midnight Sun as her fifth studio album and states that she announced the record on 5 June 2025 with a planned release date of 26 September 2025, although this characterization differs slightly from Genius, which refers to Midnight Sun as her fourth international album and fifth overall.",
+      "citation_num": "4",
+      "citation_url": "https://www.facebook.com/ZaraLarsson/posts/midnight-sun-the-album-out-september-26-you-ready-for-the-track-list/1332902268194123",
+      "verdict": "not_support",
+      "reason": "The citation does not contain any information about fan wikis, Genius, album numbering (fifth, fourth international), or specific announcement dates like June 5, 2025."
+    },
+    {
+      "statement_index": 5,
+      "statement": "A fan‑run Zara Larsson wiki describes Midnight Sun as her fifth studio album and states that she announced the record on 5 June 2025 with a planned release date of 26 September 2025, although this characterization differs slightly from Genius, which refers to Midnight Sun as her fourth international album and fifth overall.",
+      "citation_num": "2",
+      "citation_url": "https://genius.com/albums/Zara-larsson/Midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation supports that Genius refers to Midnight Sun as her 'fourth international studio album (fifth overall)', but it does not mention a 'fan-run Zara Larsson wiki' or any announcement date of June 5, 2025."
+    },
+    {
+      "statement_index": 6,
+      "statement": "Available sources provide limited detail about the recording sessions for Midnight Sun.",
+      "citation_num": "9",
+      "citation_url": "https://www.euphoriazine.com/blog/2026/05/music/albums-zara-larsson-midnight-sun-girls-trip",
+      "verdict": "support",
+      "reason": "The provided text does not contain any details regarding the recording sessions for the original album."
+    },
+    {
+      "statement_index": 6,
+      "statement": "Available sources provide limited detail about the recording sessions for Midnight Sun.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "not_support",
+      "reason": "The citation provides credits and genre details but does not explicitly discuss the depth of available information regarding recording sessions."
+    },
+    {
+      "statement_index": 7,
+      "statement": "Album credits compiled by Album of the Year list producers including Margo XS, MNEK, Zhone, ASAP P and Jon Shave, and identify songwriters such as Zara Larsson, MNEK, Helena Gao and Margo Wildman, suggesting a collaborative studio process centered on dance‑pop and electronic production teams.",
+      "citation_num": "9",
+      "citation_url": "https://www.euphoriazine.com/blog/2026/05/music/albums-zara-larsson-midnight-sun-girls-trip",
+      "verdict": "not_support",
+      "reason": "The citation mentions specific producers (MNEK, Margo XS, Helena Gao, Zhone) but does not list ASAP P, Jon Shave, or Margo Wildman."
+    },
+    {
+      "statement_index": 7,
+      "statement": "Album credits compiled by Album of the Year list producers including Margo XS, MNEK, Zhone, ASAP P and Jon Shave, and identify songwriters such as Zara Larsson, MNEK, Helena Gao and Margo Wildman, suggesting a collaborative studio process centered on dance‑pop and electronic production teams.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "support",
+      "reason": "The citation lists these specific producers and songwriters in the 'Details' section."
+    },
+    {
+      "statement_index": 8,
+      "statement": "EUPHORIA. notes that Larsson later retained the 'production nucleus that shaped Midnight Sun' for Midnight Sun: Girls Trip, bringing back MNEK, Margo XS, Helena Gao and Zhone, but it does not provide granular information about specific studios or recording dates for the original album.",
+      "citation_num": "9",
+      "citation_url": "https://www.euphoriazine.com/blog/2026/05/music/albums-zara-larsson-midnight-sun-girls-trip",
+      "verdict": "support",
+      "reason": "The citation confirms the retention of the production nucleus and notes the absence of granular details regarding the original album's recording."
+    },
+    {
+      "statement_index": 8,
+      "statement": "EUPHORIA. notes that Larsson later retained the 'production nucleus that shaped Midnight Sun' for Midnight Sun: Girls Trip, bringing back MNEK, Margo XS, Helena Gao and Zhone, but it does not provide granular information about specific studios or recording dates for the original album.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "not_support",
+      "reason": "The provided citation text does not contain any references to 'EUPHORIA.'"
+    },
+    {
+      "statement_index": 9,
+      "statement": "Midnight Sun has been broadly categorized as a dance‑pop album that incorporates electronic dance music, Baltimore club, bubblegum bass, contemporary R&B and dancefloor drum and bass.",
+      "citation_num": "1",
+      "citation_url": "https://www.sonymusic.ca/press_release/zara-larsson-releases-new-album-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation does not categorize the album with these specific sub-genres (Baltimore club, bubblegum bass, etc.)."
+    },
+    {
+      "statement_index": 9,
+      "statement": "Midnight Sun has been broadly categorized as a dance‑pop album that incorporates electronic dance music, Baltimore club, bubblegum bass, contemporary R&B and dancefloor drum and bass.",
+      "citation_num": "7",
+      "citation_url": "https://beatroutemedia.com/i-cant-stop-talking-about-zara-larsson-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation describes the album as 'electro-pop' and 'dance-pop' but does not list the specific sub-genres like Baltimore club or bubblegum bass."
+    },
+    {
+      "statement_index": 9,
+      "statement": "Midnight Sun has been broadly categorized as a dance‑pop album that incorporates electronic dance music, Baltimore club, bubblegum bass, contemporary R&B and dancefloor drum and bass.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "support",
+      "reason": "The citation lists these exact genres under the album details."
+    },
+    {
+      "statement_index": 9,
+      "statement": "Midnight Sun has been broadly categorized as a dance‑pop album that incorporates electronic dance music, Baltimore club, bubblegum bass, contemporary R&B and dancefloor drum and bass.",
+      "citation_num": "6",
+      "citation_url": "https://www.rollingstone.com/music/music-album-reviews/zara-larsson-midnight-sun-review-1235435727",
+      "verdict": "not_support",
+      "reason": "While the citation categorizes 'Midnight Sun' as a dance-pop album, it does not mention the incorporation of specific subgenres like electronic dance music, Baltimore club, bubblegum bass, contemporary R&B, or dancefloor drum and bass."
+    },
+    {
+      "statement_index": 10,
+      "statement": "Sony Music Canada describes the record as a ten‑track set that blends euphoric dance with kaleidoscopic pop and emphasizes personal confidence.",
+      "citation_num": "1",
+      "citation_url": "https://www.sonymusic.ca/press_release/zara-larsson-releases-new-album-midnight-sun",
+      "verdict": "support",
+      "reason": "The press release explicitly describes the album as a 10-track set blending euphoric dance with kaleidoscopic pop and reflecting personal confidence."
+    },
+    {
+      "statement_index": 10,
+      "statement": "Sony Music Canada describes the record as a ten‑track set that blends euphoric dance with kaleidoscopic pop and emphasizes personal confidence.",
+      "citation_num": "7",
+      "citation_url": "https://beatroutemedia.com/i-cant-stop-talking-about-zara-larsson-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation does not mention or contain any quotes from Sony Music Canada."
+    },
+    {
+      "statement_index": 10,
+      "statement": "Sony Music Canada describes the record as a ten‑track set that blends euphoric dance with kaleidoscopic pop and emphasizes personal confidence.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "not_support",
+      "reason": "The provided citation text does not contain any references to a press release from Sony Music Canada."
+    },
+    {
+      "statement_index": 10,
+      "statement": "Sony Music Canada describes the record as a ten‑track set that blends euphoric dance with kaleidoscopic pop and emphasizes personal confidence.",
+      "citation_num": "6",
+      "citation_url": "https://www.rollingstone.com/music/music-album-reviews/zara-larsson-midnight-sun-review-1235435727",
+      "verdict": "not_support",
+      "reason": "The citation does not mention 'Sony Music Canada' or describe the album as a 'ten-track set that blends euphoric dance with kaleidoscopic pop and emphasizes personal confidence'."
+    },
+    {
+      "statement_index": 11,
+      "statement": "Critics have frequently linked the album's sound and concept to the atmosphere of a European or Scandinavian summer, highlighting its focus on upbeat, high‑energy tracks and nocturnal themes.",
+      "citation_num": "1",
+      "citation_url": "https://www.sonymusic.ca/press_release/zara-larsson-releases-new-album-midnight-sun",
+      "verdict": "not_support",
+      "reason": "While the artist quotes herself regarding the 'Swedish summer night' vibe, the citation does not contain critical commentary on the album's sound linked to a 'European summer' theme."
+    },
+    {
+      "statement_index": 11,
+      "statement": "Critics have frequently linked the album's sound and concept to the atmosphere of a European or Scandinavian summer, highlighting its focus on upbeat, high‑energy tracks and nocturnal themes.",
+      "citation_num": "7",
+      "citation_url": "https://beatroutemedia.com/i-cant-stop-talking-about-zara-larsson-midnight-sun",
+      "verdict": "support",
+      "reason": "The text explicitly describes the album as an homage to the Scandinavian summer and mentions upbeat, high-energy dance music."
+    },
+    {
+      "statement_index": 11,
+      "statement": "Critics have frequently linked the album's sound and concept to the atmosphere of a European or Scandinavian summer, highlighting its focus on upbeat, high‑energy tracks and nocturnal themes.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "support",
+      "reason": "The citation includes genre tags like 'summer' and 'party' and critic reviews that highlight the album's dance-floor and festival-ready themes."
+    },
+    {
+      "statement_index": 11,
+      "statement": "Critics have frequently linked the album's sound and concept to the atmosphere of a European or Scandinavian summer, highlighting its focus on upbeat, high‑energy tracks and nocturnal themes.",
+      "citation_num": "6",
+      "citation_url": "https://www.rollingstone.com/music/music-album-reviews/zara-larsson-midnight-sun-review-1235435727",
+      "verdict": "support",
+      "reason": "The citation states that Larsson wanted to celebrate the 'sun-drenched energy of a summer in her home country' and describes the album as 'high-energy dance-pop joy' that keeps 'good vibes, long days, and late nights going', linking it to a Euro summer atmosphere and nocturnal themes."
+    },
+    {
+      "statement_index": 12,
+      "statement": "Rolling Stone describes Midnight Sun as Larsson's fifth album and characterizes it as a high‑energy dance‑pop record that keeps the feelings of 'good vibes, long days, and late nights' associated with 'Euro summer' going across the track list.",
+      "citation_num": "7",
+      "citation_url": "https://beatroutemedia.com/i-cant-stop-talking-about-zara-larsson-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation does not include any information or quotes from Rolling Stone."
+    },
+    {
+      "statement_index": 12,
+      "statement": "Rolling Stone describes Midnight Sun as Larsson's fifth album and characterizes it as a high‑energy dance‑pop record that keeps the feelings of 'good vibes, long days, and late nights' associated with 'Euro summer' going across the track list.",
+      "citation_num": "6",
+      "citation_url": "https://www.rollingstone.com/music/music-album-reviews/zara-larsson-midnight-sun-review-1235435727",
+      "verdict": "support",
+      "reason": "The Rolling Stone article explicitly identifies 'Midnight Sun' as Larsson's 'fifth album' and characterizes it as 'high-energy dance-pop joy' that 'keeps the good vibes, long days, and late nights going' in the spirit of 'Euro summer'."
+    },
+    {
+      "statement_index": 13,
+      "statement": "The title track, 'Midnight Sun,' is described as 'deliriously hypnotic,' with trance‑influenced production, a swirling chorus and an extended vocal run that together create a high‑energy kickoff for the album.",
+      "citation_num": "7",
+      "citation_url": "https://beatroutemedia.com/i-cant-stop-talking-about-zara-larsson-midnight-sun",
+      "verdict": "not_support",
+      "reason": "While the citation describes 'Midnight Sun' as having trance-inspired production and soaring vocals, the specific phrasing 'deliriously hypnotic' and 'swirling chorus' is not present."
+    },
+    {
+      "statement_index": 13,
+      "statement": "The title track, 'Midnight Sun,' is described as 'deliriously hypnotic,' with trance‑influenced production, a swirling chorus and an extended vocal run that together create a high‑energy kickoff for the album.",
+      "citation_num": "6",
+      "citation_url": "https://www.rollingstone.com/music/music-album-reviews/zara-larsson-midnight-sun-review-1235435727",
+      "verdict": "support",
+      "reason": "The citation describes the title track 'Midnight Sun' as 'deliriously hypnotic', noting its 'notes of trance in its swirling chorus uplifted by Larsson’s extended run', and calls it 'the perfect high-energy kickoff to the rest of the LP'."
+    },
+    {
+      "statement_index": 14,
+      "statement": "BeatRoute similarly portrays the album as an homage to the Scandinavian summer, presenting a 'vibrant, unified world of endless daylight and euphoric dance music,' and notes that the production is bright and loud across the songs.",
+      "citation_num": "7",
+      "citation_url": "https://beatroutemedia.com/i-cant-stop-talking-about-zara-larsson-midnight-sun",
+      "verdict": "support",
+      "reason": "The citation confirms BeatRoute calls the album an homage to Scandinavian summer, uses the phrase 'vibrant, unified world of endless daylight,' and notes the production is 'bright and loud'."
+    },
+    {
+      "statement_index": 14,
+      "statement": "BeatRoute similarly portrays the album as an homage to the Scandinavian summer, presenting a 'vibrant, unified world of endless daylight and euphoric dance music,' and notes that the production is bright and loud across the songs.",
+      "citation_num": "6",
+      "citation_url": "https://www.rollingstone.com/music/music-album-reviews/zara-larsson-midnight-sun-review-1235435727",
+      "verdict": "not_support",
+      "reason": "The citation does not mention 'BeatRoute' or any descriptions of the album from that source."
+    },
+    {
+      "statement_index": 15,
+      "statement": "Individual tracks have been described as exploring themes of desire, guilt, empowerment, ambition and confusion.",
+      "citation_num": "7",
+      "citation_url": "https://beatroutemedia.com/i-cant-stop-talking-about-zara-larsson-midnight-sun",
+      "verdict": "support",
+      "reason": "The text discusses tracks involving themes of crushing, betrayal/loyalty (guilt), self-assurance/empowerment, ambition, and personal growth/uncertainty."
+    },
+    {
+      "statement_index": 15,
+      "statement": "Individual tracks have been described as exploring themes of desire, guilt, empowerment, ambition and confusion.",
+      "citation_num": "6",
+      "citation_url": "https://www.rollingstone.com/music/music-album-reviews/zara-larsson-midnight-sun-review-1235435727",
+      "verdict": "support",
+      "reason": "The citation details how songs like 'Girl’s Girl' explore guilt, 'Pretty Ugly' implies empowerment, 'The Ambition' discusses ambition, and 'Saturn’s Return' addresses confusion and giving up control."
+    },
+    {
+      "statement_index": 16,
+      "statement": "Rolling Stone highlights 'Girl's Girl', in which Larsson is depicted as feeling guilty for wanting a childhood friend's partner; 'Pretty Ugly,' where she threatens slashed tires and crashed cars over a stomp beat; 'The Ambition,' where she expresses a desire to be 'bigger, brighter'; and 'Saturn's Return,' which addresses the uncertainties of adulthood and relinquishing control.",
+      "citation_num": "7",
+      "citation_url": "https://beatroutemedia.com/i-cant-stop-talking-about-zara-larsson-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation does not include any information or quotes from Rolling Stone."
+    },
+    {
+      "statement_index": 16,
+      "statement": "Rolling Stone highlights 'Girl's Girl', in which Larsson is depicted as feeling guilty for wanting a childhood friend's partner; 'Pretty Ugly,' where she threatens slashed tires and crashed cars over a stomp beat; 'The Ambition,' where she expresses a desire to be 'bigger, brighter'; and 'Saturn's Return,' which addresses the uncertainties of adulthood and relinquishing control.",
+      "citation_num": "6",
+      "citation_url": "https://www.rollingstone.com/music/music-album-reviews/zara-larsson-midnight-sun-review-1235435727",
+      "verdict": "support",
+      "reason": "The Rolling Stone article specifically highlights 'Girl’s Girl' for guilt over wanting a friend's man, 'Pretty Ugly' for threats of slashed tires and crashed cars over a stomp beat, 'The Ambition' for yearning to be 'bigger, brighter', and 'Saturn’s Return' for leaning into life’s confusions and giving up control."
+    },
+    {
+      "statement_index": 17,
+      "statement": "BeatRoute describes 'Crush' as a percussive pop track with a show‑stopping bridge that captures the anxiety and excitement of falling for someone who might be wrong, 'Pretty Ugly' as a chaotic, rebellious cheerleader anthem rejecting expectations of being 'ladylike,' 'Girl's Girl' as a portrayal of emotional chaos rooted in attraction to a friend's boyfriend, and 'Eurosummer' as a high‑energy dance song built around hypnotic accordion melodies.",
+      "citation_num": "7",
+      "citation_url": "https://beatroutemedia.com/i-cant-stop-talking-about-zara-larsson-midnight-sun",
+      "verdict": "support",
+      "reason": "The citation explicitly describes 'Crush,' 'Pretty Ugly,' 'Girl’s Girl,' and 'Eurosummer' in the manner stated."
+    },
+    {
+      "statement_index": 17,
+      "statement": "BeatRoute describes 'Crush' as a percussive pop track with a show‑stopping bridge that captures the anxiety and excitement of falling for someone who might be wrong, 'Pretty Ugly' as a chaotic, rebellious cheerleader anthem rejecting expectations of being 'ladylike,' 'Girl's Girl' as a portrayal of emotional chaos rooted in attraction to a friend's boyfriend, and 'Eurosummer' as a high‑energy dance song built around hypnotic accordion melodies.",
+      "citation_num": "6",
+      "citation_url": "https://www.rollingstone.com/music/music-album-reviews/zara-larsson-midnight-sun-review-1235435727",
+      "verdict": "not_support",
+      "reason": "The citation does not mention 'BeatRoute' or any of its specific descriptions for the listed tracks."
+    },
+    {
+      "statement_index": 18,
+      "statement": "BeatRoute characterizes 'Hot & Sexy' as an assertive anthem introduced by a Tiffany Pollard soundbite, underscoring Larsson's confident persona.",
+      "citation_num": "7",
+      "citation_url": "https://beatroutemedia.com/i-cant-stop-talking-about-zara-larsson-midnight-sun",
+      "verdict": "support",
+      "reason": "The text confirms BeatRoute describes 'Hot & Sexy' as an assertive anthem featuring a Tiffany Pollard soundbite."
+    },
+    {
+      "statement_index": 18,
+      "statement": "BeatRoute characterizes 'Hot & Sexy' as an assertive anthem introduced by a Tiffany Pollard soundbite, underscoring Larsson's confident persona.",
+      "citation_num": "6",
+      "citation_url": "https://www.rollingstone.com/music/music-album-reviews/zara-larsson-midnight-sun-review-1235435727",
+      "verdict": "not_support",
+      "reason": "The citation does not mention 'BeatRoute' or any characterization of 'Hot & Sexy' from that source."
+    },
+    {
+      "statement_index": 19,
+      "statement": "Midnight Sun was released on 26 September 2025.",
+      "citation_num": "10",
+      "citation_url": "https://www.tiktok.com/@zaralarsson/video/7551202628122905858",
+      "verdict": "support",
+      "reason": "The citation content confirms the album tracklist and specifies an 'Out September 26' release date."
+    },
+    {
+      "statement_index": 19,
+      "statement": "Midnight Sun was released on 26 September 2025.",
+      "citation_num": "1",
+      "citation_url": "https://www.sonymusic.ca/press_release/zara-larsson-releases-new-album-midnight-sun",
+      "verdict": "support",
+      "reason": "The press release is dated September 26, 2025, and announces the album's release 'today'."
+    },
+    {
+      "statement_index": 19,
+      "statement": "Midnight Sun was released on 26 September 2025.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "support",
+      "reason": "The citation explicitly states the release date as September 26, 2025."
+    },
+    {
+      "statement_index": 19,
+      "statement": "Midnight Sun was released on 26 September 2025.",
+      "citation_num": "4",
+      "citation_url": "https://www.facebook.com/ZaraLarsson/posts/midnight-sun-the-album-out-september-26-you-ready-for-the-track-list/1332902268194123",
+      "verdict": "not_support",
+      "reason": "The citation confirms the album's release day as September 26 but does not explicitly specify the year 2025."
+    },
+    {
+      "statement_index": 20,
+      "statement": "Sony Music Canada issued a press release dated that day, stating that the multiplatinum singer had released her new album and that it was available at digital service providers via Sommer House and Epic Records.",
+      "citation_num": "10",
+      "citation_url": "https://www.tiktok.com/@zaralarsson/video/7551202628122905858",
+      "verdict": "not_support",
+      "reason": "The provided citation contains no information about Sony Music Canada press releases or specific record labels like Sommer House and Epic."
+    },
+    {
+      "statement_index": 20,
+      "statement": "Sony Music Canada issued a press release dated that day, stating that the multiplatinum singer had released her new album and that it was available at digital service providers via Sommer House and Epic Records.",
+      "citation_num": "1",
+      "citation_url": "https://www.sonymusic.ca/press_release/zara-larsson-releases-new-album-midnight-sun",
+      "verdict": "support",
+      "reason": "The citation confirms the issuance of the press release and the availability of the album at DSPs via Sommer House and Epic Records."
+    },
+    {
+      "statement_index": 20,
+      "statement": "Sony Music Canada issued a press release dated that day, stating that the multiplatinum singer had released her new album and that it was available at digital service providers via Sommer House and Epic Records.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "not_support",
+      "reason": "The provided citation text does not contain any references to a press release from Sony Music Canada."
+    },
+    {
+      "statement_index": 20,
+      "statement": "Sony Music Canada issued a press release dated that day, stating that the multiplatinum singer had released her new album and that it was available at digital service providers via Sommer House and Epic Records.",
+      "citation_num": "4",
+      "citation_url": "https://www.facebook.com/ZaraLarsson/posts/midnight-sun-the-album-out-september-26-you-ready-for-the-track-list/1332902268194123",
+      "verdict": "not_support",
+      "reason": "The citation does not mention Sony Music Canada, press releases, the artist's multiplatinum status, digital service providers, or specific record labels and distribution channels."
+    },
+    {
+      "statement_index": 21,
+      "statement": "Album of the Year lists the same release date and formats the record as an LP issued on Sommer House and Epic.",
+      "citation_num": "10",
+      "citation_url": "https://www.tiktok.com/@zaralarsson/video/7551202628122905858",
+      "verdict": "not_support",
+      "reason": "The citation does not mention 'Album of the Year' or any specific record formats like LP."
+    },
+    {
+      "statement_index": 21,
+      "statement": "Album of the Year lists the same release date and formats the record as an LP issued on Sommer House and Epic.",
+      "citation_num": "1",
+      "citation_url": "https://www.sonymusic.ca/press_release/zara-larsson-releases-new-album-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The provided citation content does not mention 'Album of the Year' or its listings."
+    },
+    {
+      "statement_index": 21,
+      "statement": "Album of the Year lists the same release date and formats the record as an LP issued on Sommer House and Epic.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "support",
+      "reason": "The citation lists the release date as September 26, 2025, and identifies the label as Sommer House and Epic, with the format as LP."
+    },
+    {
+      "statement_index": 21,
+      "statement": "Album of the Year lists the same release date and formats the record as an LP issued on Sommer House and Epic.",
+      "citation_num": "4",
+      "citation_url": "https://www.facebook.com/ZaraLarsson/posts/midnight-sun-the-album-out-september-26-you-ready-for-the-track-list/1332902268194123",
+      "verdict": "not_support",
+      "reason": "The citation does not contain any information about 'Album of the Year', the album's format (LP), or the record labels (Sommer House and Epic)."
+    },
+    {
+      "statement_index": 22,
+      "statement": "Larsson's TikTok and Facebook posts publicized the release timeline in advance, with both posts indicating a 26 September release for 'Midnight Sun, the album'.",
+      "citation_num": "10",
+      "citation_url": "https://www.tiktok.com/@zaralarsson/video/7551202628122905858",
+      "verdict": "not_support",
+      "reason": "While the TikTok post is visible, the citation does not contain any information regarding Facebook posts."
+    },
+    {
+      "statement_index": 22,
+      "statement": "Larsson's TikTok and Facebook posts publicized the release timeline in advance, with both posts indicating a 26 September release for 'Midnight Sun, the album'.",
+      "citation_num": "1",
+      "citation_url": "https://www.sonymusic.ca/press_release/zara-larsson-releases-new-album-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation does not contain information or verification of social media posts made by the artist."
+    },
+    {
+      "statement_index": 22,
+      "statement": "Larsson's TikTok and Facebook posts publicized the release timeline in advance, with both posts indicating a 26 September release for 'Midnight Sun, the album'.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "not_support",
+      "reason": "The citation does not provide information regarding Zara Larsson's personal social media posts."
+    },
+    {
+      "statement_index": 22,
+      "statement": "Larsson's TikTok and Facebook posts publicized the release timeline in advance, with both posts indicating a 26 September release for 'Midnight Sun, the album'.",
+      "citation_num": "4",
+      "citation_url": "https://www.facebook.com/ZaraLarsson/posts/midnight-sun-the-album-out-september-26-you-ready-for-the-track-list/1332902268194123",
+      "verdict": "not_support",
+      "reason": "While the Facebook URL in the citation supports the claim of a Facebook post indicating a '26 September release for 'Midnight Sun, the album'', it does not provide information about TikTok posts."
+    },
+    {
+      "statement_index": 23,
+      "statement": "The Sony Music Canada announcement emphasizes that Midnight Sun includes new songs such as 'Blue Moon' and 'Hot & Sexy' alongside singles 'Pretty Ugly,' 'Crush' and 'Midnight Sun.'",
+      "citation_num": "1",
+      "citation_url": "https://www.sonymusic.ca/press_release/zara-larsson-releases-new-album-midnight-sun",
+      "verdict": "support",
+      "reason": "The text lists 'Blue Moon' and 'Hot & Sexy' as new songs and 'Pretty Ugly,' 'Crush,' and 'Midnight Sun' as acclaimed singles on the album."
+    },
+    {
+      "statement_index": 23,
+      "statement": "The Sony Music Canada announcement emphasizes that Midnight Sun includes new songs such as 'Blue Moon' and 'Hot & Sexy' alongside singles 'Pretty Ugly,' 'Crush' and 'Midnight Sun.'",
+      "citation_num": "8",
+      "citation_url": "https://www.iheartmedia.com/press/iheartradio-album-preview-zara-larsson-featuring-exclusive-music-her-remix-album-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation does not mention any 'Sony Music Canada announcement' or list specific song titles like 'Blue Moon', 'Hot & Sexy', 'Pretty Ugly', 'Crush', or 'Midnight Sun' as being on the album."
+    },
+    {
+      "statement_index": 24,
+      "statement": "The Sony Music Canada announcement describes the album as reflecting Larsson's personal confidence and positioning her within global pop, while encouraging listeners to 'get it' at all digital service providers.",
+      "citation_num": "1",
+      "citation_url": "https://www.sonymusic.ca/press_release/zara-larsson-releases-new-album-midnight-sun",
+      "verdict": "support",
+      "reason": "The text describes the album as reflecting personal confidence, places her as a 'global pop powerhouse', and directs users to 'Get it' at DSPs."
+    },
+    {
+      "statement_index": 24,
+      "statement": "The Sony Music Canada announcement describes the album as reflecting Larsson's personal confidence and positioning her within global pop, while encouraging listeners to 'get it' at all digital service providers.",
+      "citation_num": "8",
+      "citation_url": "https://www.iheartmedia.com/press/iheartradio-album-preview-zara-larsson-featuring-exclusive-music-her-remix-album-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation does not mention any 'Sony Music Canada announcement' or describe the album in terms of reflecting Larsson's personal confidence or encouraging listeners to 'get it' at digital service providers."
+    },
+    {
+      "statement_index": 25,
+      "statement": "The iHeartMedia press release for Midnight Sun: Girls Trip, issued ahead of the 2026 remix album, refers to Midnight Sun as Larsson's '2025 breakthrough' and frames Girls Trip as an opportunity to build upon the feeling of an endless summer night introduced by the original album.",
+      "citation_num": "1",
+      "citation_url": "https://www.sonymusic.ca/press_release/zara-larsson-releases-new-album-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation does not mention iHeartMedia, a remix album, or 'Girls Trip'."
+    },
+    {
+      "statement_index": 25,
+      "statement": "The iHeartMedia press release for Midnight Sun: Girls Trip, issued ahead of the 2026 remix album, refers to Midnight Sun as Larsson's '2025 breakthrough' and frames Girls Trip as an opportunity to build upon the feeling of an endless summer night introduced by the original album.",
+      "citation_num": "8",
+      "citation_url": "https://www.iheartmedia.com/press/iheartradio-album-preview-zara-larsson-featuring-exclusive-music-her-remix-album-midnight-sun",
+      "verdict": "support",
+      "reason": "The iHeartMedia press release refers to 'Zara’s 2025 breakthrough Midnight Sun' and states that 'Girls Trip is what happens when that night rolls into a whole season of pure pop energy', building on the 'feeling of an endless summer night' from the original album, and is issued ahead of the 2026 remix album."
+    },
+    {
+      "statement_index": 26,
+      "statement": "Publicly available sources do not provide a detailed chronology of promotional activities such as specific television appearances, radio campaigns or tour dates associated with Midnight Sun, beyond social media announcements and label press materials.",
+      "citation_num": "9",
+      "citation_url": "https://www.euphoriazine.com/blog/2026/05/music/albums-zara-larsson-midnight-sun-girls-trip",
+      "verdict": "support",
+      "reason": "The citation does not contain information about promotional activities, tours, or media campaigns for the original album."
+    },
+    {
+      "statement_index": 26,
+      "statement": "Publicly available sources do not provide a detailed chronology of promotional activities such as specific television appearances, radio campaigns or tour dates associated with Midnight Sun, beyond social media announcements and label press materials.",
+      "citation_num": "8",
+      "citation_url": "https://www.iheartmedia.com/press/iheartradio-album-preview-zara-larsson-featuring-exclusive-music-her-remix-album-midnight-sun",
+      "verdict": "support",
+      "reason": "The citation focuses on the 'Midnight Sun: Girls Trip' event and Zara Larsson's career in general, but does not provide a detailed chronology of promotional activities such as specific television appearances, radio campaigns, or tour dates for the original 'Midnight Sun' album."
+    },
+    {
+      "statement_index": 27,
+      "statement": "EUPHORIA. notes that Larsson 'having already laid the groundwork with the now much‑discussed Midnight Sun' subsequently invited listeners deeper into her world with Midnight Sun: Girls Trip, but this commentary focuses on the later project rather than enumerating the original album's promotional strategy.",
+      "citation_num": "9",
+      "citation_url": "https://www.euphoriazine.com/blog/2026/05/music/albums-zara-larsson-midnight-sun-girls-trip",
+      "verdict": "support",
+      "reason": "The citation notes the original album laid the groundwork, but focuses its commentary on the Girls Trip project."
+    },
+    {
+      "statement_index": 27,
+      "statement": "EUPHORIA. notes that Larsson 'having already laid the groundwork with the now much‑discussed Midnight Sun' subsequently invited listeners deeper into her world with Midnight Sun: Girls Trip, but this commentary focuses on the later project rather than enumerating the original album's promotional strategy.",
+      "citation_num": "8",
+      "citation_url": "https://www.iheartmedia.com/press/iheartradio-album-preview-zara-larsson-featuring-exclusive-music-her-remix-album-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation does not mention 'EUPHORIA.' or the specific quote attributed to it regarding 'Midnight Sun' laying the groundwork for 'Midnight Sun: Girls Trip'."
+    },
+    {
+      "statement_index": 28,
+      "statement": "Midnight Sun received generally positive reviews from music critics, though some responses were more mixed.",
+      "citation_num": "7",
+      "citation_url": "https://beatroutemedia.com/i-cant-stop-talking-about-zara-larsson-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The provided citation only contains a positive review from BeatRoute and does not mention other critics or mixed reviews."
+    },
+    {
+      "statement_index": 28,
+      "statement": "Midnight Sun received generally positive reviews from music critics, though some responses were more mixed.",
+      "citation_num": "6",
+      "citation_url": "https://www.rollingstone.com/music/music-album-reviews/zara-larsson-midnight-sun-review-1235435727",
+      "verdict": "not_support",
+      "reason": "The citation provides a generally positive review from Rolling Stone but does not mention other music critics, generally positive reviews, or any mixed responses."
+    },
+    {
+      "statement_index": 29,
+      "statement": "Rolling Stone described Midnight Sun as Larsson's fifth album and characterized it as a high‑energy dance‑pop LP that keeps the spirit of 'Euro summer' alive, concluding that Larsson 'comes into her own across Midnight Sun' and that even its more formulaic moments 'shine brighter than that Swedish summer sun.'",
+      "citation_num": "7",
+      "citation_url": "https://beatroutemedia.com/i-cant-stop-talking-about-zara-larsson-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation does not include any information or quotes from Rolling Stone."
+    },
+    {
+      "statement_index": 29,
+      "statement": "Rolling Stone described Midnight Sun as Larsson's fifth album and characterized it as a high‑energy dance‑pop LP that keeps the spirit of 'Euro summer' alive, concluding that Larsson 'comes into her own across Midnight Sun' and that even its more formulaic moments 'shine brighter than that Swedish summer sun.'",
+      "citation_num": "6",
+      "citation_url": "https://www.rollingstone.com/music/music-album-reviews/zara-larsson-midnight-sun-review-1235435727",
+      "verdict": "support",
+      "reason": "The Rolling Stone article explicitly states 'Zara Larsson, whose fifth album, Midnight Sun,' describes it as 'high-energy dance-pop joy' that 'keeps the good vibes, long days, and late nights going' (Euro summer spirit), and concludes that Larsson is 'coming into her own across Midnight Sun' and 'even her more formulaic moments still shine brighter than that Swedish summer sun'."
+    },
+    {
+      "statement_index": 30,
+      "statement": "BeatRoute called Midnight Sun 'not just a regular pop record' but 'a perfect example of how pop music should be made,' comparing its impact to Katy Perry's Teenage Dream and praising it as a strong, cohesive album with no weak songs.",
+      "citation_num": "7",
+      "citation_url": "https://beatroutemedia.com/i-cant-stop-talking-about-zara-larsson-midnight-sun",
+      "verdict": "support",
+      "reason": "The citation explicitly makes these comparisons and praises the album as cohesive with no weak songs."
+    },
+    {
+      "statement_index": 30,
+      "statement": "BeatRoute called Midnight Sun 'not just a regular pop record' but 'a perfect example of how pop music should be made,' comparing its impact to Katy Perry's Teenage Dream and praising it as a strong, cohesive album with no weak songs.",
+      "citation_num": "6",
+      "citation_url": "https://www.rollingstone.com/music/music-album-reviews/zara-larsson-midnight-sun-review-1235435727",
+      "verdict": "not_support",
+      "reason": "The citation does not mention 'BeatRoute' or any of its specific praises or comparisons regarding the album."
+    },
+    {
+      "statement_index": 31,
+      "statement": "Album of the Year summarizes Midnight Sun's critical standing by reporting a critic score based on seven reviews and placing the record at number 224 out of 657 titles in its 2025 highest‑rated critics chart, alongside a user score based on 4,936 ratings that ranked the album at number 600 in a 2025 user chart.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "not_support",
+      "reason": "The citation indicates there are 4,991 user ratings, not 4,936, and does not provide the specific numerical ranks mentioned in the statement."
+    },
+    {
+      "statement_index": 32,
+      "statement": "Pull quotes on the Album of the Year site include a remark from DIY describing Midnight Sun as 'near non‑stop' and 'entirely sun‑drenched, exuberantly formulated pop' scaffolded by MNEK's production style and Larsson's Scandi‑pop‑meets‑dance direction.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "support",
+      "reason": "The citation contains the provided pull quote from the DIY review."
+    },
+    {
+      "statement_index": 33,
+      "statement": "Pull quotes on the Album of the Year site include a note from AllMusic calling Midnight Sun a 'short and sweet' catalog highlight that leaves listeners 'craving more of this endless bliss.'",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "support",
+      "reason": "The citation contains the provided pull quote from the AllMusic review."
+    },
+    {
+      "statement_index": 34,
+      "statement": "Album of the Year also indicates that Midnight Sun appears in year‑end 'Best of 2025' lists associated with outlets such as DIY and Rolling Stone.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "support",
+      "reason": "The citation includes 'Year End Lists' sections for both DIY and Rolling Stone."
+    },
+    {
+      "statement_index": 35,
+      "statement": "BeatRoute's detailed review emphasizes Midnight Sun's conceptual focus on Scandinavian summer and its unified sound, arguing that Larsson's artistic growth is evident as she 'steps into her own' and abandons trend‑chasing in favor of a distinctive aesthetic.",
+      "citation_num": "7",
+      "citation_url": "https://beatroutemedia.com/i-cant-stop-talking-about-zara-larsson-midnight-sun",
+      "verdict": "support",
+      "reason": "The text confirms BeatRoute’s review highlights the Scandinavian summer concept and Larsson's artistic evolution away from trends."
+    },
+    {
+      "statement_index": 35,
+      "statement": "BeatRoute's detailed review emphasizes Midnight Sun's conceptual focus on Scandinavian summer and its unified sound, arguing that Larsson's artistic growth is evident as she 'steps into her own' and abandons trend‑chasing in favor of a distinctive aesthetic.",
+      "citation_num": "12",
+      "citation_url": "https://musicboard.app/swaeze/review/album/midnight-sun-2/zara-larsson",
+      "verdict": "not_support",
+      "reason": "The citation content does not contain any review or mention of 'BeatRoute', therefore the statement cannot be supported."
+    },
+    {
+      "statement_index": 36,
+      "statement": "The BeatRoute reviewer highlights tracks such as 'Crush,' described as a standout percussive pop jam, and 'Pretty Ugly,' characterized as a chaotic, rebellious cheerleader anthem.",
+      "citation_num": "7",
+      "citation_url": "https://beatroutemedia.com/i-cant-stop-talking-about-zara-larsson-midnight-sun",
+      "verdict": "support",
+      "reason": "The text confirms BeatRoute describes 'Crush' as a percussive pop jam and 'Pretty Ugly' as a chaotic, rebellious cheerleader anthem."
+    },
+    {
+      "statement_index": 36,
+      "statement": "The BeatRoute reviewer highlights tracks such as 'Crush,' described as a standout percussive pop jam, and 'Pretty Ugly,' characterized as a chaotic, rebellious cheerleader anthem.",
+      "citation_num": "12",
+      "citation_url": "https://musicboard.app/swaeze/review/album/midnight-sun-2/zara-larsson",
+      "verdict": "not_support",
+      "reason": "The citation content does not contain any review from 'BeatRoute', nor does it describe 'Crush' as a 'standout percussive pop jam' or 'Pretty Ugly' as a 'chaotic, rebellious cheerleader anthem'."
+    },
+    {
+      "statement_index": 37,
+      "statement": "A user review on Musicboard similarly states that Midnight Sun feels like the album Larsson was 'destined to make,' describing it as a sleek, radiant dance‑pop record that captures summer as more than just a season.",
+      "citation_num": "7",
+      "citation_url": "https://beatroutemedia.com/i-cant-stop-talking-about-zara-larsson-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation does not mention Musicboard or any user reviews from that platform."
+    },
+    {
+      "statement_index": 37,
+      "statement": "A user review on Musicboard similarly states that Midnight Sun feels like the album Larsson was 'destined to make,' describing it as a sleek, radiant dance‑pop record that captures summer as more than just a season.",
+      "citation_num": "12",
+      "citation_url": "https://musicboard.app/swaeze/review/album/midnight-sun-2/zara-larsson",
+      "verdict": "support",
+      "reason": "The review by 'andrescastru' on Musicboard explicitly states, 'Midnight Sun feels like the album Zara Larsson was destined to make: a sleek, radiant dance-pop record that captures summer not just as a season, but as a state of mind.'"
+    },
+    {
+      "statement_index": 38,
+      "statement": "Other commentary on Midnight Sun has been more reserved.",
+      "citation_num": "14",
+      "citation_url": "https://www.instagram.com/p/DPkcukjjP64",
+      "verdict": "not_support",
+      "reason": "The provided citation content is exclusively the Instagram login page and contains no information about the album 'Midnight Sun' or associated reviews."
+    },
+    {
+      "statement_index": 38,
+      "statement": "Other commentary on Midnight Sun has been more reserved.",
+      "citation_num": "13",
+      "citation_url": "https://pitchfork.com/reviews/albums/zara-larsson-midnight-sun-girls-trip",
+      "verdict": "not_support",
+      "reason": "The provided text does not contain information regarding 'other commentary' on the album."
+    },
+    {
+      "statement_index": 39,
+      "statement": "Pitchfork, in a review primarily focused on the remix album Midnight Sun: Girls Trip, retroactively assigns the original Midnight Sun a semi‑canonical score of 6.9, noting that the album 'did not initially make waves' and was 'not particularly newsworthy' at release, especially in the United States.",
+      "citation_num": "14",
+      "citation_url": "https://www.instagram.com/p/DPkcukjjP64",
+      "verdict": "not_support",
+      "reason": "The provided citation content is exclusively the Instagram login page and contains no information about the album 'Midnight Sun' or associated reviews."
+    },
+    {
+      "statement_index": 39,
+      "statement": "Pitchfork, in a review primarily focused on the remix album Midnight Sun: Girls Trip, retroactively assigns the original Midnight Sun a semi‑canonical score of 6.9, noting that the album 'did not initially make waves' and was 'not particularly newsworthy' at release, especially in the United States.",
+      "citation_num": "13",
+      "citation_url": "https://pitchfork.com/reviews/albums/zara-larsson-midnight-sun-girls-trip",
+      "verdict": "support",
+      "reason": "The text explicitly confirms the 6.9 score, states the album 'did not immediately make waves,' and notes it was not newsworthy at the time."
+    },
+    {
+      "statement_index": 40,
+      "statement": "The Pitchfork reviewer reports that they initially found the title track catchy but considered the other songs weaker and remarks on the timing of issuing an album featuring the hook 'This feels like Eurosummer' in late September.",
+      "citation_num": "14",
+      "citation_url": "https://www.instagram.com/p/DPkcukjjP64",
+      "verdict": "not_support",
+      "reason": "The provided citation content is exclusively the Instagram login page and contains no information about the album 'Midnight Sun' or associated reviews."
+    },
+    {
+      "statement_index": 40,
+      "statement": "The Pitchfork reviewer reports that they initially found the title track catchy but considered the other songs weaker and remarks on the timing of issuing an album featuring the hook 'This feels like Eurosummer' in late September.",
+      "citation_num": "13",
+      "citation_url": "https://pitchfork.com/reviews/albums/zara-larsson-midnight-sun-girls-trip",
+      "verdict": "support",
+      "reason": "The text mentions the reviewer found the title track catchy, found others weaker, and questioned the timing of the 'Eurosummer' hook in September."
+    },
+    {
+      "statement_index": 41,
+      "statement": "An Instagram reviewer posting as 'marieltalkspop' describes Midnight Sun as 'plain,' writing that all the songs sound similar and that only 'Pretty Ugly' and 'Eurosummer' stood out positively, while the rest were seen as forgettable and lacking creativity.",
+      "citation_num": "14",
+      "citation_url": "https://www.instagram.com/p/DPkcukjjP64",
+      "verdict": "not_support",
+      "reason": "The provided citation content is exclusively the Instagram login page and contains no information about the album 'Midnight Sun' or associated reviews."
+    },
+    {
+      "statement_index": 41,
+      "statement": "An Instagram reviewer posting as 'marieltalkspop' describes Midnight Sun as 'plain,' writing that all the songs sound similar and that only 'Pretty Ugly' and 'Eurosummer' stood out positively, while the rest were seen as forgettable and lacking creativity.",
+      "citation_num": "13",
+      "citation_url": "https://pitchfork.com/reviews/albums/zara-larsson-midnight-sun-girls-trip",
+      "verdict": "not_support",
+      "reason": "The provided citation content does not mention an Instagram reviewer named 'marieltalkspop' or their specific critique."
+    },
+    {
+      "statement_index": 42,
+      "statement": "A discussion thread on the r/popheads subreddit includes a user who conversely characterizes Midnight Sun as cohesive and polished and claims that it has more personality than any of Larsson's previous releases.",
+      "citation_num": "14",
+      "citation_url": "https://www.instagram.com/p/DPkcukjjP64",
+      "verdict": "not_support",
+      "reason": "The provided citation content is exclusively the Instagram login page and contains no information about the album 'Midnight Sun' or associated reviews."
+    },
+    {
+      "statement_index": 42,
+      "statement": "A discussion thread on the r/popheads subreddit includes a user who conversely characterizes Midnight Sun as cohesive and polished and claims that it has more personality than any of Larsson's previous releases.",
+      "citation_num": "13",
+      "citation_url": "https://pitchfork.com/reviews/albums/zara-larsson-midnight-sun-girls-trip",
+      "verdict": "not_support",
+      "reason": "The provided citation content does not mention the r/popheads subreddit or any user discussion threads."
+    },
+    {
+      "statement_index": 43,
+      "statement": "EUPHORIA. refers to Midnight Sun as a 'now much‑discussed' record that successfully pushed Larsson back into the spotlight of the global pop industry, contrasting with Pitchfork's assessment that the album did not initially make waves.",
+      "citation_num": "14",
+      "citation_url": "https://www.instagram.com/p/DPkcukjjP64",
+      "verdict": "not_support",
+      "reason": "The provided citation content is exclusively the Instagram login page and contains no information about the album 'Midnight Sun' or associated reviews."
+    },
+    {
+      "statement_index": 43,
+      "statement": "EUPHORIA. refers to Midnight Sun as a 'now much‑discussed' record that successfully pushed Larsson back into the spotlight of the global pop industry, contrasting with Pitchfork's assessment that the album did not initially make waves.",
+      "citation_num": "13",
+      "citation_url": "https://pitchfork.com/reviews/albums/zara-larsson-midnight-sun-girls-trip",
+      "verdict": "not_support",
+      "reason": "The provided citation content does not mention EUPHORIA. or any assessment from such an outlet."
+    },
+    {
+      "statement_index": 43,
+      "statement": "EUPHORIA. refers to Midnight Sun as a 'now much‑discussed' record that successfully pushed Larsson back into the spotlight of the global pop industry, contrasting with Pitchfork's assessment that the album did not initially make waves.",
+      "citation_num": "9",
+      "citation_url": "https://www.euphoriazine.com/blog/2026/05/music/albums-zara-larsson-midnight-sun-girls-trip",
+      "verdict": "not_support",
+      "reason": "While the citation calls the record 'much-discussed,' it does not mention Pitchfork or provide a comparison to their assessment."
+    },
+    {
+      "statement_index": 43,
+      "statement": "EUPHORIA. refers to Midnight Sun as a 'now much‑discussed' record that successfully pushed Larsson back into the spotlight of the global pop industry, contrasting with Pitchfork's assessment that the album did not initially make waves.",
+      "citation_num": "7",
+      "citation_url": "https://beatroutemedia.com/i-cant-stop-talking-about-zara-larsson-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation does not mention EUPHORIA. or Pitchfork."
+    },
+    {
+      "statement_index": 43,
+      "statement": "EUPHORIA. refers to Midnight Sun as a 'now much‑discussed' record that successfully pushed Larsson back into the spotlight of the global pop industry, contrasting with Pitchfork's assessment that the album did not initially make waves.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "not_support",
+      "reason": "The provided citation text does not contain any references to 'EUPHORIA.' or 'Pitchfork'."
+    },
+    {
+      "statement_index": 44,
+      "statement": "These differing interpretations illustrate the range of critical and fan responses to Midnight Sun's commercial and cultural impact, with some sources emphasizing its role as a star‑making, spotlight‑returning project and others framing it as a solid but less transformative entry in Larsson's discography.",
+      "citation_num": "14",
+      "citation_url": "https://www.instagram.com/p/DPkcukjjP64",
+      "verdict": "not_support",
+      "reason": "The provided citation content is exclusively the Instagram login page and contains no information about the album 'Midnight Sun' or associated reviews."
+    },
+    {
+      "statement_index": 44,
+      "statement": "These differing interpretations illustrate the range of critical and fan responses to Midnight Sun's commercial and cultural impact, with some sources emphasizing its role as a star‑making, spotlight‑returning project and others framing it as a solid but less transformative entry in Larsson's discography.",
+      "citation_num": "13",
+      "citation_url": "https://pitchfork.com/reviews/albums/zara-larsson-midnight-sun-girls-trip",
+      "verdict": "not_support",
+      "reason": "The citation content focuses on the Pitchfork review and does not survey other sources to compare critical and fan responses."
+    },
+    {
+      "statement_index": 44,
+      "statement": "These differing interpretations illustrate the range of critical and fan responses to Midnight Sun's commercial and cultural impact, with some sources emphasizing its role as a star‑making, spotlight‑returning project and others framing it as a solid but less transformative entry in Larsson's discography.",
+      "citation_num": "9",
+      "citation_url": "https://www.euphoriazine.com/blog/2026/05/music/albums-zara-larsson-midnight-sun-girls-trip",
+      "verdict": "not_support",
+      "reason": "The citation does not provide information about multiple sources or their varying interpretations of the album's impact."
+    },
+    {
+      "statement_index": 44,
+      "statement": "These differing interpretations illustrate the range of critical and fan responses to Midnight Sun's commercial and cultural impact, with some sources emphasizing its role as a star‑making, spotlight‑returning project and others framing it as a solid but less transformative entry in Larsson's discography.",
+      "citation_num": "7",
+      "citation_url": "https://beatroutemedia.com/i-cant-stop-talking-about-zara-larsson-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation does not discuss multiple sources or differing interpretations of the album's impact."
+    },
+    {
+      "statement_index": 44,
+      "statement": "These differing interpretations illustrate the range of critical and fan responses to Midnight Sun's commercial and cultural impact, with some sources emphasizing its role as a star‑making, spotlight‑returning project and others framing it as a solid but less transformative entry in Larsson's discography.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "not_support",
+      "reason": "The citation does not contain external analysis comparing various critical or fan responses to the album's cultural impact."
+    },
+    {
+      "statement_index": 45,
+      "statement": "Formal chart positions, sales figures and industry certifications for Midnight Sun have not been extensively detailed in the available sources.",
+      "citation_num": "9",
+      "citation_url": "https://www.euphoriazine.com/blog/2026/05/music/albums-zara-larsson-midnight-sun-girls-trip",
+      "verdict": "support",
+      "reason": "The citation does not include information regarding chart positions, sales figures, or industry certifications."
+    },
+    {
+      "statement_index": 45,
+      "statement": "Formal chart positions, sales figures and industry certifications for Midnight Sun have not been extensively detailed in the available sources.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "support",
+      "reason": "The provided citation does not contain any data regarding chart positions, sales, or certifications."
+    },
+    {
+      "statement_index": 45,
+      "statement": "Formal chart positions, sales figures and industry certifications for Midnight Sun have not been extensively detailed in the available sources.",
+      "citation_num": "8",
+      "citation_url": "https://www.iheartmedia.com/press/iheartradio-album-preview-zara-larsson-featuring-exclusive-music-her-remix-album-midnight-sun",
+      "verdict": "support",
+      "reason": "The citation mentions 'meaningful chart impact' for the preview events and Zara Larsson lodging songs in the Hot 100, but it does not provide formal chart positions, sales figures, or industry certifications specifically for the 'Midnight Sun' album."
+    },
+    {
+      "statement_index": 46,
+      "statement": "Album of the Year provides aggregate critic and user scores and indicates that Midnight Sun appears in year‑end 'Best of 2025' lists for outlets such as DIY and Rolling Stone, while EUPHORIA. refers to the album as having successfully returned Larsson to the global pop spotlight and iHeartMedia describes it as her '2025 breakthrough,' suggesting notable visibility and reception.",
+      "citation_num": "9",
+      "citation_url": "https://www.euphoriazine.com/blog/2026/05/music/albums-zara-larsson-midnight-sun-girls-trip",
+      "verdict": "not_support",
+      "reason": "The citation does not mention Album of the Year, DIY, Rolling Stone, or iHeartMedia."
+    },
+    {
+      "statement_index": 46,
+      "statement": "Album of the Year provides aggregate critic and user scores and indicates that Midnight Sun appears in year‑end 'Best of 2025' lists for outlets such as DIY and Rolling Stone, while EUPHORIA. refers to the album as having successfully returned Larsson to the global pop spotlight and iHeartMedia describes it as her '2025 breakthrough,' suggesting notable visibility and reception.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "not_support",
+      "reason": "The provided citation does not contain any references to 'EUPHORIA.' or 'iHeartMedia'."
+    },
+    {
+      "statement_index": 46,
+      "statement": "Album of the Year provides aggregate critic and user scores and indicates that Midnight Sun appears in year‑end 'Best of 2025' lists for outlets such as DIY and Rolling Stone, while EUPHORIA. refers to the album as having successfully returned Larsson to the global pop spotlight and iHeartMedia describes it as her '2025 breakthrough,' suggesting notable visibility and reception.",
+      "citation_num": "8",
+      "citation_url": "https://www.iheartmedia.com/press/iheartradio-album-preview-zara-larsson-featuring-exclusive-music-her-remix-album-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation states that iHeartMedia describes 'Midnight Sun' as her '2025 breakthrough', but it does not mention 'Album of the Year', 'DIY', 'Rolling Stone', or 'EUPHORIA.' or their specific commentary or year-end lists."
+    },
+    {
+      "statement_index": 47,
+      "statement": "Specific chart rankings, certifications or numerical sales and streaming milestones are not reported in these sources.",
+      "citation_num": "9",
+      "citation_url": "https://www.euphoriazine.com/blog/2026/05/music/albums-zara-larsson-midnight-sun-girls-trip",
+      "verdict": "support",
+      "reason": "The provided text does not contain any specific rankings, certifications, or sales data."
+    },
+    {
+      "statement_index": 47,
+      "statement": "Specific chart rankings, certifications or numerical sales and streaming milestones are not reported in these sources.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "support",
+      "reason": "The provided citation does not list chart rankings, sales figures, or industry certifications."
+    },
+    {
+      "statement_index": 47,
+      "statement": "Specific chart rankings, certifications or numerical sales and streaming milestones are not reported in these sources.",
+      "citation_num": "8",
+      "citation_url": "https://www.iheartmedia.com/press/iheartradio-album-preview-zara-larsson-featuring-exclusive-music-her-remix-album-midnight-sun",
+      "verdict": "support",
+      "reason": "The citation mentions 'meaningful chart impact' and 'billions of impressions' for the preview events and Zara Larsson's songs in the Hot 100, but it does not report specific chart rankings, certifications, or numerical sales and streaming milestones for the 'Midnight Sun' album itself."
+    },
+    {
+      "statement_index": 48,
+      "statement": "Sony Music Canada presents 'Pretty Ugly,' 'Crush' and 'Midnight Sun' as 'acclaimed singles' included on the album, indicating that these tracks were promoted individually.",
+      "citation_num": "13",
+      "citation_url": "https://pitchfork.com/reviews/albums/zara-larsson-midnight-sun-girls-trip",
+      "verdict": "not_support",
+      "reason": "The provided citation content does not mention Sony Music Canada or their promotional materials."
+    },
+    {
+      "statement_index": 48,
+      "statement": "Sony Music Canada presents 'Pretty Ugly,' 'Crush' and 'Midnight Sun' as 'acclaimed singles' included on the album, indicating that these tracks were promoted individually.",
+      "citation_num": "1",
+      "citation_url": "https://www.sonymusic.ca/press_release/zara-larsson-releases-new-album-midnight-sun",
+      "verdict": "support",
+      "reason": "The press release refers to 'Pretty Ugly,' 'Crush,' and 'Midnight Sun' as 'acclaimed singles' and discusses their promotion."
+    },
+    {
+      "statement_index": 49,
+      "statement": "The Sony Music Canada press release also mentions 'Blue Moon' and 'Hot & Sexy' as new songs appearing on the record.",
+      "citation_num": "13",
+      "citation_url": "https://pitchfork.com/reviews/albums/zara-larsson-midnight-sun-girls-trip",
+      "verdict": "not_support",
+      "reason": "The provided citation content does not mention Sony Music Canada or specific song titles like 'Blue Moon' or 'Hot & Sexy'."
+    },
+    {
+      "statement_index": 49,
+      "statement": "The Sony Music Canada press release also mentions 'Blue Moon' and 'Hot & Sexy' as new songs appearing on the record.",
+      "citation_num": "1",
+      "citation_url": "https://www.sonymusic.ca/press_release/zara-larsson-releases-new-album-midnight-sun",
+      "verdict": "support",
+      "reason": "The text explicitly identifies 'Blue Moon' and 'Hot & Sexy' as new songs appearing on the record."
+    },
+    {
+      "statement_index": 50,
+      "statement": "Pitchfork notes that the music video for 'Midnight Sun' combined a nihilistic dolphin meme aesthetic with a vintage screensaver style, but does not supply further production details such as directors or release dates, and other sources surveyed do not elaborate on the visual promotion of the album.",
+      "citation_num": "13",
+      "citation_url": "https://pitchfork.com/reviews/albums/zara-larsson-midnight-sun-girls-trip",
+      "verdict": "support",
+      "reason": "The text confirms the music video aesthetic but does not provide directors or release dates."
+    },
+    {
+      "statement_index": 50,
+      "statement": "Pitchfork notes that the music video for 'Midnight Sun' combined a nihilistic dolphin meme aesthetic with a vintage screensaver style, but does not supply further production details such as directors or release dates, and other sources surveyed do not elaborate on the visual promotion of the album.",
+      "citation_num": "1",
+      "citation_url": "https://www.sonymusic.ca/press_release/zara-larsson-releases-new-album-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation does not contain commentary from Pitchfork or details about a 'nihilistic dolphin meme' aesthetic."
+    },
+    {
+      "statement_index": 51,
+      "statement": "Beyond the identification of these tracks as singles and mention of the title track's video aesthetic, available commentary does not provide systematic information on the full roster of singles from Midnight Sun, their release chronology or their chart performance.",
+      "citation_num": "13",
+      "citation_url": "https://pitchfork.com/reviews/albums/zara-larsson-midnight-sun-girls-trip",
+      "verdict": "not_support",
+      "reason": "The text does not discuss the full roster of singles or their chart performance, and the citation is not a survey of external commentary."
+    },
+    {
+      "statement_index": 51,
+      "statement": "Beyond the identification of these tracks as singles and mention of the title track's video aesthetic, available commentary does not provide systematic information on the full roster of singles from Midnight Sun, their release chronology or their chart performance.",
+      "citation_num": "1",
+      "citation_url": "https://www.sonymusic.ca/press_release/zara-larsson-releases-new-album-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation does not discuss a full roster of singles, release chronology, or systematic chart performance."
+    },
+    {
+      "statement_index": 51,
+      "statement": "Beyond the identification of these tracks as singles and mention of the title track's video aesthetic, available commentary does not provide systematic information on the full roster of singles from Midnight Sun, their release chronology or their chart performance.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "not_support",
+      "reason": "The citation does not provide commentary or systematic information on singles beyond the tracklist."
+    },
+    {
+      "statement_index": 52,
+      "statement": "No sources consulted give specific chart positions or certifications for individual songs from the album.",
+      "citation_num": "13",
+      "citation_url": "https://pitchfork.com/reviews/albums/zara-larsson-midnight-sun-girls-trip",
+      "verdict": "not_support",
+      "reason": "The text does not provide information regarding whether other sources consulted (which are not present here) give chart positions."
+    },
+    {
+      "statement_index": 52,
+      "statement": "No sources consulted give specific chart positions or certifications for individual songs from the album.",
+      "citation_num": "1",
+      "citation_url": "https://www.sonymusic.ca/press_release/zara-larsson-releases-new-album-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation mentions the current chart status of 'Crush' but does not provide specific certifications for individual songs."
+    },
+    {
+      "statement_index": 52,
+      "statement": "No sources consulted give specific chart positions or certifications for individual songs from the album.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "support",
+      "reason": "The citation does not provide information on chart positions or certifications for individual songs."
+    },
+    {
+      "statement_index": 53,
+      "statement": "The track listing of Midnight Sun has been consistently reported across multiple sources.",
+      "citation_num": "10",
+      "citation_url": "https://www.tiktok.com/@zaralarsson/video/7551202628122905858",
+      "verdict": "not_support",
+      "reason": "The citation does not mention other reporting sources or their consistency."
+    },
+    {
+      "statement_index": 53,
+      "statement": "The track listing of Midnight Sun has been consistently reported across multiple sources.",
+      "citation_num": "3",
+      "citation_url": "https://www.discogs.com/master/3984226-Zara-Larsson-Midnight-Sun",
+      "verdict": "not_support",
+      "reason": "The citation shows a tracklist, but it does not mention or confirm that this tracklist is consistently reported across other specific sources like Genius or social media."
+    },
+    {
+      "statement_index": 53,
+      "statement": "The track listing of Midnight Sun has been consistently reported across multiple sources.",
+      "citation_num": "2",
+      "citation_url": "https://genius.com/albums/Zara-larsson/Midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation provides only one track listing (from Genius) and does not offer information about its consistency across multiple sources."
+    },
+    {
+      "statement_index": 54,
+      "statement": "Genius, Discogs and Larsson's own social media posts all present a ten‑song sequence comprising 'Midnight Sun,' 'Blue Moon,' 'Pretty Ugly,' 'Girl's Girl,' 'Crush,' 'Eurosummer,' 'Hot & Sexy,' 'The Ambition,' 'Saturn's Return' and 'Puss Puss,' in that order.",
+      "citation_num": "10",
+      "citation_url": "https://www.tiktok.com/@zaralarsson/video/7551202628122905858",
+      "verdict": "not_support",
+      "reason": "The citation does not mention Genius, Discogs, or other sources, only providing the tracklist on TikTok."
+    },
+    {
+      "statement_index": 54,
+      "statement": "Genius, Discogs and Larsson's own social media posts all present a ten‑song sequence comprising 'Midnight Sun,' 'Blue Moon,' 'Pretty Ugly,' 'Girl's Girl,' 'Crush,' 'Eurosummer,' 'Hot & Sexy,' 'The Ambition,' 'Saturn's Return' and 'Puss Puss,' in that order.",
+      "citation_num": "3",
+      "citation_url": "https://www.discogs.com/master/3984226-Zara-Larsson-Midnight-Sun",
+      "verdict": "not_support",
+      "reason": "The citation provides the tracklist but does not contain information regarding Genius or Zara Larsson's social media posts."
+    },
+    {
+      "statement_index": 54,
+      "statement": "Genius, Discogs and Larsson's own social media posts all present a ten‑song sequence comprising 'Midnight Sun,' 'Blue Moon,' 'Pretty Ugly,' 'Girl's Girl,' 'Crush,' 'Eurosummer,' 'Hot & Sexy,' 'The Ambition,' 'Saturn's Return' and 'Puss Puss,' in that order.",
+      "citation_num": "2",
+      "citation_url": "https://genius.com/albums/Zara-larsson/Midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation confirms that Genius presents the listed ten-song sequence in order, but it does not mention Discogs or Larsson's own social media posts presenting this sequence."
+    },
+    {
+      "statement_index": 55,
+      "statement": "The track 'Midnight Sun' has a length of 3:09.",
+      "citation_num": "3",
+      "citation_url": "https://www.discogs.com/master/3984226-Zara-Larsson-Midnight-Sun",
+      "verdict": "support",
+      "reason": "The tracklist in the citation lists 'Midnight Sun' with a length of 3:09."
+    },
+    {
+      "statement_index": 55,
+      "statement": "The track 'Midnight Sun' has a length of 3:09.",
+      "citation_num": "2",
+      "citation_url": "https://genius.com/albums/Zara-larsson/Midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation's tracklist section does not provide the length for the track 'Midnight Sun'."
+    },
+    {
+      "statement_index": 56,
+      "statement": "The track 'Blue Moon' has a length of 3:02.",
+      "citation_num": "3",
+      "citation_url": "https://www.discogs.com/master/3984226-Zara-Larsson-Midnight-Sun",
+      "verdict": "support",
+      "reason": "The tracklist in the citation lists 'Blue Moon' with a length of 3:02."
+    },
+    {
+      "statement_index": 56,
+      "statement": "The track 'Blue Moon' has a length of 3:02.",
+      "citation_num": "2",
+      "citation_url": "https://genius.com/albums/Zara-larsson/Midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation's tracklist section does not provide the length for the track 'Blue Moon'."
+    },
+    {
+      "statement_index": 57,
+      "statement": "The track 'Pretty Ugly' has a length of 2:38.",
+      "citation_num": "3",
+      "citation_url": "https://www.discogs.com/master/3984226-Zara-Larsson-Midnight-Sun",
+      "verdict": "support",
+      "reason": "The tracklist in the citation lists 'Pretty Ugly' with a length of 2:38."
+    },
+    {
+      "statement_index": 57,
+      "statement": "The track 'Pretty Ugly' has a length of 2:38.",
+      "citation_num": "2",
+      "citation_url": "https://genius.com/albums/Zara-larsson/Midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation's tracklist section does not provide the length for the track 'Pretty Ugly'."
+    },
+    {
+      "statement_index": 58,
+      "statement": "The track 'Girl's Girl' has a length of 2:58.",
+      "citation_num": "3",
+      "citation_url": "https://www.discogs.com/master/3984226-Zara-Larsson-Midnight-Sun",
+      "verdict": "support",
+      "reason": "The tracklist in the citation lists 'Girl's Girl' with a length of 2:58."
+    },
+    {
+      "statement_index": 58,
+      "statement": "The track 'Girl's Girl' has a length of 2:58.",
+      "citation_num": "2",
+      "citation_url": "https://genius.com/albums/Zara-larsson/Midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation's tracklist section does not provide the length for the track 'Girl's Girl'."
+    },
+    {
+      "statement_index": 59,
+      "statement": "The track 'Crush' has a length of 2:57.",
+      "citation_num": "3",
+      "citation_url": "https://www.discogs.com/master/3984226-Zara-Larsson-Midnight-Sun",
+      "verdict": "support",
+      "reason": "The tracklist in the citation lists 'Crush' with a length of 2:57."
+    },
+    {
+      "statement_index": 59,
+      "statement": "The track 'Crush' has a length of 2:57.",
+      "citation_num": "2",
+      "citation_url": "https://genius.com/albums/Zara-larsson/Midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation's tracklist section does not provide the length for the track 'Crush'."
+    },
+    {
+      "statement_index": 60,
+      "statement": "The track 'Eurosummer' has a length of 2:52.",
+      "citation_num": "3",
+      "citation_url": "https://www.discogs.com/master/3984226-Zara-Larsson-Midnight-Sun",
+      "verdict": "support",
+      "reason": "The tracklist in the citation lists 'Eurosummer' with a length of 2:52."
+    },
+    {
+      "statement_index": 60,
+      "statement": "The track 'Eurosummer' has a length of 2:52.",
+      "citation_num": "2",
+      "citation_url": "https://genius.com/albums/Zara-larsson/Midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation's tracklist section does not provide the length for the track 'Eurosummer'."
+    },
+    {
+      "statement_index": 61,
+      "statement": "The track 'Hot & Sexy' has a length of 3:09.",
+      "citation_num": "3",
+      "citation_url": "https://www.discogs.com/master/3984226-Zara-Larsson-Midnight-Sun",
+      "verdict": "support",
+      "reason": "The tracklist in the citation lists 'Hot & Sexy' with a length of 3:09."
+    },
+    {
+      "statement_index": 61,
+      "statement": "The track 'Hot & Sexy' has a length of 3:09.",
+      "citation_num": "2",
+      "citation_url": "https://genius.com/albums/Zara-larsson/Midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation's tracklist section does not provide the length for the track 'Hot & Sexy'."
+    },
+    {
+      "statement_index": 62,
+      "statement": "The track 'The Ambition' has a length of 3:34.",
+      "citation_num": "3",
+      "citation_url": "https://www.discogs.com/master/3984226-Zara-Larsson-Midnight-Sun",
+      "verdict": "support",
+      "reason": "The tracklist in the citation lists 'The Ambition' with a length of 3:34."
+    },
+    {
+      "statement_index": 62,
+      "statement": "The track 'The Ambition' has a length of 3:34.",
+      "citation_num": "2",
+      "citation_url": "https://genius.com/albums/Zara-larsson/Midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation's tracklist section does not provide the length for the track 'The Ambition'."
+    },
+    {
+      "statement_index": 63,
+      "statement": "The length of the track 'Saturn's Return' is not specified in available snippets.",
+      "citation_num": "3",
+      "citation_url": "https://www.discogs.com/master/3984226-Zara-Larsson-Midnight-Sun",
+      "verdict": "conflict",
+      "reason": "The citation explicitly lists the length of 'Saturn's Return' as 3:47."
+    },
+    {
+      "statement_index": 63,
+      "statement": "The length of the track 'Saturn's Return' is not specified in available snippets.",
+      "citation_num": "2",
+      "citation_url": "https://genius.com/albums/Zara-larsson/Midnight-sun",
+      "verdict": "support",
+      "reason": "The citation does not specify the length of the track 'Saturn's Return' in the provided content."
+    },
+    {
+      "statement_index": 64,
+      "statement": "The length of the track 'Puss Puss' is not specified in available snippets.",
+      "citation_num": "3",
+      "citation_url": "https://www.discogs.com/master/3984226-Zara-Larsson-Midnight-Sun",
+      "verdict": "conflict",
+      "reason": "The citation explicitly lists the length of 'Puss Puss' as 3:48."
+    },
+    {
+      "statement_index": 64,
+      "statement": "The length of the track 'Puss Puss' is not specified in available snippets.",
+      "citation_num": "2",
+      "citation_url": "https://genius.com/albums/Zara-larsson/Midnight-sun",
+      "verdict": "support",
+      "reason": "The citation does not specify the length of the track 'Puss Puss' in the provided content."
+    },
+    {
+      "statement_index": 65,
+      "statement": "Detailed personnel credits for Midnight Sun have not been fully reproduced in the accessible sources.",
+      "citation_num": "9",
+      "citation_url": "https://www.euphoriazine.com/blog/2026/05/music/albums-zara-larsson-midnight-sun-girls-trip",
+      "verdict": "support",
+      "reason": "The citation only identifies four specific producers and does not provide a comprehensive list of personnel."
+    },
+    {
+      "statement_index": 65,
+      "statement": "Detailed personnel credits for Midnight Sun have not been fully reproduced in the accessible sources.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "not_support",
+      "reason": "The citation lists producers and songwriters, which constitutes a portion of the personnel credits."
+    },
+    {
+      "statement_index": 65,
+      "statement": "Detailed personnel credits for Midnight Sun have not been fully reproduced in the accessible sources.",
+      "citation_num": "2",
+      "citation_url": "https://genius.com/albums/Zara-larsson/Midnight-sun",
+      "verdict": "support",
+      "reason": "The 'Song Credits' section lists some personnel and includes a '[Show 56 More]' link, indicating that the full credits are not reproduced in the visible content."
+    },
+    {
+      "statement_index": 66,
+      "statement": "Album of the Year lists key contributors for Midnight Sun, identifying Margo XS, MNEK, Zhone, ASAP P and Jon Shave as producers and naming Zara Larsson, MNEK, Helena Gao, Margo Wildman and Zhone among the songwriters.",
+      "citation_num": "9",
+      "citation_url": "https://www.euphoriazine.com/blog/2026/05/music/albums-zara-larsson-midnight-sun-girls-trip",
+      "verdict": "not_support",
+      "reason": "The citation does not mention Album of the Year or the specific list of contributors and songwriters mentioned in the statement."
+    },
+    {
+      "statement_index": 66,
+      "statement": "Album of the Year lists key contributors for Midnight Sun, identifying Margo XS, MNEK, Zhone, ASAP P and Jon Shave as producers and naming Zara Larsson, MNEK, Helena Gao, Margo Wildman and Zhone among the songwriters.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "support",
+      "reason": "The citation explicitly identifies these individuals as producers and songwriters in the 'Details' section."
+    },
+    {
+      "statement_index": 66,
+      "statement": "Album of the Year lists key contributors for Midnight Sun, identifying Margo XS, MNEK, Zhone, ASAP P and Jon Shave as producers and naming Zara Larsson, MNEK, Helena Gao, Margo Wildman and Zhone among the songwriters.",
+      "citation_num": "2",
+      "citation_url": "https://genius.com/albums/Zara-larsson/Midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation does not mention 'Album of the Year' as a source, although some of the listed contributors (Margo XS, A$AP P, Jon Shave, Helena Gao) are present in the Genius 'Song Credits' section."
+    },
+    {
+      "statement_index": 67,
+      "statement": "EUPHORIA. further notes that MNEK, Margo XS, Helena Gao and Zhone constituted the production nucleus retained for the subsequent project Midnight Sun: Girls Trip, implying their central role in shaping the sound of the original album.",
+      "citation_num": "9",
+      "citation_url": "https://www.euphoriazine.com/blog/2026/05/music/albums-zara-larsson-midnight-sun-girls-trip",
+      "verdict": "support",
+      "reason": "The citation states these individuals formed the production nucleus for the new project and mentions they shaped the original album."
+    },
+    {
+      "statement_index": 67,
+      "statement": "EUPHORIA. further notes that MNEK, Margo XS, Helena Gao and Zhone constituted the production nucleus retained for the subsequent project Midnight Sun: Girls Trip, implying their central role in shaping the sound of the original album.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "not_support",
+      "reason": "The provided citation text does not contain any references to 'EUPHORIA.'"
+    },
+    {
+      "statement_index": 67,
+      "statement": "EUPHORIA. further notes that MNEK, Margo XS, Helena Gao and Zhone constituted the production nucleus retained for the subsequent project Midnight Sun: Girls Trip, implying their central role in shaping the sound of the original album.",
+      "citation_num": "2",
+      "citation_url": "https://genius.com/albums/Zara-larsson/Midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation does not mention 'EUPHORIA.' or any details about the production nucleus for 'Midnight Sun: Girls Trip'."
+    },
+    {
+      "statement_index": 68,
+      "statement": "Genius credits Epic Records, Sommer House and Sony Music Entertainment with copyright and distribution for Midnight Sun.",
+      "citation_num": "9",
+      "citation_url": "https://www.euphoriazine.com/blog/2026/05/music/albums-zara-larsson-midnight-sun-girls-trip",
+      "verdict": "not_support",
+      "reason": "The citation does not mention Genius or the specific copyright and distribution entities."
+    },
+    {
+      "statement_index": 68,
+      "statement": "Genius credits Epic Records, Sommer House and Sony Music Entertainment with copyright and distribution for Midnight Sun.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "not_support",
+      "reason": "The provided citation does not mention Genius as a source or attribute copyright/distribution to those specific entities."
+    },
+    {
+      "statement_index": 68,
+      "statement": "Genius credits Epic Records, Sommer House and Sony Music Entertainment with copyright and distribution for Midnight Sun.",
+      "citation_num": "2",
+      "citation_url": "https://genius.com/albums/Zara-larsson/Midnight-sun",
+      "verdict": "support",
+      "reason": "The citation explicitly states in the 'About Midnight Sun' section that 'Genius credits Epic Records, Sommer House and Sony Music Entertainment with copyright and distribution for Midnight Sun'."
+    },
+    {
+      "statement_index": 69,
+      "statement": "Several sources differ in their descriptions of Midnight Sun's place in Zara Larsson's discography and its impact.",
+      "citation_num": "14",
+      "citation_url": "https://www.instagram.com/p/DPkcukjjP64",
+      "verdict": "not_support",
+      "reason": "The provided citation content is exclusively the Instagram login page and contains no information about the album 'Midnight Sun' or associated reviews."
+    },
+    {
+      "statement_index": 69,
+      "statement": "Several sources differ in their descriptions of Midnight Sun's place in Zara Larsson's discography and its impact.",
+      "citation_num": "13",
+      "citation_url": "https://pitchfork.com/reviews/albums/zara-larsson-midnight-sun-girls-trip",
+      "verdict": "not_support",
+      "reason": "The provided text does not contain multiple sources discussing the album's place in the discography; it only contains the Pitchfork review."
+    },
+    {
+      "statement_index": 69,
+      "statement": "Several sources differ in their descriptions of Midnight Sun's place in Zara Larsson's discography and its impact.",
+      "citation_num": "9",
+      "citation_url": "https://www.euphoriazine.com/blog/2026/05/music/albums-zara-larsson-midnight-sun-girls-trip",
+      "verdict": "not_support",
+      "reason": "The citation does not discuss multiple sources or their differing views on the album's place in her discography."
+    },
+    {
+      "statement_index": 69,
+      "statement": "Several sources differ in their descriptions of Midnight Sun's place in Zara Larsson's discography and its impact.",
+      "citation_num": "7",
+      "citation_url": "https://beatroutemedia.com/i-cant-stop-talking-about-zara-larsson-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The provided text does not contain multiple sources discussing the discography or impact of the album."
+    },
+    {
+      "statement_index": 69,
+      "statement": "Several sources differ in their descriptions of Midnight Sun's place in Zara Larsson's discography and its impact.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "not_support",
+      "reason": "The citation lists other albums by the artist but does not contain a discussion regarding their various roles or impact in the discography."
+    },
+    {
+      "statement_index": 69,
+      "statement": "Several sources differ in their descriptions of Midnight Sun's place in Zara Larsson's discography and its impact.",
+      "citation_num": "2",
+      "citation_url": "https://genius.com/albums/Zara-larsson/Midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation only provides Genius's description of the album's place in the discography and does not present other sources that differ within the provided text."
+    },
+    {
+      "statement_index": 70,
+      "statement": "The fan‑run Zara Larsson wiki refers to Midnight Sun as her fifth studio album, while the Genius album page describes it as her fourth international album and fifth overall, reflecting varying criteria for counting international versus overall releases and differentiating studio albums from other types.",
+      "citation_num": "14",
+      "citation_url": "https://www.instagram.com/p/DPkcukjjP64",
+      "verdict": "not_support",
+      "reason": "The provided citation content is exclusively the Instagram login page and contains no information about the album 'Midnight Sun' or associated reviews."
+    },
+    {
+      "statement_index": 70,
+      "statement": "The fan‑run Zara Larsson wiki refers to Midnight Sun as her fifth studio album, while the Genius album page describes it as her fourth international album and fifth overall, reflecting varying criteria for counting international versus overall releases and differentiating studio albums from other types.",
+      "citation_num": "13",
+      "citation_url": "https://pitchfork.com/reviews/albums/zara-larsson-midnight-sun-girls-trip",
+      "verdict": "not_support",
+      "reason": "The provided text does not mention a Zara Larsson wiki or a Genius album page."
+    },
+    {
+      "statement_index": 70,
+      "statement": "The fan‑run Zara Larsson wiki refers to Midnight Sun as her fifth studio album, while the Genius album page describes it as her fourth international album and fifth overall, reflecting varying criteria for counting international versus overall releases and differentiating studio albums from other types.",
+      "citation_num": "9",
+      "citation_url": "https://www.euphoriazine.com/blog/2026/05/music/albums-zara-larsson-midnight-sun-girls-trip",
+      "verdict": "not_support",
+      "reason": "The citation does not mention a Zara Larsson wiki, Genius, or details regarding the numbering of her studio albums."
+    },
+    {
+      "statement_index": 70,
+      "statement": "The fan‑run Zara Larsson wiki refers to Midnight Sun as her fifth studio album, while the Genius album page describes it as her fourth international album and fifth overall, reflecting varying criteria for counting international versus overall releases and differentiating studio albums from other types.",
+      "citation_num": "7",
+      "citation_url": "https://beatroutemedia.com/i-cant-stop-talking-about-zara-larsson-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation does not mention a fan-run wiki or Genius.com."
+    },
+    {
+      "statement_index": 70,
+      "statement": "The fan‑run Zara Larsson wiki refers to Midnight Sun as her fifth studio album, while the Genius album page describes it as her fourth international album and fifth overall, reflecting varying criteria for counting international versus overall releases and differentiating studio albums from other types.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "not_support",
+      "reason": "The citation does not reference a fan-run wiki or Genius page."
+    },
+    {
+      "statement_index": 70,
+      "statement": "The fan‑run Zara Larsson wiki refers to Midnight Sun as her fifth studio album, while the Genius album page describes it as her fourth international album and fifth overall, reflecting varying criteria for counting international versus overall releases and differentiating studio albums from other types.",
+      "citation_num": "2",
+      "citation_url": "https://genius.com/albums/Zara-larsson/Midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation supports that the Genius album page describes it as her 'fourth international album and fifth overall', but it does not mention a 'fan-run Zara Larsson wiki' or its characterization of the album."
+    },
+    {
+      "statement_index": 71,
+      "statement": "EUPHORIA. characterizes Midnight Sun as a record that successfully pushed Larsson back into the spotlight of the global pop industry, whereas Pitchfork states that the album did not initially make waves, particularly in the United States, and retroactively gives it a semi‑canonical score of 6.9.",
+      "citation_num": "14",
+      "citation_url": "https://www.instagram.com/p/DPkcukjjP64",
+      "verdict": "not_support",
+      "reason": "The provided citation content is exclusively the Instagram login page and contains no information about the album 'Midnight Sun' or associated reviews."
+    },
+    {
+      "statement_index": 71,
+      "statement": "EUPHORIA. characterizes Midnight Sun as a record that successfully pushed Larsson back into the spotlight of the global pop industry, whereas Pitchfork states that the album did not initially make waves, particularly in the United States, and retroactively gives it a semi‑canonical score of 6.9.",
+      "citation_num": "13",
+      "citation_url": "https://pitchfork.com/reviews/albums/zara-larsson-midnight-sun-girls-trip",
+      "verdict": "not_support",
+      "reason": "While the Pitchfork information is present, the text does not mention EUPHORIA. or its assessment."
+    },
+    {
+      "statement_index": 71,
+      "statement": "EUPHORIA. characterizes Midnight Sun as a record that successfully pushed Larsson back into the spotlight of the global pop industry, whereas Pitchfork states that the album did not initially make waves, particularly in the United States, and retroactively gives it a semi‑canonical score of 6.9.",
+      "citation_num": "9",
+      "citation_url": "https://www.euphoriazine.com/blog/2026/05/music/albums-zara-larsson-midnight-sun-girls-trip",
+      "verdict": "not_support",
+      "reason": "The citation mentions EUPHORIA.'s perspective but does not contain information about Pitchfork or their score."
+    },
+    {
+      "statement_index": 71,
+      "statement": "EUPHORIA. characterizes Midnight Sun as a record that successfully pushed Larsson back into the spotlight of the global pop industry, whereas Pitchfork states that the album did not initially make waves, particularly in the United States, and retroactively gives it a semi‑canonical score of 6.9.",
+      "citation_num": "7",
+      "citation_url": "https://beatroutemedia.com/i-cant-stop-talking-about-zara-larsson-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation does not mention EUPHORIA. or Pitchfork."
+    },
+    {
+      "statement_index": 71,
+      "statement": "EUPHORIA. characterizes Midnight Sun as a record that successfully pushed Larsson back into the spotlight of the global pop industry, whereas Pitchfork states that the album did not initially make waves, particularly in the United States, and retroactively gives it a semi‑canonical score of 6.9.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "not_support",
+      "reason": "The provided citation text does not contain any references to 'EUPHORIA.' or 'Pitchfork'."
+    },
+    {
+      "statement_index": 71,
+      "statement": "EUPHORIA. characterizes Midnight Sun as a record that successfully pushed Larsson back into the spotlight of the global pop industry, whereas Pitchfork states that the album did not initially make waves, particularly in the United States, and retroactively gives it a semi‑canonical score of 6.9.",
+      "citation_num": "2",
+      "citation_url": "https://genius.com/albums/Zara-larsson/Midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation does not mention 'EUPHORIA.' or 'Pitchfork' or their respective characterizations and scores for the album."
+    },
+    {
+      "statement_index": 72,
+      "statement": "Critical opinions also vary, with outlets such as BeatRoute and DIY presenting Midnight Sun as an exemplary, cohesive pop album, while the Instagram reviewer 'marieltalkspop' describes it as plain and lacking creativity.",
+      "citation_num": "14",
+      "citation_url": "https://www.instagram.com/p/DPkcukjjP64",
+      "verdict": "not_support",
+      "reason": "The provided citation content is exclusively the Instagram login page and contains no information about the album 'Midnight Sun' or associated reviews."
+    },
+    {
+      "statement_index": 72,
+      "statement": "Critical opinions also vary, with outlets such as BeatRoute and DIY presenting Midnight Sun as an exemplary, cohesive pop album, while the Instagram reviewer 'marieltalkspop' describes it as plain and lacking creativity.",
+      "citation_num": "13",
+      "citation_url": "https://pitchfork.com/reviews/albums/zara-larsson-midnight-sun-girls-trip",
+      "verdict": "not_support",
+      "reason": "The provided text does not mention BeatRoute, DIY, or the Instagram reviewer 'marieltalkspop'."
+    },
+    {
+      "statement_index": 72,
+      "statement": "Critical opinions also vary, with outlets such as BeatRoute and DIY presenting Midnight Sun as an exemplary, cohesive pop album, while the Instagram reviewer 'marieltalkspop' describes it as plain and lacking creativity.",
+      "citation_num": "9",
+      "citation_url": "https://www.euphoriazine.com/blog/2026/05/music/albums-zara-larsson-midnight-sun-girls-trip",
+      "verdict": "not_support",
+      "reason": "The citation does not mention outlets like BeatRoute, DIY, or Instagram reviewers."
+    },
+    {
+      "statement_index": 72,
+      "statement": "Critical opinions also vary, with outlets such as BeatRoute and DIY presenting Midnight Sun as an exemplary, cohesive pop album, while the Instagram reviewer 'marieltalkspop' describes it as plain and lacking creativity.",
+      "citation_num": "7",
+      "citation_url": "https://beatroutemedia.com/i-cant-stop-talking-about-zara-larsson-midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation does not mention DIY or an Instagram reviewer named 'marieltalkspop'."
+    },
+    {
+      "statement_index": 72,
+      "statement": "Critical opinions also vary, with outlets such as BeatRoute and DIY presenting Midnight Sun as an exemplary, cohesive pop album, while the Instagram reviewer 'marieltalkspop' describes it as plain and lacking creativity.",
+      "citation_num": "5",
+      "citation_url": "https://www.albumoftheyear.org/album/1342967-zara-larsson-midnight-sun.php",
+      "verdict": "not_support",
+      "reason": "The provided citation text does not contain any references to 'BeatRoute' or 'marieltalkspop'."
+    },
+    {
+      "statement_index": 72,
+      "statement": "Critical opinions also vary, with outlets such as BeatRoute and DIY presenting Midnight Sun as an exemplary, cohesive pop album, while the Instagram reviewer 'marieltalkspop' describes it as plain and lacking creativity.",
+      "citation_num": "2",
+      "citation_url": "https://genius.com/albums/Zara-larsson/Midnight-sun",
+      "verdict": "not_support",
+      "reason": "The citation does not mention 'BeatRoute', 'DIY', or 'marieltalkspop' or their critical opinions on the album."
+    }
+  ]
+}

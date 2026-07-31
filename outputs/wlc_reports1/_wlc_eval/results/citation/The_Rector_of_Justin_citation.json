@@ -1,0 +1,1752 @@
+{
+  "title": "The Rector of Justin",
+  "status": "completed",
+  "total_statements": 75,
+  "total_citations": 24,
+  "valid_citations": 23,
+  "evaluated_statements": 75,
+  "skipped_statements": 0,
+  "support": 65,
+  "not_support": 8,
+  "conflict": 2,
+  "support_ratio": 0.8666666666666667,
+  "conflict_ratio": 0.02666666666666667,
+  "results": [
+    {
+      "statement_index": 0,
+      "statement": "The Rector of Justin is a 1964 novel by American author Louis Auchincloss that portrays the life and career of Reverend Francis (Frank) Prescott, founding headmaster and long‑serving rector of Justin Martyr, an elite Episcopal boys’ boarding school in rural New England.",
+      "citation_num": "2",
+      "citation_url": "https://www.britannica.com/topic/The-Rector-of-Justin",
+      "verdict": "not_support",
+      "reason": "While the citation confirms the author, title, and publication year, it does not provide the specific details regarding the character Francis Prescott or the school's specific religious and geographical characteristics."
+    },
+    {
+      "statement_index": 0,
+      "statement": "The Rector of Justin is a 1964 novel by American author Louis Auchincloss that portrays the life and career of Reverend Francis (Frank) Prescott, founding headmaster and long‑serving rector of Justin Martyr, an elite Episcopal boys’ boarding school in rural New England.",
+      "citation_num": "6",
+      "citation_url": "https://newcriterion.com/article/in-memoriam-louis-auchincloss-1917a2010",
+      "verdict": "not_support",
+      "reason": "The citation identifies the book as a fictionalized portrait of a Groton headmaster but does not provide details regarding its publication date, specific plot points, or the school's name/location."
+    },
+    {
+      "statement_index": 0,
+      "statement": "The Rector of Justin is a 1964 novel by American author Louis Auchincloss that portrays the life and career of Reverend Francis (Frank) Prescott, founding headmaster and long‑serving rector of Justin Martyr, an elite Episcopal boys’ boarding school in rural New England.",
+      "citation_num": "4",
+      "citation_url": "https://www.bluebirdbooks.com/products/category/672/~/product_id_asc?page=7",
+      "verdict": "not_support",
+      "reason": "The citation confirms Louis Auchincloss wrote The Rector of Justin in 1964 and it traces the life of a headmaster at an elite New England school, but it does not mention the character's name is Francis (Frank) Prescott or that the school is named Justin Martyr."
+    },
+    {
+      "statement_index": 0,
+      "statement": "The Rector of Justin is a 1964 novel by American author Louis Auchincloss that portrays the life and career of Reverend Francis (Frank) Prescott, founding headmaster and long‑serving rector of Justin Martyr, an elite Episcopal boys’ boarding school in rural New England.",
+      "citation_num": "1",
+      "citation_url": "https://grokipedia.com/page/the_rector_of_justin",
+      "verdict": "support",
+      "reason": "The content confirms the novel's title, publication year, author, and the central character's role at the fictional school."
+    },
+    {
+      "statement_index": 0,
+      "statement": "The Rector of Justin is a 1964 novel by American author Louis Auchincloss that portrays the life and career of Reverend Francis (Frank) Prescott, founding headmaster and long‑serving rector of Justin Martyr, an elite Episcopal boys’ boarding school in rural New England.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The citation confirms the title, author, publication year (1964), subject (Reverend Francis Prescott), and the setting (Justin Martyr, an elite boys' school in rural Massachusetts)."
+    },
+    {
+      "statement_index": 0,
+      "statement": "The Rector of Justin is a 1964 novel by American author Louis Auchincloss that portrays the life and career of Reverend Francis (Frank) Prescott, founding headmaster and long‑serving rector of Justin Martyr, an elite Episcopal boys’ boarding school in rural New England.",
+      "citation_num": "7",
+      "citation_url": "https://www.educationnext.org/from-half-century-old-novel-wisdom-about-teaching-education-reform-with-2020-political-implications-auchincloss",
+      "verdict": "not_support",
+      "reason": "The citation confirms the novel's title, author, publication year, and that its protagonist is Frank Prescott, headmaster of a New England boys' school, but it does not provide details about him being a 'Reverend Francis,' 'founding headmaster,' 'long-serving rector,' or the school being 'Justin Martyr' or 'elite Episcopal.'"
+    },
+    {
+      "statement_index": 0,
+      "statement": "The Rector of Justin is a 1964 novel by American author Louis Auchincloss that portrays the life and career of Reverend Francis (Frank) Prescott, founding headmaster and long‑serving rector of Justin Martyr, an elite Episcopal boys’ boarding school in rural New England.",
+      "citation_num": "5",
+      "citation_url": "https://bkbcollege.in/upload/dpt_book/1669361629.pdf",
+      "verdict": "support",
+      "reason": "The citation confirms the publication year (1964) and identifies 'The Rector of Justin' as a novel by Louis Auchincloss, with reviews mentioning its New England setting, 'faculty life' (implying a school), and 'religious themes' (consistent with Reverend/Episcopal)."
+    },
+    {
+      "statement_index": 1,
+      "statement": "Marketed and later catalogued as classic fiction, the book has frequently been described as a psychological novel and a novel of manners that uses a multi‑voiced narrative to examine the moral complexities of education, leadership, and upper‑class American society in the late nineteenth and early twentieth centuries.",
+      "citation_num": "2",
+      "citation_url": "https://www.britannica.com/topic/The-Rector-of-Justin",
+      "verdict": "not_support",
+      "reason": "The citation mentions it is a study of a single character from many points of view, but it does not contain information about how the book is marketed, cataloged, or described regarding its themes of education and leadership."
+    },
+    {
+      "statement_index": 1,
+      "statement": "Marketed and later catalogued as classic fiction, the book has frequently been described as a psychological novel and a novel of manners that uses a multi‑voiced narrative to examine the moral complexities of education, leadership, and upper‑class American society in the late nineteenth and early twentieth centuries.",
+      "citation_num": "6",
+      "citation_url": "https://newcriterion.com/article/in-memoriam-louis-auchincloss-1917a2010",
+      "verdict": "not_support",
+      "reason": "The citation does not discuss the novel's narrative structure, genre classification, or its themes beyond a general mention of the author's milieu."
+    },
+    {
+      "statement_index": 1,
+      "statement": "Marketed and later catalogued as classic fiction, the book has frequently been described as a psychological novel and a novel of manners that uses a multi‑voiced narrative to examine the moral complexities of education, leadership, and upper‑class American society in the late nineteenth and early twentieth centuries.",
+      "citation_num": "4",
+      "citation_url": "https://www.bluebirdbooks.com/products/category/672/~/product_id_asc?page=7",
+      "verdict": "not_support",
+      "reason": "The citation provides the book's availability and publication details but does not include critical analysis describing the work as a psychological novel, a novel of manners, or a multi-voiced narrative."
+    },
+    {
+      "statement_index": 1,
+      "statement": "Marketed and later catalogued as classic fiction, the book has frequently been described as a psychological novel and a novel of manners that uses a multi‑voiced narrative to examine the moral complexities of education, leadership, and upper‑class American society in the late nineteenth and early twentieth centuries.",
+      "citation_num": "1",
+      "citation_url": "https://grokipedia.com/page/the_rector_of_justin",
+      "verdict": "support",
+      "reason": "The citation characterizes the work as a psychological novel, identifies its use of multiple narrators, and notes its themes of leadership and social class."
+    },
+    {
+      "statement_index": 1,
+      "statement": "Marketed and later catalogued as classic fiction, the book has frequently been described as a psychological novel and a novel of manners that uses a multi‑voiced narrative to examine the moral complexities of education, leadership, and upper‑class American society in the late nineteenth and early twentieth centuries.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The text identifies it as a 'novel of manners' and describes it as a work that explores the moral complexities of education and leadership through multiple perspectives."
+    },
+    {
+      "statement_index": 1,
+      "statement": "Marketed and later catalogued as classic fiction, the book has frequently been described as a psychological novel and a novel of manners that uses a multi‑voiced narrative to examine the moral complexities of education, leadership, and upper‑class American society in the late nineteenth and early twentieth centuries.",
+      "citation_num": "7",
+      "citation_url": "https://www.educationnext.org/from-half-century-old-novel-wisdom-about-teaching-education-reform-with-2020-political-implications-auchincloss",
+      "verdict": "not_support",
+      "reason": "The citation does not describe the book as 'classic fiction,' a 'psychological novel,' a 'novel of manners,' or using a 'multi-voiced narrative,' nor does it specify the historical period it covers."
+    },
+    {
+      "statement_index": 1,
+      "statement": "Marketed and later catalogued as classic fiction, the book has frequently been described as a psychological novel and a novel of manners that uses a multi‑voiced narrative to examine the moral complexities of education, leadership, and upper‑class American society in the late nineteenth and early twentieth centuries.",
+      "citation_num": "5",
+      "citation_url": "https://bkbcollege.in/upload/dpt_book/1669361629.pdf",
+      "verdict": "support",
+      "reason": "Edward Weeks' review explicitly describes a 'multi-voiced narrative' for 'The Rector of Justin,' and Christopher C. Dahl links Auchincloss to the 'novel of manners' tradition, while reviews discuss themes of 'faculty life' (education/leadership) and 'upper-class American society' (implied by characters and setting)."
+    },
+    {
+      "statement_index": 2,
+      "statement": "Critics and commentators have identified The Rector of Justin as Auchincloss’s best‑known and most enduring work, the only one of his many novels to remain consistently in print, and a book that has some claim to be regarded as his masterpiece.",
+      "citation_num": "2",
+      "citation_url": "https://www.britannica.com/topic/The-Rector-of-Justin",
+      "verdict": "not_support",
+      "reason": "The provided text does not contain information about the book's critical reception, its status as a masterpiece, or its print history."
+    },
+    {
+      "statement_index": 2,
+      "statement": "Critics and commentators have identified The Rector of Justin as Auchincloss’s best‑known and most enduring work, the only one of his many novels to remain consistently in print, and a book that has some claim to be regarded as his masterpiece.",
+      "citation_num": "6",
+      "citation_url": "https://newcriterion.com/article/in-memoriam-louis-auchincloss-1917a2010",
+      "verdict": "support",
+      "reason": "The citation explicitly states that The Rector of Justin is the only book of his that stays consistently in print and has a claim to be his masterpiece."
+    },
+    {
+      "statement_index": 2,
+      "statement": "Critics and commentators have identified The Rector of Justin as Auchincloss’s best‑known and most enduring work, the only one of his many novels to remain consistently in print, and a book that has some claim to be regarded as his masterpiece.",
+      "citation_num": "4",
+      "citation_url": "https://www.bluebirdbooks.com/products/category/672/~/product_id_asc?page=7",
+      "verdict": "not_support",
+      "reason": "The citation does not provide critical commentary or information about the book's status regarding being his best-known work or its print history."
+    },
+    {
+      "statement_index": 2,
+      "statement": "Critics and commentators have identified The Rector of Justin as Auchincloss’s best‑known and most enduring work, the only one of his many novels to remain consistently in print, and a book that has some claim to be regarded as his masterpiece.",
+      "citation_num": "1",
+      "citation_url": "https://grokipedia.com/page/the_rector_of_justin",
+      "verdict": "not_support",
+      "reason": "While the citation calls it one of Auchincloss's finest works, it does not explicitly state it is the only one consistently in print."
+    },
+    {
+      "statement_index": 2,
+      "statement": "Critics and commentators have identified The Rector of Justin as Auchincloss’s best‑known and most enduring work, the only one of his many novels to remain consistently in print, and a book that has some claim to be regarded as his masterpiece.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "not_support",
+      "reason": "The provided text does not contain information regarding the book's print status, commercial success, or its status as the author's 'masterpiece'."
+    },
+    {
+      "statement_index": 2,
+      "statement": "Critics and commentators have identified The Rector of Justin as Auchincloss’s best‑known and most enduring work, the only one of his many novels to remain consistently in print, and a book that has some claim to be regarded as his masterpiece.",
+      "citation_num": "7",
+      "citation_url": "https://www.educationnext.org/from-half-century-old-novel-wisdom-about-teaching-education-reform-with-2020-political-implications-auchincloss",
+      "verdict": "not_support",
+      "reason": "The citation states that 'The Rector of Justin' is regarded by many critics as Auchincloss's best and most important novel, but it does not mention whether it is the only one of his novels to remain consistently in print."
+    },
+    {
+      "statement_index": 2,
+      "statement": "Critics and commentators have identified The Rector of Justin as Auchincloss’s best‑known and most enduring work, the only one of his many novels to remain consistently in print, and a book that has some claim to be regarded as his masterpiece.",
+      "citation_num": "5",
+      "citation_url": "https://bkbcollege.in/upload/dpt_book/1669361629.pdf",
+      "verdict": "not_support",
+      "reason": "The citation does not state that 'The Rector of Justin' is Auchincloss's best-known or most enduring work, nor that it is the only one consistently in print; in fact, Christopher C. Dahl mentions 'A Writer’s Capital' as perhaps his finest non-fiction work and refers to his 'finest novels' in general terms without singling out 'The Rector of Justin' as his masterpiece."
+    },
+    {
+      "statement_index": 3,
+      "statement": "The Rector of Justin was first published in 1964 and is listed in reference works and publisher descriptions as a psychological novel and a novel of manners set primarily at an elite Episcopal boys’ boarding school in rural Massachusetts and, more broadly, in Massachusetts and New York City between 1879 and 1947.",
+      "citation_num": "2",
+      "citation_url": "https://www.britannica.com/topic/The-Rector-of-Justin",
+      "verdict": "not_support",
+      "reason": "The citation confirms the 1964 publication date, but it does not provide specific information about the book's setting, time period, or its description as a psychological novel of manners."
+    },
+    {
+      "statement_index": 3,
+      "statement": "The Rector of Justin was first published in 1964 and is listed in reference works and publisher descriptions as a psychological novel and a novel of manners set primarily at an elite Episcopal boys’ boarding school in rural Massachusetts and, more broadly, in Massachusetts and New York City between 1879 and 1947.",
+      "citation_num": "1",
+      "citation_url": "https://grokipedia.com/page/the_rector_of_justin",
+      "verdict": "not_support",
+      "reason": "The citation specifies the school is in New England, but does not explicitly confirm the range 1879 to 1947 or specifically list it in publisher descriptions as a 'novel of manners' with those exact dates."
+    },
+    {
+      "statement_index": 3,
+      "statement": "The Rector of Justin was first published in 1964 and is listed in reference works and publisher descriptions as a psychological novel and a novel of manners set primarily at an elite Episcopal boys’ boarding school in rural Massachusetts and, more broadly, in Massachusetts and New York City between 1879 and 1947.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The text explicitly states it was first published in 1964, characterizes it as a psychological novel of manners, and specifies the time and locales provided."
+    },
+    {
+      "statement_index": 3,
+      "statement": "The Rector of Justin was first published in 1964 and is listed in reference works and publisher descriptions as a psychological novel and a novel of manners set primarily at an elite Episcopal boys’ boarding school in rural Massachusetts and, more broadly, in Massachusetts and New York City between 1879 and 1947.",
+      "citation_num": "5",
+      "citation_url": "https://bkbcollege.in/upload/dpt_book/1669361629.pdf",
+      "verdict": "not_support",
+      "reason": "While the publication year (1964) and genre (novel of manners, psychological novel implied) are supported, the specific details of 'elite Episcopal boys’ boarding school in rural Massachusetts' and the date range 'between 1879 and 1947' are not explicitly stated in the provided text for 'The Rector of Justin' as being from reference works or publisher descriptions."
+    },
+    {
+      "statement_index": 4,
+      "statement": "Standard literary reference sources identify it simply as a novel by Louis Auchincloss, situating it in mid‑twentieth‑century American fiction.",
+      "citation_num": "2",
+      "citation_url": "https://www.britannica.com/topic/The-Rector-of-Justin",
+      "verdict": "support",
+      "reason": "The citation identifies the work as a novel by Louis Auchincloss and situates it within his broader body of mid-twentieth-century American literature."
+    },
+    {
+      "statement_index": 4,
+      "statement": "Standard literary reference sources identify it simply as a novel by Louis Auchincloss, situating it in mid‑twentieth‑century American fiction.",
+      "citation_num": "1",
+      "citation_url": "https://grokipedia.com/page/the_rector_of_justin",
+      "verdict": "support",
+      "reason": "The text identifies the book as a novel by Louis Auchincloss and situates it within his body of work and historical context."
+    },
+    {
+      "statement_index": 4,
+      "statement": "Standard literary reference sources identify it simply as a novel by Louis Auchincloss, situating it in mid‑twentieth‑century American fiction.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The text introduces it as a novel by Louis Auchincloss set in the mid-twentieth century."
+    },
+    {
+      "statement_index": 4,
+      "statement": "Standard literary reference sources identify it simply as a novel by Louis Auchincloss, situating it in mid‑twentieth‑century American fiction.",
+      "citation_num": "5",
+      "citation_url": "https://bkbcollege.in/upload/dpt_book/1669361629.pdf",
+      "verdict": "support",
+      "reason": "The bibliography entry for Louis Auchincloss lists 'The Rector of Justin, 1964 (n),' identifying it as a novel and situating its publication in the mid-twentieth century."
+    },
+    {
+      "statement_index": 5,
+      "statement": "Bookseller and catalog records indicate that a Modern Library edition of The Rector of Justin was published in New York in 1967, marketed as classic fiction and literature.",
+      "citation_num": "11",
+      "citation_url": "https://www.biblio.com/book/rector-justin-auchincloss-louis/d/1282891632",
+      "verdict": "conflict",
+      "reason": "The citation states that the Modern Library edition was published in 2001, not 1967."
+    },
+    {
+      "statement_index": 5,
+      "statement": "Bookseller and catalog records indicate that a Modern Library edition of The Rector of Justin was published in New York in 1967, marketed as classic fiction and literature.",
+      "citation_num": "8",
+      "citation_url": "https://www.abebooks.com/first-edition/RECTOR-JUSTIN-Louis-Auchincloss-Modern-Library/31672492251/bd",
+      "verdict": "conflict",
+      "reason": "The citation states the Modern Library edition was published in 2001, contradicting the statement that it was published in 1967."
+    },
+    {
+      "statement_index": 5,
+      "statement": "Bookseller and catalog records indicate that a Modern Library edition of The Rector of Justin was published in New York in 1967, marketed as classic fiction and literature.",
+      "citation_num": "10",
+      "citation_url": "https://www.eighthdaybooks.com/products/condition/Used%20-%20Like%20New/~/product_id_desc?page=64",
+      "verdict": "not_support",
+      "reason": "The provided citation does not contain any information regarding a 1967 Modern Library edition of The Rector of Justin."
+    },
+    {
+      "statement_index": 5,
+      "statement": "Bookseller and catalog records indicate that a Modern Library edition of The Rector of Justin was published in New York in 1967, marketed as classic fiction and literature.",
+      "citation_num": "12",
+      "citation_url": "https://www.betterworldbooks.com/product/detail/the-rector-of-justin-a-novel-9780940595095",
+      "verdict": "not_support",
+      "reason": "The citation contains information about a specific 1987 hardcover edition and lists general bibliographic details, but it does not mention a 1967 Modern Library edition."
+    },
+    {
+      "statement_index": 5,
+      "statement": "Bookseller and catalog records indicate that a Modern Library edition of The Rector of Justin was published in New York in 1967, marketed as classic fiction and literature.",
+      "citation_num": "6",
+      "citation_url": "https://newcriterion.com/article/in-memoriam-louis-auchincloss-1917a2010",
+      "verdict": "not_support",
+      "reason": "The citation contains no information regarding the 1967 Modern Library edition."
+    },
+    {
+      "statement_index": 5,
+      "statement": "Bookseller and catalog records indicate that a Modern Library edition of The Rector of Justin was published in New York in 1967, marketed as classic fiction and literature.",
+      "citation_num": "4",
+      "citation_url": "https://www.bluebirdbooks.com/products/category/672/~/product_id_asc?page=7",
+      "verdict": "not_support",
+      "reason": "The citation contains no reference to a Modern Library edition of The Rector of Justin published in 1967."
+    },
+    {
+      "statement_index": 5,
+      "statement": "Bookseller and catalog records indicate that a Modern Library edition of The Rector of Justin was published in New York in 1967, marketed as classic fiction and literature.",
+      "citation_num": "9",
+      "citation_url": "https://www.hermitagebooks.com/searchResults.php?category_id=520&action=browse&browseLetter=A&view=list",
+      "verdict": "not_support",
+      "reason": "The citation confirms the New York 1967 Modern Library edition exists but does not mention it being marketed as classic fiction and literature."
+    },
+    {
+      "statement_index": 6,
+      "statement": "Later collectible editions include a Franklin Library signed limited edition, bound in leather and illustrated by Uldis Klavins, published from Franklin Center, Pennsylvania, in 1977.",
+      "citation_num": "11",
+      "citation_url": "https://www.biblio.com/book/rector-justin-auchincloss-louis/d/1282891632",
+      "verdict": "not_support",
+      "reason": "The provided citation does not contain any information regarding a Franklin Library edition or a publisher from Franklin Center, Pennsylvania."
+    },
+    {
+      "statement_index": 6,
+      "statement": "Later collectible editions include a Franklin Library signed limited edition, bound in leather and illustrated by Uldis Klavins, published from Franklin Center, Pennsylvania, in 1977.",
+      "citation_num": "8",
+      "citation_url": "https://www.abebooks.com/first-edition/RECTOR-JUSTIN-Louis-Auchincloss-Modern-Library/31672492251/bd",
+      "verdict": "not_support",
+      "reason": "The provided citation does not contain any information regarding a Franklin Library edition or its publication history."
+    },
+    {
+      "statement_index": 6,
+      "statement": "Later collectible editions include a Franklin Library signed limited edition, bound in leather and illustrated by Uldis Klavins, published from Franklin Center, Pennsylvania, in 1977.",
+      "citation_num": "10",
+      "citation_url": "https://www.eighthdaybooks.com/products/condition/Used%20-%20Like%20New/~/product_id_desc?page=64",
+      "verdict": "support",
+      "reason": "The citation lists a Franklin Library edition of The Rector of Justin, signed by the author, illustrated by Uldis Klavins, published in 1977 in Franklin Center, PA, with a genuine leather binding."
+    },
+    {
+      "statement_index": 6,
+      "statement": "Later collectible editions include a Franklin Library signed limited edition, bound in leather and illustrated by Uldis Klavins, published from Franklin Center, Pennsylvania, in 1977.",
+      "citation_num": "12",
+      "citation_url": "https://www.betterworldbooks.com/product/detail/the-rector-of-justin-a-novel-9780940595095",
+      "verdict": "not_support",
+      "reason": "The provided text does not contain information regarding a Franklin Library signed limited edition published in 1977."
+    },
+    {
+      "statement_index": 6,
+      "statement": "Later collectible editions include a Franklin Library signed limited edition, bound in leather and illustrated by Uldis Klavins, published from Franklin Center, Pennsylvania, in 1977.",
+      "citation_num": "6",
+      "citation_url": "https://newcriterion.com/article/in-memoriam-louis-auchincloss-1917a2010",
+      "verdict": "not_support",
+      "reason": "The citation does not mention specific editions, publishers, or illustrators of the novel."
+    },
+    {
+      "statement_index": 6,
+      "statement": "Later collectible editions include a Franklin Library signed limited edition, bound in leather and illustrated by Uldis Klavins, published from Franklin Center, Pennsylvania, in 1977.",
+      "citation_num": "4",
+      "citation_url": "https://www.bluebirdbooks.com/products/category/672/~/product_id_asc?page=7",
+      "verdict": "support",
+      "reason": "The citation explicitly describes the Franklin Library signed limited edition published in 1977, noting it is bound in leather and illustrated by Uldis Klavins."
+    },
+    {
+      "statement_index": 6,
+      "statement": "Later collectible editions include a Franklin Library signed limited edition, bound in leather and illustrated by Uldis Klavins, published from Franklin Center, Pennsylvania, in 1977.",
+      "citation_num": "9",
+      "citation_url": "https://www.hermitagebooks.com/searchResults.php?category_id=520&action=browse&browseLetter=A&view=list",
+      "verdict": "not_support",
+      "reason": "The provided citation contains no information regarding a Franklin Library edition of this book."
+    },
+    {
+      "statement_index": 7,
+      "statement": "Subsequent reprint listings from commercial booksellers and online catalogues show the novel continuing to be available in hardcover and paperback formats, contributing to its status, noted by critics, as the only Auchincloss novel to remain consistently in print.",
+      "citation_num": "11",
+      "citation_url": "https://www.biblio.com/book/rector-justin-auchincloss-louis/d/1282891632",
+      "verdict": "not_support",
+      "reason": "The citation provides details for a specific 2001 edition, but it does not contain information about the book's long-term print status or critical reception regarding its availability."
+    },
+    {
+      "statement_index": 7,
+      "statement": "Subsequent reprint listings from commercial booksellers and online catalogues show the novel continuing to be available in hardcover and paperback formats, contributing to its status, noted by critics, as the only Auchincloss novel to remain consistently in print.",
+      "citation_num": "8",
+      "citation_url": "https://www.abebooks.com/first-edition/RECTOR-JUSTIN-Louis-Auchincloss-Modern-Library/31672492251/bd",
+      "verdict": "not_support",
+      "reason": "The citation does not mention the novel's print status or provide critical commentary regarding its availability compared to other works by the author."
+    },
+    {
+      "statement_index": 7,
+      "statement": "Subsequent reprint listings from commercial booksellers and online catalogues show the novel continuing to be available in hardcover and paperback formats, contributing to its status, noted by critics, as the only Auchincloss novel to remain consistently in print.",
+      "citation_num": "10",
+      "citation_url": "https://www.eighthdaybooks.com/products/condition/Used%20-%20Like%20New/~/product_id_desc?page=64",
+      "verdict": "not_support",
+      "reason": "The citation provides information about a specific copy of the book for sale, but it does not contain information about the book's consistent print status or critical reception."
+    },
+    {
+      "statement_index": 7,
+      "statement": "Subsequent reprint listings from commercial booksellers and online catalogues show the novel continuing to be available in hardcover and paperback formats, contributing to its status, noted by critics, as the only Auchincloss novel to remain consistently in print.",
+      "citation_num": "12",
+      "citation_url": "https://www.betterworldbooks.com/product/detail/the-rector-of-justin-a-novel-9780940595095",
+      "verdict": "not_support",
+      "reason": "While the citation shows the book is available in hardcover and paperback, it does not confirm the claim that it is the only Auchincloss novel to remain consistently in print."
+    },
+    {
+      "statement_index": 7,
+      "statement": "Subsequent reprint listings from commercial booksellers and online catalogues show the novel continuing to be available in hardcover and paperback formats, contributing to its status, noted by critics, as the only Auchincloss novel to remain consistently in print.",
+      "citation_num": "6",
+      "citation_url": "https://newcriterion.com/article/in-memoriam-louis-auchincloss-1917a2010",
+      "verdict": "support",
+      "reason": "The citation confirms the novel remains consistently in print and mentions this as a point noted by the author of the essay."
+    },
+    {
+      "statement_index": 7,
+      "statement": "Subsequent reprint listings from commercial booksellers and online catalogues show the novel continuing to be available in hardcover and paperback formats, contributing to its status, noted by critics, as the only Auchincloss novel to remain consistently in print.",
+      "citation_num": "4",
+      "citation_url": "https://www.bluebirdbooks.com/products/category/672/~/product_id_asc?page=7",
+      "verdict": "not_support",
+      "reason": "The citation lists only one entry for this book (a 1977 Franklin Library edition) and does not provide information about its ongoing availability in paperback or its status as the only Auchincloss novel consistently in print."
+    },
+    {
+      "statement_index": 7,
+      "statement": "Subsequent reprint listings from commercial booksellers and online catalogues show the novel continuing to be available in hardcover and paperback formats, contributing to its status, noted by critics, as the only Auchincloss novel to remain consistently in print.",
+      "citation_num": "9",
+      "citation_url": "https://www.hermitagebooks.com/searchResults.php?category_id=520&action=browse&browseLetter=A&view=list",
+      "verdict": "not_support",
+      "reason": "The citation lists only one entry for The Rector of Justin and does not contain information about print history, critical status, or availability in paperback."
+    },
+    {
+      "statement_index": 8,
+      "statement": "Commentary on Auchincloss’s career has suggested that The Rector of Justin originated in his interest in the culture of elite New England preparatory schools and their leaders.",
+      "citation_num": "6",
+      "citation_url": "https://newcriterion.com/article/in-memoriam-louis-auchincloss-1917a2010",
+      "verdict": "not_support",
+      "reason": "While the citation discusses the author's interest in his own milieu, it does not specifically analyze the origin of the book as being rooted in an interest in New England prep school culture."
+    },
+    {
+      "statement_index": 9,
+      "statement": "An essay in The New Criterion describes the book as a fictionalized portrait of a headmaster at Groton School, a prominent Episcopal boarding school, indicating that Auchincloss drew on real‑world models of educational leadership and institutional culture when constructing the fictional rector Francis Prescott and his school.",
+      "citation_num": "6",
+      "citation_url": "https://newcriterion.com/article/in-memoriam-louis-auchincloss-1917a2010",
+      "verdict": "support",
+      "reason": "The citation describes the book as a fictionalized portrait of a Groton headmaster."
+    },
+    {
+      "statement_index": 10,
+      "statement": "The Rector of Justin centers on Reverend Francis (Frank) or Francis Prescott, founder and long‑serving rector of Justin Martyr, an elite Episcopal boys’ preparatory school in rural New England, and on the institution he creates and governs over several decades.",
+      "citation_num": "13",
+      "citation_url": "http://www.dpughphoto.com/realblog_13_rector_of_justin.html",
+      "verdict": "support",
+      "reason": "The citation confirms the novel centers on Francis Prescott, founder and rector of the Episcopalian boys' school, Justin Martyr."
+    },
+    {
+      "statement_index": 10,
+      "statement": "The Rector of Justin centers on Reverend Francis (Frank) or Francis Prescott, founder and long‑serving rector of Justin Martyr, an elite Episcopal boys’ preparatory school in rural New England, and on the institution he creates and governs over several decades.",
+      "citation_num": "1",
+      "citation_url": "https://grokipedia.com/page/the_rector_of_justin",
+      "verdict": "support",
+      "reason": "The content describes Reverend Frank Prescott as the founder and rector of Justin Martyr, an elite Episcopal preparatory school."
+    },
+    {
+      "statement_index": 10,
+      "statement": "The Rector of Justin centers on Reverend Francis (Frank) or Francis Prescott, founder and long‑serving rector of Justin Martyr, an elite Episcopal boys’ preparatory school in rural New England, and on the institution he creates and governs over several decades.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The text confirms the novel centers on Reverend Francis Prescott, the founder and rector of Justin Martyr."
+    },
+    {
+      "statement_index": 11,
+      "statement": "The main present‑time action takes place in the late 1930s at Justin Martyr, portrayed as a prestigious residential boys’ school in rural Massachusetts, while the novel’s overall time span runs from 1879 to 1947, with scenes in Massachusetts and New York City.",
+      "citation_num": "13",
+      "citation_url": "http://www.dpughphoto.com/realblog_13_rector_of_justin.html",
+      "verdict": "not_support",
+      "reason": "The citation does not mention specific dates such as the 1930s, 1879-1947, or specific school locations in Massachusetts."
+    },
+    {
+      "statement_index": 11,
+      "statement": "The main present‑time action takes place in the late 1930s at Justin Martyr, portrayed as a prestigious residential boys’ school in rural Massachusetts, while the novel’s overall time span runs from 1879 to 1947, with scenes in Massachusetts and New York City.",
+      "citation_num": "1",
+      "citation_url": "https://grokipedia.com/page/the_rector_of_justin",
+      "verdict": "not_support",
+      "reason": "The citation confirms the setting is in the late 1930s/early 1940s, but does not provide the specific date range 1879 to 1947 or confirm the New York City scenes."
+    },
+    {
+      "statement_index": 11,
+      "statement": "The main present‑time action takes place in the late 1930s at Justin Martyr, portrayed as a prestigious residential boys’ school in rural Massachusetts, while the novel’s overall time span runs from 1879 to 1947, with scenes in Massachusetts and New York City.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The text identifies 1939 as the start date for Aspinwall, provides the 1879-1947 time span, and lists the specified locales."
+    },
+    {
+      "statement_index": 12,
+      "statement": "The narrative is structured through multiple retrospective narrators and documents.",
+      "citation_num": "14",
+      "citation_url": "https://mysteriumconiunctionis.com/2025/07/20/the-rector-of-justin/",
+      "verdict": "support",
+      "reason": "The text confirms the narrative involves Brian's diary and 'other sources who come into Aspinwall’s orbit' and documents provided to him."
+    },
+    {
+      "statement_index": 12,
+      "statement": "The narrative is structured through multiple retrospective narrators and documents.",
+      "citation_num": "1",
+      "citation_url": "https://grokipedia.com/page/the_rector_of_justin",
+      "verdict": "support",
+      "reason": "The text explicitly states the narrative unfolds through the accounts of six narrators and includes journals, letters, and memoirs."
+    },
+    {
+      "statement_index": 12,
+      "statement": "The narrative is structured through multiple retrospective narrators and documents.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The citation details how the story is pieced together using Aspinwall's diary, Havistock's manuscript, Griscam's notes, and memoirs from family members."
+    },
+    {
+      "statement_index": 13,
+      "statement": "Brian Aspinwall, a young English teacher and aspiring clergyman, provides the primary frame through his journal, begun after he is recruited in 1939 to replace a master who has gone to Canada to enlist in the Royal Air Force.",
+      "citation_num": "14",
+      "citation_url": "https://mysteriumconiunctionis.com/2025/07/20/the-rector-of-justin/",
+      "verdict": "support",
+      "reason": "The text confirms Brian Aspinwall is 27, starts teaching in 1939, and fills in for a master who went to Canada to enlist in the RAF."
+    },
+    {
+      "statement_index": 13,
+      "statement": "Brian Aspinwall, a young English teacher and aspiring clergyman, provides the primary frame through his journal, begun after he is recruited in 1939 to replace a master who has gone to Canada to enlist in the Royal Air Force.",
+      "citation_num": "1",
+      "citation_url": "https://grokipedia.com/page/the_rector_of_justin",
+      "verdict": "not_support",
+      "reason": "The text confirms Aspinwall is a young English instructor who compiles the biography, but does not mention his enlistment in the Royal Air Force or his intention to become a clergyman."
+    },
+    {
+      "statement_index": 13,
+      "statement": "Brian Aspinwall, a young English teacher and aspiring clergyman, provides the primary frame through his journal, begun after he is recruited in 1939 to replace a master who has gone to Canada to enlist in the Royal Air Force.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "not_support",
+      "reason": "While the text confirms Aspinwall is a teacher who arrives in 1939, it does not mention that he replaced someone who went to Canada to join the Royal Air Force."
+    },
+    {
+      "statement_index": 14,
+      "statement": "Around twenty‑seven years old and educated at Columbia University and Christ Church, Oxford, Brian arrives at Justin Martyr, debates whether to return to England to participate in the Second World War or remain in the United States to pursue a clerical vocation, and decides to construct a biographical portrait of Reverend Prescott.",
+      "citation_num": "14",
+      "citation_url": "https://mysteriumconiunctionis.com/2025/07/20/the-rector-of-justin/",
+      "verdict": "not_support",
+      "reason": "The provided text does not mention Brian's education at Columbia or Oxford, nor his debate regarding his participation in the war or pursuing a clerical vocation."
+    },
+    {
+      "statement_index": 14,
+      "statement": "Around twenty‑seven years old and educated at Columbia University and Christ Church, Oxford, Brian arrives at Justin Martyr, debates whether to return to England to participate in the Second World War or remain in the United States to pursue a clerical vocation, and decides to construct a biographical portrait of Reverend Prescott.",
+      "citation_num": "1",
+      "citation_url": "https://grokipedia.com/page/the_rector_of_justin",
+      "verdict": "not_support",
+      "reason": "The citation identifies Aspinwall as a young teacher, but does not specify his age, his degree from Columbia, or his specific decision-making process regarding the war."
+    },
+    {
+      "statement_index": 14,
+      "statement": "Around twenty‑seven years old and educated at Columbia University and Christ Church, Oxford, Brian arrives at Justin Martyr, debates whether to return to England to participate in the Second World War or remain in the United States to pursue a clerical vocation, and decides to construct a biographical portrait of Reverend Prescott.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "not_support",
+      "reason": "The text confirms Aspinwall's education and his internal struggle regarding the war and the clergy, but does not state his exact age."
+    },
+    {
+      "statement_index": 15,
+      "statement": "His diary entries introduce Justin Martyr and its renowned founder and record his efforts to understand Prescott’s character and the school’s culture.",
+      "citation_num": "14",
+      "citation_url": "https://mysteriumconiunctionis.com/2025/07/20/the-rector-of-justin/",
+      "verdict": "support",
+      "reason": "The text states it is through Brian's diary that we learn about Justin Martyr and its founder, and that he seeks to understand Prescott."
+    },
+    {
+      "statement_index": 15,
+      "statement": "His diary entries introduce Justin Martyr and its renowned founder and record his efforts to understand Prescott’s character and the school’s culture.",
+      "citation_num": "1",
+      "citation_url": "https://grokipedia.com/page/the_rector_of_justin",
+      "verdict": "support",
+      "reason": "The text confirms Aspinwall's journal serves as the frame for introducing the school and the rector."
+    },
+    {
+      "statement_index": 15,
+      "statement": "His diary entries introduce Justin Martyr and its renowned founder and record his efforts to understand Prescott’s character and the school’s culture.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The text confirms Aspinwall's diary serves as a vehicle to introduce the school, the founder, and his research process."
+    },
+    {
+      "statement_index": 16,
+      "statement": "Brian’s biography project is supplemented by other narrative voices and documents, including the unfinished manuscript \"The Art of Friendship\" by Horace Havistock, a contemporary of Prescott from their schooldays at St. Andrews in Dublin, New Hampshire; accounts from trustee David Griscam and his son Jules; recollections by Prescott’s wife Harriet Winslow Prescott and his daughter Cordelia; and the testimony of Charley Strong.",
+      "citation_num": "13",
+      "citation_url": "http://www.dpughphoto.com/realblog_13_rector_of_justin.html",
+      "verdict": "not_support",
+      "reason": "The citation mentions Brian's diary and accounts from various characters, but it does not specify the title 'The Art of Friendship' or the specific origins of Horace Havistock."
+    },
+    {
+      "statement_index": 16,
+      "statement": "Brian’s biography project is supplemented by other narrative voices and documents, including the unfinished manuscript \"The Art of Friendship\" by Horace Havistock, a contemporary of Prescott from their schooldays at St. Andrews in Dublin, New Hampshire; accounts from trustee David Griscam and his son Jules; recollections by Prescott’s wife Harriet Winslow Prescott and his daughter Cordelia; and the testimony of Charley Strong.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The text lists all these individuals and documents as contributors to the biographical portrait."
+    },
+    {
+      "statement_index": 17,
+      "statement": "Through these layered perspectives, the story material about Prescott’s life and Justin Martyr is entrusted to Brian and the reader, with each narrator’s motives and biases shaping the portrait that emerges.",
+      "citation_num": "13",
+      "citation_url": "http://www.dpughphoto.com/realblog_13_rector_of_justin.html",
+      "verdict": "support",
+      "reason": "The citation explicitly notes that the story is entrusted to Brian through various accounts, with the characters' varying motivations shaping the narrative."
+    },
+    {
+      "statement_index": 17,
+      "statement": "Through these layered perspectives, the story material about Prescott’s life and Justin Martyr is entrusted to Brian and the reader, with each narrator’s motives and biases shaping the portrait that emerges.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The text notes that Aspinwall collects these impressions to construct the portrait, with the narrative relying on these varied perspectives."
+    },
+    {
+      "statement_index": 18,
+      "statement": "Born in the nineteenth century and portrayed as a high‑achieving, introverted man who becomes religious early, Prescott studies divinity at Harvard and Oxford, spends a period in business in New York City, and eventually founds Justin Martyr after observing a private boys’ school run by a religious fanatic.",
+      "citation_num": "14",
+      "citation_url": "https://mysteriumconiunctionis.com/2025/07/20/the-rector-of-justin/",
+      "verdict": "not_support",
+      "reason": "The text does not provide biographical details about Prescott's birth, his education at Harvard/Oxford, his business career, or the specific motivation for founding the school."
+    },
+    {
+      "statement_index": 18,
+      "statement": "Born in the nineteenth century and portrayed as a high‑achieving, introverted man who becomes religious early, Prescott studies divinity at Harvard and Oxford, spends a period in business in New York City, and eventually founds Justin Martyr after observing a private boys’ school run by a religious fanatic.",
+      "citation_num": "13",
+      "citation_url": "http://www.dpughphoto.com/realblog_13_rector_of_justin.html",
+      "verdict": "support",
+      "reason": "The citation confirms Prescott's birth (c. 1857), education at Harvard and Oxford, work in New York, and his motivation for the school based on a religious fanatic's institution."
+    },
+    {
+      "statement_index": 19,
+      "statement": "He establishes Justin Martyr as a rigorous Episcopal boarding school for boys, emphasizing sports, strict discipline, and religious tradition, while also maintaining intellectual interests that make him, in some respects, more progressive than the school’s culture might suggest.",
+      "citation_num": "14",
+      "citation_url": "https://mysteriumconiunctionis.com/2025/07/20/the-rector-of-justin/",
+      "verdict": "support",
+      "reason": "The text confirms the school focuses on sports, strict discipline, and religious tradition, while Prescott is noted as an intellectual and progressive."
+    },
+    {
+      "statement_index": 19,
+      "statement": "He establishes Justin Martyr as a rigorous Episcopal boarding school for boys, emphasizing sports, strict discipline, and religious tradition, while also maintaining intellectual interests that make him, in some respects, more progressive than the school’s culture might suggest.",
+      "citation_num": "13",
+      "citation_url": "http://www.dpughphoto.com/realblog_13_rector_of_justin.html",
+      "verdict": "not_support",
+      "reason": "The citation does not explicitly state that the school emphasizes sports or that Prescott is more progressive than the school's culture."
+    },
+    {
+      "statement_index": 20,
+      "statement": "Prescott runs Justin Martyr for almost sixty years with an authoritarian and doctrinaire religious style.",
+      "citation_num": "16",
+      "citation_url": "https://www.newyorker.com/magazine/1964/08/01/1964-08-01-076-tny-cards-000075593",
+      "verdict": "not_support",
+      "reason": "The citation states Prescott founded the school in 1886 and retired at age eighty-one, but does not explicitly characterize his leadership style as authoritarian or doctrinaire religious."
+    },
+    {
+      "statement_index": 20,
+      "statement": "Prescott runs Justin Martyr for almost sixty years with an authoritarian and doctrinaire religious style.",
+      "citation_num": "13",
+      "citation_url": "http://www.dpughphoto.com/realblog_13_rector_of_justin.html",
+      "verdict": "support",
+      "reason": "The citation explicitly states he ran the school for almost 60 years with a 'harshly religiously doctrinaire and authoritarian style.'"
+    },
+    {
+      "statement_index": 20,
+      "statement": "Prescott runs Justin Martyr for almost sixty years with an authoritarian and doctrinaire religious style.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "not_support",
+      "reason": "The text confirms Prescott's long tenure but does not specifically characterize his religious style as 'authoritarian and doctrinaire'."
+    },
+    {
+      "statement_index": 20,
+      "statement": "Prescott runs Justin Martyr for almost sixty years with an authoritarian and doctrinaire religious style.",
+      "citation_num": "15",
+      "citation_url": "https://www.nytimes.com/1964/07/12/archives/a-crucible-covered-with-ivy-the-rector-of-justin-by-louis.html",
+      "verdict": "not_support",
+      "reason": "The citation content is a review of the novel and does not provide details about the character Prescott, the institution Justin Martyr, or the duration and style of his leadership."
+    },
+    {
+      "statement_index": 21,
+      "statement": "Over time, he becomes increasingly out of touch with a board of trustees and a school community that are moving toward a more secular and pragmatic outlook, and he faces growing disenchantment with his methods among colleagues and former students.",
+      "citation_num": "16",
+      "citation_url": "https://www.newyorker.com/magazine/1964/08/01/1964-08-01-076-tny-cards-000075593",
+      "verdict": "not_support",
+      "reason": "The text does not mention a board of trustees or school community moving toward a secular outlook, nor does it describe Prescott as being out of touch or facing growing disenchantment."
+    },
+    {
+      "statement_index": 21,
+      "statement": "Over time, he becomes increasingly out of touch with a board of trustees and a school community that are moving toward a more secular and pragmatic outlook, and he faces growing disenchantment with his methods among colleagues and former students.",
+      "citation_num": "13",
+      "citation_url": "http://www.dpughphoto.com/realblog_13_rector_of_justin.html",
+      "verdict": "support",
+      "reason": "The citation confirms he became out of touch with a board of trustees moving toward a more secular orientation."
+    },
+    {
+      "statement_index": 21,
+      "statement": "Over time, he becomes increasingly out of touch with a board of trustees and a school community that are moving toward a more secular and pragmatic outlook, and he faces growing disenchantment with his methods among colleagues and former students.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "not_support",
+      "reason": "The text mentions the expansion of the school and the loss of intimacy, but does not explicitly describe Prescott as being out of touch with a board moving toward a secular outlook."
+    },
+    {
+      "statement_index": 21,
+      "statement": "Over time, he becomes increasingly out of touch with a board of trustees and a school community that are moving toward a more secular and pragmatic outlook, and he faces growing disenchantment with his methods among colleagues and former students.",
+      "citation_num": "15",
+      "citation_url": "https://www.nytimes.com/1964/07/12/archives/a-crucible-covered-with-ivy-the-rector-of-justin-by-louis.html",
+      "verdict": "not_support",
+      "reason": "The citation content does not contain information about the plot details, character development, or specific conflicts within the novel regarding a board of trustees or school community."
+    },
+    {
+      "statement_index": 22,
+      "statement": "Characters describe his leadership as harshly rigid, even as some continue to revere him as a great man and moral exemplar.",
+      "citation_num": "16",
+      "citation_url": "https://www.newyorker.com/magazine/1964/08/01/1964-08-01-076-tny-cards-000075593",
+      "verdict": "not_support",
+      "reason": "While the text notes he is 'revered and feared' and described by various narrators, it does not explicitly use the terms 'harshly rigid' to describe his leadership."
+    },
+    {
+      "statement_index": 22,
+      "statement": "Characters describe his leadership as harshly rigid, even as some continue to revere him as a great man and moral exemplar.",
+      "citation_num": "13",
+      "citation_url": "http://www.dpughphoto.com/realblog_13_rector_of_justin.html",
+      "verdict": "not_support",
+      "reason": "While the citation discusses his authoritarian style, it does not use the specific phrase 'moral exemplar' or indicate he is described as such by characters."
+    },
+    {
+      "statement_index": 22,
+      "statement": "Characters describe his leadership as harshly rigid, even as some continue to revere him as a great man and moral exemplar.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The text mentions Prescott intimidated boys and that his daughters provided an 'insider view' of the 'great man,' while acknowledging he was a force to be reckoned with."
+    },
+    {
+      "statement_index": 22,
+      "statement": "Characters describe his leadership as harshly rigid, even as some continue to revere him as a great man and moral exemplar.",
+      "citation_num": "15",
+      "citation_url": "https://www.nytimes.com/1964/07/12/archives/a-crucible-covered-with-ivy-the-rector-of-justin-by-louis.html",
+      "verdict": "not_support",
+      "reason": "The citation content does not describe how characters within the novel perceive Prescott's leadership or whether he is revered as a great man and moral exemplar."
+    },
+    {
+      "statement_index": 23,
+      "statement": "Prescott’s family life is depicted as troubled.",
+      "citation_num": "13",
+      "citation_url": "http://www.dpughphoto.com/realblog_13_rector_of_justin.html",
+      "verdict": "support",
+      "reason": "The citation explicitly describes his family life as troubled, specifically regarding his daughters and his wife."
+    },
+    {
+      "statement_index": 23,
+      "statement": "Prescott’s family life is depicted as troubled.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "not_support",
+      "reason": "The text discusses his family members but does not explicitly evaluate his family life as 'troubled'."
+    },
+    {
+      "statement_index": 24,
+      "statement": "He and his aristocratic wife Harriet, who is identified as a grandniece of Ralph Waldo Emerson, have three daughters whom Prescott later admits he did not love enough, and he regrets not having a son.",
+      "citation_num": "13",
+      "citation_url": "http://www.dpughphoto.com/realblog_13_rector_of_justin.html",
+      "verdict": "not_support",
+      "reason": "The citation mentions his wife Harriet and three daughters, but does not identify her as a grandniece of Ralph Waldo Emerson."
+    },
+    {
+      "statement_index": 24,
+      "statement": "He and his aristocratic wife Harriet, who is identified as a grandniece of Ralph Waldo Emerson, have three daughters whom Prescott later admits he did not love enough, and he regrets not having a son.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "not_support",
+      "reason": "The text confirms Harriet is a grandniece of Emerson and names the daughters, but it does not mention Prescott regretting not having a son or admitting he did not love his daughters enough."
+    },
+    {
+      "statement_index": 25,
+      "statement": "He experiences ongoing conflict with his third daughter, while Harriet habitually befriends newly arrived instructors at the school and exerts a literary and moral influence on Brian, encouraging his biographical project and reflecting the school’s cultural milieu.",
+      "citation_num": "13",
+      "citation_url": "http://www.dpughphoto.com/realblog_13_rector_of_justin.html",
+      "verdict": "not_support",
+      "reason": "While it mentions the third daughter's conflict and Harriet's habit of befriending instructors, it does not describe Harriet exerting a 'literary and moral influence' on Brian."
+    },
+    {
+      "statement_index": 25,
+      "statement": "He experiences ongoing conflict with his third daughter, while Harriet habitually befriends newly arrived instructors at the school and exerts a literary and moral influence on Brian, encouraging his biographical project and reflecting the school’s cultural milieu.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The text identifies Harriet as a grandniece of Emerson, notes her friendship with Aspinwall, and her influence on his biographical project."
+    },
+    {
+      "statement_index": 26,
+      "statement": "A central strand of the plot concerns Prescott’s long and troubled relationship with trustee David Griscam and David’s son Jules, which reflects tensions between Prescott’s religious and educational ideals and the priorities of wealthy board members and families associated with the school.",
+      "citation_num": "14",
+      "citation_url": "https://mysteriumconiunctionis.com/2025/07/20/the-rector-of-justin/",
+      "verdict": "not_support",
+      "reason": "The provided text does not mention David Griscam or his son Jules."
+    },
+    {
+      "statement_index": 26,
+      "statement": "A central strand of the plot concerns Prescott’s long and troubled relationship with trustee David Griscam and David’s son Jules, which reflects tensions between Prescott’s religious and educational ideals and the priorities of wealthy board members and families associated with the school.",
+      "citation_num": "13",
+      "citation_url": "http://www.dpughphoto.com/realblog_13_rector_of_justin.html",
+      "verdict": "support",
+      "reason": "The citation confirms the long and troubled relationship with David Griscam and his son Jules is central to the plot."
+    },
+    {
+      "statement_index": 27,
+      "statement": "These conflicts culminate in the board persuading Prescott to retire at about eighty‑two, despite his reluctance to relinquish control.",
+      "citation_num": "14",
+      "citation_url": "https://mysteriumconiunctionis.com/2025/07/20/the-rector-of-justin/",
+      "verdict": "not_support",
+      "reason": "The text contains no information regarding Prescott's retirement or the age at which it occurred."
+    },
+    {
+      "statement_index": 27,
+      "statement": "These conflicts culminate in the board persuading Prescott to retire at about eighty‑two, despite his reluctance to relinquish control.",
+      "citation_num": "13",
+      "citation_url": "http://www.dpughphoto.com/realblog_13_rector_of_justin.html",
+      "verdict": "support",
+      "reason": "The citation confirms the board's head trustee persuaded him to retire at age 82."
+    },
+    {
+      "statement_index": 28,
+      "statement": "After his retirement, Prescott briefly attempts to undermine his successor but ultimately recognizes that opinion has turned against him and that the institution is moving beyond his influence.",
+      "citation_num": "14",
+      "citation_url": "https://mysteriumconiunctionis.com/2025/07/20/the-rector-of-justin/",
+      "verdict": "not_support",
+      "reason": "The text does not mention Prescott's retirement or his actions following such an event."
+    },
+    {
+      "statement_index": 28,
+      "statement": "After his retirement, Prescott briefly attempts to undermine his successor but ultimately recognizes that opinion has turned against him and that the institution is moving beyond his influence.",
+      "citation_num": "13",
+      "citation_url": "http://www.dpughphoto.com/realblog_13_rector_of_justin.html",
+      "verdict": "support",
+      "reason": "The citation confirms he tried to undermine his successor but eventually realized opinion had turned against him."
+    },
+    {
+      "statement_index": 29,
+      "statement": "In the novel’s concluding phase, Prescott, now living away from Justin Martyr, becomes terminally ill roughly four years after his retirement.",
+      "citation_num": "17",
+      "citation_url": "https://www.jstor.org/stable/pdf/26444881.pdf",
+      "verdict": "not_support",
+      "reason": "The provided citation content is a metadata page for a 'NOTES ON CURRENT BOOKS' article from 1964 and does not contain the narrative details or plot summary of the novel 'The Rector of Justin'."
+    },
+    {
+      "statement_index": 29,
+      "statement": "In the novel’s concluding phase, Prescott, now living away from Justin Martyr, becomes terminally ill roughly four years after his retirement.",
+      "citation_num": "13",
+      "citation_url": "http://www.dpughphoto.com/realblog_13_rector_of_justin.html",
+      "verdict": "support",
+      "reason": "The citation states he became terminally ill four years after retiring."
+    },
+    {
+      "statement_index": 29,
+      "statement": "In the novel’s concluding phase, Prescott, now living away from Justin Martyr, becomes terminally ill roughly four years after his retirement.",
+      "citation_num": "15",
+      "citation_url": "https://www.nytimes.com/1964/07/12/archives/a-crucible-covered-with-ivy-the-rector-of-justin-by-louis.html",
+      "verdict": "not_support",
+      "reason": "The citation content does not provide any plot details about Prescott's retirement, illness, or the concluding phase of the novel."
+    },
+    {
+      "statement_index": 30,
+      "statement": "The narrative shows him vacillating between acceptance of his prognosis and fear of divine judgment, and it portrays Brian and other characters grappling with his legacy and with the question of whether the man behind the public façade of \"the Rector\" matched the myth that had grown up around him.",
+      "citation_num": "17",
+      "citation_url": "https://www.jstor.org/stable/pdf/26444881.pdf",
+      "verdict": "not_support",
+      "reason": "The citation content provides only a brief description of the journal 'The Virginia Quarterly Review' and does not contain narrative details regarding the characters or plot of 'The Rector of Justin'."
+    },
+    {
+      "statement_index": 30,
+      "statement": "The narrative shows him vacillating between acceptance of his prognosis and fear of divine judgment, and it portrays Brian and other characters grappling with his legacy and with the question of whether the man behind the public façade of \"the Rector\" matched the myth that had grown up around him.",
+      "citation_num": "13",
+      "citation_url": "http://www.dpughphoto.com/realblog_13_rector_of_justin.html",
+      "verdict": "support",
+      "reason": "The citation confirms he was torn by fears of judgment in the next world and that the book explores the legacy and myth surrounding him."
+    },
+    {
+      "statement_index": 30,
+      "statement": "The narrative shows him vacillating between acceptance of his prognosis and fear of divine judgment, and it portrays Brian and other characters grappling with his legacy and with the question of whether the man behind the public façade of \"the Rector\" matched the myth that had grown up around him.",
+      "citation_num": "15",
+      "citation_url": "https://www.nytimes.com/1964/07/12/archives/a-crucible-covered-with-ivy-the-rector-of-justin-by-louis.html",
+      "verdict": "not_support",
+      "reason": "The citation content does not delve into the narrative's portrayal of Prescott's internal struggles or how other characters, such as Brian, grapple with his legacy."
+    },
+    {
+      "statement_index": 31,
+      "statement": "Critics and reference sources classify The Rector of Justin as both a psychological novel and a novel of manners, noting that it uses a complex, multi‑layered narrative to explore the moral complexities of education and leadership within an elite preparatory school and to examine broader societal values in a changing world.",
+      "citation_num": "17",
+      "citation_url": "https://www.jstor.org/stable/pdf/26444881.pdf",
+      "verdict": "not_support",
+      "reason": "The citation content contains no information regarding critical classifications or thematic analysis of the novel 'The Rector of Justin'."
+    },
+    {
+      "statement_index": 31,
+      "statement": "Critics and reference sources classify The Rector of Justin as both a psychological novel and a novel of manners, noting that it uses a complex, multi‑layered narrative to explore the moral complexities of education and leadership within an elite preparatory school and to examine broader societal values in a changing world.",
+      "citation_num": "18",
+      "citation_url": "https://literariness.org/2018/04/23/literary-criticism-of-louis-auchincloss",
+      "verdict": "not_support",
+      "reason": "While the citation discusses the novel's narrative structure and themes, it does not explicitly classify the book as a 'psychological novel' or a 'novel of manners' using those specific terms."
+    },
+    {
+      "statement_index": 31,
+      "statement": "Critics and reference sources classify The Rector of Justin as both a psychological novel and a novel of manners, noting that it uses a complex, multi‑layered narrative to explore the moral complexities of education and leadership within an elite preparatory school and to examine broader societal values in a changing world.",
+      "citation_num": "1",
+      "citation_url": "https://grokipedia.com/page/the_rector_of_justin",
+      "verdict": "support",
+      "reason": "The citation notes the novel is a study of moral complexity and leadership, which aligns with the classification as a psychological novel and novel of manners."
+    },
+    {
+      "statement_index": 31,
+      "statement": "Critics and reference sources classify The Rector of Justin as both a psychological novel and a novel of manners, noting that it uses a complex, multi‑layered narrative to explore the moral complexities of education and leadership within an elite preparatory school and to examine broader societal values in a changing world.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The text labels it a novel of manners and describes the multi-layered narrative used to explore moral complexities of leadership and education."
+    },
+    {
+      "statement_index": 32,
+      "statement": "The book’s focus on Reverend Prescott’s inner conflicts and public role has been described as a study of the man behind the façade and the individual behind the institutional image, aligning it with Auchincloss’s wider interest in the psychological dimensions of upper‑class authority figures.",
+      "citation_num": "17",
+      "citation_url": "https://www.jstor.org/stable/pdf/26444881.pdf",
+      "verdict": "not_support",
+      "reason": "The provided text does not contain any analysis or description of the book's focus or Auchincloss’s interests."
+    },
+    {
+      "statement_index": 32,
+      "statement": "The book’s focus on Reverend Prescott’s inner conflicts and public role has been described as a study of the man behind the façade and the individual behind the institutional image, aligning it with Auchincloss’s wider interest in the psychological dimensions of upper‑class authority figures.",
+      "citation_num": "18",
+      "citation_url": "https://literariness.org/2018/04/23/literary-criticism-of-louis-auchincloss",
+      "verdict": "not_support",
+      "reason": "The citation provides an analysis of Prescott, but it does not use the specific phrasing regarding 'the man behind the façade' or 'the individual behind the institutional image'."
+    },
+    {
+      "statement_index": 32,
+      "statement": "The book’s focus on Reverend Prescott’s inner conflicts and public role has been described as a study of the man behind the façade and the individual behind the institutional image, aligning it with Auchincloss’s wider interest in the psychological dimensions of upper‑class authority figures.",
+      "citation_num": "1",
+      "citation_url": "https://grokipedia.com/page/the_rector_of_justin",
+      "verdict": "support",
+      "reason": "The text explicitly discusses the study of the man behind the public persona and Auchincloss's interest in elite authority figures."
+    },
+    {
+      "statement_index": 32,
+      "statement": "The book’s focus on Reverend Prescott’s inner conflicts and public role has been described as a study of the man behind the façade and the individual behind the institutional image, aligning it with Auchincloss’s wider interest in the psychological dimensions of upper‑class authority figures.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The text notes the narrative reveals the 'headmaster's multifaceted character' as a minister, educator, and family man, which aligns with exploring the 'man behind the façade'."
+    },
+    {
+      "statement_index": 33,
+      "statement": "Education and leadership are central themes.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The text states that the interplay of education and leadership underpins the themes of the work."
+    },
+    {
+      "statement_index": 33,
+      "statement": "Education and leadership are central themes.",
+      "citation_num": "7",
+      "citation_url": "https://www.educationnext.org/from-half-century-old-novel-wisdom-about-teaching-education-reform-with-2020-political-implications-auchincloss",
+      "verdict": "support",
+      "reason": "The article's title and content explicitly discuss the novel's wisdom about 'teaching and education reform,' and the protagonist is a 'headmaster,' clearly indicating that education and leadership are central themes."
+    },
+    {
+      "statement_index": 34,
+      "statement": "An EBSCO Research Starter describes the novel as examining the moral complexities of education and leadership at Justin Martyr and as interrogating societal values through the shifting perceptions of Prescott held by colleagues, students, trustees, and family members.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The text explicitly mentions that the work explores the moral complexities of education and leadership through the perceptions of various people."
+    },
+    {
+      "statement_index": 34,
+      "statement": "An EBSCO Research Starter describes the novel as examining the moral complexities of education and leadership at Justin Martyr and as interrogating societal values through the shifting perceptions of Prescott held by colleagues, students, trustees, and family members.",
+      "citation_num": "7",
+      "citation_url": "https://www.educationnext.org/from-half-century-old-novel-wisdom-about-teaching-education-reform-with-2020-political-implications-auchincloss",
+      "verdict": "not_support",
+      "reason": "The citation does not mention an 'EBSCO Research Starter' or attribute this specific description of the novel's themes and narrative approach to any source."
+    },
+    {
+      "statement_index": 35,
+      "statement": "Ira Stoll’s discussion of the book similarly highlights Prescott’s reflections on seeking the \"rare spark\" in a boy’s eye and making school joyful, arguing that these passages offer enduring insights into teaching and debates over education reform decades after the novel’s publication.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "not_support",
+      "reason": "The provided citation does not contain any mention of Ira Stoll or his commentary on the novel."
+    },
+    {
+      "statement_index": 35,
+      "statement": "Ira Stoll’s discussion of the book similarly highlights Prescott’s reflections on seeking the \"rare spark\" in a boy’s eye and making school joyful, arguing that these passages offer enduring insights into teaching and debates over education reform decades after the novel’s publication.",
+      "citation_num": "7",
+      "citation_url": "https://www.educationnext.org/from-half-century-old-novel-wisdom-about-teaching-education-reform-with-2020-political-implications-auchincloss",
+      "verdict": "support",
+      "reason": "Ira Stoll's article explicitly quotes Prescott's lines about the 'rare spark in a boy's eye' and making the school 'joyful,' and the article's premise is about the novel's enduring wisdom regarding teaching and education reform."
+    },
+    {
+      "statement_index": 36,
+      "statement": "The Rector of Justin also addresses issues of class, religion, and institutional power.",
+      "citation_num": "19",
+      "citation_url": "https://goodreadingcopy.wordpress.com/2013/09/02/the-rector-of-justin-by-louis-auchincloss",
+      "verdict": "not_support",
+      "reason": "While the citation discusses the characters and the author's background, it does not explicitly analyze the book through the specific lenses of class, religion, and institutional power as abstract issues."
+    },
+    {
+      "statement_index": 36,
+      "statement": "The Rector of Justin also addresses issues of class, religion, and institutional power.",
+      "citation_num": "14",
+      "citation_url": "https://mysteriumconiunctionis.com/2025/07/20/the-rector-of-justin/",
+      "verdict": "support",
+      "reason": "The text explicitly mentions the school's WASP identity, the wealthy and influential class, and the moral/ethical themes of the novel."
+    },
+    {
+      "statement_index": 36,
+      "statement": "The Rector of Justin also addresses issues of class, religion, and institutional power.",
+      "citation_num": "18",
+      "citation_url": "https://literariness.org/2018/04/23/literary-criticism-of-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The citation explicitly discusses class systems, the role of an Episcopal school, and the institution of the boarding school."
+    },
+    {
+      "statement_index": 36,
+      "statement": "The Rector of Justin also addresses issues of class, religion, and institutional power.",
+      "citation_num": "1",
+      "citation_url": "https://grokipedia.com/page/the_rector_of_justin",
+      "verdict": "support",
+      "reason": "The text explicitly covers themes of class, religious values, and institutional power."
+    },
+    {
+      "statement_index": 36,
+      "statement": "The Rector of Justin also addresses issues of class, religion, and institutional power.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The text refers to the exploration of societal values, the role of the minister, and the expansion of the school as a business and religious entity."
+    },
+    {
+      "statement_index": 37,
+      "statement": "Commentators note that the setting at an elite Episcopal boarding school for boys in New England foregrounds the values of the American upper class, including its emphasis on tradition, discipline, and social status.",
+      "citation_num": "19",
+      "citation_url": "https://goodreadingcopy.wordpress.com/2013/09/02/the-rector-of-justin-by-louis-auchincloss",
+      "verdict": "not_support",
+      "reason": "The citation does not contain information regarding commentators noting the foregrounding of American upper-class values like tradition, discipline, and social status."
+    },
+    {
+      "statement_index": 37,
+      "statement": "Commentators note that the setting at an elite Episcopal boarding school for boys in New England foregrounds the values of the American upper class, including its emphasis on tradition, discipline, and social status.",
+      "citation_num": "14",
+      "citation_url": "https://mysteriumconiunctionis.com/2025/07/20/the-rector-of-justin/",
+      "verdict": "support",
+      "reason": "The text notes the school is a private boys' school in New England and discusses the values and morals of the wealthy class who send their kids there."
+    },
+    {
+      "statement_index": 37,
+      "statement": "Commentators note that the setting at an elite Episcopal boarding school for boys in New England foregrounds the values of the American upper class, including its emphasis on tradition, discipline, and social status.",
+      "citation_num": "18",
+      "citation_url": "https://literariness.org/2018/04/23/literary-criticism-of-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The citation notes the setting of an Episcopal boys’ boarding school west of Boston and links it to the American class system and the power of such institutions."
+    },
+    {
+      "statement_index": 37,
+      "statement": "Commentators note that the setting at an elite Episcopal boarding school for boys in New England foregrounds the values of the American upper class, including its emphasis on tradition, discipline, and social status.",
+      "citation_num": "1",
+      "citation_url": "https://grokipedia.com/page/the_rector_of_justin",
+      "verdict": "support",
+      "reason": "The citation emphasizes the school's focus on character formation, loyalty, and tradition within an upper-class environment."
+    },
+    {
+      "statement_index": 37,
+      "statement": "Commentators note that the setting at an elite Episcopal boarding school for boys in New England foregrounds the values of the American upper class, including its emphasis on tradition, discipline, and social status.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The text describes the school as an elite residential school for boys and details the social connections of characters like Griscam and Prescott."
+    },
+    {
+      "statement_index": 38,
+      "statement": "Reviewers and critics have observed that the novel portrays tensions between Prescott’s religiously inspired educational ideals and the pragmatic or socially ambitious priorities of trustees and wealthy parents, suggesting a critique of how institutions and memory can elevate authority figures while obscuring ambiguities in their conduct.",
+      "citation_num": "19",
+      "citation_url": "https://goodreadingcopy.wordpress.com/2013/09/02/the-rector-of-justin-by-louis-auchincloss",
+      "verdict": "not_support",
+      "reason": "The citation does not discuss tensions between educational ideals and the priorities of trustees and wealthy parents."
+    },
+    {
+      "statement_index": 38,
+      "statement": "Reviewers and critics have observed that the novel portrays tensions between Prescott’s religiously inspired educational ideals and the pragmatic or socially ambitious priorities of trustees and wealthy parents, suggesting a critique of how institutions and memory can elevate authority figures while obscuring ambiguities in their conduct.",
+      "citation_num": "14",
+      "citation_url": "https://mysteriumconiunctionis.com/2025/07/20/the-rector-of-justin/",
+      "verdict": "support",
+      "reason": "The text discusses the tension between Prescott’s concerns and the values of the board/wealthy class, framing it as a critique of their morals."
+    },
+    {
+      "statement_index": 38,
+      "statement": "Reviewers and critics have observed that the novel portrays tensions between Prescott’s religiously inspired educational ideals and the pragmatic or socially ambitious priorities of trustees and wealthy parents, suggesting a critique of how institutions and memory can elevate authority figures while obscuring ambiguities in their conduct.",
+      "citation_num": "18",
+      "citation_url": "https://literariness.org/2018/04/23/literary-criticism-of-louis-auchincloss",
+      "verdict": "not_support",
+      "reason": "The citation discusses tensions and ambiguities in Prescott's character, but it does not specifically mention 'pragmatic or socially ambitious priorities of trustees and wealthy parents'."
+    },
+    {
+      "statement_index": 38,
+      "statement": "Reviewers and critics have observed that the novel portrays tensions between Prescott’s religiously inspired educational ideals and the pragmatic or socially ambitious priorities of trustees and wealthy parents, suggesting a critique of how institutions and memory can elevate authority figures while obscuring ambiguities in their conduct.",
+      "citation_num": "1",
+      "citation_url": "https://grokipedia.com/page/the_rector_of_justin",
+      "verdict": "support",
+      "reason": "The text discusses the tension between Prescott’s ideals and the pressures from trustees and changing societal norms."
+    },
+    {
+      "statement_index": 38,
+      "statement": "Reviewers and critics have observed that the novel portrays tensions between Prescott’s religiously inspired educational ideals and the pragmatic or socially ambitious priorities of trustees and wealthy parents, suggesting a critique of how institutions and memory can elevate authority figures while obscuring ambiguities in their conduct.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The text mentions the tensions regarding school expansion, loss of intimacy, and the varied impressions of Prescott that reveal his multifaceted nature."
+    },
+    {
+      "statement_index": 39,
+      "statement": "Formally, the novel is distinguished by its use of multiple narrators and documents, including Brian Aspinwall’s diary and Horace Havistock’s manuscript, which together construct the portrait of Prescott and Justin Martyr.",
+      "citation_num": "18",
+      "citation_url": "https://literariness.org/2018/04/23/literary-criticism-of-louis-auchincloss",
+      "verdict": "not_support",
+      "reason": "The citation mentions Brian Aspinwall's journal, but it never mentions a character named 'Horace Havistock' or a manuscript by him."
+    },
+    {
+      "statement_index": 39,
+      "statement": "Formally, the novel is distinguished by its use of multiple narrators and documents, including Brian Aspinwall’s diary and Horace Havistock’s manuscript, which together construct the portrait of Prescott and Justin Martyr.",
+      "citation_num": "13",
+      "citation_url": "http://www.dpughphoto.com/realblog_13_rector_of_justin.html",
+      "verdict": "support",
+      "reason": "The citation confirms the novel uses Aspinwall's diary and other accounts to construct the portrait of Prescott."
+    },
+    {
+      "statement_index": 39,
+      "statement": "Formally, the novel is distinguished by its use of multiple narrators and documents, including Brian Aspinwall’s diary and Horace Havistock’s manuscript, which together construct the portrait of Prescott and Justin Martyr.",
+      "citation_num": "1",
+      "citation_url": "https://grokipedia.com/page/the_rector_of_justin",
+      "verdict": "support",
+      "reason": "The citation confirms the use of multiple documents and accounts, specifically mentioning Aspinwall’s journal and Horace Havistock’s manuscript."
+    },
+    {
+      "statement_index": 39,
+      "statement": "Formally, the novel is distinguished by its use of multiple narrators and documents, including Brian Aspinwall’s diary and Horace Havistock’s manuscript, which together construct the portrait of Prescott and Justin Martyr.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The text confirms the usage of Aspinwall's diary, Havistock's manuscript, and other biographical sources to form the narrative."
+    },
+    {
+      "statement_index": 40,
+      "statement": "Nasrullah Mambrol remarks that Auchincloss achieved his greatest success with books narrated by the characters themselves and cites \"the slightly fussy schoolmaster who narrates The Rector of Justin\" as an example of his ability to assume diverse personae and to employ multiple narrative voices.",
+      "citation_num": "18",
+      "citation_url": "https://literariness.org/2018/04/23/literary-criticism-of-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The text confirms Mambrol's views on character-narrated books and specifically cites the 'fussy schoolmaster' who narrates the novel."
+    },
+    {
+      "statement_index": 40,
+      "statement": "Nasrullah Mambrol remarks that Auchincloss achieved his greatest success with books narrated by the characters themselves and cites \"the slightly fussy schoolmaster who narrates The Rector of Justin\" as an example of his ability to assume diverse personae and to employ multiple narrative voices.",
+      "citation_num": "13",
+      "citation_url": "http://www.dpughphoto.com/realblog_13_rector_of_justin.html",
+      "verdict": "not_support",
+      "reason": "The citation does not mention Nasrullah Mambrol or his specific remarks about the book."
+    },
+    {
+      "statement_index": 40,
+      "statement": "Nasrullah Mambrol remarks that Auchincloss achieved his greatest success with books narrated by the characters themselves and cites \"the slightly fussy schoolmaster who narrates The Rector of Justin\" as an example of his ability to assume diverse personae and to employ multiple narrative voices.",
+      "citation_num": "1",
+      "citation_url": "https://grokipedia.com/page/the_rector_of_justin",
+      "verdict": "not_support",
+      "reason": "The citation does not mention Nasrullah Mambrol or his specific commentary regarding Aspinwall's persona."
+    },
+    {
+      "statement_index": 40,
+      "statement": "Nasrullah Mambrol remarks that Auchincloss achieved his greatest success with books narrated by the characters themselves and cites \"the slightly fussy schoolmaster who narrates The Rector of Justin\" as an example of his ability to assume diverse personae and to employ multiple narrative voices.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "not_support",
+      "reason": "The provided citation does not mention Nasrullah Mambrol or his specific comments on Auchincloss's success."
+    },
+    {
+      "statement_index": 41,
+      "statement": "Charles L. Silet’s research summary similarly notes the book’s multi‑layered narrative, treating it as a significant example of Auchincloss’s stylistic skill in managing shifts in perspective within a novel of manners.",
+      "citation_num": "18",
+      "citation_url": "https://literariness.org/2018/04/23/literary-criticism-of-louis-auchincloss",
+      "verdict": "not_support",
+      "reason": "The citation content does not mention 'Charles L. Silet' or his research."
+    },
+    {
+      "statement_index": 41,
+      "statement": "Charles L. Silet’s research summary similarly notes the book’s multi‑layered narrative, treating it as a significant example of Auchincloss’s stylistic skill in managing shifts in perspective within a novel of manners.",
+      "citation_num": "13",
+      "citation_url": "http://www.dpughphoto.com/realblog_13_rector_of_justin.html",
+      "verdict": "not_support",
+      "reason": "The citation does not mention Charles L. Silet or his research summary."
+    },
+    {
+      "statement_index": 41,
+      "statement": "Charles L. Silet’s research summary similarly notes the book’s multi‑layered narrative, treating it as a significant example of Auchincloss’s stylistic skill in managing shifts in perspective within a novel of manners.",
+      "citation_num": "1",
+      "citation_url": "https://grokipedia.com/page/the_rector_of_justin",
+      "verdict": "not_support",
+      "reason": "The citation does not mention Charles L. Silet or his specific analysis of the novel."
+    },
+    {
+      "statement_index": 41,
+      "statement": "Charles L. Silet’s research summary similarly notes the book’s multi‑layered narrative, treating it as a significant example of Auchincloss’s stylistic skill in managing shifts in perspective within a novel of manners.",
+      "citation_num": "3",
+      "citation_url": "https://www.ebsco.com/research-starters/literature-and-writing/rector-justin-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The citation confirms the multi-layered narrative structure and categorizes the work as a novel of manners."
+    },
+    {
+      "statement_index": 42,
+      "statement": "Stylistically, reviewers have described The Rector of Justin as combining conventional narrative techniques with quiet stylistic grace and an orotund moral sense.",
+      "citation_num": "16",
+      "citation_url": "https://www.newyorker.com/magazine/1964/08/01/1964-08-01-076-tny-cards-000075593",
+      "verdict": "support",
+      "reason": "The review explicitly describes the book as having 'conventionality,' 'quiet stylistic grace,' and an 'orotund moral sense.'"
+    },
+    {
+      "statement_index": 43,
+      "statement": "Whitney Balliett’s 1964 New Yorker review characterizes the novel as daring and ambitious in its attempt simultaneously to portray a great man, depict a school, and represent affluent upper‑class characters, and concludes that Auchincloss meets nearly all these challenges while acknowledging the book’s conventionality and moralizing tendencies.",
+      "citation_num": "16",
+      "citation_url": "https://www.newyorker.com/magazine/1964/08/01/1964-08-01-076-tny-cards-000075593",
+      "verdict": "support",
+      "reason": "The review characterizes the novel as 'daring and ambitious,' details the three challenges mentioned, and notes the book's conventionality and moral sense."
+    },
+    {
+      "statement_index": 44,
+      "statement": "Contemporary reviews responded to The Rector of Justin as more than a nostalgic school story, emphasizing its engagement with American character and moral issues.",
+      "citation_num": "15",
+      "citation_url": "https://www.nytimes.com/1964/07/12/archives/a-crucible-covered-with-ivy-the-rector-of-justin-by-louis.html",
+      "verdict": "support",
+      "reason": "The citation, a 1964 review, states the book is 'not only a passionately interesting, but a spiritually important study of the American character of, and for, our time,' indicating it was seen as more than a nostalgic school story and engaged with American character and moral issues."
+    },
+    {
+      "statement_index": 45,
+      "statement": "A 1964 New York Times review described the novel as \"not only a passionately interesting, but a spiritually important study of the American character of, and for, our time,\" highlighting its serious treatment of national character and its relevance beyond the confines of a preparatory school setting.",
+      "citation_num": "15",
+      "citation_url": "https://www.nytimes.com/1964/07/12/archives/a-crucible-covered-with-ivy-the-rector-of-justin-by-louis.html",
+      "verdict": "support",
+      "reason": "The citation is a New York Times article from July 12, 1964, and it directly quotes the phrase 'not only a passionately interesting, but a spiritually important study of the American character of, and for, our time,' which highlights its serious treatment of national character."
+    },
+    {
+      "statement_index": 46,
+      "statement": "In the same period, Whitney Balliett’s review in The New Yorker depicted The Rector of Justin as \"a daring and ambitious book\" that undertakes the almost impossible task of portraying a great man, serving as a novel about a school, and dealing with the \"seemingly insouciant rich and highborn.\"",
+      "citation_num": "16",
+      "citation_url": "https://www.newyorker.com/magazine/1964/08/01/1964-08-01-076-tny-cards-000075593",
+      "verdict": "support",
+      "reason": "The review text directly quotes 'a daring and ambitious book' and discusses the challenges of portraying a great man, a school, and the 'seemingly insouciant rich and highborn.'"
+    },
+    {
+      "statement_index": 47,
+      "statement": "Balliett judged that Auchincloss met nearly all of these challenges and praised the novel’s quiet stylistic grace, while also noting its conventional qualities and orotund moral sense.",
+      "citation_num": "16",
+      "citation_url": "https://www.newyorker.com/magazine/1964/08/01/1964-08-01-076-tny-cards-000075593",
+      "verdict": "support",
+      "reason": "The review states that Auchincloss 'meets nearly all these challenges' while referencing the novel's 'quiet stylistic grace,' 'conventionality,' and 'orotund moral sense.'"
+    },
+    {
+      "statement_index": 48,
+      "statement": "A brief notice in a \"NOTES ON CURRENT BOOKS\" column echoed this focus on character, stating that the accomplished Auchincloss was concerned with \"finding the man behind the façade, the individual back of the image,\" in The Rector of Justin, reinforcing the perception that the novel’s central interest lay in the psychological and moral portrait of Francis Prescott rather than in school life alone.",
+      "citation_num": "17",
+      "citation_url": "https://www.jstor.org/stable/pdf/26444881.pdf",
+      "verdict": "support",
+      "reason": "The citation explicitly identifies the article as 'NOTES ON CURRENT BOOKS' in 'The Virginia Quarterly Review' (Vol. 40, No. 4, 1964), which confirms the context of the source being verified."
+    },
+    {
+      "statement_index": 49,
+      "statement": "Later commentary has continued to regard The Rector of Justin as one of Auchincloss’s most important works.",
+      "citation_num": "7",
+      "citation_url": "https://www.educationnext.org/from-half-century-old-novel-wisdom-about-teaching-education-reform-with-2020-political-implications-auchincloss",
+      "verdict": "support",
+      "reason": "The citation, published in 2020, discusses the novel's enduring wisdom and relevance to contemporary education reform, building upon the 2010 New York Times obituary's statement that it is regarded as Auchincloss's 'best and most important novel,' thus indicating continued regard for its importance."
+    },
+    {
+      "statement_index": 50,
+      "statement": "Ira Stoll, writing in 2020, cites a New York Times obituary as reporting that the novel was a bestseller, a National Book Award finalist, and \"regarded by many critics\" as Auchincloss’s best and most important novel, and he argues that more than fifty years after its publication the book \"holds up pretty well, at least in spots,\" particularly in its insights into teaching and education reform.",
+      "citation_num": "7",
+      "citation_url": "https://www.educationnext.org/from-half-century-old-novel-wisdom-about-teaching-education-reform-with-2020-political-implications-auchincloss",
+      "verdict": "support",
+      "reason": "The citation explicitly states that Ira Stoll, writing in 2020, quotes the New York Times obituary regarding the novel being a bestseller, a National Book Award finalist, and regarded as Auchincloss's best and most important novel, and Stoll himself states the book 'holds up pretty well, at least in spots' due to its insights into teaching and education reform."
+    },
+    {
+      "statement_index": 51,
+      "statement": "In a broader assessment of Auchincloss’s career, Nasrullah Mambrol argues that the author’s reputation rests primarily on novels written during the 1960s and that Portrait in Brownstone, The Rector of Justin, and The Embezzler are central to this phase, any one of which would suffice to confirm him as a successor to John O’Hara and John P. Marquand as a master observer of American society and a superior stylist.",
+      "citation_num": "18",
+      "citation_url": "https://literariness.org/2018/04/23/literary-criticism-of-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The citation states that his reputation rests on 1960s novels and identifies the three mentioned books as confirming his status as a successor to O'Hara and Marquand."
+    },
+    {
+      "statement_index": 52,
+      "statement": "Mambrol also identifies The Rector of Justin as an example of Auchincloss’s mastery of character‑narrated fiction and multiple narrative voices.",
+      "citation_num": "18",
+      "citation_url": "https://literariness.org/2018/04/23/literary-criticism-of-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The text acknowledges the book as an example of Auchincloss's success with character-narrated fiction and multiple voices."
+    },
+    {
+      "statement_index": 53,
+      "statement": "Vincent Piket’s study of Auchincloss’s development as a novelist groups The Rector of Justin with The House of Five Talents and The Embezzler as mid‑1960s novels that mark a shift from a primarily psychological focus to a more social and moral focus, suggesting that these books, including The Rector of Justin, played a key role in defining Auchincloss’s mature style and concerns.",
+      "citation_num": "21",
+      "citation_url": "https://link.springer.com/content/pdf/10.1007/978-1-349-21366-5.pdf",
+      "verdict": "not_support",
+      "reason": "The citation provides the chapter titles and dates of the book, but it does not contain the text or analysis required to verify specific claims about the thematic content or critical interpretation of the mentioned novels."
+    },
+    {
+      "statement_index": 54,
+      "statement": "Some later readers and reviewers have offered more mixed assessments.",
+      "citation_num": "19",
+      "citation_url": "https://goodreadingcopy.wordpress.com/2013/09/02/the-rector-of-justin-by-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The text acknowledges that the blogger is not yet qualified to rank the book as the author's finest, implying a measured or mixed perspective."
+    },
+    {
+      "statement_index": 55,
+      "statement": "The Good Reading Copy blog notes that Auchincloss himself listed The Rector of Justin among the three books by which he wished to be remembered, but the blogger argues that Francis Prescott’s supposed greatness convinces the novel’s characters more than its readers and interprets the book as a study of how institutions and memory elevate authority figures.",
+      "citation_num": "19",
+      "citation_url": "https://goodreadingcopy.wordpress.com/2013/09/02/the-rector-of-justin-by-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The citation confirms Auchincloss wanted to be remembered for this book and includes the blogger's view that Prescott's greatness is felt more by characters than readers."
+    },
+    {
+      "statement_index": 56,
+      "statement": "Other contemporary online reviewers have been more enthusiastic.",
+      "citation_num": "22",
+      "citation_url": "https://cannonballread.com/2023/03/the-rector-of-justin-vel-veeter",
+      "verdict": "not_support",
+      "reason": "The citation contains a single review of 'The Rector of Justin' and does not mention or compare it to other contemporary online reviewers."
+    },
+    {
+      "statement_index": 57,
+      "statement": "A 2023 review on the Cannonball Read site praises The Rector of Justin’s lively, spirited language and its diary‑ and document‑based structure, and contends that the novel avoids clichéd patterns common in other teacher novels, implying that it remains engaging and distinctive for modern readers.",
+      "citation_num": "22",
+      "citation_url": "https://cannonballread.com/2023/03/the-rector-of-justin-vel-veeter",
+      "verdict": "support",
+      "reason": "The review in the citation praises the book's language as 'strong, lively, and breathed with spirit,' describes its structure using journals and other texts, and explicitly states it is not a typical teacher novel like 'Goodbye Mr Chips'."
+    },
+    {
+      "statement_index": 58,
+      "statement": "The Rector of Justin has frequently been identified as Auchincloss’s best‑known and most enduring novel and as the only one of his many works to remain consistently in print, contributing to its prominence in discussions of his legacy.",
+      "citation_num": "6",
+      "citation_url": "https://newcriterion.com/article/in-memoriam-louis-auchincloss-1917a2010",
+      "verdict": "support",
+      "reason": "The citation notes the book's status as his most enduring work and the only one to remain consistently in print."
+    },
+    {
+      "statement_index": 58,
+      "statement": "The Rector of Justin has frequently been identified as Auchincloss’s best‑known and most enduring novel and as the only one of his many works to remain consistently in print, contributing to its prominence in discussions of his legacy.",
+      "citation_num": "18",
+      "citation_url": "https://literariness.org/2018/04/23/literary-criticism-of-louis-auchincloss",
+      "verdict": "not_support",
+      "reason": "The citation does not state that the book is his best-known or most enduring work, nor does it mention its status regarding being 'consistently in print'."
+    },
+    {
+      "statement_index": 58,
+      "statement": "The Rector of Justin has frequently been identified as Auchincloss’s best‑known and most enduring novel and as the only one of his many works to remain consistently in print, contributing to its prominence in discussions of his legacy.",
+      "citation_num": "7",
+      "citation_url": "https://www.educationnext.org/from-half-century-old-novel-wisdom-about-teaching-education-reform-with-2020-political-implications-auchincloss",
+      "verdict": "not_support",
+      "reason": "The citation states that 'The Rector of Justin' is regarded by many critics as Auchincloss's best and most important novel, but it does not mention whether it is the only one of his works to remain consistently in print."
+    },
+    {
+      "statement_index": 59,
+      "statement": "The New Criterion’s memorial essay emphasizes that the book has some claim to be considered Auchincloss’s masterpiece, and later commentary often cites it as the key example of his lasting significance in American literature.",
+      "citation_num": "6",
+      "citation_url": "https://newcriterion.com/article/in-memoriam-louis-auchincloss-1917a2010",
+      "verdict": "support",
+      "reason": "The citation explicitly mentions the claim that the book is considered his masterpiece."
+    },
+    {
+      "statement_index": 59,
+      "statement": "The New Criterion’s memorial essay emphasizes that the book has some claim to be considered Auchincloss’s masterpiece, and later commentary often cites it as the key example of his lasting significance in American literature.",
+      "citation_num": "18",
+      "citation_url": "https://literariness.org/2018/04/23/literary-criticism-of-louis-auchincloss",
+      "verdict": "not_support",
+      "reason": "The citation contains no mention of 'The New Criterion' or its memorial essay."
+    },
+    {
+      "statement_index": 59,
+      "statement": "The New Criterion’s memorial essay emphasizes that the book has some claim to be considered Auchincloss’s masterpiece, and later commentary often cites it as the key example of his lasting significance in American literature.",
+      "citation_num": "7",
+      "citation_url": "https://www.educationnext.org/from-half-century-old-novel-wisdom-about-teaching-education-reform-with-2020-political-implications-auchincloss",
+      "verdict": "not_support",
+      "reason": "The citation does not mention 'The New Criterion’s memorial essay' or explicitly state that later commentary often cites the book as the key example of Auchincloss's lasting significance in American literature."
+    },
+    {
+      "statement_index": 60,
+      "statement": "Reference works and critical overviews place The Rector of Justin within broader narratives of modern American literature.",
+      "citation_num": "23",
+      "citation_url": "https://www.facebook.com/groups/americanliteratureofficial/posts/1062149872321455",
+      "verdict": "not_support",
+      "reason": "The citation content is a Facebook login page and contains no information regarding the literary work 'The Rector of Justin'."
+    },
+    {
+      "statement_index": 60,
+      "statement": "Reference works and critical overviews place The Rector of Justin within broader narratives of modern American literature.",
+      "citation_num": "5",
+      "citation_url": "https://bkbcollege.in/upload/dpt_book/1669361629.pdf",
+      "verdict": "support",
+      "reason": "The citation itself is from 'MODERN AMERICAN LITERATURE' and contains critical reviews and an entry by Christopher C. Dahl in a 'Reference Guide to American Literature,' all of which place Auchincloss's work, including 'The Rector of Justin,' within broader narratives of modern American literature."
+    },
+    {
+      "statement_index": 61,
+      "statement": "A fifth edition of Modern American Literature lists it among Auchincloss’s major novels, and online discussions of the American literary canon include the book as a representative work of mid‑twentieth‑century fiction concerned with class, education, and morality in the United States.",
+      "citation_num": "23",
+      "citation_url": "https://www.facebook.com/groups/americanliteratureofficial/posts/1062149872321455",
+      "verdict": "not_support",
+      "reason": "The citation content is a Facebook login page and contains no mention of literary criticism, the American literary canon, or the works of Louis Auchincloss."
+    },
+    {
+      "statement_index": 61,
+      "statement": "A fifth edition of Modern American Literature lists it among Auchincloss’s major novels, and online discussions of the American literary canon include the book as a representative work of mid‑twentieth‑century fiction concerned with class, education, and morality in the United States.",
+      "citation_num": "5",
+      "citation_url": "https://bkbcollege.in/upload/dpt_book/1669361629.pdf",
+      "verdict": "not_support",
+      "reason": "The citation does not explicitly list 'The Rector of Justin' among Auchincloss's 'major novels' in the fifth edition of Modern American Literature, nor does it mention 'online discussions of the American literary canon' or the book being a 'representative work' in such discussions."
+    },
+    {
+      "statement_index": 62,
+      "statement": "Commentators have also drawn on The Rector of Justin in later debates about education.",
+      "citation_num": "7",
+      "citation_url": "https://www.educationnext.org/from-half-century-old-novel-wisdom-about-teaching-education-reform-with-2020-political-implications-auchincloss",
+      "verdict": "support",
+      "reason": "The article itself is an example of a commentator (Ira Stoll) drawing on 'The Rector of Justin' to discuss 'Wisdom about Teaching and Education Reform, with 2020 Political Implications,' directly supporting the statement."
+    },
+    {
+      "statement_index": 63,
+      "statement": "Ira Stoll’s article for Education Next argues that Prescott’s reflections on teaching and the search for a \"rare spark\" in students provide wisdom about education reform and have implications for contemporary political discussions about schooling, indicating that the novel continues to be invoked as a source for thinking about educational leadership and values.",
+      "citation_num": "7",
+      "citation_url": "https://www.educationnext.org/from-half-century-old-novel-wisdom-about-teaching-education-reform-with-2020-political-implications-auchincloss",
+      "verdict": "support",
+      "reason": "Ira Stoll's article explicitly uses Prescott's reflections, including the 'rare spark' quote, to discuss 'Wisdom about Teaching and Education Reform, with 2020 Political Implications,' directly linking the novel to contemporary political discussions about schooling and educational values."
+    },
+    {
+      "statement_index": 64,
+      "statement": "While literary critics and bloggers have discussed The Rector of Justin’s continuing relevance, available sources do not report any film, television, stage, or radio adaptations of the novel.",
+      "citation_num": "19",
+      "citation_url": "https://goodreadingcopy.wordpress.com/2013/09/02/the-rector-of-justin-by-louis-auchincloss",
+      "verdict": "not_support",
+      "reason": "The provided text does not mention whether or not any adaptations of the novel exist."
+    },
+    {
+      "statement_index": 64,
+      "statement": "While literary critics and bloggers have discussed The Rector of Justin’s continuing relevance, available sources do not report any film, television, stage, or radio adaptations of the novel.",
+      "citation_num": "6",
+      "citation_url": "https://newcriterion.com/article/in-memoriam-louis-auchincloss-1917a2010",
+      "verdict": "not_support",
+      "reason": "The citation does not mention film, television, stage, or radio adaptations."
+    },
+    {
+      "statement_index": 64,
+      "statement": "While literary critics and bloggers have discussed The Rector of Justin’s continuing relevance, available sources do not report any film, television, stage, or radio adaptations of the novel.",
+      "citation_num": "18",
+      "citation_url": "https://literariness.org/2018/04/23/literary-criticism-of-louis-auchincloss",
+      "verdict": "not_support",
+      "reason": "The citation does not provide information regarding film, television, stage, or radio adaptations of the novel."
+    },
+    {
+      "statement_index": 64,
+      "statement": "While literary critics and bloggers have discussed The Rector of Justin’s continuing relevance, available sources do not report any film, television, stage, or radio adaptations of the novel.",
+      "citation_num": "7",
+      "citation_url": "https://www.educationnext.org/from-half-century-old-novel-wisdom-about-teaching-education-reform-with-2020-political-implications-auchincloss",
+      "verdict": "not_support",
+      "reason": "The citation discusses the novel's relevance but provides no information about whether it has been adapted into film, television, stage, or radio, or if such adaptations are reported as non-existent."
+    },
+    {
+      "statement_index": 64,
+      "statement": "While literary critics and bloggers have discussed The Rector of Justin’s continuing relevance, available sources do not report any film, television, stage, or radio adaptations of the novel.",
+      "citation_num": "5",
+      "citation_url": "https://bkbcollege.in/upload/dpt_book/1669361629.pdf",
+      "verdict": "not_support",
+      "reason": "The citation does not contain any information about film, television, stage, or radio adaptations of 'The Rector of Justin,' nor does it mention 'bloggers' discussing its relevance."
+    },
+    {
+      "statement_index": 65,
+      "statement": "Discussions of its influence therefore focus on its role in Auchincloss’s reputation, its presence in literary histories, and its use as a touchstone in commentary on education and American upper‑class culture rather than on direct adaptations into other media.",
+      "citation_num": "19",
+      "citation_url": "https://goodreadingcopy.wordpress.com/2013/09/02/the-rector-of-justin-by-louis-auchincloss",
+      "verdict": "not_support",
+      "reason": "The provided text does not discuss the book's influence or its role in literary histories or commentary on American culture beyond the blogger's own assessment."
+    },
+    {
+      "statement_index": 65,
+      "statement": "Discussions of its influence therefore focus on its role in Auchincloss’s reputation, its presence in literary histories, and its use as a touchstone in commentary on education and American upper‑class culture rather than on direct adaptations into other media.",
+      "citation_num": "6",
+      "citation_url": "https://newcriterion.com/article/in-memoriam-louis-auchincloss-1917a2010",
+      "verdict": "not_support",
+      "reason": "The citation does not discuss why the influence of the book is evaluated in specific academic or literary contexts."
+    },
+    {
+      "statement_index": 65,
+      "statement": "Discussions of its influence therefore focus on its role in Auchincloss’s reputation, its presence in literary histories, and its use as a touchstone in commentary on education and American upper‑class culture rather than on direct adaptations into other media.",
+      "citation_num": "18",
+      "citation_url": "https://literariness.org/2018/04/23/literary-criticism-of-louis-auchincloss",
+      "verdict": "not_support",
+      "reason": "The citation does not discuss the novel's influence in terms of its role in literary histories or its presence as a touchstone in general commentary on education."
+    },
+    {
+      "statement_index": 65,
+      "statement": "Discussions of its influence therefore focus on its role in Auchincloss’s reputation, its presence in literary histories, and its use as a touchstone in commentary on education and American upper‑class culture rather than on direct adaptations into other media.",
+      "citation_num": "7",
+      "citation_url": "https://www.educationnext.org/from-half-century-old-novel-wisdom-about-teaching-education-reform-with-2020-political-implications-auchincloss",
+      "verdict": "not_support",
+      "reason": "The citation discusses the novel's role in Auchincloss's reputation and its use in commentary on education, but it does not mention its presence in literary histories, American upper-class culture, or that discussions of its influence focus on these aspects rather than direct adaptations into other media."
+    },
+    {
+      "statement_index": 65,
+      "statement": "Discussions of its influence therefore focus on its role in Auchincloss’s reputation, its presence in literary histories, and its use as a touchstone in commentary on education and American upper‑class culture rather than on direct adaptations into other media.",
+      "citation_num": "5",
+      "citation_url": "https://bkbcollege.in/upload/dpt_book/1669361629.pdf",
+      "verdict": "support",
+      "reason": "The citation includes discussions of 'The Rector of Justin' in relation to Auchincloss's reputation, its presence in literary reviews and reference guides, and its themes of 'faculty life' (education) and 'upper-class American society,' while making no mention of adaptations into other media, which is consistent with the statement's focus."
+    },
+    {
+      "statement_index": 66,
+      "statement": "Bibliographic and catalog records identify The Rector of Justin as a novel by Louis Auchincloss first published in 1964, with subsequent editions in various formats.",
+      "citation_num": "8",
+      "citation_url": "https://www.abebooks.com/first-edition/RECTOR-JUSTIN-Louis-Auchincloss-Modern-Library/31672492251/bd",
+      "verdict": "not_support",
+      "reason": "While the citation identifies the author and title, it does not confirm a 1964 publication date for the first edition."
+    },
+    {
+      "statement_index": 66,
+      "statement": "Bibliographic and catalog records identify The Rector of Justin as a novel by Louis Auchincloss first published in 1964, with subsequent editions in various formats.",
+      "citation_num": "2",
+      "citation_url": "https://www.britannica.com/topic/The-Rector-of-Justin",
+      "verdict": "support",
+      "reason": "The citation confirms that *The Rector of Justin* is a novel by Louis Auchincloss first published in 1964."
+    },
+    {
+      "statement_index": 66,
+      "statement": "Bibliographic and catalog records identify The Rector of Justin as a novel by Louis Auchincloss first published in 1964, with subsequent editions in various formats.",
+      "citation_num": "24",
+      "citation_url": "https://www.ebay.com/itm/256016866615",
+      "verdict": "not_support",
+      "reason": "The citation content is an error page for an eBay link and contains no information about the book 'The Rector of Justin'."
+    },
+    {
+      "statement_index": 66,
+      "statement": "Bibliographic and catalog records identify The Rector of Justin as a novel by Louis Auchincloss first published in 1964, with subsequent editions in various formats.",
+      "citation_num": "9",
+      "citation_url": "https://www.hermitagebooks.com/searchResults.php?category_id=520&action=browse&browseLetter=A&view=list",
+      "verdict": "not_support",
+      "reason": "The citation indicates the item is a 1967 edition but does not state the novel's initial publication year of 1964."
+    },
+    {
+      "statement_index": 66,
+      "statement": "Bibliographic and catalog records identify The Rector of Justin as a novel by Louis Auchincloss first published in 1964, with subsequent editions in various formats.",
+      "citation_num": "1",
+      "citation_url": "https://grokipedia.com/page/the_rector_of_justin",
+      "verdict": "support",
+      "reason": "The text confirms the novel was published in 1964 and exists in multiple editions."
+    },
+    {
+      "statement_index": 67,
+      "statement": "A Modern Library edition, described by a bookseller as the first Modern Library edition and first printing, was published in New York in 1967 as a hardcover in dust jacket and categorized under classic fiction and literature.",
+      "citation_num": "8",
+      "citation_url": "https://www.abebooks.com/first-edition/RECTOR-JUSTIN-Louis-Auchincloss-Modern-Library/31672492251/bd",
+      "verdict": "conflict",
+      "reason": "The citation specifies the Modern Library edition is from 2001, contradicting the statement's claim that it was published in 1967."
+    },
+    {
+      "statement_index": 67,
+      "statement": "A Modern Library edition, described by a bookseller as the first Modern Library edition and first printing, was published in New York in 1967 as a hardcover in dust jacket and categorized under classic fiction and literature.",
+      "citation_num": "2",
+      "citation_url": "https://www.britannica.com/topic/The-Rector-of-Justin",
+      "verdict": "not_support",
+      "reason": "The citation contains no information regarding a 1967 Modern Library edition or specific bookseller descriptions of the book's print history."
+    },
+    {
+      "statement_index": 67,
+      "statement": "A Modern Library edition, described by a bookseller as the first Modern Library edition and first printing, was published in New York in 1967 as a hardcover in dust jacket and categorized under classic fiction and literature.",
+      "citation_num": "24",
+      "citation_url": "https://www.ebay.com/itm/256016866615",
+      "verdict": "not_support",
+      "reason": "The citation content is an error page for an eBay link and contains no information about editions or descriptions of books."
+    },
+    {
+      "statement_index": 67,
+      "statement": "A Modern Library edition, described by a bookseller as the first Modern Library edition and first printing, was published in New York in 1967 as a hardcover in dust jacket and categorized under classic fiction and literature.",
+      "citation_num": "9",
+      "citation_url": "https://www.hermitagebooks.com/searchResults.php?category_id=520&action=browse&browseLetter=A&view=list",
+      "verdict": "support",
+      "reason": "The citation explicitly identifies the item as a 1967 New York Modern Library edition, first printing, in hardcover with a dust jacket, though it categorizes the item under 'British Literature' and not explicitly 'classic fiction and literature'."
+    },
+    {
+      "statement_index": 67,
+      "statement": "A Modern Library edition, described by a bookseller as the first Modern Library edition and first printing, was published in New York in 1967 as a hardcover in dust jacket and categorized under classic fiction and literature.",
+      "citation_num": "1",
+      "citation_url": "https://grokipedia.com/page/the_rector_of_justin",
+      "verdict": "not_support",
+      "reason": "The citation does not contain information regarding a 1967 Modern Library edition."
+    },
+    {
+      "statement_index": 68,
+      "statement": "Collector‑oriented listings record a Franklin Library signed limited edition of The Rector of Justin, bound in full leather, published in Franklin Center, Pennsylvania, in 1977.",
+      "citation_num": "10",
+      "citation_url": "https://www.eighthdaybooks.com/products/condition/Used%20-%20Like%20New/~/product_id_desc?page=64",
+      "verdict": "support",
+      "reason": "The citation confirms the existence of a Franklin Library signed limited edition of the book, bound in genuine leather, published in 1977 in Franklin Center, Pennsylvania."
+    },
+    {
+      "statement_index": 68,
+      "statement": "Collector‑oriented listings record a Franklin Library signed limited edition of The Rector of Justin, bound in full leather, published in Franklin Center, Pennsylvania, in 1977.",
+      "citation_num": "4",
+      "citation_url": "https://www.bluebirdbooks.com/products/category/672/~/product_id_asc?page=7",
+      "verdict": "support",
+      "reason": "The citation explicitly documents a Franklin Library signed limited edition published in 1977 in Franklin Center, Pennsylvania, bound in full brown bonded leather."
+    },
+    {
+      "statement_index": 69,
+      "statement": "The edition is described as illustrated by Uldis Klavins and is catalogued under classic fiction and literature by booksellers specializing in collectible volumes.",
+      "citation_num": "10",
+      "citation_url": "https://www.eighthdaybooks.com/products/condition/Used%20-%20Like%20New/~/product_id_desc?page=64",
+      "verdict": "not_support",
+      "reason": "While the citation confirms the book is illustrated by Uldis Klavins, it does not mention how the book is catalogued by other booksellers or its status as classic literature."
+    },
+    {
+      "statement_index": 69,
+      "statement": "The edition is described as illustrated by Uldis Klavins and is catalogued under classic fiction and literature by booksellers specializing in collectible volumes.",
+      "citation_num": "4",
+      "citation_url": "https://www.bluebirdbooks.com/products/category/672/~/product_id_asc?page=7",
+      "verdict": "support",
+      "reason": "The citation confirms the edition is illustrated by Uldis Klavins and it is listed under the Classic Fiction, Literature category on the website."
+    },
+    {
+      "statement_index": 70,
+      "statement": "Later trade editions, including a paperback with the ISBN 9780940595095, are recorded by booksellers such as Better World Books, indicating ongoing availability of the novel in standard formats for general readers.",
+      "citation_num": "12",
+      "citation_url": "https://www.betterworldbooks.com/product/detail/the-rector-of-justin-a-novel-9780940595095",
+      "verdict": "conflict",
+      "reason": "The citation lists the ISBN 9780940595095 as a 'Hardcover' edition, whereas the statement identifies it as a 'paperback'."
+    },
+    {
+      "statement_index": 70,
+      "statement": "Later trade editions, including a paperback with the ISBN 9780940595095, are recorded by booksellers such as Better World Books, indicating ongoing availability of the novel in standard formats for general readers.",
+      "citation_num": "6",
+      "citation_url": "https://newcriterion.com/article/in-memoriam-louis-auchincloss-1917a2010",
+      "verdict": "not_support",
+      "reason": "The citation does not contain information about ISBNs or specific bookstore records."
+    },
+    {
+      "statement_index": 71,
+      "statement": "Combined with persistent cataloguing and reissue, these bibliographic details support critical claims that The Rector of Justin has remained in print more consistently than Auchincloss’s other novels.",
+      "citation_num": "12",
+      "citation_url": "https://www.betterworldbooks.com/product/detail/the-rector-of-justin-a-novel-9780940595095",
+      "verdict": "not_support",
+      "reason": "The citation provides product details for a specific listing but does not offer a comparative analysis of the print status of other works by Louis Auchincloss."
+    },
+    {
+      "statement_index": 71,
+      "statement": "Combined with persistent cataloguing and reissue, these bibliographic details support critical claims that The Rector of Justin has remained in print more consistently than Auchincloss’s other novels.",
+      "citation_num": "6",
+      "citation_url": "https://newcriterion.com/article/in-memoriam-louis-auchincloss-1917a2010",
+      "verdict": "support",
+      "reason": "The citation supports the claim that the book has remained in print more consistently than his other novels."
+    },
+    {
+      "statement_index": 72,
+      "statement": "Commentary on The Rector of Justin includes some divergences of interpretation about Reverend Prescott’s stature and the effectiveness of his portrayal.",
+      "citation_num": "19",
+      "citation_url": "https://goodreadingcopy.wordpress.com/2013/09/02/the-rector-of-justin-by-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The text presents varying perspectives, such as the reverence felt by characters like Aspinwall versus the skepticism of others like Jules Griscam."
+    },
+    {
+      "statement_index": 72,
+      "statement": "Commentary on The Rector of Justin includes some divergences of interpretation about Reverend Prescott’s stature and the effectiveness of his portrayal.",
+      "citation_num": "16",
+      "citation_url": "https://www.newyorker.com/magazine/1964/08/01/1964-08-01-076-tny-cards-000075593",
+      "verdict": "not_support",
+      "reason": "The provided citation only contains one review by Whitney Balliett; it does not contain other commentary showing a divergence of interpretation."
+    },
+    {
+      "statement_index": 72,
+      "statement": "Commentary on The Rector of Justin includes some divergences of interpretation about Reverend Prescott’s stature and the effectiveness of his portrayal.",
+      "citation_num": "15",
+      "citation_url": "https://www.nytimes.com/1964/07/12/archives/a-crucible-covered-with-ivy-the-rector-of-justin-by-louis.html",
+      "verdict": "not_support",
+      "reason": "The citation content is a single review and does not discuss divergences of interpretation or other critical commentary on the novel."
+    },
+    {
+      "statement_index": 72,
+      "statement": "Commentary on The Rector of Justin includes some divergences of interpretation about Reverend Prescott’s stature and the effectiveness of his portrayal.",
+      "citation_num": "7",
+      "citation_url": "https://www.educationnext.org/from-half-century-old-novel-wisdom-about-teaching-education-reform-with-2020-political-implications-auchincloss",
+      "verdict": "not_support",
+      "reason": "While the citation describes Prescott as a complex character with both positive and negative traits, it does not explicitly state that commentary on the novel includes divergences of interpretation about his stature or the effectiveness of his portrayal."
+    },
+    {
+      "statement_index": 73,
+      "statement": "While critics such as Whitney Balliett and Ira Stoll regard the novel as largely successful in depicting a great man and in offering a spiritually important study of American character and enduring insights into education, at least one later blogger contends that Prescott’s greatness persuades characters within the story more than readers and highlights the book as a study in how institutions elevate authority figures.",
+      "citation_num": "19",
+      "citation_url": "https://goodreadingcopy.wordpress.com/2013/09/02/the-rector-of-justin-by-louis-auchincloss",
+      "verdict": "not_support",
+      "reason": "The citation does not mention Whitney Balliett or Ira Stoll or their specific critical opinions on the novel."
+    },
+    {
+      "statement_index": 73,
+      "statement": "While critics such as Whitney Balliett and Ira Stoll regard the novel as largely successful in depicting a great man and in offering a spiritually important study of American character and enduring insights into education, at least one later blogger contends that Prescott’s greatness persuades characters within the story more than readers and highlights the book as a study in how institutions elevate authority figures.",
+      "citation_num": "16",
+      "citation_url": "https://www.newyorker.com/magazine/1964/08/01/1964-08-01-076-tny-cards-000075593",
+      "verdict": "not_support",
+      "reason": "The provided citation does not mention Ira Stoll or any later bloggers."
+    },
+    {
+      "statement_index": 73,
+      "statement": "While critics such as Whitney Balliett and Ira Stoll regard the novel as largely successful in depicting a great man and in offering a spiritually important study of American character and enduring insights into education, at least one later blogger contends that Prescott’s greatness persuades characters within the story more than readers and highlights the book as a study in how institutions elevate authority figures.",
+      "citation_num": "15",
+      "citation_url": "https://www.nytimes.com/1964/07/12/archives/a-crucible-covered-with-ivy-the-rector-of-justin-by-louis.html",
+      "verdict": "not_support",
+      "reason": "The citation content does not mention critics named Whitney Balliett or Ira Stoll, nor does it discuss a later blogger's contentions or specific interpretations of Prescott's greatness."
+    },
+    {
+      "statement_index": 73,
+      "statement": "While critics such as Whitney Balliett and Ira Stoll regard the novel as largely successful in depicting a great man and in offering a spiritually important study of American character and enduring insights into education, at least one later blogger contends that Prescott’s greatness persuades characters within the story more than readers and highlights the book as a study in how institutions elevate authority figures.",
+      "citation_num": "7",
+      "citation_url": "https://www.educationnext.org/from-half-century-old-novel-wisdom-about-teaching-education-reform-with-2020-political-implications-auchincloss",
+      "verdict": "not_support",
+      "reason": "The citation does not mention Whitney Balliett or any later blogger's specific contention about Prescott's greatness persuading characters more than readers or the book being a study of how institutions elevate authority figures."
+    },
+    {
+      "statement_index": 74,
+      "statement": "These differing perspectives illustrate ongoing debate about whether the narrative fully justifies the reverence accorded to its protagonist.",
+      "citation_num": "19",
+      "citation_url": "https://goodreadingcopy.wordpress.com/2013/09/02/the-rector-of-justin-by-louis-auchincloss",
+      "verdict": "support",
+      "reason": "The text illustrates this debate by contrasting the reverence shown by characters like Charley Strong with the 'cardboard dragon' criticism from Jules Griscam."
+    },
+    {
+      "statement_index": 74,
+      "statement": "These differing perspectives illustrate ongoing debate about whether the narrative fully justifies the reverence accorded to its protagonist.",
+      "citation_num": "16",
+      "citation_url": "https://www.newyorker.com/magazine/1964/08/01/1964-08-01-076-tny-cards-000075593",
+      "verdict": "not_support",
+      "reason": "The citation contains only one review and does not present multiple perspectives or an ongoing debate regarding the protagonist's reverence."
+    },
+    {
+      "statement_index": 74,
+      "statement": "These differing perspectives illustrate ongoing debate about whether the narrative fully justifies the reverence accorded to its protagonist.",
+      "citation_num": "15",
+      "citation_url": "https://www.nytimes.com/1964/07/12/archives/a-crucible-covered-with-ivy-the-rector-of-justin-by-louis.html",
+      "verdict": "not_support",
+      "reason": "The citation content presents only one review's perspective and does not illustrate any ongoing debate or differing perspectives about the protagonist's reverence."
+    },
+    {
+      "statement_index": 74,
+      "statement": "These differing perspectives illustrate ongoing debate about whether the narrative fully justifies the reverence accorded to its protagonist.",
+      "citation_num": "7",
+      "citation_url": "https://www.educationnext.org/from-half-century-old-novel-wisdom-about-teaching-education-reform-with-2020-political-implications-auchincloss",
+      "verdict": "not_support",
+      "reason": "The citation does not present differing perspectives among commentators that would illustrate an ongoing debate about whether the narrative justifies the reverence accorded to its protagonist."
+    }
+  ]
+}
