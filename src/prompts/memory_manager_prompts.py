@@ -11,16 +11,23 @@ Extract:
    preferences, forbidden domains, and forbidden URLs.
 4. A small report-level research contract (`objectives`).
 5. The request complexity and a small set of INITIAL exploratory queries.
+6. Entity disambiguation features: extract all available unique identifiers from the request.
+
+Pre-query analysis (mandatory):
+Before generating queries, you MUST first perform entity disambiguation analysis:
+- Extract UNIQUE IDENTIFIERS from the request: specific person names, institution names, collection names, catalog numbers, archaeological site names, specific measurements, dates, or other distinguishing features
+- Extract TARGET ENTITY type: what category of entity is being researched (artifact, person, organization, event, etc.)
+- Extract POTENTIAL CONFUSION entities: what similar entities might be confused with the target (e.g., same name but different object, related but distinct items)
+- This analysis ensures queries are specific enough to find the exact target and avoid disambiguation failures
 
 How to decompose (critical):
-- Split along the request's OWN thematic structure, NOT by geography/region. If the request enumerates dimensions (e.g. technology routes -> representative companies -> {tech path, product progress, commercialization, financing, team}), the top-level split follows that thematic spine. A scope word like "global" is only a qualifier, never a decomposition axis — do not split into North America / China / Europe.
+- Split along the request's OWN thematic structure, NOT by geography/region.
 - Objectives are report-level deliverables, never one company detail, parameter,
   extra example, source verification, or other leaf fact.
 - Objectives describe factual content the research must deliver. Preserve
   headings, table layout, citation style, and other presentation instructions
   in the original request for the Reporter; do not turn presentation rules into
-  searchable Objectives or Queries. A requested table's factual fields may
-  still define evidence dimensions for a content Objective.
+  searchable Objectives or Queries.
 - Default `scope_mode` to `bounded`. Use `exhaustive` only when the user
   explicitly asks for all items, a complete inventory, or exhaustive coverage.
 - Objectives are the delivery contract. Initial queries do NOT need to cover
@@ -32,20 +39,24 @@ How to decompose (critical):
 - Initial queries should discover high-value facts, authoritative sources,
   entities, terminology, timelines, or disputes that can correct later search
   direction. They should not exhaust the report outline in advance.
-- Make every query SELF-CONTAINED: each stands on its own with no reference to any other query. Never use "上述/前述/该区域/这些公司/the above/aforementioned" or anything pointing at another query's output. Restate the topic, time window, and region (if any) inside each query.
+- Make every query SELF-CONTAINED: each stands on its own with no reference to any other query. Restate the topic, time window, and region (if any) inside each query.
 
-Query text format:
-- query.text is the literal string fed unchanged to a web search engine. Write
-  a TIGHT natural-language search phrase with concrete entities and relevant
-  qualifiers such as time window, region, policy version, or factual dimension.
-- Do NOT put report sections, table formatting, acceptance standards, or
-  citation instructions into query.text.
-- Do NOT write an instruction to an agent. In Chinese, do not use
-  "调研/梳理/整理/分析/上述/前述/该/这些". In English, do not start with
-  "write/provide/ensure/explain/describe/analyze/research".
+Query text format (strict requirements):
+- query.text is the literal string fed unchanged to a web search engine.
+- MANDATORY: Every query MUST include at least 2-3 UNIQUE IDENTIFIERS: specific person names, institution names, collection names, catalog numbers, archaeological site names, specific measurements, dates, or other distinguishing features that help disambiguate the target from similar entities.
+- MANDATORY: Every query MUST include SOURCE TYPE QUALIFIERS to direct searches toward authoritative materials: such as "museum collection", "journal article", "scholarly publication", "official record", "primary source", "academic paper", or "university press".
+- MANDATORY: Every query MUST include specific time period or date references when applicable (e.g., specific years, periods, centuries) to help narrow results.
+- Write a TIGHT natural-language search phrase with concrete entities and relevant qualifiers such as time window, region, policy version, or factual dimension.
+- Do NOT put report sections, table formatting, acceptance standards, or citation instructions into query.text.
+- Do NOT write an instruction to an agent. Avoid phrases that command research actions.
 - Author the query text in the language of the user request.
-- Add `-site:domain` to every query for each forbidden domain. Do not put exact
-  forbidden URLs into query.text.
+- Add `-site:domain` to every query for each forbidden domain. Do not put exact forbidden URLs into query.text.
+
+Query quality check (before finalizing):
+- Verify the query does NOT contain overly broad terms without specific qualifiers
+- Verify the query includes concrete, searchable identifiers rather than generic topic terms
+- Verify the query would help a search engine return results about the SPECIFIC target, not a broader category
+- If the query fails any check, revise it to add more specific identifiers
 
 Per-query importance (one of "core" / "supporting" / "peripheral"):
 - "core": directly carries a central conclusion of the research goal; the report cannot stand without it.
@@ -252,20 +263,27 @@ All existing Query texts (do NOT duplicate their coverage): {existing_query_text
 Atomic gaps to cover: {gaps}
 Reason: {reason}
 
+Entity disambiguation reminder:
+- Before generating the query, identify the specific unique identifiers from the parent topic and existing queries
+- Ensure the new query maintains the same entity specificity level as the original queries
+- If previous queries had disambiguation issues (e.g., confusing related entities), add MORE specific identifiers to this query
+
 Requirements:
-- Inline the parent's concrete subject BY VALUE into every new query (e.g. write "Figure AI 人形机器人 量产进度 2025", never "该公司的量产进度"). Never reference another query: no "上述/前述/该/这些/the above".
-- Each query must be SELF-CONTAINED and a TIGHT natural-language search phrase:
-  concrete entities plus relevant time, region, policy version, or factual
-  dimensions. It is not a report title, acceptance standard, verbose question,
-  or instruction to an agent.
-- Never use "调研/梳理/整理/分析/上述/前述/该/这些". Do not start an English
-  query with "write/provide/ensure/explain/describe/analyze/research".
+- Inline the parent's concrete subject BY VALUE into every new query. Never reference another query.
+- Each query must be SELF-CONTAINED and a TIGHT natural-language search phrase.
+- MANDATORY: Include at least 2-3 UNIQUE IDENTIFIERS: specific person names, institution names, collection names, catalog numbers, archaeological site names, specific measurements, dates, or other distinguishing features that disambiguate the target from similar entities.
+- MANDATORY: Add SOURCE TYPE QUALIFIERS to direct searches toward authoritative materials: such as "museum collection", "journal article", "scholarly publication", "official record", "primary source", "academic paper", or "university press".
+- MANDATORY: Include specific time period or date references when applicable.
 - Cover only the assigned related gaps; do not repeat any existing Query.
-- Preserve forbidden domains with `-site:domain`; do not print exact forbidden
-  URLs into the query.
+- Preserve forbidden domains with `-site:domain`; do not print exact forbidden URLs into the query.
 - Author the query text in the language of the research goal.
-- Tag each query with an importance ("core" / "supporting" / "peripheral") relative to the research goal's core conclusions, judged the same way as the parent's own role.
+- Tag each query with an importance ("core" / "supporting" / "peripheral") relative to the research goal's core conclusions.
 - Include concrete acceptance_criteria copied or refined from the assigned atomic gap.
+
+Query quality check (before finalizing):
+- Verify the query does NOT contain overly broad terms without specific qualifiers
+- Verify the query includes concrete, searchable identifiers
+- Verify the query would help a search engine return results about the SPECIFIC target, not a broader category
 
 Return only valid JSON, no Markdown, at most {max_new} queries:
 {"queries": [{"text": "...", "importance": "core|supporting|peripheral", "acceptance_criteria": ["..."]}]}
