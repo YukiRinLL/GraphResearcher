@@ -43,6 +43,8 @@ except ImportError:
 from rich.console import Console  # noqa: E402  (import after sys.path setup)
 from rich.markdown import Markdown  # noqa: E402
 
+from observability import LangfuseRun, start_langfuse_run  # noqa: E402
+
 console = Console()
 
 _ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[ -/]*[@-~]")
@@ -280,6 +282,7 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
     original_handlers = list(root_logger.handlers)
     original_level = root_logger.level
     run_log_handler: logging.Handler | None = None
+    langfuse_run = LangfuseRun()
     # Tee stdout+stderr into run.log so EVERYTHING printed — rich output,
     # logging, warnings, and tracebacks — is captured, not just emitted lines.
     with open(log_path, "w", encoding="utf-8") as log_file:
@@ -297,12 +300,22 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
             middleware.configure(max_search_rounds=max_rounds)
             graph_manager_tools.configure(output_dir=str(output_dir), user_request=request)
 
+            import config
             from agents.orchestrator import orchestrator
+
+            langfuse_run = start_langfuse_run(
+                output_dir=output_dir,
+                max_search_rounds=max_rounds,
+                model_name=config.DEFAULT_MODEL,
+            )
 
             emit(f"Request: {request}")
             emit(f"Output dir: {output_dir} | max search rounds: {max_rounds or 'unlimited'}\n")
+            if langfuse_run.enabled:
+                emit(f"Langfuse session: {langfuse_run.session_id}")
 
-            stream_kwargs = {"config": {"recursion_limit": 1000}, "stream_mode": "values"}
+            stream_config = {"recursion_limit": 1000, **langfuse_run.langchain_config()}
+            stream_kwargs = {"config": stream_config, "stream_mode": "values"}
             if opts["subgraphs"]:
                 stream_kwargs["subgraphs"] = True
 
@@ -416,6 +429,8 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
             except Exception:
                 console.print("[yellow]Graph export to JSONL failed (captured in run.log):[/]")
                 console.print(traceback.format_exc(), markup=False, highlight=False)
+
+            langfuse_run.flush()
 
             console.rule("[bold green]Final Report" if report_saved else "[bold yellow]Research Status")
             console.print(Markdown(report_text))

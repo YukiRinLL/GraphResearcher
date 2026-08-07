@@ -65,6 +65,18 @@ uv run python main.py "request" -v debug --no-subgraphs
 uv run python main.py "request" -r 1 --log-level INFO
 ```
 
+### Langfuse observability (optional)
+
+Set `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` in `.env` to enable
+Langfuse tracing. Each `main.py` run creates one Langfuse session and records
+the LangChain/LangGraph calls below it. If either key is absent, the program
+does not initialize Langfuse. `LANGFUSE_BASE_URL` is optional and supports a
+self-hosted deployment.
+
+Langfuse receives model inputs and outputs as part of standard LangChain
+tracing. Do not enable it for data that your Langfuse deployment must not
+store.
+
 
 uv run python test_wlc.py \
   --prompt-path /Users/yindq/projects/DeepResearch/Wiki_Live_Challenge/data/2025_Mar_Nov/wiki_data//ga_100.json \
