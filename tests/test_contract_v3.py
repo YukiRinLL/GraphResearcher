@@ -51,7 +51,6 @@ def test_verbatim_request_initialization():
         "research_goal": "研究一个条目",
         "language": "zh",
         "scope_mode": "bounded",
-        "request_complexity": "simple",
         "objectives": [{
             "objective_key": "entry",
             "description": "查明条目事实",
@@ -61,7 +60,6 @@ def test_verbatim_request_initialization():
         }],
         "initial_queries": [{
             "text": "条目 权威资料",
-            "importance": "core",
             "objective_keys": ["entry"],
             "acceptance_criteria": ["查明条目事实"],
         }],
@@ -84,6 +82,9 @@ def test_verbatim_request_initialization():
     assert result["goal_id"] == "goal", result
     assert captured["request"] == request
     assert captured["state_contract_version"] == 4
+    assert "request_complexity" not in captured
+    assert nodes["query"]["importance"] == "core"
+    assert nodes["query"]["query_role"] == "discovery"
     assert MemoryManager(model=object()).init_research()["error"]
 
 
@@ -143,6 +144,7 @@ def test_criterion_assessment_retry_boundary():
         "type": "Query",
         "handle": "q1",
         "text": "融资金额",
+        "query_role": "discovery",
         "status": "assessing",
         "acceptance_criteria": ["确认融资金额"],
         "objective_keys": [],
@@ -194,6 +196,7 @@ def test_criterion_assessment_retry_boundary():
     ):
         result = manager.assess_query("q1")
     assert len(calls) == 2
+    assert '"query_role": "discovery"' in calls[0]
     assert result["status"] == "sufficient"
     assert updates["criterion_results"][0]["supporting_refs"] == ["e1"]
 

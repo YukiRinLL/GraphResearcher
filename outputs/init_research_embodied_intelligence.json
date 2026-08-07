@@ -1,0 +1,74 @@
+{
+  "test": "init_research_planning_stage",
+  "request": "请帮我整理下目前全球具身智能发展的技术路线，以及各个路线的代表性公司，需要包括这些公司的技术路径，产品进度，商业化进度，融资情况，团队情况",
+  "max_search_rounds": 20,
+  "initial_query_limit": 8,
+  "model": "gpt-5.6-luna",
+  "output": {
+    "research_goal": "梳理当前全球具身智能发展的技术路线及各路线代表性公司，比较这些公司的技术路径、产品进度、商业化进度、融资情况和团队情况。",
+    "language": "中文",
+    "time_window": "当前状态（截至研究时点）",
+    "region_scope": "全球",
+    "source_preferences": [],
+    "excluded_domains": [],
+    "excluded_urls": [],
+    "scope_mode": "bounded",
+    "objectives": [
+      {
+        "objective_key": "global_embodied_intelligence_landscape",
+        "description": "识别并梳理当前全球具身智能发展的主要技术路线及各路线的代表性公司，覆盖相关公司的技术路径、产品进度、商业化进度、融资情况和团队情况。",
+        "requirement": "must",
+        "weight": 1.0,
+        "acceptance_criteria": [
+          "基于可靠来源确认技术路线和代表性公司的规范名称及归属关系",
+          "对纳入研究的公司覆盖技术路径、产品进度、商业化进度、融资情况和团队情况",
+          "明确区分已披露事实、公司自述和待进一步核实的信息"
+        ]
+      }
+    ],
+    "initial_queries": [
+      {
+        "text": "全球 目前 \"具身智能\" 技术路线 代表性公司",
+        "objective_keys": [
+          "global_embodied_intelligence_landscape"
+        ],
+        "acceptance_criteria": [
+          "使用可靠来源确认具身智能技术路线和代表性公司的初步范围",
+          "取得后续检索所需的规范名称、别名或分类信息",
+          "发现可能影响研究范围的名称歧义或路线划分差异"
+        ]
+      }
+    ]
+  },
+  "runtime_validation": {
+    "method": "MemoryManager.init_research with the real planner output and in-memory graph adapters",
+    "neo4j_mutated": false,
+    "result": {
+      "goal_id": "goal",
+      "scope_mode": "bounded",
+      "objective_count": 1,
+      "query_count": 1
+    },
+    "created_query": {
+      "handle": "q1",
+      "text": "全球 目前 \"具身智能\" 技术路线 代表性公司",
+      "importance": "core",
+      "query_role": "discovery",
+      "objective_keys": [
+        "global_embodied_intelligence_landscape"
+      ]
+    },
+    "checks": {
+      "single_coherent_theme_produced_one_query": true,
+      "request_complexity_absent": true,
+      "planner_importance_absent": true,
+      "runtime_importance_is_core": true,
+      "runtime_query_role_is_discovery": true,
+      "explicit_current_scope_preserved": true,
+      "explicit_global_scope_preserved": true,
+      "query_not_split_by_requested_company_dimensions": true,
+      "query_contains_no_prior_route_or_company_names": true,
+      "original_request_preserved_verbatim": true
+    }
+  }
+}

@@ -111,11 +111,7 @@ def main():
             {"text": "covers a", "objective_keys": ["a"]},
             {"text": "covers c", "objective_keys": ["c"]},
         ],
-        [
-            {"objective_key": "a", "requirement": "must", "description": "a"},
-            {"objective_key": "b", "requirement": "must", "description": "b"},
-            {"objective_key": "c", "requirement": "must", "description": "c"},
-        ],
+        limit=1,
     )
     assert len(selected) == 1
     assert selected[0]["text"] == "covers a and b"
@@ -127,17 +123,15 @@ def main():
             {"text": "probe three", "objective_keys": []},
             {"text": "probe four", "objective_keys": ["c"]},
         ],
-        [],
-        complexity="complex",
+        limit=3,
     )
     assert [item["text"] for item in complex_selected] == ["probe one", "probe two", "probe three"]
     fallback = mm._select_initial_queries(
         [{"text": "unmapped candidate", "objective_keys": []}],
-        [{"objective_key": "a", "requirement": "must", "description": "objective a"}],
+        limit=1,
     )
     assert fallback == [{
         "text": "unmapped candidate",
-        "importance": "supporting",
         "objective_keys": [],
         "acceptance_criteria": [],
     }]

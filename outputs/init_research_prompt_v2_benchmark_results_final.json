@@ -1,0 +1,558 @@
+{
+  "test": "init_research_prompt_benchmark_sample_final",
+  "generated_at": "2026-08-07T16:28:28.949693+08:00",
+  "model": "gpt-5.6-luna",
+  "max_search_rounds": 20,
+  "initial_query_limit": 8,
+  "neo4j_mutated": false,
+  "web_search_performed": false,
+  "cases": [
+    {
+      "benchmark": "Wiki Live Challenge",
+      "input_path": "/Users/yindq/projects/DeepResearch/Wiki_Live_Challenge/data/2025_Mar_Nov/wiki_data/ga_100.json",
+      "input_selector": {
+        "id": "82",
+        "title": "Ring_of_Nestor"
+      },
+      "request_sha256": "621328ffcbc3840088b2c84dc48abff50aab669cee4dbfca8443eb835c483ba1",
+      "request_chars": 13221,
+      "output": {
+        "research_goal": "Research the subject identified by the exact name “Ring of Nestor” and produce a factually supported English Wikipedia-style article covering its identity, context, significance, and the major aspects documented by reliable published sources.",
+        "language": "English",
+        "time_window": null,
+        "region_scope": null,
+        "source_preferences": [
+          "reliable published sources"
+        ],
+        "excluded_domains": [
+          "en.wikipedia.org"
+        ],
+        "excluded_urls": [
+          "https://en.wikipedia.org/wiki/Ring_of_Nestor"
+        ],
+        "scope_mode": "bounded",
+        "objectives": [
+          {
+            "objective_key": "subject_identity_and_coverage",
+            "description": "Establish the identity of the subject named “Ring of Nestor” and, using reliable published sources, determine the major factual aspects needed for a self-contained encyclopedic account.",
+            "requirement": "must",
+            "weight": 1.0,
+            "acceptance_criteria": [
+              "The subject referred to by the exact name “Ring of Nestor” is confirmed and disambiguated.",
+              "Reliable sources provide a standard name, relevant alternative names or terminology where applicable, and enough contextual information to plan subsequent research.",
+              "The final research covers the major source-supported aspects of the subject without adding unsupported facts, interpretations, classifications, people, institutions, dates, places, events, or controversies."
+            ]
+          }
+        ],
+        "initial_queries": [
+          {
+            "text": "\"Ring of Nestor\" -site:en.wikipedia.org",
+            "objective_keys": [],
+            "acceptance_criteria": [
+              "Search results identify at least one reliable published source directly concerning the subject.",
+              "The subject’s identity, standard terminology, and any necessary disambiguation are established.",
+              "The results provide source leads and terminology suitable for subsequent searches into the subject’s documented context and major aspects."
+            ]
+          }
+        ]
+      },
+      "checks": {
+        "valid_nonempty_object": true,
+        "query_count": 1,
+        "query_count_within_runtime_limit": true,
+        "expected_query_count": 1,
+        "expected_query_count_matched": true,
+        "request_complexity_absent": true,
+        "planner_query_importance_absent": true,
+        "excluded_url_recall": {
+          "expected": 1,
+          "matched": 1,
+          "complete": true
+        },
+        "excluded_domains_exact": true,
+        "query_site_domains": [
+          "en.wikipedia.org"
+        ],
+        "query_site_domains_match_excluded_domains": true,
+        "natural_language_matches_report_language": true,
+        "wlc_presentation_terms_in_objectives": []
+      }
+    },
+    {
+      "benchmark": "DeepResearch-Bench-II",
+      "input_path": "/Users/yindq/projects/DeepResearch/DeepResearch-Bench-II/tasks_and_rubrics.jsonl",
+      "input_selector": {
+        "id": "task7",
+        "description": "A Research Report on the Transformation of China's Local 'Land Finance' Model"
+      },
+      "request_sha256": "ea405912a837b66035d69ac14fa1f8df1c1dc414d137a195a1aae37b39d4a5b1",
+      "request_chars": 1579,
+      "output": {
+        "research_goal": "研究中国地方“土地财政”模式截至2021年的历史形成、当前增量模式的困境及其社会经济后果，并评估包括增量与存量税收机制、住房保障安排和不同房地产税制比较在内的转型方案。",
+        "language": "中文",
+        "time_window": "截至2021年；重点数据覆盖1998—2021年，其中土地出让收入年均增长率覆盖1998—2008年",
+        "region_scope": "中国地方",
+        "source_preferences": [],
+        "excluded_domains": [],
+        "excluded_urls": [
+          "https://www.mdpi.com/2073-445X/11/9/1529",
+          "https://ideas.repec.org/a/gam/jlands/v11y2022i9p1529-d911573.html",
+          "https://www.researchgate.net/publication/363532173_The_Local_Land_Finance_Transformation_with_the_Synergy_of_Increment_and_Inventory_A_Case_Study_in_China"
+        ],
+        "scope_mode": "bounded",
+        "objectives": [
+          {
+            "objective_key": "land_finance_definition_and_sustainability",
+            "description": "界定中国地方“土地财政”模式并说明其历史渊源，评估截至2021年以新增土地出让为核心的“增量”土地财政模式的可持续性。",
+            "requirement": "must",
+            "weight": 1.0,
+            "acceptance_criteria": [
+              "明确说明中国地方“土地财政”模式的含义及其历史形成过程。",
+              "核实并呈现1998—2021年期间与土地财政演变相关的具体数据点。",
+              "核实2021年全国土地出让收入及其占全国一般公共预算收入的百分比。",
+              "核实2021年土地出让收入占地方一般公共预算收入的百分比。",
+              "核实1998—2008年土地出让收入的年均增长率。",
+              "核实2021年的土地出让总收入，并明确统计口径和单位。",
+              "基于可核验资料说明增量土地财政模式不可持续的原因，区分数据事实与分析判断。"
+            ]
+          },
+          {
+            "objective_key": "negative_consequences",
+            "description": "核查中国地方“土地财政”模式产生的主要负面后果及其作用机制。",
+            "requirement": "must",
+            "weight": 1.0,
+            "acceptance_criteria": [
+              "至少覆盖保障性住房供应不足、社会阶层固化和经济泡沫三个方面。",
+              "说明土地财政如何影响保障性住房的供给及其可获得证据。",
+              "说明土地财政与社会阶层固化之间的关联机制及证据边界。",
+              "说明土地财政造成经济泡沫的表现或机制，包括对实体经济的“挤出效应”。",
+              "对各项负面后果提供来源支持，并区分相关性、因果解释和规范性评价。"
+            ]
+          },
+          {
+            "objective_key": "transition_mechanism",
+            "description": "核查将地方土地财政从以普通住房增量土地出让为重点，转向改善型住房土地出让与住房存量房产税相结合的转型方案。",
+            "requirement": "must",
+            "weight": 1.0,
+            "acceptance_criteria": [
+              "说明土地出让金征收对象从普通住房转向“改善型住房”的具体含义。",
+              "说明对现有住房存量引入房产税的制度安排。",
+              "说明新的“增量模式”：对新增普通商品房征收利润税，并将土地出让金征收重点转向改善型住房。",
+              "按用户给定标准核查“改善型住房”的定义：容积率低于1.0或建筑面积超过144平方米。",
+              "说明新的“存量模式”：对第二套普通商品房及改善型住房征收房产税，并为租赁性房产提供税收减免。",
+              "明确区分已有政策事实、研究方案设计和来源中的假设性建议。"
+            ]
+          },
+          {
+            "objective_key": "tax_revenue_and_housing_use",
+            "description": "核查新增房产税收入在不同城市条件下的使用方向，以及“先租后售”住房和“住房券”在转型框架中的定义与运行方式。",
+            "requirement": "must",
+            "weight": 1.0,
+            "acceptance_criteria": [
+              "说明针对住房存量大的城市，新增房产税收入应采取的政策方向。",
+              "说明针对流动人口多的城市，新增房产税收入应采取的政策方向。",
+              "定义“先租后售”住房，并说明其在新框架下的运作方式。",
+              "定义“住房券”，并说明其在新框架下的发放对象、使用方式或政策功能。",
+              "说明新增房产税收入与住房保障、租赁住房或住房购买安排之间的关系。",
+              "对政策建议、概念定义和实际实施案例分别标注证据性质。"
+            ]
+          },
+          {
+            "objective_key": "four_property_tax_regimes",
+            "description": "比较土地公有制下四种房地产税收制度的制度特征及分配影响。",
+            "requirement": "must",
+            "weight": 1.0,
+            "acceptance_criteria": [
+              "覆盖“对土地征税”“对建筑物征税”“对土地和建筑物统一征税”“对土地和建筑物实行差别税率”四种制度。",
+              "对每种制度核实其主要优点。",
+              "对每种制度核实其主要缺点或风险。",
+              "对每种制度核实其主要受益者及利益分配依据。",
+              "比较时明确土地公有制这一制度背景，避免将不同产权制度下的结论直接混用。"
+            ]
+          }
+        ],
+        "initial_queries": [
+          {
+            "text": "中国地方“土地财政”定义 历史渊源 1998—2021",
+            "objective_keys": [
+              "land_finance_definition_and_sustainability"
+            ],
+            "acceptance_criteria": [
+              "找到能够确认“土地财政”规范定义、相关别称或核心构成的可靠来源。",
+              "找到能够规划后续历史核查的来源、时间线或规范术语。",
+              "识别不同来源对“土地财政”统计口径的差异。"
+            ]
+          },
+          {
+            "text": "2021 全国国有土地使用权出让收入 一般公共预算收入 地方一般公共预算收入 1998 2008",
+            "objective_keys": [
+              "land_finance_definition_and_sustainability"
+            ],
+            "acceptance_criteria": [
+              "找到包含2021年全国土地出让收入及相关财政收入数据的可靠来源。",
+              "找到可用于核算土地出让收入占全国和地方一般公共预算收入比例的统计口径或原始数据。",
+              "找到1998—2008年土地出让收入序列或年均增长率的可核验来源。",
+              "记录后续核算所需的单位、年份范围和数据定义。"
+            ]
+          },
+          {
+            "text": "土地财政 转型 增量 存量 改善型住房 房产税 先租后售 住房券",
+            "objective_keys": [
+              "transition_mechanism",
+              "tax_revenue_and_housing_use"
+            ],
+            "acceptance_criteria": [
+              "找到能够确认增量与存量转型方案相关规范术语、政策文本或研究来源的入口。",
+              "找到“改善型住房”“先租后售”“住房券”等概念的定义或使用语境。",
+              "识别后续核查新增普通商品房利润税、存量房产税、租赁性房产减免及城市分类政策所需的来源线索。",
+              "不把首次检索结果直接视为已验证的政策结论。"
+            ]
+          },
+          {
+            "text": "土地公有制 对土地征税 对建筑物征税 土地和建筑物统一征税 差别税率 优点 缺点",
+            "objective_keys": [
+              "four_property_tax_regimes"
+            ],
+            "acceptance_criteria": [
+              "找到四种房地产税收制度的规范术语、制度定义或比较框架。",
+              "获得能够支持后续核查各制度优点、缺点和受益者分配影响的可靠来源。",
+              "确认不同制度比较所采用的土地公有制背景和税基口径。"
+            ]
+          }
+        ]
+      },
+      "checks": {
+        "valid_nonempty_object": true,
+        "query_count": 4,
+        "query_count_within_runtime_limit": true,
+        "expected_query_count": null,
+        "expected_query_count_matched": true,
+        "request_complexity_absent": true,
+        "planner_query_importance_absent": true,
+        "excluded_url_recall": {
+          "expected": 3,
+          "matched": 3,
+          "complete": true
+        },
+        "excluded_domains_exact": true,
+        "query_site_domains": [],
+        "query_site_domains_match_excluded_domains": true,
+        "natural_language_matches_report_language": true,
+        "wlc_presentation_terms_in_objectives": []
+      }
+    },
+    {
+      "benchmark": "DeepResearch-Bench-II",
+      "input_path": "/Users/yindq/projects/DeepResearch/DeepResearch-Bench-II/tasks_and_rubrics.jsonl",
+      "input_selector": {
+        "id": "task1+",
+        "description": "An Analysis of Social Security Cases in South Asia"
+      },
+      "request_sha256": "6769952fb6d37257d1eb66e61c89585d8b9a84818b8701d3cecf687415f33def",
+      "request_chars": 3224,
+      "output": {
+        "research_goal": "截至2023年9月，调查印度、巴基斯坦、孟加拉国和尼泊尔面向贫困人口尤其是极端贫困人口的社会保护项目，识别其在实践中的失效表现、被排除者及具体排除原因，按项目设计缺陷、精英俘获、瞄准错误、不可见障碍和贫困人口自我排斥五类原因进行比较分析，并汇总主要项目的国家、名称、类型和目标说明。",
+        "language": "English",
+        "time_window": "as of September 2023",
+        "region_scope": "India, Pakistan, Bangladesh, and Nepal",
+        "source_preferences": [],
+        "excluded_domains": [],
+        "excluded_urls": [
+          "https://journals.plos.org/globalpublichealth/article?id=10.1371/journal.pgph.0002710",
+          "https://pubmed.ncbi.nlm.nih.gov/38870219/",
+          "https://pmc.ncbi.nlm.nih.gov/articles/PMC11175495/",
+          "https://www.researchgate.net/publication/381401509_South_Asia's_unprotected_poor_A_systematic_review_of_why_social_protection_programs_fail_to_reach_their_potential",
+          "https://www.medrxiv.org/content/10.1101/2023.11.23.23298962v1",
+          "https://ideas.repec.org/a/plo/pgph00/0002710.html"
+        ],
+        "scope_mode": "exhaustive",
+        "objectives": [
+          {
+            "objective_key": "programs_and_failures",
+            "description": "Identify as many significant social protection programs as possible in India, Pakistan, Bangladesh, and Nepal, including India's Mahatma Gandhi National Rural Employment Guarantee Scheme, Pakistan's Zakat program, and Bangladesh's Challenging the Frontiers of Poverty: Targeting the Ultra-Poor project, and document how each program failed or underperformed in practice.",
+            "requirement": "must",
+            "weight": 1.0,
+            "acceptance_criteria": [
+              "The covered programs are located in India, Pakistan, Bangladesh, or Nepal and are social protection programs aimed at poor or ultra-poor populations.",
+              "India's Mahatma Gandhi National Rural Employment Guarantee Scheme is included.",
+              "Pakistan's Zakat program is included.",
+              "Bangladesh's Challenging the Frontiers of Poverty: Targeting the Ultra-Poor project is included.",
+              "As many other significant programs as can be reliably identified are included within the available evidence and the September 2023 cutoff.",
+              "For each program, the report documents specific practical problems or failures rather than only stating that implementation was ineffective.",
+              "For each documented exclusion problem, the report identifies who was excluded and the concrete reasons for exclusion whenever reliable evidence is available."
+            ]
+          },
+          {
+            "objective_key": "failure_causes",
+            "description": "Analyze and categorize the causes of social protection program failures across the four countries under five categories: Program Design Flaws, Elite Capture, Targeting Errors, Invisible Barriers, and Self-Exclusion by the Poor.",
+            "requirement": "must",
+            "weight": 1.0,
+            "acceptance_criteria": [
+              "Program Design Flaws are treated as problems in the fundamental concepts or logic of a program.",
+              "Elite Capture is treated as exploitation of programs by wealthy or powerful actors for their own benefit.",
+              "Targeting Errors are treated as problems in identifying and reaching target poor households.",
+              "Invisible Barriers include overlooked obstacles such as gender norms, hidden costs, lack of identification documents, and geographical distance.",
+              "Self-Exclusion by the Poor includes reasons poor individuals choose not to participate.",
+              "Each category is supported with specific program examples identified in the program-level investigation.",
+              "The analysis distinguishes evidence about the mechanism causing exclusion or failure from general descriptions of program shortcomings."
+            ]
+          },
+          {
+            "objective_key": "program_summary_fields",
+            "description": "Summarize the main studied social protection programs from India, Pakistan, Bangladesh, and Nepal with their country, program name, program type, and main objective or program description.",
+            "requirement": "must",
+            "weight": 0.8,
+            "acceptance_criteria": [
+              "Every summarized program has a country, program name, program type, and brief description of its main objective.",
+              "Program types distinguish categories such as employment, cash transfer, food subsidy, health insurance, or other applicable types based on verified evidence.",
+              "The summary covers the main programs examined in the investigation rather than only the three examples named by the user."
+            ]
+          }
+        ],
+        "initial_queries": [
+          {
+            "text": "India social protection programs poor ultra-poor MGNREGA exclusion implementation failures",
+            "objective_keys": [
+              "programs_and_failures"
+            ],
+            "acceptance_criteria": [
+              "Results identify authoritative sources that confirm the names and scope of significant Indian social protection programs, including MGNREGA.",
+              "Results provide terminology and source leads for investigating implementation failures, exclusion, and concrete exclusion mechanisms in India.",
+              "Results are sufficient to plan follow-up searches for individual Indian programs without assuming an unverified program list."
+            ]
+          },
+          {
+            "text": "Pakistan social protection programs poor ultra-poor Zakat exclusion implementation failures",
+            "objective_keys": [
+              "programs_and_failures"
+            ],
+            "acceptance_criteria": [
+              "Results identify authoritative sources that confirm the names and scope of significant Pakistani social protection programs, including the Zakat program.",
+              "Results provide terminology and source leads for investigating implementation failures, exclusion, and concrete exclusion mechanisms in Pakistan.",
+              "Results are sufficient to plan follow-up searches for individual Pakistani programs without assuming an unverified program list."
+            ]
+          },
+          {
+            "text": "Bangladesh social protection programs poor ultra-poor Challenging the Frontiers of Poverty Targeting the Ultra-Poor exclusion implementation failures",
+            "objective_keys": [
+              "programs_and_failures"
+            ],
+            "acceptance_criteria": [
+              "Results identify authoritative sources that confirm the name and scope of Bangladesh's Challenging the Frontiers of Poverty: Targeting the Ultra-Poor project and other significant social protection programs.",
+              "Results provide terminology and source leads for investigating implementation failures, exclusion, and concrete exclusion mechanisms in Bangladesh.",
+              "Results are sufficient to plan follow-up searches for individual Bangladeshi programs without assuming an unverified program list."
+            ]
+          },
+          {
+            "text": "Nepal social protection programs poor ultra-poor exclusion implementation failures",
+            "objective_keys": [
+              "programs_and_failures"
+            ],
+            "acceptance_criteria": [
+              "Results identify authoritative sources that confirm the names and scope of significant Nepalese social protection programs.",
+              "Results provide terminology and source leads for investigating implementation failures, exclusion, and concrete exclusion mechanisms in Nepal.",
+              "Results are sufficient to plan follow-up searches for individual Nepalese programs without assuming an unverified program list."
+            ]
+          }
+        ]
+      },
+      "checks": {
+        "valid_nonempty_object": true,
+        "query_count": 4,
+        "query_count_within_runtime_limit": true,
+        "expected_query_count": 4,
+        "expected_query_count_matched": true,
+        "request_complexity_absent": true,
+        "planner_query_importance_absent": true,
+        "excluded_url_recall": {
+          "expected": 6,
+          "matched": 6,
+          "complete": true
+        },
+        "excluded_domains_exact": true,
+        "query_site_domains": [],
+        "query_site_domains_match_excluded_domains": true,
+        "natural_language_matches_report_language": false,
+        "wlc_presentation_terms_in_objectives": []
+      }
+    },
+    {
+      "benchmark": "Deep Research Bench",
+      "input_path": "/Users/yindq/projects/DeepResearch/deep_research_bench/data/prompt_data/query.jsonl",
+      "input_selector": {
+        "id": "6",
+        "topic": "Finance & Business"
+      },
+      "request_sha256": "b894dcf98d0e5c2a5f8fdba50bd01c95ac49bafee8c715b68755075bc6166a66",
+      "request_chars": 69,
+      "output": {
+        "research_goal": "研究目前全球具身智能发展的主要技术路线及各路线代表性公司的技术路径、产品进度、商业化进度、融资情况和团队情况。",
+        "language": "中文",
+        "time_window": "目前",
+        "region_scope": "全球",
+        "source_preferences": [],
+        "excluded_domains": [],
+        "excluded_urls": [],
+        "scope_mode": "bounded",
+        "objectives": [
+          {
+            "objective_key": "routes_and_companies",
+            "description": "基于可靠来源识别目前全球具身智能发展的主要技术路线，并为每条路线确定具有代表性的公司。",
+            "requirement": "must",
+            "weight": 1.0,
+            "acceptance_criteria": [
+              "明确说明各技术路线的划分依据、核心技术特征和相互区别。",
+              "每条技术路线均有可靠来源支持的代表性公司。",
+              "不得将未经来源确认的公司或分类作为既定事实纳入结论。"
+            ]
+          },
+          {
+            "objective_key": "company_progress",
+            "description": "核验各技术路线代表性公司的技术路径、产品进度和商业化进度。",
+            "requirement": "must",
+            "weight": 1.0,
+            "acceptance_criteria": [
+              "逐家公司说明其与所属技术路线相关的技术路径。",
+              "逐家公司核验产品状态、研发或发布进展等产品进度信息。",
+              "逐家公司核验商业化进展，包括已披露的客户、部署、收入、订单、合作或其他商业化证据；没有可靠公开证据的项目应明确标注。",
+              "所有进度判断均应注明对应时间范围和来源依据。"
+            ]
+          },
+          {
+            "objective_key": "company_financing_and_team",
+            "description": "核验各技术路线代表性公司的融资情况和团队情况。",
+            "requirement": "must",
+            "weight": 1.0,
+            "acceptance_criteria": [
+              "逐家公司汇总可靠来源披露的融资轮次、融资金额、时间和投资方等信息；未披露或无法核验的内容应明确说明。",
+              "逐家公司核验团队情况，包括来源可确认的创始团队、核心成员或团队背景信息。",
+              "区分已确认事实、公司自述和来源未披露的信息。",
+              "融资和团队信息应标明对应时间点，避免将不同阶段信息混为一谈。"
+            ]
+          }
+        ],
+        "initial_queries": [
+          {
+            "text": "全球具身智能技术路线 分类 代表性公司",
+            "objective_keys": [
+              "routes_and_companies"
+            ],
+            "acceptance_criteria": [
+              "获得至少一组可靠来源提出或采用的具身智能技术路线分类、规范术语或分析框架。",
+              "识别可供后续核验的候选代表性公司及其所属路线线索。",
+              "取得足以开展后续公司逐项检索的来源、别名和关键词。",
+              "对不同来源之间的路线划分差异保留待后续核验。"
+            ]
+          }
+        ]
+      },
+      "checks": {
+        "valid_nonempty_object": true,
+        "query_count": 1,
+        "query_count_within_runtime_limit": true,
+        "expected_query_count": 1,
+        "expected_query_count_matched": true,
+        "request_complexity_absent": true,
+        "planner_query_importance_absent": true,
+        "excluded_url_recall": {
+          "expected": 0,
+          "matched": 0,
+          "complete": true
+        },
+        "excluded_domains_exact": true,
+        "query_site_domains": [],
+        "query_site_domains_match_excluded_domains": true,
+        "natural_language_matches_report_language": true,
+        "wlc_presentation_terms_in_objectives": []
+      }
+    },
+    {
+      "benchmark": "Deep Research Bench",
+      "input_path": "/Users/yindq/projects/DeepResearch/deep_research_bench/data/prompt_data/query.jsonl",
+      "input_selector": {
+        "id": "52",
+        "topic": "Finance & Business"
+      },
+      "request_sha256": "e13a15db99565fe3bbb1b197336bf6204a9238c940ad0a54f39cf61310234360",
+      "request_chars": 91,
+      "output": {
+        "research_goal": "Identify and compare the documented investment philosophies of Duan Yongping, Warren Buffett, and Charlie Munger.",
+        "language": "English",
+        "time_window": null,
+        "region_scope": null,
+        "source_preferences": [],
+        "excluded_domains": [],
+        "excluded_urls": [],
+        "scope_mode": "bounded",
+        "objectives": [
+          {
+            "objective_key": "compare_investment_philosophies",
+            "description": "Document the investment philosophy of Duan Yongping, Warren Buffett, and Charlie Munger, and compare the similarities and differences among their stated or reliably documented approaches.",
+            "requirement": "must",
+            "weight": 1.0,
+            "acceptance_criteria": [
+              "The report identifies the documented investment philosophy of Duan Yongping.",
+              "The report identifies the documented investment philosophy of Warren Buffett.",
+              "The report identifies the documented investment philosophy of Charlie Munger.",
+              "The comparison distinguishes supported areas of convergence and divergence among the three individuals without presenting unverified interpretations as fact."
+            ]
+          }
+        ],
+        "initial_queries": [
+          {
+            "text": "\"Duan Yongping\" investment philosophy",
+            "objective_keys": [
+              "compare_investment_philosophies"
+            ],
+            "acceptance_criteria": [
+              "Confirm the relevant identity and name variants for Duan Yongping.",
+              "Locate reliable sources containing his stated or documented investment principles.",
+              "Extract terminology and source leads for subsequent research into his philosophy."
+            ]
+          },
+          {
+            "text": "\"Warren Buffett\" investment philosophy",
+            "objective_keys": [
+              "compare_investment_philosophies"
+            ],
+            "acceptance_criteria": [
+              "Confirm the relevant identity and name variants for Warren Buffett.",
+              "Locate reliable sources containing his stated or documented investment principles.",
+              "Extract terminology and source leads for subsequent research into his philosophy."
+            ]
+          },
+          {
+            "text": "\"Charlie Munger\" investment philosophy",
+            "objective_keys": [
+              "compare_investment_philosophies"
+            ],
+            "acceptance_criteria": [
+              "Confirm the relevant identity and name variants for Charlie Munger.",
+              "Locate reliable sources containing his stated or documented investment principles.",
+              "Extract terminology and source leads for subsequent research into his philosophy."
+            ]
+          }
+        ]
+      },
+      "checks": {
+        "valid_nonempty_object": true,
+        "query_count": 3,
+        "query_count_within_runtime_limit": true,
+        "expected_query_count": 3,
+        "expected_query_count_matched": true,
+        "request_complexity_absent": true,
+        "planner_query_importance_absent": true,
+        "excluded_url_recall": {
+          "expected": 0,
+          "matched": 0,
+          "complete": true
+        },
+        "excluded_domains_exact": true,
+        "query_site_domains": [],
+        "query_site_domains_match_excluded_domains": true,
+        "natural_language_matches_report_language": true,
+        "wlc_presentation_terms_in_objectives": []
+      }
+    }
+  ]
+}

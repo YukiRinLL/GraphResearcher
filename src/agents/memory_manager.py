@@ -79,6 +79,7 @@ _REPORT_QUERY_RE = re.compile(
     re.IGNORECASE,
 )
 _QUERY_MAX_CHARS = 400
+_ABSOLUTE_INITIAL_QUERY_CAP = 8
 _GAP_EVIDENCE_TYPES = {
     NodeType.SOURCE.value,
     NodeType.STATEMENT.value,
@@ -147,28 +148,33 @@ def _first(d: dict, *keys: str) -> Optional[Any]:
 
 
 def _query_spec(item: Any) -> tuple:
-    """Return ``(text, importance, acceptance_criteria)`` from a query item.
+    """Return the planner-authored fields from a query item.
 
-    Accepts the structured ``{"text", "importance"}`` form or a bare string
-    (lenient parsing). A missing importance is left as ``None`` so the priority
-    model applies its own default.
+    Legacy planner output may still contain ``importance``; it is intentionally
+    ignored because Query priority is derived by the runtime.
 
     Args:
         item: One element of a planner's query list.
 
     Returns:
-        A ``(text, importance)`` tuple.
+        A ``(text, acceptance_criteria, objective_keys)`` tuple.
     """
     if isinstance(item, dict):
         criteria = item.get("acceptance_criteria")
         objective_keys = item.get("objective_keys")
         return (
             item.get("text"),
-            item.get("importance"),
             criteria if isinstance(criteria, list) else [],
             objective_keys if isinstance(objective_keys, list) else [],
         )
-    return item, None, [], []
+    return item, [], []
+
+
+def _initial_query_limit(max_search_rounds: int) -> int:
+    """Return a budget-aware hard limit for discovery Queries."""
+    if max_search_rounds <= 0:
+        return _ABSOLUTE_INITIAL_QUERY_CAP
+    return max(1, min(_ABSOLUTE_INITIAL_QUERY_CAP, (max_search_rounds + 1) // 2))
 
 
 def _gap_key(description: str) -> str:
@@ -282,22 +288,24 @@ class MemoryManager:
                     "existing_goal_id": existing_goals[0]["id"],
                 }
 
-            parsed = self._plan_initial_queries(user_request)
+            max_search_rounds = middleware.get_max_search_rounds()
+            initial_query_limit = _initial_query_limit(max_search_rounds)
+            parsed = self._plan_initial_queries(user_request, initial_query_limit)
             excluded_domains = list(dict.fromkeys(filter(None, (
                 _normalize_domain(item) for item in _string_list(parsed.get("excluded_domains"))
             ))))
             initial_queries = self._select_initial_queries(
                 parsed.get("initial_queries"),
-                [],
-                complexity=parsed.get("request_complexity"),
+                limit=initial_query_limit,
                 excluded_domains=excluded_domains,
             )
             if not initial_queries:
                 parsed = self._plan_initial_queries(
                     user_request,
+                    initial_query_limit,
                     correction=(
                         "The previous response contained no valid literal web-search query. "
-                        "Return the full JSON object again with one to three short, concrete, "
+                        "Return the full JSON object again with a bounded set of short, concrete, "
                         "self-contained search phrases and no report-writing instructions."
                     ),
                 )
@@ -306,8 +314,7 @@ class MemoryManager:
                 ))))
                 initial_queries = self._select_initial_queries(
                     parsed.get("initial_queries"),
-                    [],
-                    complexity=parsed.get("request_complexity"),
+                    limit=initial_query_limit,
                     excluded_domains=excluded_domains,
                 )
             if not initial_queries:
@@ -324,13 +331,8 @@ class MemoryManager:
                 source_preferences=_string_list(parsed.get("source_preferences")),
                 excluded_domains=excluded_domains,
                 excluded_urls=_string_list(parsed.get("excluded_urls")),
-                request_complexity=(
-                    parsed.get("request_complexity")
-                    if parsed.get("request_complexity") in {"simple", "complex"}
-                    else "simple"
-                ),
                 research_state="INITIALIZING",
-                max_search_rounds=middleware.get_max_search_rounds(),
+                max_search_rounds=max_search_rounds,
                 dispatched_search_rounds=0,
                 successful_search_rounds=0,
                 last_convergence_recommendation="continue",
@@ -351,17 +353,17 @@ class MemoryManager:
         queries = []
         objective_by_key = {o["objective_key"]: o for o in objectives}
         for item in initial_queries:
-            text, importance, criteria, objective_keys = _query_spec(item)
+            text, criteria, objective_keys = _query_spec(item)
             if not isinstance(text, str) or not text.strip():
                 continue
-            importance = importance or "supporting"
             query_id = graph_tools.create_query_child(
                 parent_id=goal_id,
                 text=text,
-                importance=importance,
+                importance="core",
                 acceptance_criteria=criteria,
                 objective_keys=[key for key in objective_keys if key in objective_by_key],
                 required_for_parent=False,
+                query_role="discovery",
             )
             for key in objective_keys:
                 objective = objective_by_key.get(key)
@@ -446,21 +448,19 @@ class MemoryManager:
     @staticmethod
     def _select_initial_queries(
         candidates: Any,
-        objectives: list[dict],
-        complexity: Optional[str] = None,
+        limit: int,
         excluded_domains: Optional[list[str]] = None,
     ) -> list[dict]:
-        """Keep the first distinct valid probes without Objective backfilling."""
-        del objectives  # Kept in the signature for existing internal callers.
+        """Keep a bounded set of distinct valid discovery Queries."""
         if not isinstance(candidates, list):
             return []
-        limit = 3 if complexity == "complex" else 1
+        limit = max(1, int(limit))
         selected: list[dict] = []
         seen: set[str] = set()
         for item in candidates or []:
             if not isinstance(item, (dict, str)):
                 continue
-            text, importance, criteria, objective_keys = _query_spec(item)
+            text, criteria, objective_keys = _query_spec(item)
             text = _apply_domain_exclusions(text, excluded_domains or [])
             if _query_text_issue(text):
                 continue
@@ -470,7 +470,6 @@ class MemoryManager:
             seen.add(key)
             selected.append({
                 "text": text,
-                "importance": importance or "supporting",
                 "acceptance_criteria": criteria,
                 "objective_keys": objective_keys,
             })
@@ -1059,6 +1058,8 @@ class MemoryManager:
         prompt = (
             mm_prompts.assess_query.replace("{query}", json.dumps({
                 "text": query.get("text"),
+                "query_role": query.get("query_role") or "research",
+                "objective_keys": query.get("objective_keys") or [],
                 "acceptance_criteria": query.get("acceptance_criteria") or [],
                 "normalized_claims": normalization,
             }, ensure_ascii=False))
@@ -1827,6 +1828,7 @@ class MemoryManager:
                 required_for_parent=False,
                 search_subject_key=subject,
                 expansion_mode=mode,
+                query_role="evidence_gap",
             )
             for key in objective_keys:
                 graph_tools.add_edge(child_id, objective_by_key[key]["id"], EdgeType.COVERS_OBJECTIVE)
@@ -2642,7 +2644,11 @@ class MemoryManager:
         )
         sorted_queries = sorted(
             graph_tools.search_nodes("query", {}),
-            key=lambda query: (query.get("importance") or 0, query.get("id") or ""),
+            key=lambda query: (
+                float(query.get("sem") or 0.0),
+                float(query.get("priority") or 0.0),
+                query.get("id") or "",
+            ),
             reverse=True,
         )
         disclosed_conflicts = report_tools.get_disclosed_conflicts()
@@ -2792,19 +2798,26 @@ class MemoryManager:
     # -----------------------------
     # Internal LLM helpers
     # -----------------------------
-    def _plan_initial_queries(self, user_request: str, correction: str = "") -> dict:
+    def _plan_initial_queries(
+        self,
+        user_request: str,
+        initial_query_limit: int,
+        correction: str = "",
+    ) -> dict:
         """根据用户请求规划初始 Query.
 
         Args:
             user_request: The original research request.
+            initial_query_limit: Runtime-enforced upper bound for discovery Queries.
 
         Returns:
-            dict with ``research_goal``, ``language`` and ``initial_queries``
-            (each ``{text, importance}``).
+            dict with ``research_goal``, ``language`` and ``initial_queries``.
         """
-        prompt = mm_prompts.init_research.replace("{user_request}", user_request) + (
-            f"\n\nCorrection after validation failure: {correction}" if correction else ""
-        )
+        prompt = (
+            mm_prompts.init_research
+            .replace("{user_request}", user_request)
+            .replace("{initial_query_limit}", str(initial_query_limit))
+        ) + (f"\n\nCorrection after validation failure: {correction}" if correction else "")
         return self._invoke_json(prompt)
 
     def _plan_followup_queries(
@@ -2832,7 +2845,7 @@ class MemoryManager:
             max_new: Maximum number of queries to author.
 
         Returns:
-            A list of ``{text, importance}`` dicts (cross-referencing ones dropped).
+            A list of Query specs (cross-referencing ones dropped).
         """
         gaps_text = gaps if isinstance(gaps, str) else json.dumps(gaps or [], ensure_ascii=False)
         excluded_domains = _string_list(research_constraints.get("excluded_domains"))
@@ -2860,7 +2873,7 @@ class MemoryManager:
                 raw_queries = []
             authored_keys: set[str] = set()
             for raw in raw_queries:
-                text, importance, criteria, objective_keys = _query_spec(raw)
+                text, criteria, objective_keys = _query_spec(raw)
                 text = _apply_domain_exclusions(text, excluded_domains)
                 key = _normalize_query_text(text)
                 if _query_text_issue(text) or key in existing_keys or key in authored_keys:
@@ -2868,7 +2881,6 @@ class MemoryManager:
                 authored_keys.add(key)
                 items.append({
                     "text": text,
-                    "importance": importance,
                     "acceptance_criteria": criteria,
                     "objective_keys": objective_keys,
                 })

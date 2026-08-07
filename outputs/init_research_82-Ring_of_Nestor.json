@@ -1,0 +1,80 @@
+{
+  "test": "init_research_planning_stage",
+  "input_path": "outputs/wlc_tavily_baseline_6/_runs/82-Ring_of_Nestor/input.json",
+  "input_id": "82",
+  "input_title": "Ring_of_Nestor",
+  "max_search_rounds": 20,
+  "initial_query_limit": 8,
+  "model": "gpt-5.6-luna",
+  "output": {
+    "research_goal": "Research the subject “Ring of Nestor” and write a clear, concise, neutral, broadly scoped Wikipedia-style article supported by reliable published sources and numbered citations.",
+    "language": "English",
+    "time_window": null,
+    "region_scope": null,
+    "source_preferences": [
+      "reliable published sources"
+    ],
+    "excluded_domains": [
+      "en.wikipedia.org"
+    ],
+    "excluded_urls": [
+      "https://en.wikipedia.org/wiki/Ring_of_Nestor"
+    ],
+    "scope_mode": "bounded",
+    "objectives": [
+      {
+        "objective_key": "sourced_article",
+        "description": "Produce a self-contained, encyclopedic article about “Ring of Nestor” that identifies the subject and covers the main aspects supported by reliable published sources, with a neutral lead, appropriate organization, balanced treatment, and numbered citations with a corresponding References section.",
+        "requirement": "must",
+        "weight": 1.0,
+        "acceptance_criteria": [
+          "The subject is identified using reliable published sources.",
+          "The article’s major factual claims are supported by numbered citations.",
+          "The presentation is neutral, clear, concise, and understandable to a broad audience.",
+          "The article includes a self-contained lead and a corresponding References section with full source URLs.",
+          "No Wikipedia page, including the prohibited URL, is used as a source."
+        ]
+      }
+    ],
+    "initial_queries": [
+      {
+        "text": "\"Ring of Nestor\" -site:en.wikipedia.org",
+        "objective_keys": [],
+        "acceptance_criteria": [
+          "Use reliable sources to confirm the identity of “Ring of Nestor.”",
+          "Identify any naming ambiguity or alternate terminology affecting subsequent searches.",
+          "Obtain canonical terminology and an initial reliable source set for planning further research."
+        ]
+      }
+    ]
+  },
+  "runtime_validation": {
+    "method": "MemoryManager.init_research with the real planner output and in-memory graph adapters",
+    "neo4j_mutated": false,
+    "result": {
+      "goal_id": "goal",
+      "scope_mode": "bounded",
+      "objective_count": 1,
+      "query_count": 1
+    },
+    "created_query": {
+      "handle": "q1",
+      "text": "\"Ring of Nestor\" -site:en.wikipedia.org",
+      "importance": "core",
+      "query_role": "discovery",
+      "objective_keys": []
+    },
+    "checks": {
+      "single_named_subject_produced_one_query": true,
+      "request_complexity_absent": true,
+      "planner_importance_absent": true,
+      "runtime_importance_is_core": true,
+      "runtime_query_role_is_discovery": true,
+      "current_date_not_used_as_time_window": true,
+      "region_not_inferred_from_model_prior": true,
+      "forbidden_domain_added_to_query": true,
+      "forbidden_url_preserved_as_constraint": true,
+      "original_request_preserved_verbatim": true
+    }
+  }
+}

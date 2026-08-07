@@ -131,6 +131,7 @@ def install_fakes():
             "search_subject_key": attrs.get("search_subject_key"),
             "recovery_objective_key": attrs.get("recovery_objective_key"),
             "expansion_mode": attrs.get("expansion_mode"),
+            "query_role": attrs.get("query_role"),
         }
         edge_type = EdgeType.HAS_QUERY if parent_node.get("type") == "UserRequest" else EdgeType.PARENT_OF
         add_edge(parent_id, node_id, edge_type)
@@ -264,6 +265,8 @@ def main():
     vertical = next(item for item in expanded["created"] if item["expansion_mode"] == "vertical")
     horizontal = next(item for item in expanded["created"] if item["expansion_mode"] == "horizontal")
     assert vertical["attach_parent_id"] == "q1" and horizontal["attach_parent_id"] == "goal", expanded
+    assert NODES[vertical["id"]]["query_role"] == "evidence_gap"
+    assert NODES[horizontal["id"]]["query_role"] == "evidence_gap"
     assert NODES[vertical["id"]]["priority"] < NODES["q1"]["priority"]
     assert graph_tools.validate_query_tree()["valid"]
 

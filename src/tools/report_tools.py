@@ -1867,7 +1867,14 @@ def build_context_fallback_report(request: str = "") -> str:
     is_chinese = bool(re.search(r"[\u4e00-\u9fff]", request_text or str(goal.get("language") or "")))
 
     queries = graph_tools.search_nodes("query", {})
-    queries.sort(key=lambda query: (query.get("importance") or 0), reverse=True)
+    queries.sort(
+        key=lambda query: (
+            float(query.get("sem") or 0.0),
+            float(query.get("priority") or 0.0),
+            query.get("id") or "",
+        ),
+        reverse=True,
+    )
 
     topic_sections: list[dict[str, Any]] = []
     all_source_ids: list[str] = []
