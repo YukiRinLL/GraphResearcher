@@ -1,0 +1,21 @@
+{
+  "title": "Research Report",
+  "num_gen_sentences": 19,
+  "num_gt_sentences": 97,
+  "gen_supported_by_wiki": 0,
+  "gen_supported_by_wiki_ratio": 0.0,
+  "gen_not_supported_by_wiki": 19,
+  "gen_not_supported_by_wiki_ratio": 1.0,
+  "gen_conflict_with_wiki": 0,
+  "gen_conflict_with_wiki_ratio": 0.0,
+  "wiki_covered_by_gen": 0,
+  "wiki_covered_by_gen_ratio": 0.0,
+  "wiki_not_covered_by_gen": 97,
+  "wiki_not_covered_by_gen_ratio": 1.0,
+  "wiki_conflict_with_gen": 0,
+  "wiki_conflict_with_gen_ratio": 0.0,
+  "top_k": 0,
+  "avg_top1_sim": 0.0,
+  "alignments": [],
+  "coverage_alignments": []
+}

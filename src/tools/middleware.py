@@ -15,7 +15,7 @@ from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 logger = logging.getLogger(__name__)
 
 # Maximum number of Searcher dispatches per run; 0 (or less) means no limit.
-_MAX_SEARCH_ROUNDS = 0
+_MAX_SEARCH_ROUNDS = 30
 
 
 def configure(max_search_rounds: int) -> None:

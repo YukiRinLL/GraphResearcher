@@ -1,0 +1,1525 @@
+Request: Write a Wikipedia article about 'Ring of Nestor' based on the 
+following rubric. You need to directly research the relevant information and 
+complete the article; you do not need to confirm with the user.
+The current date is `December 15, 2025`.
+
+Rubric:
+---
+Well-written:
+- Clear & Concise: The prose is clear, concise, and understandable to an 
+appropriately broad audience; spelling and grammar are correct.
+1. Articles should be written in encyclopedic style, which differs from the 
+technically dense style found in scholarly writing aimed at specialists. 
+2. Articles should address the topic without twisting the truth or telling 
+"lies-to-children", but should also minimize (unexplained) jargon and not take 
+prior knowledge for granted. 
+3. Articles should be self-contained as much as possible, rather than relying 
+on excessive links to explain unfamiliar concepts.
+- Lead section: In Wikipedia, the lead section is an introduction to an article
+and a summary of its most important contents. It is located at the beginning of
+the article, before the first heading. It is not a news-style lead or "lede" 
+paragraph.
+4. An article's content should begin with an introductory lead section – a 
+concise summary of the article – which is never divided into sections. The 
+remainder of the article is typically divided into sections.
+5. The lead section gives the basics in a nutshell, introduces the article, and
+cultivates interest in reading on—though not by teasing the reader or hinting 
+at what follows.
+6. The lead section should be written in a clear, accessible style with a 
+neutral point of view.
+7. The lead should stand on its own as a concise overview of the article's 
+topic. It should identify the topic, establish context, explain why the topic 
+is notable, and summarize the most important points, including any prominent 
+controversies. The notability of the article's subject is usually established 
+in the first few sentences.
+8. As in the body of the article itself, the emphasis given to material in the 
+lead should roughly reflect its importance to the topic, according to reliable,
+published sources. Apart from basic facts, significant information should not 
+appear in the lead if it is not covered in the remainder of the article.
+9. A lead section should be carefully sourced as appropriate, although it is 
+common for citations to appear in the body and not the lead.
+10. Significant information should not appear in the lead, apart from basic 
+facts, if it is not covered in the remainder of the article, although not 
+everything in the lead must be repeated in the body of the text. Exceptions 
+include specific facts such as quotations, examples, birth dates, taxonomic 
+names and typological classifications, case numbers, and titles.
+- Words to Watch: There are no forbidden words or expressions on Wikipedia, but
+certain expressions should be used with caution because they may introduce bias
+or imprecise meaning. Strive to eliminate expressions that are flattering, 
+disparaging, vague, clichéd, or endorsing of a particular viewpoint.
+11. Puffery: Words such as these are often used without attribution to promote 
+the subject of an article, while neither imparting nor plainly summarizing 
+verifiable information. They are known as "peacock terms" by Wikipedia 
+contributors. Instead of making subjective proclamations about a subject's 
+importance, use facts and attribution to demonstrate it.Words to Watch: 
+legendary, best, great, greatest, acclaimed, iconic, visionary, outstanding, 
+leading, celebrated, popular, award-winning, landmark, cutting-edge, 
+innovative, revolutionary, extraordinary, brilliant, hit, famous, renowned, 
+remarkable, prestigious, world-class, respected, notable, virtuoso, honorable, 
+awesome, unique, pioneering, phenomenal, prominent. 
+12. Contentious labels: Value-laden labels – such as calling an organization a 
+cult, an individual a racist, sexist, terrorist, or freedom fighter, or a 
+sexual practice a perversion – may express contentious opinion and are best 
+avoided unless widely used by reliable sources to describe the subject, in 
+which case use in-text attribution. Avoid myth in its informal sense, and 
+establish the scholarly context for any formal use of the term.Words to Watch: 
+cult, racist, perverted, sexist, homophobic, transphobic, misogynistic, sect, 
+fundamentalist, heretic, extremist, denialist, terrorist, freedom fighter, 
+bigot, myth, neo-Nazi, -gate, pseudo-, controversial. 
+13. Unsupported attributions: These words may disguise a biased view. Claims 
+about what people say, think, feel, or believe, and what has been shown, 
+demonstrated, or proved should be clearly attributed.Words to Watch: ​some 
+people say, many people remember, many scholars state, it is 
+believed/regarded/considered, many are of the opinion, most feel, experts 
+declare, it is often reported, it is widely thought, research has shown, 
+science says, scientists claim, it is often said, officially, is widely 
+regarded as, X has been described as Y.
+14. Expressions of doubt: When these are used, ensure that the source of the 
+accusation is clear. Words to Watch: supposed, apparent, purported, alleged, 
+accused, so-called ...   Also, scare-quoting: a Yale "report"; undue emphasis: 
+"... a Baptist church".
+15. Editorializing: These words should usually be avoided so as to maintain an 
+impartial tone.​Words to Watch: notably, it should be noted, arguably, 
+interestingly, essentially, utterly, actually, only, clearly, absolutely, of 
+course, without a doubt, indeed, happily, sadly, tragically, aptly, 
+fortunately, unfortunately, untimely.
+16. Synonyms for said: In some types of writing, repeated use of said is 
+considered tedious, and writers are encouraged to employ synonyms. On 
+Wikipedia, it is more important to avoid language that makes undue 
+implications.Words to Watch: reveal, point out, clarify, expose, explain, find,
+note, observe, insist, speculate, surmise, claim, assert, admit, confess, deny,
+confirm ...
+17. Euphemisms: Euphemisms should generally be avoided in favor of more neutral
+and precise terms.​Words to Watch: passed away, gave her life, eternal rest, 
+make love, an issue with, collateral damage, differently abled.
+18. Clichés and idioms: Clichés and idioms should generally be avoided in favor
+of direct, literal expressions.Words to watch: lion's share, tip of the 
+iceberg, white elephant, gild the lily, take the plunge, ace up the sleeve, 
+bird in the hand, twist of fate, at the end of the day.
+19. Relative time references: Prefer specific statements to general ones.Words 
+to watch: recently, lately, currently, today, presently, to date, X years ago, 
+formerly, in the past, traditionally, this/last/next 
+(year/month/winter/spring/summer/fall/autumn), yesterday, tomorrow, in the 
+future, now, to this day, soon, since.
+20. Unspecified places or events: Prefer specific statements to general 
+ones.Words to watch: this country, here, there, somewhere, sometimes, often, 
+occasionally, somehow.
+21. Survived by: Phrasing such as "Smith died in 1982, survived by her husband 
+Jack and two sons" should be avoided; this information can be made more 
+complete and spread out through the article.Words to watch: is/was survived by,
+[Name]'s survivors include.
+---
+Broad in its coverage:
+1. It addresses the main aspects of the topic.
+2. The lead, ideally the introductory sentence or at least introductory 
+paragraph, of an article, should make clear what the scope of the article is.
+3. All material that is notable, referenced, and that a reader would be likely 
+to agree matches the specified scope must be covered (at least in a summarized 
+fashion).
+4. What reliable sources say about material that is out of scope for the 
+decided-upon subject is largely irrelevant to that article and can be removed.
+5. It stays focused on the topic without going into unnecessary detail.
+6. The lead contains a quick summary of the topic's most important points.
+7. Each major subtopic is detailed in its own section of the article.
+8. It contains no irrelevant (nor only loosely relevant) information.
+---
+Neutral:
+Achieving what the Wikipedia community understands as neutrality means 
+carefully and critically analyzing a variety of reliable sources and then 
+attempting to convey to the reader the information contained in them fairly, 
+proportionately, and as far as possible without editorial bias. Wikipedia aims 
+to describe disputes, but not engage in them. The aim is to inform, not 
+influence. Editors, while naturally having their own points of view, should 
+strive in good faith to provide complete information and not to promote one 
+particular point of view over another. The neutral point of view does not mean 
+the exclusion of certain points of view; rather, it means including all 
+verifiable points of view which have sufficient due weight. Observe the 
+following principles to help achieve the level of neutrality that is 
+appropriate for an encyclopedia:
+1. It represents viewpoints fairly and without editorial bias, giving due 
+weight to each.
+2. Avoid stating opinions as facts. Usually, articles will contain information 
+about the significant opinions that have been expressed about their subjects. 
+However, these opinions should not be stated in Wikipedia's voice. Rather, they
+should be attributed in the text to particular sources, or where justified, 
+described as widespread views, etc. For example, an article should not state 
+that genocide is an evil action but may state that genocide has been described 
+by John So-and-so as the epitome of human evil.
+3. Avoid stating seriously contested assertions as facts. If different reliable
+sources make conflicting assertions about a matter, treat these assertions as 
+opinions rather than facts, and do not present them as direct statements.
+4. Avoid stating facts as opinions. Uncontested and uncontroversial factual 
+assertions made by reliable sources should normally be directly stated in 
+Wikipedia's voice, for example the sky is blue not [name of source] believes 
+the sky is blue. Unless a topic specifically deals with a disagreement over 
+otherwise uncontested information, there is no need for specific attribution 
+for the assertion, although it is helpful to add a reference link to the source
+in support of verifiability. Further, the passage should not be worded in any 
+way that makes it appear to be contested.
+5. Prefer nonjudgmental language. A neutral point of view neither sympathizes 
+with nor disparages its subject (or what reliable sources say about the 
+subject), although this must sometimes be balanced against clarity. Present 
+opinions and conflicting findings in a disinterested tone. Do not editorialize.
+When editorial bias towards one particular point of view can be detected the 
+article needs to be fixed. The only bias that should be evident is the bias 
+attributed to the source.
+6. Indicate the relative prominence of opposing views. Ensure that the 
+reporting of different views on a subject adequately reflects the relative 
+levels of support for those views and that it does not give a false impression 
+of parity, or give undue weight to a particular view. For example, to state 
+that According to Simon Wiesenthal, the Holocaust was a program of 
+extermination of the Jewish people in Germany, but David Irving disputes this 
+analysis would be to give apparent parity between the supermajority view and a 
+tiny minority view by assigning each to a single activist in the field.
+7. An article should not give undue weight to minor aspects of its subject but 
+should strive to treat each aspect with a weight proportional to its treatment 
+in the body of reliable, published material on the subject.
+8. Any inclusion of fringe or pseudoscientific views should not give them undue
+weight. The fringe or pseudoscientific view should be clearly described as 
+such. An explanation of how experts in the relevant field have reacted to such 
+views should be prominently included. 
+9. In the case of beliefs and practices, Wikipedia content should not only 
+encompass what motivates individuals who hold these beliefs and practices but 
+also account for how such beliefs and practices developed. Wikipedia articles 
+on history and religion draw from religion's sacred texts as primary sources 
+and modern archaeological, historical, and scientific works as secondary and 
+tertiary sources.
+10. Article titles that combine alternative names are discouraged. For example,
+names such as "Derry/Londonderry", "Aluminium/Aluminum", and "Flat Earth (Round
+Earth)" should not be used. Instead, alternative names should be given their 
+due prominence within the article itself, and redirects created as appropriate.
+---
+IMPORTANT:
+1. You are prohibited from searching any Wikipedia pages (always use 
+-site:en.wikipedia.org when searching); otherwise, it will be considered 
+cheating.
+2. You are prohibited from reading the webpage at 
+https://en.wikipedia.org/wiki/Ring_of_Nestor. If this page appears in your 
+references, it will be regarded as invalid research.
+3. Ensure all factual claims are backed by citations. Use bracketed numbers 
+(e.g., [1], [2]) for in-text citations. At the very end of the article, include
+a dedicated 'References' section that lists the corresponding full URLs for 
+each number.
+Output dir: outputs\test_v14\_runs\82-Ring_of_Nestor | max search rounds: 12
+
+[HumanMessage] Write a Wikipedia article about 'Ring of Nestor' based on the 
+following rubric. You need to directly research the relevant information and 
+complete the article; you do not need to confirm with the user.
+The current date is `December 15, 2025`.
+
+Rubric:
+---
+Well-written:
+- Clear & Concise: The prose is clear, concise, and understandable to an 
+appropriately broad audience; spelling and grammar are correct.
+1. Articles should be written in encyclopedic style, which differs from the 
+technically dense style found in scholarly writing aimed at specialists. 
+2. Articles should address the topic without twisting the truth or telling 
+"lies-to-children", but should also minimize (unexplained) jargon and not take 
+prior knowledge for granted. 
+3. Articles should be self-contained as much as possible, rather than relying 
+on excessive links to explain unfamiliar concepts.
+- Lead section: In Wikipedia, the lead section is an introduction to an article
+and a summary of its most important contents. It is located at the beginning of
+the article, before the first heading. It is not a news-style lead or "lede" 
+paragraph.
+4. An article's content should begin with an introductory lead section – a 
+concise summary of the article – which is never divided into sections. The 
+remainder of the article is typically divided into sections.
+5. The lead section gives the basics in a nutshell, introduces the article, and
+cultivates interest in reading on—though not by teasing the reader or hinting 
+at what follows.
+6. The lead section should be written in a clear, accessible style with a 
+neutral point of view.
+7. The lead should stand on its own as a concise overview of the article's 
+topic. It should identify the topic, establish context, explain why the topic 
+is notable, and summarize the most important points, including any prominent 
+controversies. The notability of the article's subject is usually established 
+in the first few sentences.
+8. As in the body of the article itself, the emphasis given to material in the 
+lead should roughly reflect its importance to the topic, according to reliable,
+published sources. Apart from basic facts, significant information should not 
+appear in the lead if it is not covered in the remainder of the article.
+9. A lead section should be carefully sourced as appropriate, although it is 
+common for citations to appear in the body and not the lead.
+10. Significant information should not appear in the lead, apart from basic 
+facts, if it is not covered in the remainder of the article, although not 
+everything in the lead must be repeated in the body of the text. Exceptions 
+include specific facts such as quotations, examples, birth dates, taxonomic 
+names and typological classifications, case numbers, and titles.
+- Words to Watch: There are no forbidden words or expressions on Wikipedia, but
+certain expressions should be used with caution because they may introduce bias
+or imprecise meaning. Strive to eliminate expressions that are flattering, 
+disparaging, vague, clichéd, or endorsing of a particular viewpoint.
+11. Puffery: Words such as these are often used without attribution to promote 
+the subject of an article, while neither imparting nor plainly summarizing 
+verifiable information. They are known as "peacock terms" by Wikipedia 
+contributors. Instead of making subjective proclamations about a subject's 
+importance, use facts and attribution to demonstrate it.Words to Watch: 
+legendary, best, great, greatest, acclaimed, iconic, visionary, outstanding, 
+leading, celebrated, popular, award-winning, landmark, cutting-edge, 
+innovative, revolutionary, extraordinary, brilliant, hit, famous, renowned, 
+remarkable, prestigious, world-class, respected, notable, virtuoso, honorable, 
+awesome, unique, pioneering, phenomenal, prominent. 
+12. Contentious labels: Value-laden labels – such as calling an organization a 
+cult, an individual a racist, sexist, terrorist, or freedom fighter, or a 
+sexual practice a perversion – may express contentious opinion and are best 
+avoided unless widely used by reliable sources to describe the subject, in 
+which case use in-text attribution. Avoid myth in its informal sense, and 
+establish the scholarly context for any formal use of the term.Words to Watch: 
+cult, racist, perverted, sexist, homophobic, transphobic, misogynistic, sect, 
+fundamentalist, heretic, extremist, denialist, terrorist, freedom fighter, 
+bigot, myth, neo-Nazi, -gate, pseudo-, controversial. 
+13. Unsupported attributions: These words may disguise a biased view. Claims 
+about what people say, think, feel, or believe, and what has been shown, 
+demonstrated, or proved should be clearly attributed.Words to Watch: ​some 
+people say, many people remember, many scholars state, it is 
+believed/regarded/considered, many are of the opinion, most feel, experts 
+declare, it is often reported, it is widely thought, research has shown, 
+science says, scientists claim, it is often said, officially, is widely 
+regarded as, X has been described as Y.
+14. Expressions of doubt: When these are used, ensure that the source of the 
+accusation is clear. Words to Watch: supposed, apparent, purported, alleged, 
+accused, so-called ...   Also, scare-quoting: a Yale "report"; undue emphasis: 
+"... a Baptist church".
+15. Editorializing: These words should usually be avoided so as to maintain an 
+impartial tone.​Words to Watch: notably, it should be noted, arguably, 
+interestingly, essentially, utterly, actually, only, clearly, absolutely, of 
+course, without a doubt, indeed, happily, sadly, tragically, aptly, 
+fortunately, unfortunately, untimely.
+16. Synonyms for said: In some types of writing, repeated use of said is 
+considered tedious, and writers are encouraged to employ synonyms. On 
+Wikipedia, it is more important to avoid language that makes undue 
+implications.Words to Watch: reveal, point out, clarify, expose, explain, find,
+note, observe, insist, speculate, surmise, claim, assert, admit, confess, deny,
+confirm ...
+17. Euphemisms: Euphemisms should generally be avoided in favor of more neutral
+and precise terms.​Words to Watch: passed away, gave her life, eternal rest, 
+make love, an issue with, collateral damage, differently abled.
+18. Clichés and idioms: Clichés and idioms should generally be avoided in favor
+of direct, literal expressions.Words to watch: lion's share, tip of the 
+iceberg, white elephant, gild the lily, take the plunge, ace up the sleeve, 
+bird in the hand, twist of fate, at the end of the day.
+19. Relative time references: Prefer specific statements to general ones.Words 
+to watch: recently, lately, currently, today, presently, to date, X years ago, 
+formerly, in the past, traditionally, this/last/next 
+(year/month/winter/spring/summer/fall/autumn), yesterday, tomorrow, in the 
+future, now, to this day, soon, since.
+20. Unspecified places or events: Prefer specific statements to general 
+ones.Words to watch: this country, here, there, somewhere, sometimes, often, 
+occasionally, somehow.
+21. Survived by: Phrasing such as "Smith died in 1982, survived by her husband 
+Jack and two sons" should be avoided; this information can be made more 
+complete and spread out through the article.Words to watch: is/was survived by,
+[Name]'s survivors include.
+---
+Broad in its coverage:
+1. It addresses the main aspects of the topic.
+2. The lead, ideally the introductory sentence or at least introductory 
+paragraph, of an article, should make clear what the scope of the article is.
+3. All material that is notable, referenced, and that a reader would be likely 
+to agree matches the specified scope must be covered (at least in a summarized 
+fashion).
+4. What reliable sources say about material that is out of scope for the 
+decided-upon subject is largely irrelevant to that article and can be removed.
+5. It stays focused on the topic without going into unnecessary detail.
+6. The lead contains a quick summary of the topic's most important points.
+7. Each major subtopic is detailed in its own section of the article.
+8. It contains no irrelevant (nor only loosely relevant) information.
+---
+Neutral:
+Achieving what the Wikipedia community understands as neutrality means 
+carefully and critically analyzing a variety of reliable sources and then 
+attempting to convey to the reader the information contained in them fairly, 
+proportionately, and as far as possible without editorial bias. Wikipedia aims 
+to describe disputes, but not engage in them. The aim is to inform, not 
+influence. Editors, while naturally having their own points of view, should 
+strive in good faith to provide complete information and not to promote one 
+particular point of view over another. The neutral point of view does not mean 
+the exclusion of certain points of view; rather, it means including all 
+verifiable points of view which have sufficient due weight. Observe the 
+following principles to help achieve the level of neutrality that is 
+appropriate for an encyclopedia:
+1. It represents viewpoints fairly and without editorial bias, giving due 
+weight to each.
+2. Avoid stating opinions as facts. Usually, articles will contain information 
+about the significant opinions that have been expressed about their subjects. 
+However, these opinions should not be stated in Wikipedia's voice. Rather, they
+should be attributed in the text to particular sources, or where justified, 
+described as widespread views, etc. For example, an article should not state 
+that genocide is an evil action but may state that genocide has been described 
+by John So-and-so as the epitome of human evil.
+3. Avoid stating seriously contested assertions as facts. If different reliable
+sources make conflicting assertions about a matter, treat these assertions as 
+opinions rather than facts, and do not present them as direct statements.
+4. Avoid stating facts as opinions. Uncontested and uncontroversial factual 
+assertions made by reliable sources should normally be directly stated in 
+Wikipedia's voice, for example the sky is blue not [name of source] believes 
+the sky is blue. Unless a topic specifically deals with a disagreement over 
+otherwise uncontested information, there is no need for specific attribution 
+for the assertion, although it is helpful to add a reference link to the source
+in support of verifiability. Further, the passage should not be worded in any 
+way that makes it appear to be contested.
+5. Prefer nonjudgmental language. A neutral point of view neither sympathizes 
+with nor disparages its subject (or what reliable sources say about the 
+subject), although this must sometimes be balanced against clarity. Present 
+opinions and conflicting findings in a disinterested tone. Do not editorialize.
+When editorial bias towards one particular point of view can be detected the 
+article needs to be fixed. The only bias that should be evident is the bias 
+attributed to the source.
+6. Indicate the relative prominence of opposing views. Ensure that the 
+reporting of different views on a subject adequately reflects the relative 
+levels of support for those views and that it does not give a false impression 
+of parity, or give undue weight to a particular view. For example, to state 
+that According to Simon Wiesenthal, the Holocaust was a program of 
+extermination of the Jewish people in Germany, but David Irving disputes this 
+analysis would be to give apparent parity between the supermajority view and a 
+tiny minority view by assigning each to a single activist in the field.
+7. An article should not give undue weight to minor aspects of its subject but 
+should strive to treat each aspect with a weight proportional to its treatment 
+in the body of reliable, published material on the subject.
+8. Any inclusion of fringe or pseudoscientific views should not give them undue
+weight. The fringe or pseudoscientific view should be clearly described as 
+such. An explanation of how experts in the relevant field have reacted to such 
+views should be prominently included. 
+9. In the case of beliefs and practices, Wikipedia content should not only 
+encompass what motivates individuals who hold these beliefs and practices but 
+also account for how such beliefs and practices developed. Wikipedia articles 
+on history and religion draw from religion's sacred texts as primary sources 
+and modern archaeological, historical, and scientific works as secondary and 
+tertiary sources.
+10. Article titles that combine alternative names are discouraged. For example,
+names such as "Derry/Londonderry", "Aluminium/Aluminum", and "Flat Earth (Round
+Earth)" should not be used. Instead, alternative names should be given their 
+due prominence within the article itself, and redirects created as appropriate.
+---
+IMPORTANT:
+1. You are prohibited from searching any Wikipedia pages (always use 
+-site:en.wikipedia.org when searching); otherwise, it will be considered 
+cheating.
+2. You are prohibited from reading the webpage at 
+https://en.wikipedia.org/wiki/Ring_of_Nestor. If this page appears in your 
+references, it will be regarded as invalid research.
+3. Ensure all factual claims are backed by citations. Use bracketed numbers 
+(e.g., [1], [2]) for in-text citations. At the very end of the article, include
+a dedicated 'References' section that lists the corresponding full URLs for 
+each number.
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+[AIMessage → tool] init_research({})
+INFO:tools.middleware:wrap_tool_call: tool_call=init_research
+INFO:tools.middleware:_gate_reporter called with tool_call: name=init_research, args_keys=[]
+INFO:tools.middleware:Not a task tool call (name=init_research), skipping gate
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+[init_research result] {"goal_id": "20260804175418006833_c98c444e", 
+"research_goal": "Research the Ring of Nestor and write a well-sourced, 
+encyclopedic Wikipedia-style article covering its identity, archaeological 
+context, discovery, physical description, interpretation, authenticity debate, 
+and scholarly reception.", "language": "English", "scope_mode": "bounded", 
+"objectives": [{"id": "20260804175418034778_5538cf14", "type": "Analysis", 
+"coverage": 0.0, "analysis_type": "objective", "confidence": 0.0, 
+"description": "Establish what the Ring of Nestor is, its proposed date and 
+cultural context, location or findspot, and significance in the study of Aegean
+archaeology.", "weight": 1.0, "requirement": "must", "low_gain_streak": 0, 
+"last_evaluated_successful_rounds": 0, "text": "Establish what the Ring of 
+Nestor is, its proposed date and cultural context, location or findspot, and 
+significance in the study of Aegean archaeology.", "objective_key": 
+"identity_context", "acceptance_criteria": ["Defines the object without 
+conflating it with other rings or figures named Nestor", "Provides dates, 
+cultural attribution, and findspot only where supported by reliable sources"], 
+"status": "open"}, {"id": "20260804175418082648_a16ab890", "type": "Analysis", 
+"coverage": 0.0, "analysis_type": "objective", "confidence": 0.0, 
+"description": "Summarize the object's discovery, documentation, ownership or 
+institutional history, and subsequent scholarly treatment.", "weight": 0.9, 
+"requirement": "must", "low_gain_streak": 0, 
+"last_evaluated_successful_rounds": 0, "text": "Summarize the object's 
+discovery, documentation, ownership or institutional history, and subsequent 
+scholarly treatment.", "objective_key": "discovery_history", 
+"acceptance_criteria": ["Identifies documented discoverers, collectors, 
+institutions, dates, and provenance claims", "Distinguishes established 
+evidence from disputed or uncertain accounts"], "status": "open"}, {"id": 
+"20260804175418095960_87eea713", "type": "Analysis", "coverage": 0.0, 
+"analysis_type": "objective", "confidence": 0.0, "description": "Describe the 
+ring's material, form, imagery, and the principal archaeological or religious 
+interpretations proposed for it.", "weight": 0.9, "requirement": "must", 
+"low_gain_streak": 0, "last_evaluated_successful_rounds": 0, "text": "Describe 
+the ring's material, form, imagery, and the principal archaeological or 
+religious interpretations proposed for it.", "objective_key": 
+"description_interpretation", "acceptance_criteria": ["Reports physical and 
+iconographic details from authoritative sources", "Attributes competing 
+interpretations and avoids presenting speculation as fact"], "status": "open"},
+{"id": "20260804175418145515_d9ee2fa9", "type": "Analysis", "coverage": 0.0, 
+"analysis_type": "objective", "confidence": 0.0, "description": "Present the 
+evidence and scholarly debate concerning the Ring of Nestor's authenticity, 
+dating, and status, including the balance of views in reliable literature.", 
+"weight": 1.0, "requirement": "must", "low_gain_streak": 0, 
+"last_evaluated_successful_rounds": 0, "text": "Present the evidence and 
+scholarly debate concerning the Ring of Nestor's authenticity, dating, and 
+status, including the balance of views in reliable literature.", 
+"objective_key": "authenticity_reception", "acceptance_criteria": ["Clearly 
+identifies the principal authenticity and dating positions", "Represents 
+disagreement proportionately and cites the underlying publications"], "status":
+"open"}, {"id": "20260804175418157882_fa78b3f8", "type": "Analysis", 
+"coverage": 0.0, "analysis_type": "objective", "confidence": 0.0, 
+"description": "Deliver a clear, concise, neutral, broad-coverage article with 
+a self-contained lead, logical sections, bracketed in-text citations, and a 
+numbered References section containing full URLs.", "weight": 0.8, 
+"requirement": "must", "low_gain_streak": 0, 
+"last_evaluated_successful_rounds": 0, "text": "Deliver a clear, concise, 
+neutral, broad-coverage article with a self-contained lead, logical sections, 
+bracketed in-text citations, and a numbered References section containing full 
+URLs.", "objective_key": "article_quality", "acceptance_criteria": ["Uses 
+encyclopedic prose and neutral attribution", "Every factual claim is supported 
+by a citation", "References correspond to bracketed citations and include full 
+URLs"], "status": "open"}], "queries": [{"handle": "q1", "id": 
+"20260804175418203017_3394743b", "text": "Ring of Nestor 
+-site:en.wikipedia.org", "priority_tier": "high", "acceptance_criteria": 
+["Finds authoritative sources identifying the specific artifact and its 
+archaeological, documentary, and scholarly context"], "objective_keys": 
+["identity_context", "discovery_history", "description_interpretation", 
+"authenticity_reception"]}]}
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+[AIMessage → tool] get_next_actions({'limit': 4})
+INFO:tools.middleware:wrap_tool_call: tool_call=get_next_actions
+INFO:tools.middleware:_gate_reporter called with tool_call: name=get_next_actions, args_keys=['limit']
+INFO:tools.middleware:Not a task tool call (name=get_next_actions), skipping gate
+INFO:agents.memory_manager:get_next_actions: total_searches=0, budget_exhausted=False
+[get_next_actions result] [{"action": "dispatch_searcher", "query_id": 
+"20260804175418203017_3394743b", "query_handle": "q1", "priority": 1.0, 
+"required_for_parent": false, "required_path": false, "semantic_importance": 
+1.0, "gap_ids": [], "reason": "query awaits its first successful search"}]
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+[AIMessage → tool] dispatch_searcher({'query_id': 
+'20260804175418203017_3394743b'})
+INFO:tools.middleware:wrap_tool_call: tool_call=dispatch_searcher
+INFO:tools.middleware:_gate_reporter called with tool_call: name=dispatch_searcher, args_keys=['query_id']
+INFO:tools.middleware:Not a task tool call (name=dispatch_searcher), skipping gate
+INFO:neo4j.notifications:Received notification from DBMS server: <GqlStatusObject gql_status='03N90', status_description="info: cartesian product. The disconnected pattern '(q:Query {id: $query_id}), (g:UserRequest {id: $goal_id})' builds a cartesian product. A cartesian product may produce a large amount of data and slow down query processing.", position=<SummaryInputPosition line=2, column=13, offset=13>, raw_classification='PERFORMANCE', classification=<NotificationClassification.PERFORMANCE: 'PERFORMANCE'>, raw_severity='INFORMATION', severity=<NotificationSeverity.INFORMATION: 'INFORMATION'>, diagnostic_record={'_classification': 'PERFORMANCE', '_severity': 'INFORMATION', '_position': {'offset': 13, 'line': 2, 'column': 13}, 'OPERATION': '', 'OPERATION_CODE': '0', 'CURRENT_SCHEMA': '/'}> for query: "\n            MATCH (q:Query {id: $query_id}), (g:UserRequest {id: $goal_id})\n            SET q._claim_lock = coalesce(q._claim_lock, 0) + 1,\n                g._budget_lock = coalesce(g._budget_lock, 0) + 1\n            WITH q, g\n            WHERE q.status = 'pending'\n              AND coalesce(q.successful_search_runs, 0) = 0\n              AND (\n                coalesce(g.max_search_rounds, 0) <= 0\n                OR coalesce(g.dispatched_search_rounds, 0) < g.max_search_rounds\n              )\n            SET q.status = 'searching',\n                q.search_attempts = coalesce(q.search_attempts, 0) + 1,\n                g.dispatched_search_rounds = coalesce(g.dispatched_search_rounds, 0) + 1\n            CREATE (r:SearchRun {\n                id: $run_id,\n                context: $context,\n                query_id: $query_id,\n                status: 'running',\n                attempt: q.search_attempts\n            })\n            MERGE (q)-[:SEARCHED_BY]->(r)\n            RETURN r.id AS search_run_id,\n                   q.search_attempts AS attempt,\n                   g.dispatched_search_rounds AS dispatched_search_rounds\n            "
+[tools:52ad2809-ffd8-f645-41ac-5354bf19f9ba] [HumanMessage] Ring of Nestor 
+-site:en.wikipedia.org
+[tools:52ad2809-ffd8-f645-41ac-5354bf19f9ba] [AIMessage] {"query": "Ring of 
+Nestor", "error": null, "kept_results": [{"title": "Catalog Record: ʻThe ring 
+of Nestor;̓ a glimpse into the Minoan after-world, and a sepulchral treasure of
+gold signet-rings and bead-seals from Thisbê, Boeotia", "url": 
+"https://catalog.hathitrust.org/Record/000609034", "content": "by Sir Arthur 
+Evans. With five plates, one coloured and four collotype, and fifty-four 
+figures in the text.\n\n## Description\n\n### Tools\n\nCite thisExport citation
+file\n\nMain AuthorEvans, Arthur, Sir, 1851-1941.\n\nLanguage(s) English 
+\n\nPublished London, Macmillan and Co., Limited, 1925.\n\nSubjectsJewelry, 
+Ancient.\n\nCivilization, Mycenaean.\n\nThisbe, Greece.\n\nNote \"This book is 
+published separately, by permission, from a paper in the Journal of Hellenic 
+studies (April, 1925)\" [...] By logging into HathiTrust, you agree to follow 
+our Acceptable Use Policy.\n\nContinue\n\nCan't find your university or 
+library? See options to log in as a guest\n\n   Log In\n\nSearch\n\n You're 
+searching in All Fields for all items.\n\nSearch HelpAdvanced Search\n\nImage 
+4\n\n# ʻThe ring of Nestor;̓\n\na glimpse into the Minoan after-world, and a 
+sepulchral treasure of gold signet-rings and bead-seals from Thisbê, Boeotia, 
+[...] University of Guelph \n       University of Hawaii \n       University of
+Houston \n       University of Illinois Chicago \n       University of Illinois
+at Urbana-Champaign \n       University of Iowa \n       University of Kansas 
+\n       University of Kentucky \n       University of Maine \n       
+University of Manitoba \n       University of Maryland, College Park \n       
+University of Massachusetts Amherst \n       University of Melbourne \n       
+University of Miami", "raw_content_chars": 19691, "published_at": null, 
+"score": 0.79637206}, {"title": "some observations on the iconography of the 
+'ring of nestor'", "url": 
+"https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_
+RING_OF_NESTOR_", "content": "A group of Late Minoan signet rings fashioned in 
+precious metals and engraved with complex and evocative iconographic schemes 
+appears to depict ‘nature’ or ‘rural’ cults enacted at extra-urban sanctuaries,
+and may have functioned as inalienable possessions implicated in the expression
+and maintenance of elite identities during the Aegean Bronze Age. The images on
+the ring bezels depict human figures in association with epiphanic figures 
+situated in settings characterised by the presence of [...] The many years of 
+research that led to the present paper on the so-called Ring of Nestor (CMS VI,
+nο. 277), with the documentation of its authenticity, have offered me the 
+opportunity to discuss the cases of erroneous identifications of some 
+Creto-Mycenaean gold rings as fakes . This tendency, underpinned by the obscure
+– even legendary – circumstances in which these rings were found, not only the 
+Ring of Nestor but also the Ring of Minos, has been reassessed completely in 
+favour of their [...] The so-called Nestor Ring was found in 1924 and was 
+accepted as authentic by Sir Arthur Evans whereas many other scholars condemned
+it as a forgery. In recent years, scholars have claimed its authenticity anew. 
+This article examines the background of the find circumstances and judges them 
+suspicious. It also adds the criterion of semantic coherence in the debate and 
+argues that the coherence depends on Egyptian prototypes and that the use of 
+the butterfly motif argues against the artifact’s", "raw_content_chars": 20000,
+"published_at": null, "score": 0.7738498}, {"title": "The Ring of Nestor: a 
+Glimpse into the Minoan After-World and a Sepulchral Treasure of Gold 
+Signet-Rings and Bead-Seals from Thisbe, Boeotia | Nature", "url": 
+"https://www.nature.com/articles/116635a0", "content": "CHILDE, V.\nThe Ring of
+Nestor: a Glimpse into the Minoan After-World and a Sepulchral Treasure of Gold
+Signet-Rings and Bead-Seals from Thisbe, Boeotia\n.\nNature 116, 635–636 
+(1925). \n\nDownload citation\n\nIssue date: 31 October 1925\n\nDOI: \n\n### 
+Share this article\n\nAnyone you share the following link with will be able to 
+read this content:\n\nSorry, a shareable link is not currently available for 
+this article.\n\nProvided by the Springer Nature SharedIt content-sharing 
+initiative\n\nAdvertisement [...] The Ring of Nestor: a Glimpse into the Minoan
+After-World and a Sepulchral Treasure of Gold Signet-Rings and Bead-Seals from 
+Thisbe, Boeotia.\n\nBy Sir Arthur Evans. Pp. ii + 75 + 5 plates. (London: 
+Macmillan and Co., Ltd., 1925.) 12s. 6d. net.\n\n## Enjoying our latest 
+content? Log in or create an account to continue\n\nor\n\nSearch author 
+on:PubMed Google Scholar\n\n## Rights and permissions\n\nReprints and 
+permissions\n\n## About this article\n\n### Cite this article [...] # The Ring 
+of Nestor: a Glimpse into the Minoan After-World and a Sepulchral Treasure of 
+Gold Signet-Rings and Bead-Seals from Thisbe, Boeotia\n\nNature\nvolume 116, 
+pages 635–636 (1925) Cite this article\n\n215 Accesses\n\n3 
+Altmetric\n\nMetrics details\n\n## Abstract", "raw_content_chars": 4672, 
+"published_at": null, "score": 0.69746524}, {"title": "The Pseudo-Minoan Nestor
+Ring and Its Egyptian ...", "url": 
+"https://journals.librarypublishing.arizona.edu/jaei/article/id/960", 
+"content": "The so-called Nestor Ring was found in 1924 and was accepted as 
+authentic by Sir Arthur Evans whereas many other scholars condemned it as a 
+forgery. In recent years, scholars have claimed its authenticity anew. This 
+article examines the background of the find circumstances and judges them 
+suspicious. It also adds the criterion of semantic coherence in the debate and 
+argues that the coherence depends on Egyptian prototypes and that the use of 
+the butterfly motif argues against the artifact’s [...] the artifact’s 
+authenticity. [...] |  |  |\n --- |\n| Pages | 17-27 |\n| Published on | 
+2011-05-16 |\n\n#### Licence\n\nAll rights reserved\n\n#### Identifiers\n\n 
+DOI: \n\n#### Peer Review\n\nThis article has been peer reviewed.\n\n#### File 
+Checksums (MD5)\n\n PDF: 6fd39c861c09727567c1b14d913f9d56\n\n#### Non 
+Specialist Summary\n\nThis article has no summary", "raw_content_chars": 1872, 
+"published_at": null, "score": 0.6755297}, {"title": "Evans, Arthur J.: \"The 
+ring of Nestor\". A glimpse into the ...", "url": 
+"https://digi.ub.uni-heidelberg.de/diglit/evans1925?ui_lang=eng", "content": 
+"Heidelberg historic literature – digitized\n\nImage 1: Universitätsbibliothek 
+HeidelbergImage 2: Universitätsbibliothek Heidelberg\n\n1.   Homepage\n2.   
+Digital Library\n3.   Heidelberg historic literature– digitized\n4.   \"The 
+ring of Nestor\". A glimps ...\n\n   Watch list 0\n   \n   Login\n\nThere are  
+annotations to individual pages of this facsimile. Individual pages with 
+annotations are marked in \"Overview\" with the symbol .\n\nAnnotation 
+list\n\nYou might also be interested in…(beta)\n\nPage [...] Page\n\nFull text 
+search\n\nInformation about full text search/OCR\n\n## Content\n\n   
+Titelblatt\n   1-42 I. Sepulchral treasure of gold signet-rings and bead-seals 
+from Thisbê, Boeotia\n   43-75 II. A glimpse into the Minoan after-world\n   
+Tafel I - V\n\n\n\n\n\nAnnotationen\n\n\n\n List \n\nRefreshImport from 
+URLImport latest draft\n\n (Guest) \n\n[Log in]( an account](\n\n⚙\n\nLoading 
+annotations…\n\nImage 5: DWork by UB HeidelbergOnline since 
+17.06.2008.\n\n##### Feedback\n\n×Close [...] Draft title:\n\nIf empty, the 
+annotation's title will be used. Your input will be automatically adjusted to 
+meet the restrictions: Must consist of only lowercase letters (a-z), digits 
+(0-9), low lone (_) and/or hyphen-minus (-) and must be at most 64 characters 
+long.\n\nAuto-adjusted::\n\n`not_specified`\n\n- [x]  Save as template \n\n_💾_
+Save draft\n\n#### Existing Drafts\n\nRefresh\n\nThe drafts list has not been 
+loaded yet. Click \"Refresh\" to load the current list.\n\n##### ▾ Drafts for 
+this annotation (0)", "raw_content_chars": 9083, "published_at": null, "score":
+0.5265625}], "dropped_without_url": 0, "dropped_without_raw_content": 0, 
+"dropped_duplicates": 0, "dropped_excluded_sources": 0, 
+"dropped_invalid_results": 0}
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+[tools:52ad2809-ffd8-f645-41ac-5354bf19f9ba] [AIMessage] {"searched_sources": 
+5, "accepted_sources": 5}
+[tools:52ad2809-ffd8-f645-41ac-5354bf19f9ba] [AIMessage] {"search_run_id": 
+"20260804175422729156_068fecd4", "query_id": "20260804175418203017_3394743b", 
+"ref_map": {"s1": "20260804175709196241_a80d1873", "s2": 
+"20260804175709252375_8a77521e", "s3": "20260804175709265996_5c58e741", "s4": 
+"20260804175709275751_9621abdd", "s5": "20260804175709290066_92631389", "d1": 
+"20260804175709301617_0df6f4ca", "d2": "20260804175709384012_5d092c46", "d3": 
+"20260804175709398214_6832d915", "d4": "20260804175709410369_c2d5f4ab", "d5": 
+"20260804175709431448_337336f1", "st1": "20260804175709477240_94889133", "st2":
+"20260804175709636501_66a085fc", "st3": "20260804175709658147_3ebb6276", "st4":
+"20260804175709683093_29dbf5af", "st5": "20260804175709705273_d11a46ac", "st6":
+"20260804175709727972_0b77448c", "st7": "20260804175709751306_00b93878", "st8":
+"20260804175709774105_f7c09575", "st9": "20260804175709795210_7d428f40", 
+"st10": "20260804175709817738_874abb4b", "st11": 
+"20260804175709840218_09cba7c1", "st12": "20260804175709865024_a3902971", 
+"st13": "20260804175709890329_8e1307d5", "st14": 
+"20260804175709915699_2b5afa7d", "st15": "20260804175709940115_504d72ad", 
+"st16": "20260804175709968346_d505bc68", "st17": 
+"20260804175709995777_e28779b3", "st18": "20260804175710017432_a0b37984", 
+"st19": "20260804175710041049_af0f1d61", "st20": 
+"20260804175710064452_03fb8f5a", "st21": "20260804175710085726_1c588228", 
+"st22": "20260804175710109279_51a10459", "st23": 
+"20260804175710135577_cee8fd4c", "st24": "20260804175710165106_8960bf6d", 
+"st25": "20260804175710191307_7a01471d", "st26": 
+"20260804175710216690_9b7350a9", "st27": "20260804175710236236_637bb4fb", 
+"st28": "20260804175710257796_ede0b77f", "e1": "20260804175710296411_22c213f5",
+"e2": "20260804175710365103_7767f409", "e3": "20260804175710383949_d158272a", 
+"e4": "20260804175710412226_26a4c667", "e5": "20260804175710440509_f6119204", 
+"e6": "20260804175710467950_db1e8688", "e7": "20260804175710487920_8e960d30", 
+"e8": "20260804175710512448_325bbdd8", "e9": "20260804175710531855_294ead71", 
+"e10": "20260804175710552574_c3e7db43", "e11": "20260804175710573404_fb97b97b",
+"e12": "20260804175710600096_7befc564", "e13": "20260804175710617776_e92f42b2",
+"e14": "20260804175710643165_d011fb48", "e15": "20260804175710666765_6fa50207",
+"e16": "20260804175710690684_a5fce0f7", "e17": "20260804175710716957_f0e6f3a6",
+"e18": "20260804175710740875_9a03ab8a", "e19": "20260804175710766302_ae90477c",
+"e20": "20260804175710784563_cc9a42e4", "e21": "20260804175710806832_a7fdd21b",
+"e22": "20260804175710824997_7e591f2f", "e23": "20260804175710848030_40bfa617",
+"e24": "20260804175710866787_903f4be0", "e25": 
+"20260804175710885108_bf8124b9"}, "written": {"sources": 5, "documents": 5, 
+"statements": 28, "claims": 0, "evidence": 25, "conflicts": 1}, "status": 
+"succeeded", "query_status": "assessing", "novelty_score": 1.0}
+[dispatch_searcher result] {"search_run_id": "20260804175422729156_068fecd4", 
+"query_id": "20260804175418203017_3394743b", "ref_map": {"s1": 
+"20260804175709196241_a80d1873", "s2": "20260804175709252375_8a77521e", "s3": 
+"20260804175709265996_5c58e741", "s4": "20260804175709275751_9621abdd", "s5": 
+"20260804175709290066_92631389", "d1": "20260804175709301617_0df6f4ca", "d2": 
+"20260804175709384012_5d092c46", "d3": "20260804175709398214_6832d915", "d4": 
+"20260804175709410369_c2d5f4ab", "d5": "20260804175709431448_337336f1", "st1": 
+"20260804175709477240_94889133", "st2": "20260804175709636501_66a085fc", "st3":
+"20260804175709658147_3ebb6276", "st4": "20260804175709683093_29dbf5af", "st5":
+"20260804175709705273_d11a46ac", "st6": "20260804175709727972_0b77448c", "st7":
+"20260804175709751306_00b93878", "st8": "20260804175709774105_f7c09575", "st9":
+"20260804175709795210_7d428f40", "st10": "20260804175709817738_874abb4b", 
+"st11": "20260804175709840218_09cba7c1", "st12": 
+"20260804175709865024_a3902971", "st13": "20260804175709890329_8e1307d5", 
+"st14": "20260804175709915699_2b5afa7d", "st15": 
+"20260804175709940115_504d72ad", "st16": "20260804175709968346_d505bc68", 
+"st17": "20260804175709995777_e28779b3", "st18": 
+"20260804175710017432_a0b37984", "st19": "20260804175710041049_af0f1d61", 
+"st20": "20260804175710064452_03fb8f5a", "st21": 
+"20260804175710085726_1c588228", "st22": "20260804175710109279_51a10459", 
+"st23": "20260804175710135577_cee8fd4c", "st24": 
+"20260804175710165106_8960bf6d", "st25": "20260804175710191307_7a01471d", 
+"st26": "20260804175710216690_9b7350a9", "st27": 
+"20260804175710236236_637bb4fb", "st28": "20260804175710257796_ede0b77f", "e1":
+"20260804175710296411_22c213f5", "e2": "20260804175710365103_7767f409", "e3": 
+"20260804175710383949_d158272a", "e4": "20260804175710412226_26a4c667", "e5": 
+"20260804175710440509_f6119204", "e6": "20260804175710467950_db1e8688", "e7": 
+"20260804175710487920_8e960d30", "e8": "20260804175710512448_325bbdd8", "e9": 
+"20260804175710531855_294ead71", "e10": "20260804175710552574_c3e7db43", "e11":
+"20260804175710573404_fb97b97b", "e12": "20260804175710600096_7befc564", "e13":
+"20260804175710617776_e92f42b2", "e14": "20260804175710643165_d011fb48", "e15":
+"20260804175710666765_6fa50207", "e16": "20260804175710690684_a5fce0f7", "e17":
+"20260804175710716957_f0e6f3a6", "e18": "20260804175710740875_9a03ab8a", "e19":
+"20260804175710766302_ae90477c", "e20": "20260804175710784563_cc9a42e4", "e21":
+"20260804175710806832_a7fdd21b", "e22": "20260804175710824997_7e591f2f", "e23":
+"20260804175710848030_40bfa617", "e24": "20260804175710866787_903f4be0", "e25":
+"20260804175710885108_bf8124b9"}, "written": {"sources": 5, "documents": 5, 
+"statements": 28, "claims": 0, "evidence": 25, "conflicts": 1}, "status": 
+"succeeded", "query_status": "assessing", "novelty_score": 1.0}
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+[AIMessage → tool] get_next_actions({'limit': 4})
+INFO:tools.middleware:wrap_tool_call: tool_call=get_next_actions
+INFO:tools.middleware:_gate_reporter called with tool_call: name=get_next_actions, args_keys=['limit']
+INFO:tools.middleware:Not a task tool call (name=get_next_actions), skipping gate
+INFO:agents.memory_manager:get_next_actions: total_searches=1, budget_exhausted=False
+[get_next_actions result] [{"action": "assess_query", "query_id": 
+"20260804175418203017_3394743b", "query_handle": "q1", "priority": 1.0, 
+"required_for_parent": false, "required_path": false, "semantic_importance": 
+1.0, "gap_ids": [], "reason": "successful search completed"}]
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+[AIMessage → tool] assess_query({'query_id': '20260804175418203017_3394743b'})
+INFO:tools.middleware:wrap_tool_call: tool_call=assess_query
+INFO:tools.middleware:_gate_reporter called with tool_call: name=assess_query, args_keys=['query_id']
+INFO:tools.middleware:Not a task tool call (name=assess_query), skipping gate
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+[assess_query result] {"query_id": "20260804175418203017_3394743b", 
+"query_handle": "q1", "sufficiency_score": 0.36, "criterion_results": 
+[{"criterion": "Finds authoritative sources identifying the specific artifact 
+and its archaeological, documentary, and scholarly context", "status": "unmet",
+"supporting_refs": [], "reason": "The evidence identifies Evans's 1925 
+documentary publication and establishes a scholarly authenticity dispute, but 
+it does not adequately document the artifact's archaeological context, physical
+characteristics, find documentation, or provenance."}], "status": 
+"needs_expansion", "created_gaps": ["20260804175837897013_b3c1e532", 
+"20260804175838068550_974a97b3", "20260804175838090936_f86472c8", 
+"20260804175838124429_38887ad2"], "failure_reason": "", "depth": 0, 
+"active_child_count": 0, "total_queries": 1, "total_searches": 1, 
+"next_action": "evaluate_research_portfolio"}
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+[AIMessage → tool] get_next_actions({'limit': 4})
+INFO:tools.middleware:wrap_tool_call: tool_call=get_next_actions
+INFO:tools.middleware:_gate_reporter called with tool_call: name=get_next_actions, args_keys=['limit']
+INFO:tools.middleware:Not a task tool call (name=get_next_actions), skipping gate
+INFO:agents.memory_manager:get_next_actions: total_searches=1, budget_exhausted=False
+[get_next_actions result] [{"action": "evaluate_research_portfolio", 
+"query_id": null, "goal_id": "20260804175418006833_c98c444e", "priority": 1.0, 
+"required_for_parent": false, "required_path": false, "semantic_importance": 
+1.0, "gap_ids": [], "reason": "research portfolio changed since the last global
+evaluation"}]
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+[AIMessage → tool] evaluate_research_portfolio({'goal_id': 
+'20260804175418006833_c98c444e'})
+INFO:tools.middleware:wrap_tool_call: tool_call=evaluate_research_portfolio
+INFO:tools.middleware:_gate_reporter called with tool_call: name=evaluate_research_portfolio, args_keys=['goal_id']
+INFO:tools.middleware:Not a task tool call (name=evaluate_research_portfolio), skipping gate
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+[evaluate_research_portfolio result] {"selected_gap_ids": 
+["20260804175837897013_b3c1e532", "20260804175838068550_974a97b3", 
+"20260804175838090936_f86472c8", "20260804175838124429_38887ad2"], 
+"deferred_gap_ids": [], "objectives": [{"id": "20260804175418145515_d9ee2fa9", 
+"type": "Analysis", "coverage": 0.45, "last_realized_gain": 1.1300000000000001,
+"analysis_type": "objective", "confidence": 0.68, "description": "Present the 
+evidence and scholarly debate concerning the Ring of Nestor's authenticity, 
+dating, and status, including the balance of views in reliable literature.", 
+"weight": 1.0, "requirement": "must", "low_gain_streak": 0, 
+"supported_boundary": "The evidence establishes that Arthur Evans accepted the 
+Ring of Nestor as authentic, that many scholars judged it a forgery, and that 
+some later scholars renewed authenticity claims. It also documents arguments 
+involving suspicious discovery circumstances, the butterfly motif, and semantic
+coherence, with relevant 1925, 2011, and 2013 publications.", 
+"last_evaluated_successful_rounds": 1, "text": "Present the evidence and 
+scholarly debate concerning the Ring of Nestor's authenticity, dating, and 
+status, including the balance of views in reliable literature.", 
+"objective_key": "authenticity_reception", "assessment_reason": "The principal 
+opposing positions and several arguments are documented, but the evidence does 
+not establish the balance of views in reliable literature or sufficiently 
+connect each position to its underlying publications.", 
+"unmet_acceptance_criteria": ["Represents disagreement proportionately and 
+cites the underlying publications"], "acceptance_criteria": ["Clearly 
+identifies the principal authenticity and dating positions", "Represents 
+disagreement proportionately and cites the underlying publications"], "status":
+"open"}, {"id": "20260804175418034778_5538cf14", "type": "Analysis", 
+"coverage": 0.5, "last_realized_gain": 1.28, "analysis_type": "objective", 
+"confidence": 0.78, "description": "Establish what the Ring of Nestor is, its 
+proposed date and cultural context, location or findspot, and significance in 
+the study of Aegean archaeology.", "weight": 1.0, "requirement": "must", 
+"low_gain_streak": 0, "supported_boundary": "The evidence identifies the Ring 
+of Nestor as the artifact discussed in Evans's 1925 publication, associated 
+there with a sepulchral treasure of gold signet-rings and bead-seals from 
+Thisbê, Boeotia, and places it within discussion of the Minoan after-world and 
+Minoan and Mycenaean culture. A 1924 find date is reported.", 
+"last_evaluated_successful_rounds": 1, "text": "Establish what the Ring of 
+Nestor is, its proposed date and cultural context, location or findspot, and 
+significance in the study of Aegean archaeology.", "objective_key": 
+"identity_context", "assessment_reason": "The primary publication and 
+bibliographic records support the artifact's name, publication date, Thisbê 
+association, and broad cultural framing, but the archaeological context, find 
+documentation, and provenance are not adequately established.", 
+"unmet_acceptance_criteria": ["Provides dates, cultural attribution, and 
+findspot only where supported by reliable sources"], "acceptance_criteria": 
+["Defines the object without conflating it with other rings or figures named 
+Nestor", "Provides dates, cultural attribution, and findspot only where 
+supported by reliable sources"], "status": "open"}, {"id": 
+"20260804175418095960_87eea713", "type": "Analysis", "coverage": 0.3, 
+"last_realized_gain": 0.8799999999999999, "analysis_type": "objective", 
+"confidence": 0.58, "description": "Describe the ring's material, form, 
+imagery, and the principal archaeological or religious interpretations proposed
+for it.", "weight": 0.9, "requirement": "must", "low_gain_streak": 0, 
+"supported_boundary": "The evidence establishes that Evans's publication 
+concerns gold signet-rings and bead-seals and includes illustrations, and it 
+records a later argument that the butterfly motif weighs against authenticity 
+and should be assessed through semantic coherence and Egyptian prototypes.", 
+"last_evaluated_successful_rounds": 1, "text": "Describe the ring's material, 
+form, imagery, and the principal archaeological or religious interpretations 
+proposed for it.", "objective_key": "description_interpretation", 
+"assessment_reason": "Only broad material and publication details and one 
+iconographic authenticity argument are substantiated; fuller physical 
+description and attributed archaeological or religious interpretations are 
+absent.", "unmet_acceptance_criteria": ["Reports physical and iconographic 
+details from authoritative sources", "Attributes competing interpretations and 
+avoids presenting speculation as fact"], "acceptance_criteria": ["Reports 
+physical and iconographic details from authoritative sources", "Attributes 
+competing interpretations and avoids presenting speculation as fact"], 
+"status": "open"}, {"id": "20260804175418082648_a16ab890", "type": "Analysis", 
+"coverage": 0.2, "last_realized_gain": 0.8300000000000001, "analysis_type": 
+"objective", "confidence": 0.63, "description": "Summarize the object's 
+discovery, documentation, ownership or institutional history, and subsequent 
+scholarly treatment.", "weight": 0.9, "requirement": "must", "low_gain_streak":
+0, "supported_boundary": "The evidence documents Evans's 1925 publication and 
+its contemporary review context, and reports that the so-called Nestor Ring was
+found in 1924 under circumstances later characterized as suspicious.", 
+"last_evaluated_successful_rounds": 1, "text": "Summarize the object's 
+discovery, documentation, ownership or institutional history, and subsequent 
+scholarly treatment.", "objective_key": "discovery_history", 
+"assessment_reason": "The publication history and approximate discovery date 
+are supported, but the discoverers, collectors, institutional or ownership 
+history, and provenance claims are not documented.", 
+"unmet_acceptance_criteria": ["Identifies documented discoverers, collectors, 
+institutions, dates, and provenance claims"], "acceptance_criteria": 
+["Identifies documented discoverers, collectors, institutions, dates, and 
+provenance claims", "Distinguishes established evidence from disputed or 
+uncertain accounts"], "status": "open"}, {"id": 
+"20260804175418157882_fa78b3f8", "type": "Analysis", "coverage": 0.0, 
+"last_realized_gain": 0.95, "analysis_type": "objective", "confidence": 0.95, 
+"description": "Deliver a clear, concise, neutral, broad-coverage article with 
+a self-contained lead, logical sections, bracketed in-text citations, and a 
+numbered References section containing full URLs.", "weight": 0.8, 
+"requirement": "must", "low_gain_streak": 0, "supported_boundary": "The 
+supplied evidence consists of bibliographic records, source excerpts, and 
+scholarly claims; it does not establish the existence or qualities of a 
+completed article.", "last_evaluated_successful_rounds": 1, "text": "Deliver a 
+clear, concise, neutral, broad-coverage article with a self-contained lead, 
+logical sections, bracketed in-text citations, and a numbered References 
+section containing full URLs.", "objective_key": "article_quality", 
+"assessment_reason": "No completed article or citation-and-reference structure 
+is supplied, so none of the article-quality criteria can be verified.", 
+"unmet_acceptance_criteria": ["Uses encyclopedic prose and neutral 
+attribution", "Every factual claim is supported by a citation", "References 
+correspond to bracketed citations and include full URLs"], 
+"acceptance_criteria": ["Uses encyclopedic prose and neutral attribution", 
+"Every factual claim is supported by a citation", "References correspond to 
+bracketed citations and include full URLs"], "status": "open"}], 
+"report_completeness_score": 0.4057971014492754, "last_max_marginal_utility": 
+0.31200000000000006, "next_action": "get_next_actions"}
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+[AIMessage → tool] get_next_actions({'limit': 4})
+INFO:tools.middleware:wrap_tool_call: tool_call=get_next_actions
+INFO:tools.middleware:_gate_reporter called with tool_call: name=get_next_actions, args_keys=['limit']
+INFO:tools.middleware:Not a task tool call (name=get_next_actions), skipping gate
+INFO:agents.memory_manager:get_next_actions: total_searches=1, budget_exhausted=False
+[get_next_actions result] [{"action": "expand_gaps", "parent_id": 
+"20260804175418203017_3394743b", "query_id": "20260804175418203017_3394743b", 
+"query_handle": "q1", "goal_id": null, "priority": 1.0, "required_for_parent": 
+false, "required_path": false, "semantic_importance": 1.0, "gap_ids": 
+["20260804175837897013_b3c1e532", "20260804175838068550_974a97b3", 
+"20260804175838090936_f86472c8", "20260804175838124429_38887ad2"], "reason": 
+"globally selected gaps await a grounded search query"}]
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+[AIMessage → tool] expand_gaps({'parent_id': '20260804175418203017_3394743b', 
+'gap_ids': ['20260804175837897013_b3c1e532', '20260804175838068550_974a97b3', 
+'20260804175838090936_f86472c8', '20260804175838124429_38887ad2']})
+INFO:tools.middleware:wrap_tool_call: tool_call=expand_gaps
+INFO:tools.middleware:_gate_reporter called with tool_call: name=expand_gaps, args_keys=['parent_id', 'gap_ids']
+INFO:tools.middleware:Not a task tool call (name=expand_gaps), skipping gate
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+[expand_gaps result] {"parent_id": "20260804175418203017_3394743b", 
+"parent_handle": "q1", "parent_status": "waiting_children", "created": [{"id": 
+"20260804175927095582_714ce4bd", "handle": "q1.1", "text": "\"Ring of Nestor\" 
+provenance ownership acquisition transfer museum -site:en.wikipedia.org", 
+"gap_ids": ["20260804175837897013_b3c1e532"], "expansion_mode": "vertical", 
+"attach_parent_id": "20260804175418203017_3394743b"}, {"id": 
+"20260804175932438762_a990a52a", "handle": "q1.2", "text": "\"Ring of Nestor\" 
+gold dimensions form construction museum catalogue -site:en.wikipedia.org", 
+"gap_ids": ["20260804175838068550_974a97b3"], "expansion_mode": "vertical", 
+"attach_parent_id": "20260804175418203017_3394743b"}, {"id": 
+"20260804175943702004_25a661fe", "handle": "q1.3", "text": "\"Ring of Nestor\" 
+Knossos findspot discovery date excavator excavation report \"suspicious 
+circumstances\" -site:en.wikipedia.org", "gap_ids": 
+["20260804175838090936_f86472c8"], "expansion_mode": "vertical", 
+"attach_parent_id": "20260804175418203017_3394743b"}, {"id": 
+"20260804175950215257_ce261368", "handle": "q1.4", "text": "\"Ring of Nestor\" 
+authenticity forgery chronological attribution scholarly proponents 
+-site:en.wikipedia.org", "gap_ids": ["20260804175838124429_38887ad2"], 
+"expansion_mode": "vertical", "attach_parent_id": 
+"20260804175418203017_3394743b"}], "deferred_gap_ids": [], "next_action": 
+"get_next_actions"}
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+[AIMessage → tool] get_next_actions({'limit': 4})
+INFO:tools.middleware:wrap_tool_call: tool_call=get_next_actions
+INFO:tools.middleware:_gate_reporter called with tool_call: name=get_next_actions, args_keys=['limit']
+INFO:tools.middleware:Not a task tool call (name=get_next_actions), skipping gate
+INFO:agents.memory_manager:get_next_actions: total_searches=1, budget_exhausted=False
+[get_next_actions result] [{"action": "evaluate_research_portfolio", 
+"query_id": null, "goal_id": "20260804175418006833_c98c444e", "priority": 1.0, 
+"required_for_parent": false, "required_path": false, "semantic_importance": 
+1.0, "gap_ids": [], "reason": "research portfolio changed since the last global
+evaluation"}]
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+[AIMessage → tool] evaluate_research_portfolio({'goal_id': 
+'20260804175418006833_c98c444e'})
+INFO:tools.middleware:wrap_tool_call: tool_call=evaluate_research_portfolio
+INFO:tools.middleware:_gate_reporter called with tool_call: name=evaluate_research_portfolio, args_keys=['goal_id']
+INFO:tools.middleware:Not a task tool call (name=evaluate_research_portfolio), skipping gate
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+[evaluate_research_portfolio result] {"selected_gap_ids": [], 
+"deferred_gap_ids": [], "objectives": [{"id": "20260804175418145515_d9ee2fa9", 
+"type": "Analysis", "coverage": 0.45, "last_realized_gain": 0.0, 
+"analysis_type": "objective", "confidence": 0.68, "description": "Present the 
+evidence and scholarly debate concerning the Ring of Nestor's authenticity, 
+dating, and status, including the balance of views in reliable literature.", 
+"weight": 1.0, "requirement": "must", "low_gain_streak": 0, 
+"supported_boundary": "Arthur Evans accepted the Ring of Nestor as authentic, 
+many scholars judged it a forgery, and some later scholars renewed authenticity
+claims. Sources also document arguments concerning suspicious discovery 
+circumstances, the butterfly motif, semantic coherence, and Egyptian 
+prototypes, including publications from 1925, 2011, and 2013.", 
+"last_evaluated_successful_rounds": 1, "text": "Present the evidence and 
+scholarly debate concerning the Ring of Nestor's authenticity, dating, and 
+status, including the balance of views in reliable literature.", 
+"objective_key": "authenticity_reception", "assessment_reason": "The sources 
+establish the principal opposing positions and several arguments, but do not 
+establish the balance of views in reliable literature or connect each position 
+sufficiently to its underlying publications.", "unmet_acceptance_criteria": 
+["Represents disagreement proportionately and cites the underlying 
+publications"], "acceptance_criteria": ["Clearly identifies the principal 
+authenticity and dating positions", "Represents disagreement proportionately 
+and cites the underlying publications"], "status": "open"}, {"id": 
+"20260804175418034778_5538cf14", "type": "Analysis", "coverage": 0.5, 
+"last_realized_gain": 0.0, "analysis_type": "objective", "confidence": 0.78, 
+"description": "Establish what the Ring of Nestor is, its proposed date and 
+cultural context, location or findspot, and significance in the study of Aegean
+archaeology.", "weight": 1.0, "requirement": "must", "low_gain_streak": 0, 
+"supported_boundary": "Evans's 1925 publication identifies the subject as a 
+sepulchral treasure of gold signet-rings and bead-seals associated with Thisbê,
+Boeotia, and places it within discussion of the Minoan after-world and Minoan 
+and Mycenaean culture. A 1924 find date is reported.", 
+"last_evaluated_successful_rounds": 1, "text": "Establish what the Ring of 
+Nestor is, its proposed date and cultural context, location or findspot, and 
+significance in the study of Aegean archaeology.", "objective_key": 
+"identity_context", "assessment_reason": "Reliable bibliographic and 
+publication evidence supports the object's name, 1925 publication, Thisbê 
+association, and broad cultural framing, but the archaeological context, find 
+documentation, and provenance are not adequately established.", 
+"unmet_acceptance_criteria": ["Provides dates, cultural attribution, and 
+findspot only where supported by reliable sources"], "acceptance_criteria": 
+["Defines the object without conflating it with other rings or figures named 
+Nestor", "Provides dates, cultural attribution, and findspot only where 
+supported by reliable sources"], "status": "open"}, {"id": 
+"20260804175418095960_87eea713", "type": "Analysis", "coverage": 0.3, 
+"last_realized_gain": 0.0, "analysis_type": "objective", "confidence": 0.58, 
+"description": "Describe the ring's material, form, imagery, and the principal 
+archaeological or religious interpretations proposed for it.", "weight": 0.9, 
+"requirement": "must", "low_gain_streak": 0, "supported_boundary": "The primary
+publication concerns gold signet-rings and bead-seals and includes 
+illustrations. Later scholarship discusses the butterfly motif, semantic 
+coherence, and comparison with Egyptian prototypes in evaluating 
+authenticity.", "last_evaluated_successful_rounds": 1, "text": "Describe the 
+ring's material, form, imagery, and the principal archaeological or religious 
+interpretations proposed for it.", "objective_key": 
+"description_interpretation", "assessment_reason": "The sources substantiate 
+broad material and publication details and one iconographic authenticity 
+argument, but do not provide a sufficiently complete physical description or 
+attributed set of archaeological and religious interpretations.", 
+"unmet_acceptance_criteria": ["Reports physical and iconographic details from 
+authoritative sources", "Attributes competing interpretations and avoids 
+presenting speculation as fact"], "acceptance_criteria": ["Reports physical and
+iconographic details from authoritative sources", "Attributes competing 
+interpretations and avoids presenting speculation as fact"], "status": "open"},
+{"id": "20260804175418082648_a16ab890", "type": "Analysis", "coverage": 0.2, 
+"last_realized_gain": 0.0, "analysis_type": "objective", "confidence": 0.63, 
+"description": "Summarize the object's discovery, documentation, ownership or 
+institutional history, and subsequent scholarly treatment.", "weight": 0.9, 
+"requirement": "must", "low_gain_streak": 0, "supported_boundary": "The Ring of
+Nestor is documented in Evans's 1925 publication and its contemporary review 
+context. Sources report that the so-called Nestor Ring was found in 1924 and 
+that the circumstances of its discovery were later characterized as 
+suspicious.", "last_evaluated_successful_rounds": 1, "text": "Summarize the 
+object's discovery, documentation, ownership or institutional history, and 
+subsequent scholarly treatment.", "objective_key": "discovery_history", 
+"assessment_reason": "The publication history and approximate discovery date 
+are supported, but discoverers, collectors, institutional or ownership history,
+and provenance claims are not documented.", "unmet_acceptance_criteria": 
+["Identifies documented discoverers, collectors, institutions, dates, and 
+provenance claims"], "acceptance_criteria": ["Identifies documented 
+discoverers, collectors, institutions, dates, and provenance claims", 
+"Distinguishes established evidence from disputed or uncertain accounts"], 
+"status": "open"}, {"id": "20260804175418157882_fa78b3f8", "type": "Analysis", 
+"coverage": 0.0, "last_realized_gain": 0.0, "analysis_type": "objective", 
+"confidence": 0.95, "description": "Deliver a clear, concise, neutral, 
+broad-coverage article with a self-contained lead, logical sections, bracketed 
+in-text citations, and a numbered References section containing full URLs.", 
+"weight": 0.8, "requirement": "must", "low_gain_streak": 0, 
+"supported_boundary": "The supplied material documents bibliographic records, 
+source excerpts, and scholarly claims about the Ring of Nestor; it does not 
+establish a completed article with the required prose, citation, and reference 
+structure.", "last_evaluated_successful_rounds": 1, "text": "Deliver a clear, 
+concise, neutral, broad-coverage article with a self-contained lead, logical 
+sections, bracketed in-text citations, and a numbered References section 
+containing full URLs.", "objective_key": "article_quality", 
+"assessment_reason": "No completed article or verifiable citation-and-reference
+structure is supplied, so none of the article-quality criteria can be 
+confirmed.", "unmet_acceptance_criteria": ["Uses encyclopedic prose and neutral
+attribution", "Every factual claim is supported by a citation", "References 
+correspond to bracketed citations and include full URLs"], 
+"acceptance_criteria": ["Uses encyclopedic prose and neutral attribution", 
+"Every factual claim is supported by a citation", "References correspond to 
+bracketed citations and include full URLs"], "status": "open"}], 
+"report_completeness_score": 0.4057971014492754, "last_max_marginal_utility": 
+0.0, "next_action": "get_next_actions"}
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+[AIMessage → tool] get_next_actions({'limit': 4})
+INFO:tools.middleware:wrap_tool_call: tool_call=get_next_actions
+INFO:tools.middleware:_gate_reporter called with tool_call: name=get_next_actions, args_keys=['limit']
+INFO:tools.middleware:Not a task tool call (name=get_next_actions), skipping gate
+INFO:agents.memory_manager:get_next_actions: total_searches=1, budget_exhausted=False
+[get_next_actions result] [{"action": "dispatch_searcher", "query_id": 
+"20260804175927095582_714ce4bd", "query_handle": "q1.1", "priority": 0.85, 
+"required_for_parent": false, "required_path": false, "semantic_importance": 
+1.0, "gap_ids": [], "reason": "query awaits its first successful search"}, 
+{"action": "dispatch_searcher", "query_id": "20260804175932438762_a990a52a", 
+"query_handle": "q1.2", "priority": 0.85, "required_for_parent": false, 
+"required_path": false, "semantic_importance": 1.0, "gap_ids": [], "reason": 
+"query awaits its first successful search"}, {"action": "dispatch_searcher", 
+"query_id": "20260804175943702004_25a661fe", "query_handle": "q1.3", 
+"priority": 0.85, "required_for_parent": false, "required_path": false, 
+"semantic_importance": 1.0, "gap_ids": [], "reason": "query awaits its first 
+successful search"}, {"action": "dispatch_searcher", "query_id": 
+"20260804175950215257_ce261368", "query_handle": "q1.4", "priority": 0.85, 
+"required_for_parent": false, "required_path": false, "semantic_importance": 
+1.0, "gap_ids": [], "reason": "query awaits its first successful search"}]
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+[AIMessage → tool] dispatch_searcher({'query_id': 
+'20260804175927095582_714ce4bd'})
+[AIMessage → tool] dispatch_searcher({'query_id': 
+'20260804175932438762_a990a52a'})
+[AIMessage → tool] dispatch_searcher({'query_id': 
+'20260804175943702004_25a661fe'})
+[AIMessage → tool] dispatch_searcher({'query_id': 
+'20260804175950215257_ce261368'})
+INFO:tools.middleware:wrap_tool_call: tool_call=dispatch_searcher
+INFO:tools.middleware:_gate_reporter called with tool_call: name=dispatch_searcher, args_keys=['query_id']
+INFO:tools.middleware:Not a task tool call (name=dispatch_searcher), skipping gate
+INFO:tools.middleware:wrap_tool_call: tool_call=dispatch_searcher
+INFO:tools.middleware:_gate_reporter called with tool_call: name=dispatch_searcher, args_keys=['query_id']
+INFO:tools.middleware:Not a task tool call (name=dispatch_searcher), skipping gate
+INFO:tools.middleware:wrap_tool_call: tool_call=dispatch_searcher
+INFO:tools.middleware:_gate_reporter called with tool_call: name=dispatch_searcher, args_keys=['query_id']
+INFO:tools.middleware:Not a task tool call (name=dispatch_searcher), skipping gate
+INFO:tools.middleware:wrap_tool_call: tool_call=dispatch_searcher
+INFO:tools.middleware:_gate_reporter called with tool_call: name=dispatch_searcher, args_keys=['query_id']
+INFO:tools.middleware:Not a task tool call (name=dispatch_searcher), skipping gate
+INFO:neo4j.notifications:Received notification from DBMS server: <GqlStatusObject gql_status='03N90', status_description="info: cartesian product. The disconnected pattern '(q:Query {id: $query_id}), (g:UserRequest {id: $goal_id})' builds a cartesian product. A cartesian product may produce a large amount of data and slow down query processing.", position=<SummaryInputPosition line=2, column=13, offset=13>, raw_classification='PERFORMANCE', classification=<NotificationClassification.PERFORMANCE: 'PERFORMANCE'>, raw_severity='INFORMATION', severity=<NotificationSeverity.INFORMATION: 'INFORMATION'>, diagnostic_record={'_classification': 'PERFORMANCE', '_severity': 'INFORMATION', '_position': {'offset': 13, 'line': 2, 'column': 13}, 'OPERATION': '', 'OPERATION_CODE': '0', 'CURRENT_SCHEMA': '/'}> for query: "\n            MATCH (q:Query {id: $query_id}), (g:UserRequest {id: $goal_id})\n            SET q._claim_lock = coalesce(q._claim_lock, 0) + 1,\n                g._budget_lock = coalesce(g._budget_lock, 0) + 1\n            WITH q, g\n            WHERE q.status = 'pending'\n              AND coalesce(q.successful_search_runs, 0) = 0\n              AND (\n                coalesce(g.max_search_rounds, 0) <= 0\n                OR coalesce(g.dispatched_search_rounds, 0) < g.max_search_rounds\n              )\n            SET q.status = 'searching',\n                q.search_attempts = coalesce(q.search_attempts, 0) + 1,\n                g.dispatched_search_rounds = coalesce(g.dispatched_search_rounds, 0) + 1\n            CREATE (r:SearchRun {\n                id: $run_id,\n                context: $context,\n                query_id: $query_id,\n                status: 'running',\n                attempt: q.search_attempts\n            })\n            MERGE (q)-[:SEARCHED_BY]->(r)\n            RETURN r.id AS search_run_id,\n                   q.search_attempts AS attempt,\n                   g.dispatched_search_rounds AS dispatched_search_rounds\n            "
+[tools:e3c257d0-37a7-7334-eeb2-8aea26b18f14] [HumanMessage] "Ring of Nestor" 
+gold dimensions form construction museum catalogue -site:en.wikipedia.org
+INFO:neo4j.notifications:Received notification from DBMS server: <GqlStatusObject gql_status='03N90', status_description="info: cartesian product. The disconnected pattern '(q:Query {id: $query_id}), (g:UserRequest {id: $goal_id})' builds a cartesian product. A cartesian product may produce a large amount of data and slow down query processing.", position=<SummaryInputPosition line=2, column=13, offset=13>, raw_classification='PERFORMANCE', classification=<NotificationClassification.PERFORMANCE: 'PERFORMANCE'>, raw_severity='INFORMATION', severity=<NotificationSeverity.INFORMATION: 'INFORMATION'>, diagnostic_record={'_classification': 'PERFORMANCE', '_severity': 'INFORMATION', '_position': {'offset': 13, 'line': 2, 'column': 13}, 'OPERATION': '', 'OPERATION_CODE': '0', 'CURRENT_SCHEMA': '/'}> for query: "\n            MATCH (q:Query {id: $query_id}), (g:UserRequest {id: $goal_id})\n            SET q._claim_lock = coalesce(q._claim_lock, 0) + 1,\n                g._budget_lock = coalesce(g._budget_lock, 0) + 1\n            WITH q, g\n            WHERE q.status = 'pending'\n              AND coalesce(q.successful_search_runs, 0) = 0\n              AND (\n                coalesce(g.max_search_rounds, 0) <= 0\n                OR coalesce(g.dispatched_search_rounds, 0) < g.max_search_rounds\n              )\n            SET q.status = 'searching',\n                q.search_attempts = coalesce(q.search_attempts, 0) + 1,\n                g.dispatched_search_rounds = coalesce(g.dispatched_search_rounds, 0) + 1\n            CREATE (r:SearchRun {\n                id: $run_id,\n                context: $context,\n                query_id: $query_id,\n                status: 'running',\n                attempt: q.search_attempts\n            })\n            MERGE (q)-[:SEARCHED_BY]->(r)\n            RETURN r.id AS search_run_id,\n                   q.search_attempts AS attempt,\n                   g.dispatched_search_rounds AS dispatched_search_rounds\n            "
+[tools:200cc4f6-ec29-2ad6-9fe5-7039532734a3] [HumanMessage] "Ring of Nestor" 
+provenance ownership acquisition transfer museum -site:en.wikipedia.org
+INFO:neo4j.notifications:Received notification from DBMS server: <GqlStatusObject gql_status='03N90', status_description="info: cartesian product. The disconnected pattern '(q:Query {id: $query_id}), (g:UserRequest {id: $goal_id})' builds a cartesian product. A cartesian product may produce a large amount of data and slow down query processing.", position=<SummaryInputPosition line=2, column=13, offset=13>, raw_classification='PERFORMANCE', classification=<NotificationClassification.PERFORMANCE: 'PERFORMANCE'>, raw_severity='INFORMATION', severity=<NotificationSeverity.INFORMATION: 'INFORMATION'>, diagnostic_record={'_classification': 'PERFORMANCE', '_severity': 'INFORMATION', '_position': {'offset': 13, 'line': 2, 'column': 13}, 'OPERATION': '', 'OPERATION_CODE': '0', 'CURRENT_SCHEMA': '/'}> for query: "\n            MATCH (q:Query {id: $query_id}), (g:UserRequest {id: $goal_id})\n            SET q._claim_lock = coalesce(q._claim_lock, 0) + 1,\n                g._budget_lock = coalesce(g._budget_lock, 0) + 1\n            WITH q, g\n            WHERE q.status = 'pending'\n              AND coalesce(q.successful_search_runs, 0) = 0\n              AND (\n                coalesce(g.max_search_rounds, 0) <= 0\n                OR coalesce(g.dispatched_search_rounds, 0) < g.max_search_rounds\n              )\n            SET q.status = 'searching',\n                q.search_attempts = coalesce(q.search_attempts, 0) + 1,\n                g.dispatched_search_rounds = coalesce(g.dispatched_search_rounds, 0) + 1\n            CREATE (r:SearchRun {\n                id: $run_id,\n                context: $context,\n                query_id: $query_id,\n                status: 'running',\n                attempt: q.search_attempts\n            })\n            MERGE (q)-[:SEARCHED_BY]->(r)\n            RETURN r.id AS search_run_id,\n                   q.search_attempts AS attempt,\n                   g.dispatched_search_rounds AS dispatched_search_rounds\n            "
+[tools:729723c8-d8a1-b389-d2ab-a065250c67bb] [HumanMessage] "Ring of Nestor" 
+Knossos findspot discovery date excavator excavation report "suspicious 
+circumstances" -site:en.wikipedia.org
+INFO:neo4j.notifications:Received notification from DBMS server: <GqlStatusObject gql_status='03N90', status_description="info: cartesian product. The disconnected pattern '(q:Query {id: $query_id}), (g:UserRequest {id: $goal_id})' builds a cartesian product. A cartesian product may produce a large amount of data and slow down query processing.", position=<SummaryInputPosition line=2, column=13, offset=13>, raw_classification='PERFORMANCE', classification=<NotificationClassification.PERFORMANCE: 'PERFORMANCE'>, raw_severity='INFORMATION', severity=<NotificationSeverity.INFORMATION: 'INFORMATION'>, diagnostic_record={'_classification': 'PERFORMANCE', '_severity': 'INFORMATION', '_position': {'offset': 13, 'line': 2, 'column': 13}, 'OPERATION': '', 'OPERATION_CODE': '0', 'CURRENT_SCHEMA': '/'}> for query: "\n            MATCH (q:Query {id: $query_id}), (g:UserRequest {id: $goal_id})\n            SET q._claim_lock = coalesce(q._claim_lock, 0) + 1,\n                g._budget_lock = coalesce(g._budget_lock, 0) + 1\n            WITH q, g\n            WHERE q.status = 'pending'\n              AND coalesce(q.successful_search_runs, 0) = 0\n              AND (\n                coalesce(g.max_search_rounds, 0) <= 0\n                OR coalesce(g.dispatched_search_rounds, 0) < g.max_search_rounds\n              )\n            SET q.status = 'searching',\n                q.search_attempts = coalesce(q.search_attempts, 0) + 1,\n                g.dispatched_search_rounds = coalesce(g.dispatched_search_rounds, 0) + 1\n            CREATE (r:SearchRun {\n                id: $run_id,\n                context: $context,\n                query_id: $query_id,\n                status: 'running',\n                attempt: q.search_attempts\n            })\n            MERGE (q)-[:SEARCHED_BY]->(r)\n            RETURN r.id AS search_run_id,\n                   q.search_attempts AS attempt,\n                   g.dispatched_search_rounds AS dispatched_search_rounds\n            "
+[tools:61ae35ca-5807-ff5a-b77f-8b5b9ba1c1d4] [HumanMessage] "Ring of Nestor" 
+authenticity forgery chronological attribution scholarly proponents 
+-site:en.wikipedia.org
+[tools:e3c257d0-37a7-7334-eeb2-8aea26b18f14] [AIMessage] {"query": "Ring of 
+Nestor gold dimensions form construction museum catalogue", "error": null, 
+"kept_results": [{"title": "Mycenae", "url": 
+"https://www.latsis-foundation.org/content/elib/book_27/mycenae_en.pdf", 
+"content": "94 The chamber tomb cemeteries Most Mycenaeans who belonged to the 
+upper classes but probably not to the royal family and possibly, some ordinary 
+people were buried in a very widely\u000bdisseminated tomb type, the chamber 
+tomb. It was an imitation of the royal tholos tomb with a simpler form of 
+construction and smaller dimensions. [...] Gold \u0002igure of a bull. Chamber 
+tomb 68, 14th-13th c. BC. National Archaeological Museum, Π 2947 .\n118 Gold 
+jewelry. Chamber tomb cemetery at Kalkani, Tombs 520, 515.\nLH II-IIIA 
+(1500-1300 BC). ΜΜ 1718, 1714, 1720.\n119 120 Gold inlays with repoussé 
+decoration in the form of a rosette. Chamber tomb cemetery at Kalkani, Tomb 
+515. LH II-IIIA (1500-1300 BC). MM 1715.\n121 Gold ring and inlays with 
+repoussé decoration in the shape of a rosette. Chamber tomb cemetery at 
+Kalkani, Tombs 513, 515. [...] 61 Gold foil sheets used for the covering of the
+remains of two infants in Grave III of Grave Circle A. 16th c. BC. National 
+Archaeological Museum, Π 146.\n63 64 Gold pendant in the form of a woman 
+holding a pyxis. The details of her hairstyle, necklace, garments, and of the 
+pyxis are rendered in the granulation technique.\n14th-13th c. BC. Chamber Tomb
+68.\nNational Archaeological Museum, Π 2946.", "raw_content_chars": 20000, 
+"published_at": null, "score": 0.9499239931085164}, {"title": "some 
+observations on the iconography of the 'ring of nestor'", "url": 
+"https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_
+RING_OF_NESTOR_", "content": "This consists of the catalogue, appendix and 
+supplemental material to our JRA article on the Wareswald rings group. It 
+includes a discussion of Roman ring typologies, the catalogue of the rings, 
+gems and bracelet, discussions of similar types of rings and the glass nicolo 
+gems from other sites, and the arguments for dating.\n\ndownload Download free 
+PDFView PDF chevron_right [...] 40.   KaretSou a. -VlazaKi M. -PaPadaKiS N. 
+(eds.) 2000, Κρήτη-Αίγυπτος, Catalogue of Exposition, Herakleion Museum, 
+Herakleion.\n41.   Kenna V. E.G. 1960, Cretan Seals, Oxford.\n42.   KorreS g. 
+1991, 'Ἀδημοσίευτοι σφραγῖδες ἐκ τῶν ἀνασκαφῶν τῆς Ἀρχαιολογικῆς Ἑταιρείας ἀνὰ
+τὴν Μεσσηνίαν', AEph 1991, 113-135.\n43.   KrattenMaKer K. 1995, 'Architecture
+in Glyptic Cult Scenes: The Minoan Examples', cMS beiheFt 5, 117-233. [...] The
+study proposes that the platform depicted in the ring is supported by incurved 
+altars, mirroring construction styles revealed by the Xeste 3 fresco, unknown 
+to scholars until the 1970s.\n\nWhen was the ring of Nestor first published and
+what was its initial reception?add\n\nPublished in 1925, the ring was initially
+viewed with skepticism regarding its authenticity, with many scholars 
+attributing it to a forger's work due to perceived inconsistencies.", 
+"raw_content_chars": 20000, "published_at": null, "score": 0.9366378790666309},
+{"title": "Historic Images of the Greek Bronze Age", "url": 
+"https://www.metmuseum.org/perspectives/historic-images-of-the-greek-bronze-age
+", "content": "From left to right: _A Brief Account of E. Gilliéron's Beautiful
+Copies of Mycenaean Antiquities in Galvano-Plastic._ Sale Catalogue 
+(Württemberg: Würtembergische Metallwarenfabrik, ca. 1906); Emile Gilliéron 
+_père_ (Swiss, 1850–1924), Handwritten and illustrated catalogue page: \"Phot. 
+IX. Partie nod de la procession,\" ca. 1910. The Archives of the Onassis 
+Library for Hellenic and Roman Art, The Metropolitan Museum of Art, New York. 
+Images © The Metropolitan Museum of Art, New York [...] in Y. Hamilakis and N. 
+Momigliano, eds., _Archaeology and European Modernity: Producing and Consuming 
+the 'Minoans' Creta Antica_ 7 (2006), pp. 89–105. Nanno Marinatos has made 
+compelling arguments that the Ring of Minos and the Ring of Nestor were 
+forgeries by E. Gilliéron, _fils_. On the Ring of Minos, see N. Dimopoulou and 
+Y Rethemiotakis, _The Ring of Minos and Gold Minoan Rings. The epiphany_ cycle 
+(Athens 2004). On the Nestor ring, see N. Marinatos with B. Jackson, \"The 
+Pseudo-Minoan [...] See G. M. A. Richter, \"Reproductions of Mycenaean 
+Metalwork,\" _MMAB_(1906), pp. 123–124; G. M. A. Richter, _Cast Catalogue. The 
+Metropolitan Museum of Art. Greek and Roman Art_ (New York 1908), pp. 
+25–34.\n\n See P. Militello, _Hagia Triada I. Gli Affreschi_ (Padua 1998).", 
+"raw_content_chars": 20000, "published_at": null, "score": 0.9192089898422697},
+{"title": "Nestor - Home", "url": "https://classics.uc.edu/nestor", "content": 
+"On 12-14 March 2026 a conference entitled TEKTON: Material and Technical 
+Perspectives on Architectural Design and Construction Processes in the Aegean 
+Bronze Age will take place the Acropolis Museum in Athens. Further information 
+is available at  The program will be:  \nM. Magnisali, T. Bilis, and A. 
+Vlachopoulos, “Monumentality and materiality: construction techniques and 
+symbolism at the Early Bronze Age acropolis of Vathy, Astypalaia” [...] M. 
+Devolder, E. Christaki, and M. Prete, “Tracking designers and builders in 
+Bronze Age Cretan architecture: a combined approach to cut-stone and timber 
+masonry, masons’ marks, and building form”  \nA. Salichou, “Building a new 
+regime: materials used in the construction of the Zakros Palace as a reflection
+of the special requirements of the project”  \nE. Mantzourani and G. 
+Vavouranakis, “Selective strategies in cut-stone features of East Cretan 
+villas” [...] On 31 October 2026 abstract submissions for oral or poster 
+presentations and applications for enrollment in the Lab&Museum School are due 
+for the 18th European Meeting on Ancient Ceramics (EMAC2027), to be held on 
+24–28 May 2027 in Brussels, Belgium. The application form and further 
+information are available at  Oral and poster presentations on the archaeometry
+of ceramics are welcomed through the following thematic sessions:  \n• Mobility
+of crafts, skills, and pottery products", "raw_content_chars": 20000, 
+"published_at": null, "score": 0.9129062206653662}, {"title": "Pylos of Nestor 
+A Mycenaean Kingdom Revealed - National Archaeological Museum", "url": 
+"https://www.namuseum.gr/en/temporary_exhibition/pylos-of-nestor-a-mycenaean-ki
+ngdom-revealed", "content": "Bronze crown with a band and a gold star-flower 
+ornament at the top.\nBronze dagger with gold-plated hilt decorated with the 
+“painting on metal” technique. \nGold granulated bead. \nGold cut-out in the 
+shape of an owl. \nGold-capped agate seal stone. It depicts a combat scene of 
+two warriors dueling over the body of a third one.\nGold seal depicting a 
+majestic griffin.\nClay Linear B tablet, known as the “Tripod Tablet”.\nClay 
+tripod rhyton with busts in the round of a bull and two deer. [...] The 
+exhibition “The Pylos of Nestor. A Mycenaean Kingdom Revealed” is presented at 
+the Hellenic National Archaeological Museum as the third station in a journey 
+that began at the Archaeological Museum of Messenia (February–May 2025) and 
+moved on at the J. Paul Getty Museum. [...] The temporary exhibition features 
+214 antiquities from the Ephorate of Antiquities of Messenia and 11 from the 
+Hellenic National Archaeological Museum, engaging in dialogue with selected 
+works from the Museum’s permanent exhibition of the Mycenaean 
+antiquities.\n\n#### The exhibition at a glance", "raw_content_chars": 11606, 
+"published_at": null, "score": 0.9059758930873226}], "dropped_without_url": 0, 
+"dropped_without_raw_content": 0, "dropped_duplicates": 0, 
+"dropped_excluded_sources": 0, "dropped_invalid_results": 0}
+[tools:729723c8-d8a1-b389-d2ab-a065250c67bb] [AIMessage] {"query": "Ring of 
+Nestor Knossos findspot discovery date excavator excavation report suspicious 
+circumstances", "error": null, "kept_results": [{"title": "some observations on
+the iconography of the 'ring of nestor'", "url": 
+"https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_
+RING_OF_NESTOR_", "content": "This paper presents a rare bronze finger ring 
+that was found more than half a century ago and bears a symbol known mainly 
+from the coins of Mattathias Antigonus. A teenager recovered it from one of the
+burial caves in the cliff of Naḥal David at ‘En Gedi. Although the cave was 
+later excavated by Nahman Avigad, the ring was forgotten and was not 
+incorporated in the excavation report. This paper discusses the ring, the 
+symbol it bears, and its relation to the coins of Antigonus. I suggest a date 
+[...] The so-called Nestor Ring was found in 1924 and was accepted as authentic
+by Sir Arthur Evans whereas many other scholars condemned it as a forgery. In 
+recent years, scholars have claimed its authenticity anew. This article 
+examines the background of the find circumstances and judges them suspicious. 
+It also adds the criterion of semantic coherence in the debate and argues that 
+the coherence depends on Egyptian prototypes and that the use of the butterfly 
+motif argues against the artifact’s [...] I suggest a date and identification 
+for the burials in the cave that associates them with the conflict between 
+Herod and Antigonus.", "raw_content_chars": 20000, "published_at": null, 
+"score": 0.9490564212049537}, {"title": "[PDF] THE MINOAN WORLD - Aegeus 
+Society", "url": 
+"https://www.aegeussociety.org/wp-content/uploads/2022/03/Evans-1936-Minoan-Wor
+ld.pdf", "content": "of which led to the discovery of the Temple Tomb at 
+Knossos. It presents three scenes of the Goddess migrating, partly by sea, from
+one rock sanctuary to another. But the interest culminates 1 See note at the 
+end of leaflet. [...] on Cretan soil it had been possible for him to acquire, 
+as early as 1904, a foothold on the hill-top of the ancient site of Knossos, 
+known as Kephala, on the southern crest of which extensive remains of 
+prehistoric walling were visible, though, owing to the circumstances of i the 
+times, it was not possible to begin its actual exploration until 1900. This, 
+after repeated campaigns—spread over more than thirty years—has actually 
+brought to light the ‘House of Minos’, almost wholly covered by the [...] 6 in 
+the ‘Ring of Nestor’, found by a peasant grubbing for blocks in the larger 
+bee-hive tomb at Pylos before the Ger­ man excavation. For here, in microscopic
+engraving, in­ cluding seventeen figures, we have the first glimpse of the 
+Minoan Underworld.", "raw_content_chars": 20000, "published_at": null, "score":
+0.9159066715869609}, {"title": "Uncovering the Early Mycenaeans – Popular 
+Archeology", "url": 
+"https://popular-archaeology.com/article/uncovering-the-early-mycenaeans", 
+"content": "Work at Pylos is expected to continue. But the archaeology, as is 
+the case with any major site, will involve much more than excavation and work 
+in the field. Study and research related to the finds will go on, conceivably 
+for decades. And equally important is the ongoing task to preserve what has 
+been uncovered. Archaeological excavation is by its nature a destructive 
+process, despite its careful and systematic process, and it exposes the remains
+to elements of the environment that would [...] Viewed from above, the 
+excavated Griffin Warrior Tomb, with the one-ton capstone which dominated the 
+scene of the tomb details during the excavation. Courtesy Department of 
+Classics, University of 
+Cincinnati\n\n\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\
+_\\_\\_\\_\\_\\_ [...] Warrior tomb. Speaking of the tholos tombs, continued 
+Stocker, “they were certainly once as wealthy, but objects were removed in 
+Mycenaean times and then they were looted after the collapse of the Mycenaean 
+civilization, so we don’t know what they originally contained.” Nonetheless, 
+she concludes, “it is clear from the discovery of the new tholos tombs that 
+several elite families were vying for power and status already at the beginning
+of the Late Bronze Age. Eventually one individual, perhaps", 
+"raw_content_chars": 20000, "published_at": null, "score": 0.8704421965434423},
+{"title": "Nestor - Home - UC Classics", "url": 
+"https://classics.uc.edu/nestor", "content": "The schedule of lectures and 
+seminars hosted by the Irish Institute of Hellenic Studies at Athens has been 
+announced for spring 2026. Further information will be posted about each 
+lecture as the date approaches. Lectures of interest to Nestor readers will 
+include:  \n12 February 2026 (online): J. R. Baxley Craig, “Food Processing in 
+Prehistoric Greece: A Perspective from Ground Stone Tool Studies” [...] I. 
+Efstathiou and N. Daskalakis, “New Finds and Stratigraphic Evidence for the 
+Diachronic Use of the Psychro Cave, Crete”  \nS. Ferrence, L. Bonga, and A. 
+Kanta, “Making Sense of Taphonomic Processes in the Neolithic “Longue Durée” in
+the Pelekita Cave, Crete: An Ongoing Discussion”  \nK. Trimmis, “Surveying the 
+Underground: Discovery Units, Deposits, and Non-Invasive Cave Archaeology in 
+the Mediterranean”  \nA. Sarris and S. Katsarou, “Archaeological CaveScapes in 
+Central-West Greece” [...] T. Bekiaris, “Crafting Communities: Stone Edge Tool 
+Technologies and Traditions in Neolithic Kastoria”  \nL. Sorensen, M. Brandl, 
+and O. Bamyacı, “Pieces of Places: The Discovery of Novel Neolithic Exchange 
+Networks in the Aegean”  \nM. Brandl, L. Sørensen, and K. Manteli, “From Stone 
+to Network: The Rise of Sesklo and Dimini as Neolithic Hubs of Exchange”  \nM. 
+Mexi, “Small Tools, Long Lives: Ground stone cutting tools from the Early 
+Bronze Age Settlement at Koropi (Attica)”", "raw_content_chars": 20000, 
+"published_at": null, "score": 0.861979027627082}, {"title": "The Pseudo Minoan
+Nestor Ring and Its Eg | PDF", "url": 
+"https://www.scribd.com/document/869354154/The-Pseudo-Minoan-Nestor-Ring-and-It
+s-Eg", "content": "Scribd\n\n# The Pseudo Minoan Nestor Ring and Its Eg\n\nThe 
+Pseudo Minoan Nestor Ring and Its Eg\n\n## Uploaded by\n\n# The Pseudo Minoan 
+Nestor Ring and Its Eg\n\n# The Pseudo Minoan Nestor Ring and Its Eg\n\nThe 
+Pseudo Minoan Nestor Ring and Its Eg\n\n## Uploaded by\n\n## Share this 
+document\n\n## Footer menu\n\n## About\n\n## Support\n\n## Legal\n\n## 
+Social\n\n## Get our free apps\n\nScribd - Download on the App Store\nScribd - 
+Get it on Google Play\n\n## About\n\n## Legal\n\n## Support\n\n## Social\n\n## 
+Get our free apps [...] Scribd - Download on the App Store\nScribd - Get it on 
+Google Play", "raw_content_chars": 3616, "published_at": null, "score": 
+0.7917978962211708}], "dropped_without_url": 0, "dropped_without_raw_content": 
+0, "dropped_duplicates": 0, "dropped_excluded_sources": 0, 
+"dropped_invalid_results": 0}
+[tools:200cc4f6-ec29-2ad6-9fe5-7039532734a3] [AIMessage] {"query": "Ring of 
+Nestor provenance ownership acquisition transfer museum", "error": null, 
+"kept_results": [{"title": "(PDF) (2020) A. G. Vlachopoulos, “The Ring of 
+Nestor and ...", "url": 
+"https://www.academia.edu/43416584/_2020_A_G_Vlachopoulos_The_Ring_of_Nestor_an
+d_the_quest_for_authenticity_in_F_Blakolmer_ed_Current_Approaches_and_New_Persp
+ectives_in_Aegean_Iconography_Aegis_18_2020_pp_223_252", "content": "This paper
+addresses the cultural translation of some exotica – selected valuable objects 
+that were brought from the south Aegean or even more distant areas to Troy, 
+Beşik-Tepe and Greek Macedonia mainly during the Late Bronze Age. The 
+discussion will focus on jewellery and seals made of carnelian, steatite and 
+bone. Such foreign goods, often labelled as imports, are usually objects with 
+complicated histories. These histories began with acquisition, then went 
+through various forms of ownership [...] forms of ownership and display, and 
+finally ended with release, all while simultaneously undergoing a process of 
+domestication and 'de-exotification'. Release, especially an intentional 
+release such as in the case of burial goods, treasures and cult deposits, is 
+discussed comprehensively since these are the best-documented cases of 
+interaction between things and people in the area of the north Aegean. Also 
+discussed is the phenomenon of copying as a complicated procedure of 
+appropriation, as [...] Antiquities in the Ashmo- lean Museum, Oxford (2013).",
+"raw_content_chars": 20000, "published_at": null, "score": 0.9474079449737888},
+{"title": "Nestor Bibliography of Aegean and Related Areas 2006", "url": 
+"https://classics.uc.edu/nestor/images/stories/annual_issues/nestor_2006.pdf", 
+"content": "of Bristlecone Pine frost-ring damage: Implications for volcanic 
+eruptions, including Santorini” A. Nijboer, “A Chronological Mess: the Iron Age
+in the Mediterranean” K. Wardle and M. Newton, “Dating and its implications at 
+Assiros, Greece” R. King, “Provenance of Obsidian from Çatalhöyük West: 
+Changing Relationships with the Geologic Sources” On 9-12 November 2006 a 
+conference in honor of a century of excavation at Prinias, Identità culturale, 
+etnicità, processi di trasformazione a Creta fra [...] Herbert D. G. and 
+Christopher Chippindale, eds. 2005. Handbook of Archaeological Methods, Vol. 1.
+Lanham: AltaMira Press. ISBN 0-7591-0078-0. §20060690 Maschner, Herbert D. G. 
+and Christopher Chippindale, eds. 2005. Handbook of Archaeological Methods, 
+Vol. 2. Lanham: AltaMira Press. ISBN 0-7591-0078-0. §20060691 Ματζάνας, Χρήστος
+2000. “Τρόποι πρόσκτησης και κατάτμησης πυριτικών πετρωμάτων κατά την πρώιμη 
+Χαλκοκρατία.” ArchDelt 55 A’:1-22. (Résumé, “Stratégies d’acquisition et de 
+taille des [...] Mirror Handles with Relief Female Figurines in the Mycenaean 
+Collection,” p. 50.) §020060903 Warren, Peter 2005. “A Model of Iconographical 
+Transfer. The Case of Crete and Egypt.” Pp. 221-227 in Κρης Τεχνίτης. (With 
+Plate XLIV.) §020060904 Wileman, Julie 2005. Hide and Seek: The Archaeology of 
+Childhood. Stroud Gloucestershire: Tempus Publishing Limited. ISBN 
+0-7524-3462-4. §020060905 Wood, Bryant 2006. “The Genesis Philistines.” Artifax
+21.2:17-18. §020060906 NESTOR 33:6 4254 September 2006", "raw_content_chars": 
+20000, "published_at": null, "score": 0.8994020342642365}, {"title": "The 
+Destruction and Afterlife of the Palace of Nestor at Pylos: The Making of a 
+Forgotten Landmark - ProQuest", "url": 
+"https://search.proquest.com/openview/b0ee4b63f7d69b4bcb94730e71488dbf/1?cbl=18
+750&pq-origsite=gscholar", "content": "Your library or institution may also 
+provide you access to related full text documents in ProQuest.\n\nExplore 
+ProQuest\n\n Full Text\n Dissertation or Thesis\n Open Dissertation\n\n# The 
+Destruction and Afterlife of the Palace of Nestor at Pylos: The Making of a 
+Forgotten Landmark\n\nThe Destruction and Afterlife of the Palace of Nestor at 
+Pylos: The Making of a Forgotten Landmark\n\nLaFayette, Shannon\n\n.   
+University of Cincinnati ProQuest Dissertations & Theses,  2011. 3469825. [...]
+ProQuest Dissertations & Theses Publisher logo.\n\n Back to top\n\nProQuest, 
+part of Clarivate\n\n About ProQuest\n Contact Us\n Terms and Conditions\n 
+Privacy Policy\n Cookie Policy\n Credits\n\nCopyright © 2026 ProQuest LLC. 
+[...] You shouldn't see this\n\n## Select language\n\n العربية\n Azərbaycan\n 
+Bahasa Indonesia\n Čeština\n Deutsch\n Español\n Français\n 한국어\n Italiano\n
+Magyar\n 日本語\n Norsk\n Polski\n Português (Brasil)\n Português (Portugal)\n 
+Русский\n ไทย\n Türkçe\n 中文(简体)‎\n 中文(繁體)‎\n\nDownload PDF\n\n This 
+graduate work has been published as open access.\n\n## Copyright 
+information\n\nDatabase copyright ProQuest LLC; ProQuest does not claim 
+copyright in the individual underlying works.\n\n## View related documents", 
+"raw_content_chars": 7028, "published_at": null, "score": 
+0.005449801154439261}], "dropped_without_url": 0, 
+"dropped_without_raw_content": 2, "dropped_duplicates": 0, 
+"dropped_excluded_sources": 0, "dropped_invalid_results": 0}
+[tools:61ae35ca-5807-ff5a-b77f-8b5b9ba1c1d4] [AIMessage] {"query": "Ring of 
+Nestor authenticity forgery chronological attribution scholarly proponents", 
+"error": null, "kept_results": [{"title": "some observations on the iconography
+of the 'ring of nestor'", "url": 
+"https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_
+RING_OF_NESTOR_", "content": "1.   The text explores the authenticity of the 
+'Ring of Nestor' through iconographic analysis.\n2.   Contradictions in 
+technical analysis highlight the importance of iconography in Aegean 
+studies.\n3.   The connection between incurved altars and the ring's depiction 
+supports its authenticity.\n4.   The ring's iconography may reflect cultural 
+practices from the 1920s.\n5.   Generations of scholars have debated the 
+genuineness of both Nestor's and Minos' rings. [...] Attribution Studies of 
+Golden Signet Rings: New Efforts in Tracing Aegean Goldsmiths and their 
+Workshops, AEGEAN ARCHAEOLOGY (AEA), Studies and Monographs in Mediterranean 
+Archaeology and Civilization Volume 11 (2015), 73-88\n\nNadine Engels (Becker) 
+[...] View more arrow_downward\n\n## FAQs\n\nImage 13: sparkles\nAI\n\nWhat 
+explains the authenticity debate surrounding the ring of Nestor?add\n\nThe 
+research highlights that the ring's authenticity was primarily defended by 
+Sakellarakis in 1971 due to iconographic elements like butterflies and 
+griffin-headed women, despite earlier skepticism from many scholars.\n\nHow do 
+incurved altars relate to the ring of Nestor's iconography?add", 
+"raw_content_chars": 20000, "published_at": null, "score": 0.9587124335773684},
+{"title": "Knossos and the Prophets of Modernism", "url": 
+"https://ndl.ethernet.edu.et/bitstream/123456789/42873/1/12..Cathy%20Gere.pdf",
+"content": "To explain the iconographic similarities between the Ring of Nestor
+and their ring, the excavators of Archanes supply a simple answer. They propose
+that the presence of butterflies and a chrysalis on the face of 138  Chapter 
+Four \n\ntheir ring proves that “the so-called Ring of Nestor, is authentic, 
+and not the fake that it was generally believed to be.” 84 [...] possible for 
+me to identify which of the tholoi in the area was the one in which the Ring of
+Nestor was supposed to have been found. 75. Arthur Evans, “The Ring of Nestor: 
+A Glimpse into the Minoan after-World and a Sepulchral Treasure of Gold 
+Signet-Rings and Bead Seals from Thisbe, Boio-tia,” Journal of Hellenic Studies
+45 (1925): 1–75, quotation from p. 46. 76. Hagg, “Bermerkungen Zum Nestorring,”
+p. 57. I reserve judgment about the ring of Nestor. Certain elements—notably 
+the lines dividing [...] The Ring of Nestor may be yet another forgery. Not 
+only does it em-ploy stylistic conventions found nowhere else in Minoan art, 
+but in the 1930s Emile Gilliéron fils reputedly confessed to having made it. 76
+(The “Thisbe Treasure” discussed in the same article, a magnificent hoard of 
+gold artifacts, one of which depicts a supposed Bronze Age version of the story
+of Oedipus and the Sphinx, is now known to be fake.) If Nestor’s ring was 
+indeed made by the younger Gilliéron, one wonders if he was", 
+"raw_content_chars": 20000, "published_at": null, "score": 0.951366627581389}, 
+{"title": "Manufacturing a Past for the Present: Forgery and Authenticity in 
+Medievalist Texts and Objects in Nineteenth-Century Europe\r\n 9004276807, 
+9789004276802 - DOKUMEN.PUB", "url": 
+"https://dokumen.pub/manufacturing-a-past-for-the-present-forgery-and-authentic
+ity-in-medievalist-texts-and-objects-in-nineteenth-century-europe-9004276807-97
+89004276802.html", "content": "Of No Scholarly Value [...] anything of 
+significance about the works themselves.105 He tries not to confuse his 
+narcissistic satisfaction about the excellence of his scholarly methods with 
+the legitimization of his discipline or his own scholarly output, if only for 
+the reason that Time (as he has learned from many examples) is as much a judge 
+of scholarship as it is of forgery. This is evident most of all from those 
+cases when a work thought fake turned out to be authentic: when, for example, a
+statue once viewed as a [...] their name precisely because it had Karaite 
+overtones.7 There was also some overlap between the Haskalah and the Jewish 
+Reform movement and their common excitement with the Karaites. The cover of the
+first Reform prayer book published in London in the early nineteenth century 
+identified the Jewish Reformists as “Karaites.” In Germany and Austria, the 
+campaign for and against the Jewish Reform was closely connected to nascent 
+Jewish Studies, and all the proponents of the Wissenschaft des", 
+"raw_content_chars": 20000, "published_at": null, "score": 0.937690837399952}, 
+{"title": "5 Recent developments in archaeometallurgical research: the Bronze 
+Age Greek Mainland, Crete, and the Cyclades | Archaeological Reports | 
+Cambridge Core", "url": 
+"https://www.cambridge.org/core/journals/archaeological-reports/article/5-recen
+t-developments-in-archaeometallurgical-research-the-bronze-age-greek-mainland-c
+rete-and-the-cyclades/53760509B6FEE075184D18A46CAA7979", "content": "Figure 
+1\n\nTable 5.1. Broad chronological table of the Neolithic and Bronze Age in 
+the Aegean. © S. Aulsebrook.\n\nFigure 2\n\n5.1. Theopetra Cave, Thessaly: gold
+‘ring idol’, on display at the Theopetra Cave Museum. It has been dated to ca. 
+4500 and 3330 BC. © V. Martin.\n\nFigure 3", "raw_content_chars": 20000, 
+"published_at": null, "score": 0.9278403084690795}, {"title": "ΑΘΥΡΜΑΤΑ: 
+Critical Essays on the Archaeology of the ...", "url": 
+"https://www.aegeussociety.org/wp-content/uploads/2021/11/Galanakis-et-al-2014-
+Sherratt.pdf", "content": "(5) NM 1433, fine, large block (length 0.72 m) = 
+Bossert 1923: 29 no. 205; 153, pl. 205a (attributed to “2. Kuppelgrab” (i.e., 
+Clytemnestra) but no evidence is stated for this attribution; Bossert’s source 
+for his pl. 205a is Noack 1912, pl. 15a; so it may be noted that Noack (1912, 
+11-12 and pl. caption) simply states that the piece was from Mycenae, with no 
+attribution to “2. Kuppelgrab”). Exhibited in the National Museum. (6) NM 1481 
+i = Demakopoulou 1988: 191-92 no. 162. [...] At much the same moment on the 
+mainland of Greece excavation was beginning to provide the vital evidence that 
+would link the scattered elements of the later chronological and stylistic 
+pottery sequences. Until this point all interpretations had been based on the 
+supposed date of the Granary at Mycenae (another chronological factoid which 
+needs to be abandoned). At Mycenae itself, in the last days of the 1960 
+excavation season, a floor level with material comparable to that of the 
+Granary was [...] by Hankey (Warren and Hankey 1989: 164-65) and formed such a 
+crucial element in the chronological structure.", "raw_content_chars": 20000, 
+"published_at": null, "score": 0.9202912784770607}], "dropped_without_url": 0, 
+"dropped_without_raw_content": 0, "dropped_duplicates": 0, 
+"dropped_excluded_sources": 0, "dropped_invalid_results": 0}
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+[tools:200cc4f6-ec29-2ad6-9fe5-7039532734a3] [AIMessage] {"searched_sources": 
+3, "accepted_sources": 3}
+[tools:200cc4f6-ec29-2ad6-9fe5-7039532734a3] [AIMessage] {"search_run_id": 
+"20260804180027319054_44de7e15", "query_id": "20260804175927095582_714ce4bd", 
+"ref_map": {"s1": "20260804180157305963_ebc1ff50", "s2": 
+"20260804180157426179_fc04ce20", "s3": "20260804180157436983_7edb59e6", "d1": 
+"20260804180157446972_51bfc222", "d2": "20260804180157535191_586f58d5", "d3": 
+"20260804180157546616_795068aa", "st1": "20260804180157598661_d267bd05", "st2":
+"20260804180157704685_31e7da2d", "st3": "20260804180157729415_f1157e41", "st4":
+"20260804180157747914_3b38a1c7", "st5": "20260804180157766549_da4257e1", "st6":
+"20260804180157786416_e978847a", "st7": "20260804180157803643_dae2f301", "st8":
+"20260804180157819979_cdbcc665", "st9": "20260804180157835260_2f3d14ec", 
+"st10": "20260804180157851549_c2dbdbbc", "e1": "20260804180157868250_dd5dc790",
+"e2": "20260804180157955904_6efb8044", "e3": "20260804180157978796_0592cb04", 
+"e4": "20260804180157998354_ff4f652e", "e5": "20260804180158016088_3a13a54d", 
+"e6": "20260804180158039943_8dcfe45c", "e7": "20260804180158060020_43a629d7", 
+"e8": "20260804180158077830_6a61c8f3", "e9": "20260804180158096736_3a5d44c7", 
+"e10": "20260804180158111749_a26b46cf"}, "written": {"sources": 3, "documents":
+3, "statements": 10, "claims": 0, "evidence": 10, "conflicts": 0}, "status": 
+"succeeded", "query_status": "assessing", "novelty_score": 1.0}
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+[tools:729723c8-d8a1-b389-d2ab-a065250c67bb] [AIMessage] {"searched_sources": 
+5, "accepted_sources": 4}
+[tools:729723c8-d8a1-b389-d2ab-a065250c67bb] [AIMessage] {"search_run_id": 
+"20260804180027345547_297d61b8", "query_id": "20260804175943702004_25a661fe", 
+"ref_map": {"s1": "20260804175709252375_8a77521e", "s2": 
+"20260804180243407278_1621eafb", "s3": "20260804180243421886_08a470be", "s4": 
+"20260804180243435727_b192c74d", "d1": "20260804180243448266_934652dd", "d2": 
+"20260804180243471030_7b5a4b1b", "d3": "20260804180243489733_cd0ba3f3", "d4": 
+"20260804180243520952_8d7bfe21", "st1": "20260804180243574890_9f19afe7", "st2":
+"20260804180243649373_e06766db", "st3": "20260804180243701908_13027bd9", "st4":
+"20260804180243735747_46ba9672", "st5": "20260804180243781846_a8019d63", "st6":
+"20260804180243815392_ea4a99d2", "st7": "20260804180243845664_f5ac8055", "st8":
+"20260804180243867767_fbefd471", "st9": "20260804180243885870_63415d29", "e1": 
+"20260804180243972774_609f3e23", "e2": "20260804180244051091_c5818698", "e3": 
+"20260804180244076637_e29d035d", "e4": "20260804180244102327_855fb50f", "e5": 
+"20260804180244128064_d6c2a957", "e6": "20260804180244157910_e1683c3c", "e7": 
+"20260804180244196862_0be72b24", "e8": "20260804180244225826_de14d67b"}, 
+"written": {"sources": 4, "documents": 4, "statements": 9, "claims": 0, 
+"evidence": 8, "conflicts": 0}, "status": "succeeded", "query_status": 
+"assessing", "novelty_score": 1.0}
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+[tools:61ae35ca-5807-ff5a-b77f-8b5b9ba1c1d4] [AIMessage] {"searched_sources": 
+5, "accepted_sources": 5}
+[tools:61ae35ca-5807-ff5a-b77f-8b5b9ba1c1d4] [AIMessage] {"search_run_id": 
+"20260804180027375820_b5e70533", "query_id": "20260804175950215257_ce261368", 
+"ref_map": {"s1": "20260804175709252375_8a77521e", "s2": 
+"20260804180312024360_38d7608a", "s3": "20260804180312035309_c7caca7d", "s4": 
+"20260804180312043015_83d1b479", "s5": "20260804180312051838_85031123", "d1": 
+"20260804180312064842_ee7581fd", "d2": "20260804180312100773_6ee270b2", "d3": 
+"20260804180312112423_f42622d9", "d4": "20260804180312126738_1a354208", "d5": 
+"20260804180312143194_e700d4ee", "st1": "20260804180312165403_30bb309b", "st2":
+"20260804180312184450_0d4b5a02", "st3": "20260804180312200167_fe8649de", "st4":
+"20260804180312215995_6695885a", "st5": "20260804180312232756_66370550", "st6":
+"20260804180312250152_a7ad6117", "st7": "20260804180312266548_89d3a63e", "st8":
+"20260804180312282451_0b4ca0da", "st9": "20260804180312298637_507c16a9", 
+"st10": "20260804180312314502_4d5ee6be", "st11": 
+"20260804180312330052_cdda254f", "st12": "20260804180312344374_1d4fb3f6", 
+"st13": "20260804180312359972_8aa759a9", "st14": 
+"20260804180312377079_d6602474", "st15": "20260804180312394898_7abc98f6", 
+"st16": "20260804180312411334_a52c5033", "st17": 
+"20260804180312428631_50f21d09", "st18": "20260804180312444679_4ec1ac9f", 
+"st19": "20260804180312461457_2afe4076", "st20": 
+"20260804180312475925_5a5f06e0", "e1": "20260804180312496238_6657f640", "e2": 
+"20260804180312515247_e7cf6fb8", "e3": "20260804180312533560_0c8d4496", "e4": 
+"20260804180312550064_f9813306", "e5": "20260804180312573537_71088071", "e6": 
+"20260804180312590416_be265c22", "e7": "20260804180312608743_783e5624", "e8": 
+"20260804180312624158_f18a5e27", "e9": "20260804180312641845_0bda1e4d", "e10": 
+"20260804180312658303_5ea37677", "e11": "20260804180312675776_2a33fc95", "e12":
+"20260804180312696111_155d6acb", "e13": "20260804180312713126_cc6f7bc6", "e14":
+"20260804180312732320_8c0026f2", "e15": "20260804180312750961_27cdff60", "e16":
+"20260804180312768594_59e4facc", "e17": "20260804180312789282_0b01b162"}, 
+"written": {"sources": 5, "documents": 5, "statements": 20, "claims": 0, 
+"evidence": 17, "conflicts": 1}, "status": "succeeded", "query_status": 
+"assessing", "novelty_score": 1.0}

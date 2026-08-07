@@ -15,10 +15,18 @@ Extract:
 
 Pre-query analysis (mandatory):
 Before generating queries, you MUST first perform entity disambiguation analysis:
-- Extract UNIQUE IDENTIFIERS from the request: specific person names, institution names, collection names, catalog numbers, archaeological site names, specific measurements, dates, or other distinguishing features
-- Extract TARGET ENTITY type: what category of entity is being researched (artifact, person, organization, event, etc.)
-- Extract POTENTIAL CONFUSION entities: what similar entities might be confused with the target (e.g., same name but different object, related but distinct items)
-- This analysis ensures queries are specific enough to find the exact target and avoid disambiguation failures
+1. **Recall known identifiers from your training data**: Before generating any query, actively recall what you know about this topic from your training data. This is CRITICAL - use your knowledge to generate targeted queries. Think about:
+   - Specific people associated with the entity (discoverers, collectors, creators, researchers)
+   - Institutions that hold or held the entity (museums, universities, collections)
+   - Specific dates, periods, or events in the entity's history
+   - Unique physical characteristics or distinguishing features
+   - Key scholarly debates or publications about the entity
+   
+2. **Extract explicit identifiers from the request**: Any specific identifiers mentioned directly in the user request
+   
+3. **Identify potential confusion entities**: What similar entities might be confused with the target (same name but different object, related but distinct items)
+
+This dual approach (training knowledge + explicit request analysis) ensures queries are specific enough to find the exact target.
 
 How to decompose (critical):
 - Split along the request's OWN thematic structure, NOT by geography/region.
@@ -43,20 +51,32 @@ How to decompose (critical):
 
 Query text format (strict requirements):
 - query.text is the literal string fed unchanged to a web search engine.
-- MANDATORY: Every query MUST include at least 2-3 UNIQUE IDENTIFIERS: specific person names, institution names, collection names, catalog numbers, archaeological site names, specific measurements, dates, or other distinguishing features that help disambiguate the target from similar entities.
-- MANDATORY: Every query MUST include SOURCE TYPE QUALIFIERS to direct searches toward authoritative materials: such as "museum collection", "journal article", "scholarly publication", "official record", "primary source", "academic paper", or "university press".
-- MANDATORY: Every query MUST include specific time period or date references when applicable (e.g., specific years, periods, centuries) to help narrow results.
-- Write a TIGHT natural-language search phrase with concrete entities and relevant qualifiers such as time window, region, policy version, or factual dimension.
-- Do NOT put report sections, table formatting, acceptance standards, or citation instructions into query.text.
-- Do NOT write an instruction to an agent. Avoid phrases that command research actions.
-- Author the query text in the language of the user request.
+
+**TWO-PHASE QUERY STRATEGY (critical)**:
+
+Phase 1 - Initial exploratory queries (first 1-2 queries):
+- **SIMPLICITY FIRST**: The first query should be JUST the entity name. Nothing more.
+  - This allows the search engine to return the broadest possible set of relevant results
+- DO NOT add generic qualifiers to the initial query
+- Generic terms dilute search quality and cause the engine to return irrelevant results
+
+Phase 2 - Deepening queries (subsequent queries if needed):
+- Use the identifiers you recalled from training knowledge to make the query specific
+- Add 2-3 UNIQUE IDENTIFIERS: specific names, institution names, collection names, dates, etc.
+- Optionally add 1 SOURCE TYPE QUALIFIER to direct to authoritative materials
+
+CRITICAL RULES:
+- A query should have MAXIMUM 4-5 words, not 10+ keywords
+- NEVER mix generic terms into the initial query
+- The search engine will do the work of finding relevant results - just point it at the right entity
+- Author the query text in the language of the user request
 - Add `-site:domain` to every query for each forbidden domain. Do not put exact forbidden URLs into query.text.
 
 Query quality check (before finalizing):
-- Verify the query does NOT contain overly broad terms without specific qualifiers
-- Verify the query includes concrete, searchable identifiers rather than generic topic terms
+- Verify the first query is JUST the entity name (no generic qualifiers)
+- Verify subsequent queries add specific identifiers, not generic terms
+- Verify NO query contains more than 4-5 words or identifiers
 - Verify the query would help a search engine return results about the SPECIFIC target, not a broader category
-- If the query fails any check, revise it to add more specific identifiers
 
 Per-query importance (one of "core" / "supporting" / "peripheral"):
 - "core": directly carries a central conclusion of the research goal; the report cannot stand without it.
@@ -130,19 +150,45 @@ Rules:
 - Return only valid JSON.
 - `sufficiency_score` is in [0, 1].
 - Return one `criteria` entry for every Query acceptance criterion, copying its
-  text exactly. Mark it satisfied only when the cited Query-owned Claim or
-  Evidence directly entails the requested fact.
+  text exactly. Mark it satisfied when the cited Query-owned Claim or
+  Evidence directly OR indirectly supports the requested fact.
+- Accept INDIRECT and INFERENTIAL evidence: a source that discusses the topic
+  and provides partial or contextual information relevant to the criterion
+  should count as partial evidence, not a complete miss.
 - A search miss, a source that does not mention the fact, or general topical
-  background is not evidence. Absence counts only when a source explicitly
-  states that the information is unknown, unavailable, unpublished, or does
-  not exist within a defined scope.
-- Return `recommendation="sufficient"` only when the Query's acceptance criteria are met with reliable evidence.
+  background is not evidence. However, if a source discusses related aspects
+  that reasonably inform the criterion, mark it as partially met rather than
+  unmet.
+- Absence counts only when a source explicitly states that the information is
+  unknown, unavailable, unpublished, or does not exist within a defined scope.
+- Be lenient with sufficiency scores: if any relevant information was found,
+  the score should be at least 0.15-0.30, not 0.00.
+- Return `recommendation="sufficient"` only when the Query's acceptance criteria
+  are met with reliable evidence.
 - If more research may help, split the missing work into ATOMIC gaps. Gap
   creation does not mean the gap will be searched; global portfolio evaluation
   selects only work with enough report-level marginal value.
 - Each gap needs an importance, a generic gap category, affected objective keys,
   a reusable search subject key, decision impact, expected confidence gain,
   estimated search rounds, and concrete acceptance criteria.
+
+CRITICAL - Gap diversity rule (top priority):
+- You MUST create at least 3 gaps covering DIFFERENT dimensions of the research topic.
+- Each gap must focus on ONE SPECIFIC DIMENSION only.
+- Gaps MUST have DIFFERENT search_subject_key values to ensure dimension diversity.
+- DO NOT create multiple gaps for the same dimension. Instead, split into atomic sub-dimensions.
+- If you cannot identify 3 different dimensions with missing information, mark the query as "blocked" instead of creating inadequate gaps.
+- Aim to cover 3+ DISTINCT dimensions with the gaps, not multiple aspects of the same dimension.
+
+Mandatory dimension checklist - select at least 3 that need more research:
+1. Provenance or chain of custody
+2. Physical characteristics or material details
+3. Authenticity or scholarly disputes
+4. Symbolic interpretation or cultural context
+5. Discovery circumstances or find location
+6. Institutional location or collection history
+7. Scholarly reception or academic treatment
+
 - `expansion_mode="vertical"` deepens the current known subject for missing
   evidence, a number, definition, time period, authoritative source, conflict,
   or acceptance criterion. `horizontal` follows a newly discovered important
@@ -168,11 +214,11 @@ Return:
   "covered": ["supported aspects"],
   "gaps": [
     {
-      "description": "one atomic missing fact or analysis",
+      "description": "one atomic missing fact or analysis, focusing on ONE dimension only",
       "importance": "core|supporting|peripheral",
       "gap_category": "missing_core_evidence|fatal_conflict|enrichment|additional_example|verification|detail",
       "objective_keys": ["affected-report-objective-key"],
-      "search_subject_key": "stable-topic-key-for-grouping-related-gaps",
+      "search_subject_key": "unique-dimension-key-different-from-other-gaps",
       "decision_impact": 0.0,
       "confidence_gain": 0.0,
       "estimated_search_rounds": 1,
@@ -185,6 +231,12 @@ Return:
   "recommendation": "sufficient|needs_expansion|blocked",
   "reason": "short justification"
 }
+
+Key requirements for gaps:
+1. Each gap description must mention ONE specific dimension
+2. search_subject_key must be unique across all gaps
+3. Gaps must collectively cover different dimensions, not multiple aspects of the same dimension
+4. Instead of creating multiple gaps for the same dimension, create gaps covering different aspects of the research topic
 
 Query:
 {query}
@@ -222,7 +274,7 @@ Rules:
   - Lower credibility sources (<0.5) should reduce the claim's confidence and their contributions should be weighted less
   - When high and low credibility sources contradict each other, prefer the high credibility source's version and disclose the conflict
   - Claims supported only by low-credibility sources should have confidence ≤0.4
-- **Contradiction detection**: When multiple Statements/Evidence describe the same attribute (e.g., museum location, weight, dimensions) with contradictory information:
+- **Contradiction detection**: When multiple Statements/Evidence describe the same attribute with contradictory information:
   - This may indicate entity confusion (different entities being discussed)
   - Mark such contradictions clearly and reduce the claim's confidence
   - Include details about the contradiction in qualifiers/limitations
@@ -253,37 +305,66 @@ Statements and evidence:
 """
 
 plan_followup_query = """You are the Query Planner for GraphResearcher.
-Author one self-contained web-search query that jointly covers the assigned
-atomic gaps sharing one search subject.
+Author one self-contained web-search query for ONE specific research dimension.
 
 Research goal: {research_goal}
-Parent topic (the subject to deepen, or the parent whose dimensions to complete): {parent_text}
+Parent topic (the subject to deepen): {parent_text}
 Research constraints: {research_constraints}
 All existing Query texts (do NOT duplicate their coverage): {existing_query_texts}
 Atomic gaps to cover: {gaps}
 Reason: {reason}
 
+CRITICAL - Single dimension focus rule (top priority):
+- The query MUST focus on ONE specific dimension only, defined by the gap's search_subject_key
+- Extract ONLY the most distinguishing identifiers for THIS dimension from the gap description
+- DO NOT include keywords from other dimensions
+- Each query should be narrow and specific to maximize search relevance
+
+How to identify the dimension:
+- Look at the gap's "search_subject_key" to understand what dimension is being investigated
+- Extract keywords that are UNIQUE TO THIS DIMENSION from the gap's "description" field
+- The keywords should reflect the specific aspect being researched, not generic terms
+
 Entity disambiguation reminder:
 - Before generating the query, identify the specific unique identifiers from the parent topic and existing queries
 - Ensure the new query maintains the same entity specificity level as the original queries
-- If previous queries had disambiguation issues (e.g., confusing related entities), add MORE specific identifiers to this query
+- If previous queries had disambiguation issues, add MORE specific identifiers to this query
+
+What to include (for the current dimension only):
+- The entity name (always)
+- 1-2 UNIQUE IDENTIFIERS specific to THIS dimension
+- Optionally 1 SOURCE TYPE QUALIFIER to direct to authoritative materials
+
+CRITICAL - Query brevity and natural language rules:
+- A query MUST have MAXIMUM 3-5 words total (entity name + 1-2 dimension keywords)
+- Use NATURAL LANGUAGE phrases, NOT quoted exact-match phrases
+- MAXIMUM 1 quoted phrase per query - use it for the entity name only
+- DO NOT use quoted phrases for dimension keywords
+- Quoted phrases force exact-match which drastically reduces search results
+- Prefer broad keywords that a search engine can naturally match
+
+What to AVOID:
+- Do NOT include keywords from multiple dimensions
+- Do NOT include generic filler words
+- Do NOT repeat identifiers already in existing queries
+- Do NOT use more than 1 quoted phrase per query
+- Do NOT use quoted phrases for descriptive terms - only for the entity name
 
 Requirements:
 - Inline the parent's concrete subject BY VALUE into every new query. Never reference another query.
 - Each query must be SELF-CONTAINED and a TIGHT natural-language search phrase.
-- MANDATORY: Include at least 2-3 UNIQUE IDENTIFIERS: specific person names, institution names, collection names, catalog numbers, archaeological site names, specific measurements, dates, or other distinguishing features that disambiguate the target from similar entities.
-- MANDATORY: Add SOURCE TYPE QUALIFIERS to direct searches toward authoritative materials: such as "museum collection", "journal article", "scholarly publication", "official record", "primary source", "academic paper", or "university press".
-- MANDATORY: Include specific time period or date references when applicable.
-- Cover only the assigned related gaps; do not repeat any existing Query.
+- Cover only the assigned gaps for THIS dimension; do not repeat any existing Query.
 - Preserve forbidden domains with `-site:domain`; do not print exact forbidden URLs into the query.
 - Author the query text in the language of the research goal.
 - Tag each query with an importance ("core" / "supporting" / "peripheral") relative to the research goal's core conclusions.
 - Include concrete acceptance_criteria copied or refined from the assigned atomic gap.
 
 Query quality check (before finalizing):
-- Verify the query does NOT contain overly broad terms without specific qualifiers
-- Verify the query includes concrete, searchable identifiers
-- Verify the query would help a search engine return results about the SPECIFIC target, not a broader category
+- Query focuses on ONE dimension only
+- Query has MAXIMUM 3-5 words total
+- Query uses at most 1 quoted phrase (entity name only)
+- Query does NOT use quoted phrases for dimension keywords
+- Query does NOT contain filler words like "evidence", "analysis", "study"
 
 Return only valid JSON, no Markdown, at most {max_new} queries:
 {"queries": [{"text": "...", "importance": "core|supporting|peripheral", "acceptance_criteria": ["..."]}]}

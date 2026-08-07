@@ -119,7 +119,7 @@
 
 ✅ **Stage 2**：按章节写作
 1. 调用 `prepare_report_chapter_batch(chapters)` 分批准备章节，每批最多 3 章。**每章必须包含 `chapter_id` 字段**（与 outline 中的 chapter_id 对应）。示例：`[{"chapter_id": 1}, {"chapter_id": 2}]`。工具返回每章独立的 `bundle_token`，以及局部 `e1`/`c1` Evidence/Claim ref 和 `x1` Conflict ref。局部 ref 只在该章当前 bundle 中有效；正文需要其他 Query 的材料时，通过 `extra_query_refs` 重新加载该章，不能跨章复用 ref。
-2. 章节正文以连贯 prose 为主，可以包含多个自然段和必要的小标题；不要把正文拆成零碎 facts 列表。
+2. 章节正文以连贯 prose 为主，可以包含多个自然段；不要把正文拆成零碎 facts 列表。**不要在正文中写章节标题的 markdown heading**（如 `## Discovery`），系统会根据大纲中的 title 自动添加标题。正文中只写段落内容，如有必要可以使用 `###` 级别的小标题。
 3. 对证据冲突，如实并列差异；若公开信息不足，可以说明"未公开"或"信息有限"，但仍需由来源支持。
 4. 写好后调用 `commit_report_chapter_batch(chapters)` 保存候选章节，每批最多 3 章。**每章必须包含 `chapter_id` 字段**（与 outline 和 prepare 阶段的 chapter_id 对应），以及 `bundle_token`、完整 `content`、实际使用的 `evidence_refs` 和 `disclosed_conflict_refs`。示例：`[{"chapter_id": 1, "bundle_token": "...", "content": "...", "evidence_refs": ["e1", "c1"]}]`。系统始终保存候选正文；验证问题会作为 issues 返回，不得因此反复重写同一章。
 

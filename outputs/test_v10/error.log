@@ -1,0 +1,8 @@
+Error at 2026-08-04 13:57:33.300551
+Traceback (most recent call last):
+  File "C:\Users\94498\Desktop\DeepResearch\GraphResearcher\test_v10_enhanced.py", line 267, in main
+    opts = resolve_log_options(argparse.Namespace(verbose="debug"))
+  File "C:\Users\94498\Desktop\DeepResearch\GraphResearcher\main.py", line 137, in resolve_log_options
+    if args.show_tool_calls is not None:
+       ^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Namespace' object has no attribute 'show_tool_calls'

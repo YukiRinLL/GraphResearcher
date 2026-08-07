@@ -1,0 +1,394 @@
+{
+  "topic": "Ring of Nestor",
+  "mode": "winrate",
+  "allow_tie": false,
+  "aggregate": {
+    "Broad in its coverage": {
+      "gen_wins": 0,
+      "gt_wins": 8,
+      "ties": 0,
+      "total": 8,
+      "gen_win_rate": 0.0
+    },
+    "Neutral": {
+      "gen_wins": 0,
+      "gt_wins": 10,
+      "ties": 0,
+      "total": 10,
+      "gen_win_rate": 0.0
+    },
+    "Well-written": {
+      "gen_wins": 2,
+      "gt_wins": 19,
+      "ties": 0,
+      "total": 21,
+      "gen_win_rate": 0.09523809523809523
+    },
+    "overall": {
+      "gen_wins": 2,
+      "gt_wins": 37,
+      "ties": 0,
+      "total": 39,
+      "gen_win_rate": 0.05128205128205128
+    }
+  },
+  "details": {
+    "Broad in its coverage": [
+      {
+        "criterion_id": "bc_1",
+        "criterion_index": 21,
+        "criterion_text": "It addresses the main aspects of the topic.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 comprehensively addresses all main aspects of the topic, including the ring's physical description, its history, scholarly interpretations, and the detailed debate over its authenticity. Article 2 fails to provide a physical description of the ring or its history, relying instead on meta-commentary about a few specific articles."
+      },
+      {
+        "criterion_id": "bc_2",
+        "criterion_index": 22,
+        "criterion_text": "The lead, ideally the introductory sentence or at least introductory paragraph, of an article, should make clear what the scope of the article is.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1's lead clearly defines the ring, its origins, its physical characteristics, and its significance. Article 2's lead focuses too heavily on specific academic papers rather than establishing a clear, encyclopedic scope for the object itself."
+      },
+      {
+        "criterion_id": "bc_3",
+        "criterion_index": 23,
+        "criterion_text": "All material that is notable, referenced, and that a reader would be likely to agree matches the specified scope must be covered (at least in a summarized fashion).",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 covers a vast amount of notable material, detailing the ring's iconography, the history of its discovery, and decades of scholarly debate. Article 2 completely misses major aspects of the topic, such as the actual iconography of the ring, because it restricts itself to the abstracts of a few papers."
+      },
+      {
+        "criterion_id": "bc_4",
+        "criterion_index": 24,
+        "criterion_text": "What reliable sources say about material that is out of scope for the decided-upon subject is largely irrelevant to that article and can be removed.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 2 includes out-of-scope material, such as describing a completely different ring (MΘ 23748) and detailing the general excavation history of the Palace of Nestor, only to conclude that these are not the Ring of Nestor. Article 1 properly focuses on material relevant to the decided-upon subject."
+      },
+      {
+        "criterion_id": "bc_5",
+        "criterion_index": 25,
+        "criterion_text": "It stays focused on the topic without going into unnecessary detail.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 stays highly focused on the Ring of Nestor, detailing relevant historical and archaeological facts without digressing. Article 2 wastes considerable space discussing unrelated archaeological finds and excavation histories."
+      },
+      {
+        "criterion_id": "bc_6",
+        "criterion_index": 26,
+        "criterion_text": "The lead contains a quick summary of the topic's most important points.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1's lead provides a robust and thorough summary of the most important points: what the ring is, its discovery, its physical appearance, and the authenticity debate. Article 2's lead acts more as a literature review of specific studies rather than summarizing the topic."
+      },
+      {
+        "criterion_id": "bc_7",
+        "criterion_index": 27,
+        "criterion_text": "Each major subtopic is detailed in its own section of the article.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 neatly divides the text into major subtopics (Description, Interpretation, History, Authenticity) and properly details them. Article 2 has duplicated section headers and fails to provide actual details about the Ring of Nestor in the sections it creates."
+      },
+      {
+        "criterion_id": "bc_8",
+        "criterion_index": 28,
+        "criterion_text": "It contains no irrelevant (nor only loosely relevant) information.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 2 contains loosely relevant and entirely irrelevant information, such as descriptions of unconnected gold rings and general summaries of Pylos archaeology, used to compensate for a lack of information on the actual topic. Article 1 contains no such irrelevant filler."
+      }
+    ],
+    "Neutral": [
+      {
+        "criterion_id": "n_1",
+        "criterion_index": 29,
+        "criterion_text": "It represents viewpoints fairly and without editorial bias, giving due weight to each.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 represents all viewpoints fairly and comprehensively without editorial bias. Article 2 reads like an essay critiquing specific supplied texts and explicitly complains about the 'supplied sources', violating neutral encyclopedic synthesis."
+      },
+      {
+        "criterion_id": "n_2",
+        "criterion_index": 30,
+        "criterion_text": "Avoid stating opinions as facts. Opinions should be attributed in the text to particular sources, or where justified, described as widespread views, etc.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 correctly attributes opinions to specific scholars (e.g., Evans, Nilsson, Marinatos). Article 2 editorializes heavily by injecting its own opinions on the quality of the sources (e.g., 'That statement is consequently weaker evidence')."
+      },
+      {
+        "criterion_id": "n_3",
+        "criterion_index": 31,
+        "criterion_text": "Avoid stating seriously contested assertions as facts. If different reliable sources make conflicting assertions about a matter, treat these assertions as opinions rather than facts.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 expertly handles the contested authenticity of the ring by dedicating a balanced section to arguments for and against without taking a side. Article 2 states it has 'not been resolved by the supplied sources', which is unencyclopedic framing."
+      },
+      {
+        "criterion_id": "n_4",
+        "criterion_index": 32,
+        "criterion_text": "Avoid stating facts as opinions. Uncontested and uncontroversial factual assertions made by reliable sources should normally be directly stated in Wikipedia's voice.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 states uncontested facts (measurements, discovery dates, physical descriptions) directly in Wikipedia's voice. Article 2 needlessly hedges basic facts by attributing them to the presence or absence of 'supplied material'."
+      },
+      {
+        "criterion_id": "n_5",
+        "criterion_index": 33,
+        "criterion_text": "Prefer nonjudgmental language. A neutral point of view neither sympathizes with nor disparages its subject. Present opinions and conflicting findings in a disinterested tone. Do not editorialize.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 uses a disinterested, nonjudgmental tone throughout. Article 2 uses judgmental language aimed at its own sources, actively evaluating the strength of their arguments in the text rather than summarizing them neutrally."
+      },
+      {
+        "criterion_id": "n_6",
+        "criterion_index": 34,
+        "criterion_text": "Indicate the relative prominence of opposing views. Ensure that the reporting of different views on a subject adequately reflects the relative levels of support for those views and does not give a false impression of parity.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 clearly indicates the relative prominence of views over time (e.g., noting that before the 1970s most scholars considered it a forgery, then detailing modern shifts). Article 2 fails to provide a broader context of scholarly consensus."
+      },
+      {
+        "criterion_id": "n_7",
+        "criterion_index": 35,
+        "criterion_text": "An article should not give undue weight to minor aspects of its subject but should strive to treat each aspect with a weight proportional to its treatment in the body of reliable, published material on the subject.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 gives proportional weight to the ring's description, history, interpretation, and authenticity. Article 2 gives undue weight to minor bibliographical discrepancies and the author's confusion over source terminology."
+      },
+      {
+        "criterion_id": "n_8",
+        "criterion_index": 36,
+        "criterion_text": "Any inclusion of fringe or pseudoscientific views should not give them undue weight. The fringe or pseudoscientific view should be clearly described as such.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 contextualizes outdated interpretations (such as Evans's links to Norse mythology) by noting modern scholarly consensus considers them 'fanciful'. Article 2 lacks discussion of the ring's interpretations."
+      },
+      {
+        "criterion_id": "n_9",
+        "criterion_index": 37,
+        "criterion_text": "In the case of beliefs and practices, Wikipedia content should not only encompass what motivates individuals who hold these beliefs and practices but also account for how such beliefs and practices developed.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 explains the motivations behind Evans's interpretations of the ring, linking them to Victorian thought, 'The Golden Bough', and his desire to connect Minoan and Egyptian religion. Article 2 misses this context entirely."
+      },
+      {
+        "criterion_id": "n_10",
+        "criterion_index": 38,
+        "criterion_text": "Article titles that combine alternative names are discouraged. Alternative names should be given their due prominence within the article itself, and redirects created as appropriate.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 handles the title and subject clearly and consistently. Article 2 gets bogged down in a confusing, unresolved tangent about alternative names ('Minos Ring' vs 'Pseudo-Minoan Nestor Ring') without effectively integrating them."
+      }
+    ],
+    "Well-written": [
+      {
+        "criterion_id": "ww_cc_1",
+        "criterion_index": 0,
+        "criterion_text": "Articles should be written in encyclopedic style, which differs from the technically dense style found in scholarly writing aimed at specialists.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 is written in a standard encyclopedic style, whereas Article 2 reads like an academic literature review or a critique of supplied source texts, which is inappropriate for Wikipedia."
+      },
+      {
+        "criterion_id": "ww_cc_2",
+        "criterion_index": 1,
+        "criterion_text": "Articles should address the topic without twisting the truth or telling \"lies-to-children\", but should also minimize (unexplained) jargon and not take prior knowledge for granted.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 explains the topic and context clearly to a general audience. Article 2 assumes knowledge of a 'supplied record' and focuses on meta-analysis of academic papers rather than explaining the topic itself."
+      },
+      {
+        "criterion_id": "ww_cc_3",
+        "criterion_index": 2,
+        "criterion_text": "Articles should be self-contained as much as possible, rather than relying on excessive links to explain unfamiliar concepts.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 is fully self-contained. Article 2 constantly refers to external, unspecified documents such as 'the supplied abstract' and 'the supplied material', making it not self-contained."
+      },
+      {
+        "criterion_id": "ww_ls_1",
+        "criterion_index": 3,
+        "criterion_text": "An article's content should begin with an introductory lead section – a concise summary of the article – which is never divided into sections. The remainder of the article is typically divided into sections.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Both articles feature an undivided introductory lead section, but Article 1's lead actually serves as a proper summary of the article's content. Furthermore, Article 2 contains duplicate section headers."
+      },
+      {
+        "criterion_id": "ww_ls_2",
+        "criterion_index": 4,
+        "criterion_text": "The lead section gives the basics in a nutshell, introduces the article, and cultivates interest in reading on—though not by teasing the reader or hinting at what follows.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1's lead gives the basics of the ring, its discovery, and its significance, cultivating interest. Article 2's lead focuses on semantic differences in academic literature, which fails to introduce the basics of the topic."
+      },
+      {
+        "criterion_id": "ww_ls_3",
+        "criterion_index": 5,
+        "criterion_text": "The lead section should be written in a clear, accessible style with a neutral point of view.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1's lead is written in a clear, accessible, and neutral style. Article 2's lead is clunky and overly focused on naming conventions and peer-reviewed abstracts."
+      },
+      {
+        "criterion_id": "ww_ls_4",
+        "criterion_index": 6,
+        "criterion_text": "The lead should stand on its own as a concise overview of the article's topic. It should identify the topic, establish context, explain why the topic is notable, and summarize the most important points, including any prominent controversies. The notability of the article's subject is usually established in the first few sentences.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1's lead perfectly stands on its own as a concise overview of the Ring of Nestor. Article 2's lead fails to overview the topic, instead overviewing a few specific articles about it."
+      },
+      {
+        "criterion_id": "ww_ls_5",
+        "criterion_index": 7,
+        "criterion_text": "As in the body of the article itself, the emphasis given to material in the lead should roughly reflect its importance to the topic, according to reliable, published sources. Apart from basic facts, significant information should not appear in the lead if it is not covered in the remainder of the article.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "The emphasis in Article 1's lead accurately reflects the importance of the discovery, description, and authenticity debate. Article 2 gives undue weight in the lead to specific publication years and unnamed scholars."
+      },
+      {
+        "criterion_id": "ww_ls_6",
+        "criterion_index": 8,
+        "criterion_text": "A lead section should be carefully sourced as appropriate, although it is common for citations to appear in the body and not the lead.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 incorporates information smoothly, implying proper sourcing. Article 2 awkwardly names 'A 2011 peer-reviewed article' directly in the text of the lead, which is poor encyclopedic practice."
+      },
+      {
+        "criterion_id": "ww_ls_7",
+        "criterion_index": 9,
+        "criterion_text": "Significant information should not appear in the lead, apart from basic facts, if it is not covered in the remainder of the article, although not everything in the lead must be repeated in the body of the text. Exceptions include specific facts such as quotations, examples, birth dates, taxonomic names and typological classifications, case numbers, and titles.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 introduces significant facts in the lead and expands upon them in the body appropriately. Article 2 repeats the exact same phrasing about the 2011 article in both the lead and the body."
+      },
+      {
+        "criterion_id": "ww_wtw_1",
+        "criterion_index": 10,
+        "criterion_text": "Puffery: Words such as legendary, best, great, greatest, acclaimed, iconic, visionary, outstanding, leading, celebrated, popular, award-winning, landmark, cutting-edge, innovative, revolutionary, extraordinary, brilliant, hit, famous, renowned, remarkable, prestigious, world-class, respected, notable, virtuoso, honorable, awesome, unique, pioneering, phenomenal, prominent are often used without attribution to promote the subject of an article. Instead of making subjective proclamations about a subject's importance, use facts and attribution to demonstrate it.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Neither article suffers from puffery, but Article 1 successfully manages a much larger amount of descriptive text without resorting to promotional language, properly attributing subjective praise as quotes."
+      },
+      {
+        "criterion_id": "ww_wtw_2",
+        "criterion_index": 11,
+        "criterion_text": "Contentious labels: Value-laden labels – such as calling an organization a cult, an individual a racist, sexist, terrorist, or freedom fighter, or a sexual practice a perversion – may express contentious opinion and are best avoided unless widely used by reliable sources to describe the subject, in which case use in-text attribution.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 discusses the contentious topic of the ring being a 'forgery' or 'fake' by carefully attributing these labels to specific scholars, avoiding taking a stance."
+      },
+      {
+        "criterion_id": "ww_wtw_3",
+        "criterion_index": 12,
+        "criterion_text": "Unsupported attributions: Words like \"some people say\", \"many scholars state\", \"it is believed/regarded/considered\", \"experts declare\", \"it is widely thought\", \"research has shown\" may disguise a biased view. Claims about what people say, think, feel, or believe should be clearly attributed.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 supports its attributions by naming the specific scholars in the body text. Article 2 relies on vague phrasing like 'unnamed claims of authenticity' and 'many other scholars'."
+      },
+      {
+        "criterion_id": "ww_wtw_4",
+        "criterion_index": 13,
+        "criterion_text": "Expressions of doubt: When words like supposed, apparent, purported, alleged, accused, so-called are used, ensure that the source of the accusation is clear. Also avoid scare-quoting and undue emphasis.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 handles doubt well, properly contextualizing the debate. Article 2 uses phrases like 'reportedly found' in a way that casts unexplained doubt on the narrative without providing the full context."
+      },
+      {
+        "criterion_id": "ww_wtw_5",
+        "criterion_index": 14,
+        "criterion_text": "Editorializing: Words like notably, it should be noted, arguably, interestingly, essentially, utterly, actually, only, clearly, absolutely, of course, without a doubt, indeed, happily, sadly, tragically, aptly, fortunately, unfortunately, untimely should usually be avoided to maintain an impartial tone.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 2 editorializes heavily on the quality of its own sources (e.g., 'This is an interpretive criterion, not a materials test'). Article 1 maintains a much more impartial, descriptive tone."
+      },
+      {
+        "criterion_id": "ww_wtw_6",
+        "criterion_index": 15,
+        "criterion_text": "Synonyms for said: Words like reveal, point out, clarify, expose, explain, find, note, observe, insist, speculate, surmise, claim, assert, admit, confess, deny, confirm may make undue implications. On Wikipedia, it is more important to avoid language that makes undue implications.",
+        "category": "Well-written",
+        "winner": "gen",
+        "winner_code": 2,
+        "reason": "Article 1 uses the phrase 'pointing out' ('pointing out that the motif was not known'), which violates the guideline against using synonyms that make undue implications (implying the statement is an absolute fact). Article 2 avoids this."
+      },
+      {
+        "criterion_id": "ww_wtw_7",
+        "criterion_index": 16,
+        "criterion_text": "Euphemisms: Euphemisms like passed away, gave her life, eternal rest, make love, an issue with, collateral damage, differently abled should generally be avoided in favor of more neutral and precise terms.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Neither article uses euphemisms, but Article 1 is written in a more direct, professional, and precise encyclopedic manner overall."
+      },
+      {
+        "criterion_id": "ww_wtw_8",
+        "criterion_index": 17,
+        "criterion_text": "Clichés and idioms: Clichés and idioms like lion's share, tip of the iceberg, white elephant, gild the lily, take the plunge, ace up the sleeve should generally be avoided in favor of direct, literal expressions.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Both articles avoid clichés and idioms, but Article 1 provides more direct, literal, and comprehensive explanations of the historical and archaeological facts."
+      },
+      {
+        "criterion_id": "ww_wtw_9",
+        "criterion_index": 18,
+        "criterion_text": "Relative time references: Prefer specific statements to general ones. Words like recently, lately, currently, today, presently, to date, X years ago, formerly, in the past, traditionally should be avoided.",
+        "category": "Well-written",
+        "winner": "gen",
+        "winner_code": 2,
+        "reason": "Article 1 uses the relative time reference 'currently' ('It is currently held by the Ashmolean Museum'), which violates the manual of style. Article 2 avoids this specific error."
+      },
+      {
+        "criterion_id": "ww_wtw_10",
+        "criterion_index": 19,
+        "criterion_text": "Unspecified places or events: Prefer specific statements to general ones. Words like this country, here, there, somewhere, sometimes, often, occasionally, somehow should be avoided.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 is highly specific about places, events, and people (e.g., 'at Kakovatos in Messenia'). Article 2 is overly vague about its sources and events."
+      },
+      {
+        "criterion_id": "ww_wtw_11",
+        "criterion_index": 20,
+        "criterion_text": "Survived by: Phrasing such as \"Smith died in 1982, survived by her husband Jack and two sons\" should be avoided; this information can be made more complete and spread out through the article.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Neither article misuses 'survived by'. Article 1 mentions the death of the finder and the passing of the ring to his son as a necessary and properly formatted part of the provenance history."
+      }
+    ]
+  }
+}

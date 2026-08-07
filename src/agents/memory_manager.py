@@ -92,6 +92,26 @@ OBJECTIVE_CONFIDENCE_THRESHOLD = 0.65
 EXPANSION_UTILITY_THRESHOLD = 0.25
 LOW_REALIZED_GAIN_THRESHOLD = 0.05
 LOW_GAIN_WINDOW = 2
+# Global search counter - incremented every time dispatch_searcher is called
+_total_dispatched_searches = 0
+# Failure detection threshold: if sufficiency_score is below this, stop expanding the branch
+SUFFICIENCY_FAILURE_THRESHOLD = 0.12
+# Progressive failure thresholds by depth: deeper queries need higher scores to survive
+# Depth 0: 0.10 (base), Depth 1: 0.15, Depth 2+: 0.20
+DEPTH_FAILURE_THRESHOLDS = {0: 0.12, 1: 0.15, 2: 0.18, 3: 0.20, 4: 0.20}
+# Minimum number of gaps to create per query (diversity requirement)
+MIN_GAPS_COUNT = 3
+# Maximum number of child queries per parent query (prevent query tree explosion)
+MAX_CHILD_QUERIES = 3
+# Maximum depth of query tree (prevent infinite nesting)
+MAX_QUERY_DEPTH = 4
+# Global search budget: max total number of searches across the entire query tree
+GLOBAL_SEARCH_BUDGET = 30
+# Maximum total queries allowed in the tree (soft cap - becomes blocked instead of failed)
+MAX_TOTAL_QUERIES = 60
+# Low quality streak threshold: if score stays below this for N assessments, force fail
+LOW_QUALITY_STREAK_THRESHOLD = 0.3
+LOW_QUALITY_STREAK_LIMIT = 2
 _ACTIVE_QUERY_WORK_STATUSES = {
     "searching",
     "assessing",
@@ -530,6 +550,16 @@ class MemoryManager:
         goal = research_state.get_goal()
         actions: list[dict] = []
         terminal = research_state.TERMINAL_QUERY_STATUSES
+
+        # === Global budget check ===
+        # Count total searches already performed (queries that have been searched)
+        total_search_count = sum(
+            1 for q in queries
+            if q.get("status") in {"searching", "assessing", "needs_expansion", "waiting_children", "sufficient", "blocked", "failed"}
+        )
+        budget_exhausted = total_search_count >= GLOBAL_SEARCH_BUDGET
+        logger.info(f"get_next_actions: total_searches={total_search_count}, budget_exhausted={budget_exhausted}")
+
         for node in queries:
             query_status = node.get("status")
             action = None
@@ -629,6 +659,35 @@ class MemoryManager:
             -float(a["priority"] or 0.0),
             a.get("query_id") or a.get("goal_id") or "",
         ))
+
+        # === Budget enforcement: filter out new searches when budget exhausted ===
+        if budget_exhausted:
+            # Keep only assess_query and evaluate_research_portfolio actions
+            # Remove dispatch_searcher and expand_gaps to prevent infinite expansion
+            filtered_actions = [
+                a for a in actions
+                if a["action"] in {"assess_query", "evaluate_research_portfolio", "assess_convergence"}
+            ]
+            if filtered_actions:
+                logger.info(f"Budget exhausted ({total_search_count}/{GLOBAL_SEARCH_BUDGET}), "
+                          f"filtered out new search actions, keeping {len(filtered_actions)} actions")
+                actions = filtered_actions
+            else:
+                # No assess_query or evaluate actions left, force convergence
+                logger.info(f"Budget exhausted ({total_search_count}/{GLOBAL_SEARCH_BUDGET}), "
+                          f"no assess/evaluate actions, forcing convergence")
+                actions = [{
+                    "action": "assess_convergence",
+                    "query_id": None,
+                    "goal_id": goal.get("id"),
+                    "priority": 0.0,
+                    "required_for_parent": False,
+                    "required_path": False,
+                    "semantic_importance": 0.0,
+                    "gap_ids": [],
+                    "reason": f"Global search budget ({GLOBAL_SEARCH_BUDGET}) exhausted, forcing convergence",
+                }]
+
         if any(action["action"] == "assess_query" for action in actions):
             actions = [action for action in actions if action["action"] == "assess_query"]
         elif any(action["action"] == "evaluate_research_portfolio" for action in actions):
@@ -1188,16 +1247,221 @@ class MemoryManager:
             for objective_key in objective_keys:
                 graph_tools.add_edge(gap_id, objective_by_key[objective_key]["id"], EdgeType.IMPACTS_OBJECTIVE)
 
+        # === Gap diversity enforcement (Scheme C) ===
+        # Ensure we have at least MIN_GAPS_COUNT gaps covering different dimensions
+        # Apply if we have fewer than MIN_GAPS_COUNT gaps (including zero gaps)
+        if len(created_gaps) < MIN_GAPS_COUNT:
+            # Track existing dimensions
+            existing_subject_keys = set()
+            for gid in created_gaps:
+                gap_node = graph_tools.get_node(gid)
+                subject_key = str(gap_node.get("search_subject_key") or "")
+                if subject_key:
+                    existing_subject_keys.add(subject_key)
+
+            # Predefined dimension templates for auto-supplementation
+            dimension_templates = [
+                {
+                    "search_subject_key": "provenance_history",
+                    "description": "Missing information about the object's provenance, chain of custody, or ownership history",
+                    "acceptance_criteria": ["Source documenting ownership chain or provenance"],
+                },
+                {
+                    "search_subject_key": "physical_description",
+                    "description": "Missing detailed physical description including material, dimensions, weight, and condition",
+                    "acceptance_criteria": ["Source with detailed physical description"],
+                },
+                {
+                    "search_subject_key": "authenticity_debate",
+                    "description": "Missing scholarly evidence about authenticity debates, forgery allegations, or verification",
+                    "acceptance_criteria": ["Source discussing authenticity controversy"],
+                },
+                {
+                    "search_subject_key": "iconography_interpretation",
+                    "description": "Missing information about iconographic interpretation, artistic style, or symbolic meaning",
+                    "acceptance_criteria": ["Source with iconographic analysis"],
+                },
+                {
+                    "search_subject_key": "discovery_context",
+                    "description": "Missing details about discovery context including findspot, excavator, date, and circumstances",
+                    "acceptance_criteria": ["Source with discovery details"],
+                },
+                {
+                    "search_subject_key": "museum_collection",
+                    "description": "Missing information about current location, museum collection, catalog number, or exhibit history",
+                    "acceptance_criteria": ["Source with museum collection information"],
+                },
+                {
+                    "search_subject_key": "scholarly_reception",
+                    "description": "Missing information about scholarly reception, academic references, or research history",
+                    "acceptance_criteria": ["Source with scholarly analysis"],
+                },
+            ]
+
+            # Supplement gaps from missing dimensions
+            objective_keys_for_supplement = list(objective_by_key.keys())[:1] or (query.get("objective_keys") or [])
+            for template in dimension_templates:
+                if len(created_gaps) >= MIN_GAPS_COUNT:
+                    break
+                if template["search_subject_key"] in existing_subject_keys:
+                    continue
+
+                # Create supplementary gap
+                gap_id = graph_tools.create_analysis(
+                    text=template["description"],
+                    query_id=resolved,
+                    analysis_type="gap",
+                    description=template["description"],
+                    gap_key=_gap_key(template["description"]),
+                    importance="supporting",
+                    required_for_parent=False,
+                    status="candidate",
+                    gap_category="enrichment",
+                    objective_keys=objective_keys_for_supplement,
+                    search_subject_key=template["search_subject_key"],
+                    decision_impact=0.2,
+                    confidence_gain=0.3,
+                    estimated_search_rounds=1,
+                    acceptance_criteria=template["acceptance_criteria"],
+                    expansion_mode="vertical",
+                    trigger_type="delivery_requirement",
+                    trigger_refs=list(objective_by_id.keys())[:1],
+                )
+                created_gaps.append(gap_id)
+                existing_subject_keys.add(template["search_subject_key"])
+                logger.info(f"Auto-supplemented gap for dimension: {template['search_subject_key']}")
+
         recommendation = verdict.get("recommendation")
         open_gap_ids = self._query_gap_ids(resolved, {"candidate", "selected"})
-        if (
+
+        # Calculate query tree depth to prevent infinite nesting
+        handle = str(query.get("handle") or "")
+        depth = handle.count(".") if handle else 0
+
+        # Count existing child queries to prevent query tree explosion
+        child_queries = [
+            graph_tools.get_node(cid)
+            for cid in graph_tools.get_query_children(resolved)
+        ]
+        active_child_count = sum(
+            1 for c in child_queries
+            if c.get("status") not in {"sufficient", "blocked", "failed", "deferred"}
+        )
+
+        # === Failure detection logic ===
+        # Condition 1: Sufficiency score is too low for the current depth
+        # Condition 2: Query tree depth exceeds maximum
+        # Condition 3: Too many active child queries
+        # Condition 4: Global search budget exhausted
+        # Condition 5: Total query count exceeds hard cap
+        # Condition 6: Low quality streak (persistent low scores)
+
+        is_failed = False
+        failure_reason = ""
+
+        # Count total queries in the tree
+        all_queries = graph_tools.search_nodes("query", {})
+        total_query_count = len(all_queries)
+        total_search_count = sum(
+            1 for q in all_queries
+            if q.get("status") in {"searching", "assessing", "needs_expansion", "waiting_children", "sufficient", "blocked", "failed"}
+        )
+
+        # Get depth-adjusted threshold
+        depth_threshold = DEPTH_FAILURE_THRESHOLDS.get(min(depth, 4), SUFFICIENCY_FAILURE_THRESHOLD)
+
+        # Check 1a: Low sufficiency score for current depth (search quality issue)
+        if score < depth_threshold and created_gaps:
+            is_failed = True
+            failure_reason = (
+                f"Low sufficiency score ({score:.2f}) below depth threshold ({depth_threshold:.2f}) "
+                f"at depth {depth}, stopping expansion"
+            )
+
+        # Check 1b: Low quality streak - if score has been consistently poor
+        low_quality_count = int(query.get("low_quality_streak") or 0)
+        if score < LOW_QUALITY_STREAK_THRESHOLD:
+            low_quality_count += 1
+        else:
+            low_quality_count = 0
+        if low_quality_count >= LOW_QUALITY_STREAK_LIMIT and created_gaps:
+            is_failed = True
+            failure_reason = (
+                f"Low quality streak ({low_quality_count} consecutive assessments below "
+                f"{LOW_QUALITY_STREAK_THRESHOLD:.2f}), search results consistently not relevant"
+            )
+
+        # Check 2: Query tree depth exceeded
+        if depth >= MAX_QUERY_DEPTH and open_gap_ids:
+            is_failed = True
+            failure_reason = f"Maximum query tree depth ({MAX_QUERY_DEPTH}) reached, stopping further expansion"
+
+        # Check 3: Too many active child queries
+        if active_child_count >= MAX_CHILD_QUERIES and open_gap_ids:
+            is_failed = True
+            failure_reason = f"Maximum active child queries ({MAX_CHILD_QUERIES}) reached, stopping further expansion"
+
+        # Check 4: Global search budget exhausted
+        if total_search_count >= GLOBAL_SEARCH_BUDGET and open_gap_ids:
+            is_failed = True
+            failure_reason = (
+                f"Global search budget ({GLOBAL_SEARCH_BUDGET}) exhausted "
+                f"({total_search_count} searches performed), stopping further expansion"
+            )
+
+        # Check 5: Soft cap on total queries - treat as blocked (not failed) to allow sufficiency
+        if total_query_count >= MAX_TOTAL_QUERIES:
+            is_failed = True
+            failure_reason = (
+                f"Maximum total queries ({MAX_TOTAL_QUERIES}) reached "
+                f"({total_query_count} queries exist), marking as blocked for sufficiency evaluation"
+            )
+
+        # Determine final status
+        # Rule 1: If explicitly marked failed, respect that
+        if is_failed:
+            # But if score is high enough, convert to blocked instead of failed
+            # (allows the query to still be useful to parent without further expansion)
+            if score >= 0.60 and not failure_reason.startswith("Low sufficiency"):
+                new_status = "blocked"
+                logger.info(
+                    f"Query {handle} ({resolved}) marked as BLOCKED (score={score:.2f}, "
+                    f"reason: {failure_reason}) - score high enough to be useful without expansion"
+                )
+            else:
+                new_status = "failed"
+                logger.warning(f"Query {handle} ({resolved}) marked as FAILED: {failure_reason}")
+        # Rule 2: Natural sufficiency with all criteria met and no open gaps
+        elif (
             recommendation == "sufficient"
-            and score >= 0.7
+            and score >= 0.65
             and criteria_satisfied
             and not open_gap_ids
         ):
             new_status = "sufficient"
-        elif open_gap_ids:
+        # Rule 3: Partial sufficiency - core criteria satisfied, score adequate, accept remaining gaps
+        elif (
+            score >= 0.65
+            and criteria_satisfied
+            and len(open_gap_ids) <= 2
+        ):
+            new_status = "sufficient"
+            logger.info(
+                f"Query {handle} ({resolved}) marked as SUFFICIENT with partial gaps "
+                f"(score={score:.2f}, open_gaps={len(open_gap_ids)})"
+            )
+        # Rule 4: Information boundary - score improvement stagnant
+        elif (
+            score >= 0.60
+            and recommendation == "needs_expansion"
+            and self._is_score_stagnant(resolved, score)
+        ):
+            new_status = "sufficient"
+            logger.info(
+                f"Query {handle} ({resolved}) marked as SUFFICIENT due to stagnant score "
+                f"(score={score:.2f}, no meaningful improvement expected)"
+            )
+        elif open_gap_ids and total_search_count < GLOBAL_SEARCH_BUDGET:
             new_status = "needs_expansion"
         else:
             new_status = "blocked"
@@ -1208,14 +1472,17 @@ class MemoryManager:
             sufficiency_score=score,
             criterion_results=criterion_results,
             covered=verdict.get("covered") or [],
-            assessment_reason=verdict.get("reason") or "",
+            assessment_reason=failure_reason or verdict.get("reason") or "",
         )
-        if new_status in {"sufficient", "blocked"}:
+        if new_status in {"sufficient", "blocked", "failed"}:
             self._propagate_child_completion(resolved, new_status)
         revision = self._bump_portfolio_revision()
         graph_tools.upsert_node(
             NodeType.QUERY,
-            {"portfolio_revision_at_assessment": revision},
+            {
+                "portfolio_revision_at_assessment": revision,
+                "low_quality_streak": low_quality_count,
+            },
             resolved,
         )
         return {
@@ -1225,7 +1492,16 @@ class MemoryManager:
             "criterion_results": criterion_results,
             "status": new_status,
             "created_gaps": created_gaps,
-            "next_action": "evaluate_research_portfolio" if new_status == "needs_expansion" else "get_next_actions",
+            "failure_reason": failure_reason if is_failed else "",
+            "depth": depth,
+            "active_child_count": active_child_count,
+            "total_queries": total_query_count,
+            "total_searches": total_search_count,
+            "next_action": (
+                "get_next_actions"
+                if new_status in {"sufficient", "blocked", "failed"}
+                else "evaluate_research_portfolio"
+            ),
         }
 
     @staticmethod
@@ -1324,22 +1600,72 @@ class MemoryManager:
             current = graph_tools.get_query_parent(current)
         return False
 
+    def _is_score_stagnant(self, query_id: str, current_score: float) -> bool:
+        """Check if consecutive searches on this query show diminishing returns.
+
+        Returns True if:
+        - There are previous sufficiency scores for this query
+        - The current score hasn't improved by more than 0.05 over the best previous score
+        - This indicates information has been exhausted for this query
+        """
+        query = graph_tools.get_node(query_id)
+        if not query:
+            return False
+
+        # Check if we have child queries that were already assessed
+        child_ids = graph_tools.get_query_children(query_id)
+        if not child_ids:
+            return False
+
+        child_scores = []
+        for cid in child_ids:
+            child = graph_tools.get_node(cid)
+            if child:
+                score = child.get("sufficiency_score")
+                if score is not None:
+                    try:
+                        child_scores.append(float(score))
+                    except (TypeError, ValueError):
+                        pass
+
+        if not child_scores:
+            return False
+
+        best_child_score = max(child_scores)
+        # Score stagnant if current score doesn't improve by >= 0.05 over best child
+        if current_score < best_child_score + 0.05:
+            return True
+        return False
+
     def _propagate_child_completion(self, query_id: str, child_status: str) -> None:
         """Resolve assigned gaps and make a completed child's parent assessable."""
-        gap_status = {
-            "sufficient": "resolved",
-            "deferred": "deferred_low_value",
-        }.get(child_status, "blocked")
+        child_node = graph_tools.get_node(query_id)
+        child_score = 0.0
+        try:
+            child_score = float(child_node.get("sufficiency_score", 0.0))
+        except (TypeError, ValueError):
+            pass
+
+        # Blocked with high score counts as resolved; blocked with low score stays blocked
+        if child_status == "blocked" and child_score >= 0.55:
+            gap_status = "resolved"
+        else:
+            gap_status = {
+                "sufficient": "resolved",
+                "deferred": "deferred_low_value",
+            }.get(child_status, "blocked")
+
         for gap_id in self._addressed_gap_ids(query_id):
             gap = graph_tools.get_node(gap_id)
             graph_tools.upsert_node(NodeType.ANALYSIS, {
                 "status": gap_status,
-                "resolution_reason": f"child query finished as {child_status}",
+                "resolution_reason": f"child query finished as {child_status} (score={child_score:.2f})",
             }, gap_id)
             conflict_id = gap.get("conflict_id")
             if conflict_id:
+                resolved_status = "resolved" if child_status == "sufficient" or (child_status == "blocked" and child_score >= 0.55) else "disclosed"
                 graph_tools.upsert_node(NodeType.CONFLICT, {
-                    "resolution_status": "resolved" if child_status == "sufficient" else "disclosed",
+                    "resolution_status": resolved_status,
                 }, conflict_id)
         parent_id = graph_tools.get_query_parent(query_id)
         parent = graph_tools.get_node(parent_id) if parent_id else {}
@@ -1558,6 +1884,37 @@ class MemoryManager:
             subject = str(gap.get("search_subject_key") or gap.get("gap_key") or gap["id"])
             mode = gap.get("expansion_mode") if gap.get("expansion_mode") in {"horizontal", "vertical"} else "vertical"
             grouped_candidates.setdefault((mode, subject), []).append(gap)
+
+        # Calculate objective coverage deficits for diversity-aware selection
+        # Lower coverage objectives should be prioritized for gap expansion
+        objective_coverage_deficits = {}
+        for objective in objectives:
+            key = objective.get("objective_key")
+            if key and objective.get("status") not in {"satisfied", "blocked"}:
+                coverage = float(objective.get("coverage") or 0.0)
+                confidence = float(objective.get("confidence") or 0.0)
+                max_deficit = max(
+                    0.0,
+                    OBJECTIVE_COVERAGE_THRESHOLD - coverage,
+                    OBJECTIVE_CONFIDENCE_THRESHOLD - confidence,
+                )
+                objective_coverage_deficits[key] = max_deficit
+
+        # Count how many distinct dimensions exist among candidates
+        candidate_subjects = {
+            str(gap.get("search_subject_key") or gap.get("gap_key") or gap.get("id"))
+            for gap in candidates
+        }
+        num_distinct_dimensions = len(candidate_subjects)
+
+        # Adjust threshold for dimension diversity: if multiple dimensions exist, use a lower threshold
+        # This ensures gaps covering different dimensions are more likely to be selected
+        diversity_threshold = EXPANSION_UTILITY_THRESHOLD
+        if num_distinct_dimensions >= 3:
+            diversity_threshold = 0.15  # Lower threshold when 3+ dimensions are available
+        elif num_distinct_dimensions >= 2:
+            diversity_threshold = 0.20  # Slightly lower for 2 dimensions
+
         for (mode, subject), group in grouped_candidates.items():
             keys = {
                 key
@@ -1583,9 +1940,18 @@ class MemoryManager:
             benefit = 0.5 * deficit + 0.3 * decision_impact + 0.2 * confidence_gain
             utility = benefit * (1.0 - redundancy) / rounds
             fatal = any(gap.get("gap_category") == "fatal_conflict" for gap in group)
+
+            # Diversity-aware selection: prioritize gaps that cover uncovered objectives
+            # Use adjusted threshold based on number of distinct dimensions
+            has_coverage_deficit = any(
+                objective_coverage_deficits.get(key, 0.0) > 0.0
+                for key in keys
+            )
+            dimension_threshold = diversity_threshold if has_coverage_deficit else EXPANSION_UTILITY_THRESHOLD
+
             choose = fatal or (
                 bool(deficits)
-                and utility >= EXPANSION_UTILITY_THRESHOLD
+                and utility >= dimension_threshold
             )
             new_status = "selected" if choose else "deferred_low_value"
             owners = [
@@ -1747,6 +2113,30 @@ class MemoryManager:
 
         created = []
         goal = research_state.get_goal()
+
+        # Global hard cap check - don't create new queries if we've hit the limit
+        existing_queries = graph_tools.search_nodes("query", {})
+        if len(existing_queries) >= MAX_TOTAL_QUERIES:
+            for gap in gaps:
+                graph_tools.upsert_node(NodeType.ANALYSIS, {
+                    "status": "blocked",
+                    "resolution_reason": f"Global query cap ({MAX_TOTAL_QUERIES}) reached",
+                }, gap["id"])
+            return {"created": [], "blocked": [g["id"] for g in gaps]}
+
+        # Secondary check: enforce GLOBAL_SEARCH_BUDGET
+        total_search_count = sum(
+            1 for q in existing_queries
+            if q.get("status") in {"searching", "assessing", "needs_expansion", "waiting_children", "sufficient", "blocked", "failed"}
+        )
+        if total_search_count >= GLOBAL_SEARCH_BUDGET:
+            for gap in gaps:
+                graph_tools.upsert_node(NodeType.ANALYSIS, {
+                    "status": "blocked",
+                    "resolution_reason": f"Global search budget ({GLOBAL_SEARCH_BUDGET}) exhausted",
+                }, gap["id"])
+            return {"created": [], "blocked": [g["id"] for g in gaps]}
+
         existing_query_texts = [
             query.get("text") for query in graph_tools.search_nodes("query", {}) if query.get("text")
         ]
@@ -2040,7 +2430,16 @@ class MemoryManager:
             if query.get("status") not in research_state.TERMINAL_QUERY_STATUSES
         ] if goal.get("scope_mode") == "exhaustive" else []
         remaining = research_state.remaining_budget(goal_id)
-        if active:
+        # Secondary budget check: enforce GLOBAL_SEARCH_BUDGET even if remaining is None (unlimited)
+        total_search_count = sum(
+            1 for q in all_queries
+            if q.get("status") in {"searching", "assessing", "needs_expansion", "waiting_children", "sufficient", "blocked", "failed"}
+        )
+        global_budget_exhausted = total_search_count >= GLOBAL_SEARCH_BUDGET
+        if global_budget_exhausted and (remaining is None or remaining > 0):
+            logger.info(f"assess_convergence: GLOBAL_SEARCH_BUDGET exhausted ({total_search_count}/{GLOBAL_SEARCH_BUDGET}), forcing budget exhaustion")
+            remaining = 0
+        if active and not global_budget_exhausted:
             research_state.update_goal({
                 "research_state": research_state.RESEARCHING,
                 "last_convergence_recommendation": "continue",
@@ -2169,6 +2568,14 @@ class MemoryManager:
             if remaining == 0:
                 goal = research_state.mark_budget_exhausted()
                 return {"error": "Search budget exhausted", "research_state": goal.get("research_state")}
+            # Secondary check: enforce GLOBAL_SEARCH_BUDGET even if max_search_rounds is unlimited
+            total_search_count = sum(
+                1 for q in graph_tools.search_nodes("query", {})
+                if q.get("status") in {"searching", "assessing", "needs_expansion", "waiting_children", "sufficient", "blocked", "failed"}
+            )
+            if total_search_count >= GLOBAL_SEARCH_BUDGET:
+                goal = research_state.mark_budget_exhausted()
+                return {"error": f"Global search budget ({GLOBAL_SEARCH_BUDGET}) exhausted", "research_state": goal.get("research_state")}
 
             claim = graph_tools.claim_query_search(resolved, goal["id"])
             if not claim:
@@ -2176,6 +2583,14 @@ class MemoryManager:
                 if research_state.remaining_budget(goal["id"]) == 0:
                     goal = research_state.mark_budget_exhausted(goal["id"])
                     return {"error": "Search budget exhausted", "research_state": goal.get("research_state")}
+                # Secondary check after failed claim
+                total_search_count = sum(
+                    1 for q in graph_tools.search_nodes("query", {})
+                    if q.get("status") in {"searching", "assessing", "needs_expansion", "waiting_children", "sufficient", "blocked", "failed"}
+                )
+                if total_search_count >= GLOBAL_SEARCH_BUDGET:
+                    goal = research_state.mark_budget_exhausted(goal["id"])
+                    return {"error": f"Global search budget ({GLOBAL_SEARCH_BUDGET}) exhausted", "research_state": goal.get("research_state")}
                 return {
                     "error": "Query could not be atomically claimed for search",
                     "status": refreshed.get("status"),

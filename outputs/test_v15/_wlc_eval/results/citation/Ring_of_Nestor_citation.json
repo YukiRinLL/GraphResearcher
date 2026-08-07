@@ -1,0 +1,264 @@
+{
+  "title": "Research Report",
+  "status": "completed",
+  "total_statements": 19,
+  "total_citations": 41,
+  "valid_citations": 13,
+  "evaluated_statements": 18,
+  "skipped_statements": 1,
+  "support": 15,
+  "not_support": 3,
+  "conflict": 0,
+  "support_ratio": 0.8333333333333334,
+  "conflict_ratio": 0.0,
+  "results": [
+    {
+      "statement_index": 0,
+      "statement": "Sir Arthur Evans published 'The ring of Nestor; a glimpse into the Minoan after-world, and a sepulchral treasure of gold signet-rings and bead-seals from Thisbê, Boeotia' in London with Macmillan and Co. in 1925.",
+      "citation_num": "5",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?ui_lang=eng",
+      "verdict": "not_support",
+      "reason": "The citation provides the title, author, location, and year, but it does not mention the publisher 'Macmillan and Co.'"
+    },
+    {
+      "statement_index": 0,
+      "statement": "Sir Arthur Evans published 'The ring of Nestor; a glimpse into the Minoan after-world, and a sepulchral treasure of gold signet-rings and bead-seals from Thisbê, Boeotia' in London with Macmillan and Co. in 1925.",
+      "citation_num": "3",
+      "citation_url": "https://www.nature.com/articles/116635a0",
+      "verdict": "support",
+      "reason": "The citation explicitly lists Sir Arthur Evans as the author, the title, the publisher (Macmillan and Co., Ltd.), the location (London), and the year (1925)."
+    },
+    {
+      "statement_index": 0,
+      "statement": "Sir Arthur Evans published 'The ring of Nestor; a glimpse into the Minoan after-world, and a sepulchral treasure of gold signet-rings and bead-seals from Thisbê, Boeotia' in London with Macmillan and Co. in 1925.",
+      "citation_num": "1",
+      "citation_url": "https://catalog.hathitrust.org/Record/000609034",
+      "verdict": "support",
+      "reason": "The citation explicitly lists the author, title, publication location, publisher, and year as described in the statement."
+    },
+    {
+      "statement_index": 1,
+      "statement": "The work by Sir Arthur Evans presents the subject as a glimpse into the Minoan after-world and as a discussion of a sepulchral treasure of gold signet-rings and bead-seals from Thisbê, Boeotia.",
+      "citation_num": "5",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?ui_lang=eng",
+      "verdict": "support",
+      "reason": "The citation explicitly lists the title as \"'The ring of Nestor'. A glimpse into the Minoan after-world and a sepulchral treasure of gold signet-rings and bead-seals from Thisbê, Boeotia\"."
+    },
+    {
+      "statement_index": 1,
+      "statement": "The work by Sir Arthur Evans presents the subject as a glimpse into the Minoan after-world and as a discussion of a sepulchral treasure of gold signet-rings and bead-seals from Thisbê, Boeotia.",
+      "citation_num": "3",
+      "citation_url": "https://www.nature.com/articles/116635a0",
+      "verdict": "support",
+      "reason": "The citation provides the full title of the work, which includes the phrases 'a Glimpse into the Minoan After-World' and 'a Sepulchral Treasure of Gold Signet-Rings and Bead-Seals from Thisbe, Boeotia'."
+    },
+    {
+      "statement_index": 1,
+      "statement": "The work by Sir Arthur Evans presents the subject as a glimpse into the Minoan after-world and as a discussion of a sepulchral treasure of gold signet-rings and bead-seals from Thisbê, Boeotia.",
+      "citation_num": "1",
+      "citation_url": "https://catalog.hathitrust.org/Record/000609034",
+      "verdict": "support",
+      "reason": "The title provided in the citation confirms that the work is a glimpse into the Minoan after-world and concerns a sepulchral treasure from Thisbê, Boeotia."
+    },
+    {
+      "statement_index": 2,
+      "statement": "The 1925 work is a 75-page illustrated volume with five plates, including one colored foldout, and a stated height of 28 cm.",
+      "citation_num": "3",
+      "citation_url": "https://www.nature.com/articles/116635a0",
+      "verdict": "not_support",
+      "reason": "While the citation confirms the page count (75) and the number of plates (5), it does not contain information regarding a colored foldout or a height of 28 cm."
+    },
+    {
+      "statement_index": 2,
+      "statement": "The 1925 work is a 75-page illustrated volume with five plates, including one colored foldout, and a stated height of 28 cm.",
+      "citation_num": "1",
+      "citation_url": "https://catalog.hathitrust.org/Record/000609034",
+      "verdict": "support",
+      "reason": "The physical description in the citation confirms it has 75 pages, five plates (one colored/foldout), and is 28 cm tall."
+    },
+    {
+      "statement_index": 3,
+      "statement": "The Ring of Nestor was reportedly found in 1924, but its authenticity remains a matter of scholarly dispute.",
+      "citation_num": "4",
+      "citation_url": "https://journals.librarypublishing.arizona.edu/jaei/article/id/960",
+      "verdict": "support",
+      "reason": "The abstract states the ring was found in 1924 and notes that scholars still debate its authenticity."
+    },
+    {
+      "statement_index": 4,
+      "statement": "Sir Arthur Evans accepted the Ring of Nestor as authentic, while many other scholars condemned it as a forgery.",
+      "citation_num": "4",
+      "citation_url": "https://journals.librarypublishing.arizona.edu/jaei/article/id/960",
+      "verdict": "support",
+      "reason": "The abstract confirms that Sir Arthur Evans accepted it as authentic while many others condemned it as a forgery."
+    },
+    {
+      "statement_index": 5,
+      "statement": "Some later scholars have reportedly renewed claims for the authenticity of the Ring of Nestor.",
+      "citation_num": "4",
+      "citation_url": "https://journals.librarypublishing.arizona.edu/jaei/article/id/960",
+      "verdict": "support",
+      "reason": "The abstract mentions that in recent years, scholars have claimed its authenticity anew."
+    },
+    {
+      "statement_index": 6,
+      "statement": "One scholarly analysis argues that the Ring of Nestor's semantic coherence depends on Egyptian prototypes.",
+      "citation_num": "4",
+      "citation_url": "https://journals.librarypublishing.arizona.edu/jaei/article/id/960",
+      "verdict": "support",
+      "reason": "The abstract states that the article argues the ring's semantic coherence depends on Egyptian prototypes."
+    },
+    {
+      "statement_index": 7,
+      "statement": "The use of a butterfly motif is presented in one scholarly analysis as evidence against the artifact's authenticity.",
+      "citation_num": "4",
+      "citation_url": "https://journals.librarypublishing.arizona.edu/jaei/article/id/960",
+      "verdict": "support",
+      "reason": "The abstract explicitly states that the use of the butterfly motif argues against the artifact’s authenticity."
+    },
+    {
+      "statement_index": 8,
+      "statement": "The discovery circumstances of the Ring of Nestor are considered suspicious by some scholarly accounts.",
+      "citation_num": "4",
+      "citation_url": "https://journals.librarypublishing.arizona.edu/jaei/article/id/960",
+      "verdict": "support",
+      "reason": "The abstract states that the article examines the find circumstances and judges them suspicious."
+    },
+    {
+      "statement_index": 9,
+      "statement": "Sir Arthur Evans's 1925 work was published separately, by permission, from a paper in the Journal of Hellenic Studies dated April 1925.",
+      "citation_num": "1",
+      "citation_url": "https://catalog.hathitrust.org/Record/000609034",
+      "verdict": "support",
+      "reason": "A note in the description explicitly states the book was published separately from a paper in the Journal of Hellenic studies (April, 1925)."
+    },
+    {
+      "statement_index": 10,
+      "statement": "The Ring of Nestor is associated in Evans's work with a sepulchral treasure of gold signet-rings and bead-seals from Thisbê, Boeotia.",
+      "citation_num": "5",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?ui_lang=eng",
+      "verdict": "support",
+      "reason": "The title of the work cited in the document directly links 'The ring of Nestor' to the sepulchral treasure from Thisbê, Boeotia."
+    },
+    {
+      "statement_index": 10,
+      "statement": "The Ring of Nestor is associated in Evans's work with a sepulchral treasure of gold signet-rings and bead-seals from Thisbê, Boeotia.",
+      "citation_num": "4",
+      "citation_url": "https://journals.librarypublishing.arizona.edu/jaei/article/id/960",
+      "verdict": "not_support",
+      "reason": "The provided text does not mention Thisbê, Boeotia, or specific details regarding the gold signet-rings and bead-seals."
+    },
+    {
+      "statement_index": 10,
+      "statement": "The Ring of Nestor is associated in Evans's work with a sepulchral treasure of gold signet-rings and bead-seals from Thisbê, Boeotia.",
+      "citation_num": "1",
+      "citation_url": "https://catalog.hathitrust.org/Record/000609034",
+      "verdict": "support",
+      "reason": "The full title of the work provided in the citation confirms the association between the Ring of Nestor and the sepulchral treasure from Thisbê, Boeotia."
+    },
+    {
+      "statement_index": 11,
+      "statement": "A 2011 peer-reviewed article argues against the authenticity of the Ring of Nestor on the basis of its butterfly motif and its dependence on Egyptian prototypes.",
+      "citation_num": "4",
+      "citation_url": "https://journals.librarypublishing.arizona.edu/jaei/article/id/960",
+      "verdict": "support",
+      "reason": "The metadata confirms the 2011 article is peer-reviewed, and the abstract confirms the arguments regarding the butterfly motif and Egyptian prototypes."
+    },
+    {
+      "statement_index": 11,
+      "statement": "A 2011 peer-reviewed article argues against the authenticity of the Ring of Nestor on the basis of its butterfly motif and its dependence on Egyptian prototypes.",
+      "citation_num": "2",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The citation includes a reference to a 2011 paper by Marinatos and Jackson titled 'The Pseudo-Minoan Nestor Ring and its Egyptian Iconography' and a related paper summary explicitly noting that the use of the butterfly motif and reliance on Egyptian prototypes argue against the artifact's authenticity."
+    },
+    {
+      "statement_index": 12,
+      "statement": "An AI-generated summary of a 2013 paper by Theodore Eliopoulos claims that iconographic comparisons involving incurved altars support the ring's authenticity, though this remains unverified.",
+      "citation_num": "2",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The provided text contains an AI-generated 'Key takeaway' and an FAQ entry explicitly stating that the connection between incurved altars and the ring's depiction supports its authenticity."
+    },
+    {
+      "statement_index": 13,
+      "statement": "The supplied material does not establish the Ring of Nestor's exact findspot at the Isopata cemetery, its discoverer, recovery date, or excavation circumstances.",
+      "citation_num": "19",
+      "citation_url": "https://www.facebook.com/GreatMotherGoddess/posts/minoan-gold-signet-ring-dated-circa-1700-1450-bc-new-palace-period-featuring-a-f/1517961273704812",
+      "verdict": "not_support",
+      "reason": "The citation content is a Facebook login page and does not contain any information regarding the Ring of Nestor or its history."
+    },
+    {
+      "statement_index": 13,
+      "statement": "The supplied material does not establish the Ring of Nestor's exact findspot at the Isopata cemetery, its discoverer, recovery date, or excavation circumstances.",
+      "citation_num": "11",
+      "citation_url": "https://www.academia.edu/34570648/Creta_Capta_Late_Minoan_II_Knossos_in_Mycenaean_History",
+      "verdict": "not_support",
+      "reason": "The citation provides an abstract and bibliography for the paper 'Creta Capta', but it does not contain the full text or specific descriptive content regarding the Ring of Nestor, therefore it neither confirms nor denies the extent of the established information about its findspot or discovery."
+    },
+    {
+      "statement_index": 13,
+      "statement": "The supplied material does not establish the Ring of Nestor's exact findspot at the Isopata cemetery, its discoverer, recovery date, or excavation circumstances.",
+      "citation_num": "12",
+      "citation_url": "https://www.hoap.co.uk/crete_reclaimed.pdf",
+      "verdict": "support",
+      "reason": "The provided text mentions the Isopata tomb near Knossos in relation to a gold signet ring and mentions the 'Ring of Nestor' in passing, but does not provide details regarding its specific findspot, discoverer, date, or excavation circumstances."
+    },
+    {
+      "statement_index": 13,
+      "statement": "The supplied material does not establish the Ring of Nestor's exact findspot at the Isopata cemetery, its discoverer, recovery date, or excavation circumstances.",
+      "citation_num": "14",
+      "citation_url": "https://www.archeologia.uw.edu.pl/wp-content/uploads/2019/10/Sympozjum-Egejskie-2-2019.pdf",
+      "verdict": "not_support",
+      "reason": "The provided text does not contain information regarding a 'Ring of Nestor' at the Isopata cemetery; it discusses a 'Cup of Nestor' and mentions a polychromy vessel from Isopata Tomb 5, but provides no details on the ring's findspot or excavation."
+    },
+    {
+      "statement_index": 13,
+      "statement": "The supplied material does not establish the Ring of Nestor's exact findspot at the Isopata cemetery, its discoverer, recovery date, or excavation circumstances.",
+      "citation_num": "15",
+      "citation_url": "https://sirismm.si.edu/EADpdfs/NMAI.AC.001.pdf",
+      "verdict": "not_support",
+      "reason": "The citation content is a finding aid for the Museum of the American Indian/Heye Foundation records and does not contain any information regarding the Ring of Nestor."
+    },
+    {
+      "statement_index": 14,
+      "statement": "The supplied material does not establish a verifiable chain of custody, ownership transition, present holder, or last documented holder for the Ring of Nestor.",
+      "citation_num": "25",
+      "citation_url": "https://www.facebook.com/ArchaeologyandAncientWorld9/posts/ring-of-nestor-a-3700-year-old-gold-signet-ring-from-crete-late-minoan-period-c-/1401558432013893",
+      "verdict": "support",
+      "reason": "The citation content is a generic Facebook login page that mentions the ring only in a URL slug and provides no information regarding its history, ownership, or custody."
+    },
+    {
+      "statement_index": 14,
+      "statement": "The supplied material does not establish a verifiable chain of custody, ownership transition, present holder, or last documented holder for the Ring of Nestor.",
+      "citation_num": "29",
+      "citation_url": "https://www.sandiego.gov/sites/default/files/legacy/mwwd/pdf/qarpt03.pdf",
+      "verdict": "not_support",
+      "reason": "The citation content is an ocean monitoring quality assurance manual for the City of San Diego and contains no information regarding an artifact known as the Ring of Nestor."
+    },
+    {
+      "statement_index": 15,
+      "statement": "The Ring of Nestor is allegedly discovered in a tholos tomb in Kakovatos near Pylos, though this findspot remains explicitly alleged rather than confirmed.",
+      "citation_num": "30",
+      "citation_url": "https://archiv.ub.uni-heidelberg.de/propylaeumdok/4408/1/Hudler_E-scaping%20arguments_2019.pdf",
+      "verdict": "not_support",
+      "reason": "The citation content describes a web security tool called Anubis and contains no information regarding the Ring of Nestor or archaeology."
+    },
+    {
+      "statement_index": 16,
+      "statement": "Athenian archaeological board members originally refused to purchase the Ring of Nestor because they considered it a forgery manufactured by a modern artist.",
+      "citation_num": "30",
+      "citation_url": "https://archiv.ub.uni-heidelberg.de/propylaeumdok/4408/1/Hudler_E-scaping%20arguments_2019.pdf",
+      "verdict": "not_support",
+      "reason": "The citation content describes a web security tool called Anubis and contains no information regarding the Ring of Nestor or archaeological boards."
+    },
+    {
+      "statement_index": 17,
+      "statement": "The authenticity of the Ring of Nestor remains unresolved in scholarly material, being treated as a gemma dubitanda whose Bronze Age affiliation cannot be decisively established.",
+      "citation_num": "30",
+      "citation_url": "https://archiv.ub.uni-heidelberg.de/propylaeumdok/4408/1/Hudler_E-scaping%20arguments_2019.pdf",
+      "verdict": "not_support",
+      "reason": "The citation content describes a web security tool called Anubis and contains no information regarding the Ring of Nestor or scholarly debates on its authenticity."
+    }
+  ]
+}

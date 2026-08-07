@@ -1,0 +1,376 @@
+{
+  "title": "Ring of Nestor",
+  "status": "completed",
+  "total_statements": 30,
+  "total_citations": 15,
+  "valid_citations": 15,
+  "evaluated_statements": 29,
+  "skipped_statements": 1,
+  "support": 16,
+  "not_support": 13,
+  "conflict": 0,
+  "support_ratio": 0.5517241379310345,
+  "conflict_ratio": 0.0,
+  "results": [
+    {
+      "statement_index": 0,
+      "statement": "The Ring of Nestor is the name used in archaeological literature for a gold signet ring associated with Aegean Bronze Age studies and identified as CMS VI, no. 277.",
+      "citation_num": "1",
+      "citation_url": "https://www.scribd.com/document/869354154/The-Pseudo-Minoan-Nestor-Ring-and-Its-Eg",
+      "verdict": "not_support",
+      "reason": "The provided citation content is only a webpage interface for a Scribd document and does not contain the historical or archaeological details regarding the Ring of Nestor."
+    },
+    {
+      "statement_index": 1,
+      "statement": "Sir Arthur Evans published the ring in 1925 in a study titled 'The Ring of Nestor: A Glimpse into the Minoan After-World and a Sepulchral Treasure of Gold Signet-Rings and Bead-Seals from Thisbê, Boeotia'.",
+      "citation_num": "4",
+      "citation_url": "https://www.nature.com/articles/116635a0",
+      "verdict": "support",
+      "reason": "The citation explicitly identifies Sir Arthur Evans as the author of the work titled 'The Ring of Nestor: a Glimpse into the Minoan After-World and a Sepulchral Treasure of Gold Signet-Rings and Bead-Seals from Thisbe, Boeotia', published in 1925."
+    },
+    {
+      "statement_index": 1,
+      "statement": "Sir Arthur Evans published the ring in 1925 in a study titled 'The Ring of Nestor: A Glimpse into the Minoan After-World and a Sepulchral Treasure of Gold Signet-Rings and Bead-Seals from Thisbê, Boeotia'.",
+      "citation_num": "3",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The reference section of the citation explicitly lists this 1925 publication by Evans."
+    },
+    {
+      "statement_index": 2,
+      "statement": "V. Gordon Childe published a notice regarding the ring in Nature in 1925.",
+      "citation_num": "4",
+      "citation_url": "https://www.nature.com/articles/116635a0",
+      "verdict": "support",
+      "reason": "The citation lists V. Gordon Childe as the author of the Nature article published on 31 October 1925, which reviews the book by Sir Arthur Evans."
+    },
+    {
+      "statement_index": 2,
+      "statement": "V. Gordon Childe published a notice regarding the ring in Nature in 1925.",
+      "citation_num": "3",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "not_support",
+      "reason": "The provided text contains no mention of V. Gordon Childe or a publication in Nature."
+    },
+    {
+      "statement_index": 3,
+      "statement": "Evans interpreted the scene on the bezel as representing a Minoan Elysian domain.",
+      "citation_num": "5",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?ui_lang=eng",
+      "verdict": "not_support",
+      "reason": "The provided text lists the title and bibliographic metadata of the publication but does not contain the specific interpretative arguments made by Evans regarding the bezel."
+    },
+    {
+      "statement_index": 4,
+      "statement": "Evans's account connected the treasure to a Mycenaean rock-cut tomb near Thisbê in Boeotia found in 1915.",
+      "citation_num": "8",
+      "citation_url": "https://www.facebook.com/ArchaeologyandAncientWorld9/posts/ring-of-nestor-a-3700-year-old-gold-signet-ring-from-crete-late-minoan-period-c-/1401558432013893",
+      "verdict": "not_support",
+      "reason": "The provided citation content is only a Facebook login page and does not contain information regarding archaeological accounts or the Ring of Nestor."
+    },
+    {
+      "statement_index": 4,
+      "statement": "Evans's account connected the treasure to a Mycenaean rock-cut tomb near Thisbê in Boeotia found in 1915.",
+      "citation_num": "7",
+      "citation_url": "https://commons.wikimedia.org/wiki/File:Ring_of_Nestor_Ashmolean_2025.jpg",
+      "verdict": "not_support",
+      "reason": "The provided citation content is a Wikimedia Commons file page and contains no information regarding the history, discovery location, or scholarly accounts of the Ring of Nestor."
+    },
+    {
+      "statement_index": 4,
+      "statement": "Evans's account connected the treasure to a Mycenaean rock-cut tomb near Thisbê in Boeotia found in 1915.",
+      "citation_num": "6",
+      "citation_url": "https://www.academia.edu/43416584/_2020_A_G_Vlachopoulos_The_Ring_of_Nestor_and_the_quest_for_authenticity_in_F_Blakolmer_ed_Current_Approaches_and_New_Perspectives_in_Aegean_Iconography_Aegis_18_2020_pp_223_252",
+      "verdict": "not_support",
+      "reason": "The citation content references the Ring of Nestor but does not mention the 1915 Thisbê find location."
+    },
+    {
+      "statement_index": 5,
+      "statement": "Other scholarly accounts describe the ring as allegedly found in a tholos tomb at Kakovatos near Pylos, with some sources citing 1924 as the find year.",
+      "citation_num": "8",
+      "citation_url": "https://www.facebook.com/ArchaeologyandAncientWorld9/posts/ring-of-nestor-a-3700-year-old-gold-signet-ring-from-crete-late-minoan-period-c-/1401558432013893",
+      "verdict": "not_support",
+      "reason": "The provided citation content is only a Facebook login page and does not contain information regarding archaeological accounts or the Ring of Nestor."
+    },
+    {
+      "statement_index": 5,
+      "statement": "Other scholarly accounts describe the ring as allegedly found in a tholos tomb at Kakovatos near Pylos, with some sources citing 1924 as the find year.",
+      "citation_num": "7",
+      "citation_url": "https://commons.wikimedia.org/wiki/File:Ring_of_Nestor_Ashmolean_2025.jpg",
+      "verdict": "not_support",
+      "reason": "The provided citation content does not mention the discovery location of the ring or any conflicting dates such as 1924."
+    },
+    {
+      "statement_index": 5,
+      "statement": "Other scholarly accounts describe the ring as allegedly found in a tholos tomb at Kakovatos near Pylos, with some sources citing 1924 as the find year.",
+      "citation_num": "6",
+      "citation_url": "https://www.academia.edu/43416584/_2020_A_G_Vlachopoulos_The_Ring_of_Nestor_and_the_quest_for_authenticity_in_F_Blakolmer_ed_Current_Approaches_and_New_Perspectives_in_Aegean_Iconography_Aegis_18_2020_pp_223_252",
+      "verdict": "support",
+      "reason": "The text mentions the Ring of Nestor and links it to discussions of find circumstances, while the references include works mentioning the 1924 find year and the Kakovatos context."
+    },
+    {
+      "statement_index": 6,
+      "statement": "The authenticity of the object has remained disputed, with Evans accepting it as genuine while other assessments have treated it as a modern forgery, including arguments based on Egyptian prototypes and the butterfly motif.",
+      "citation_num": "10",
+      "citation_url": "https://ajaonline.org/book-review/966",
+      "verdict": "not_support",
+      "reason": "The citation mentions that some may still harbor doubts about the authenticity of the Ring of Nestor, but it does not mention Egyptian prototypes or butterfly motifs."
+    },
+    {
+      "statement_index": 6,
+      "statement": "The authenticity of the object has remained disputed, with Evans accepting it as genuine while other assessments have treated it as a modern forgery, including arguments based on Egyptian prototypes and the butterfly motif.",
+      "citation_num": "9",
+      "citation_url": "https://archiv.ub.uni-heidelberg.de/propylaeumdok/4408/1/Hudler_E-scaping%20arguments_2019.pdf",
+      "verdict": "not_support",
+      "reason": "The citation content is about an anti-scraping tool called Anubis and contains no information regarding historical artifacts, rings, or Arthur Evans."
+    },
+    {
+      "statement_index": 7,
+      "statement": "The earliest published account links the object to a group of gold rings and gold bead-seals found in a Mycenaean rock tomb near Thisbê in Boeotia in 1915 during wartime conditions.",
+      "citation_num": "13",
+      "citation_url": "https://www.cambridge.org/core/journals/journal-of-hellenic-studies/article/ring-of-nestor-a-glimpse-into-the-minoan-afterworld-and-a-sepulchral-treasure-of-gold-signetrings-and-beadseals-from-thisbe-boeotia/5E465BD1031E9251C962E138498E6CFA",
+      "verdict": "support",
+      "reason": "The extract confirms the treasure of gold rings and bead-seals was found in a Mycenaean rock tomb near Thisbê in 1915, during a period when war conditions impacted discovery."
+    },
+    {
+      "statement_index": 8,
+      "statement": "A peasant found the material in a rock-cut chamber tomb near the village of Dombrena.",
+      "citation_num": "13",
+      "citation_url": "https://www.cambridge.org/core/journals/journal-of-hellenic-studies/article/ring-of-nestor-a-glimpse-into-the-minoan-afterworld-and-a-sepulchral-treasure-of-gold-signetrings-and-beadseals-from-thisbe-boeotia/5E465BD1031E9251C962E138498E6CFA",
+      "verdict": "support",
+      "reason": "The author states that he ascertained the discovery was made by a peasant in a chamber-tomb excavated in the rock by the village of Dombrena."
+    },
+    {
+      "statement_index": 9,
+      "statement": "W. A. Heurtley was shown three chamber tombs with dromoi in an olive grove, but it is not established that the treasure came from all three.",
+      "citation_num": "13",
+      "citation_url": "https://www.cambridge.org/core/journals/journal-of-hellenic-studies/article/ring-of-nestor-a-glimpse-into-the-minoan-afterworld-and-a-sepulchral-treasure-of-gold-signetrings-and-beadseals-from-thisbe-boeotia/5E465BD1031E9251C962E138498E6CFA",
+      "verdict": "support",
+      "reason": "The text mentions Mr. W. A. Heurtley was shown three chamber-tombs with dromoi, but the author specifies that other objects found in the same group were 'not authenticated as coming from the chamber containing the treasure'."
+    },
+    {
+      "statement_index": 10,
+      "statement": "The reported provenance of the ring is not definitively documented, and its affiliation with Bronze Age material is considered weakened by the absence of professional, well-documented excavations.",
+      "citation_num": "9",
+      "citation_url": "https://archiv.ub.uni-heidelberg.de/propylaeumdok/4408/1/Hudler_E-scaping%20arguments_2019.pdf",
+      "verdict": "not_support",
+      "reason": "The citation content is about an anti-scraping tool called Anubis and contains no information regarding historical artifacts, rings, or archaeology."
+    },
+    {
+      "statement_index": 10,
+      "statement": "The reported provenance of the ring is not definitively documented, and its affiliation with Bronze Age material is considered weakened by the absence of professional, well-documented excavations.",
+      "citation_num": "13",
+      "citation_url": "https://www.cambridge.org/core/journals/journal-of-hellenic-studies/article/ring-of-nestor-a-glimpse-into-the-minoan-afterworld-and-a-sepulchral-treasure-of-gold-signetrings-and-beadseals-from-thisbe-boeotia/5E465BD1031E9251C962E138498E6CFA",
+      "verdict": "not_support",
+      "reason": "While the text acknowledges the unofficial nature of the discovery and the lack of authentication for some objects, it does not explicitly frame the affiliation with Bronze Age material as 'weakened' in the manner described."
+    },
+    {
+      "statement_index": 11,
+      "statement": "Arthur Evans privately purchased the ring and published it in the Journal of Hellenic Studies in 1925.",
+      "citation_num": "11",
+      "citation_url": "https://catalogue.nli.ie/Record/vtls000448863",
+      "verdict": "not_support",
+      "reason": "The citation provides bibliographic details about the book but does not state that Arthur Evans privately purchased the ring."
+    },
+    {
+      "statement_index": 11,
+      "statement": "Arthur Evans privately purchased the ring and published it in the Journal of Hellenic Studies in 1925.",
+      "citation_num": "9",
+      "citation_url": "https://archiv.ub.uni-heidelberg.de/propylaeumdok/4408/1/Hudler_E-scaping%20arguments_2019.pdf",
+      "verdict": "not_support",
+      "reason": "The citation content is about an anti-scraping tool called Anubis and contains no information regarding historical artifacts, rings, or Arthur Evans."
+    },
+    {
+      "statement_index": 12,
+      "statement": "The National Library of Ireland catalog records that Evans's book was issued separately by permission from an April 1925 paper in the Journal of Hellenic Studies.",
+      "citation_num": "11",
+      "citation_url": "https://catalogue.nli.ie/Record/vtls000448863",
+      "verdict": "support",
+      "reason": "The notes section of the bibliographic record states: 'This book is published separately, by permission, from a paper in the Journal of Hellenic studies (April, 1925).'"
+    },
+    {
+      "statement_index": 12,
+      "statement": "The National Library of Ireland catalog records that Evans's book was issued separately by permission from an April 1925 paper in the Journal of Hellenic Studies.",
+      "citation_num": "9",
+      "citation_url": "https://archiv.ub.uni-heidelberg.de/propylaeumdok/4408/1/Hudler_E-scaping%20arguments_2019.pdf",
+      "verdict": "not_support",
+      "reason": "The citation content is about an anti-scraping tool called Anubis and contains no information regarding historical artifacts, books, or the National Library of Ireland."
+    },
+    {
+      "statement_index": 13,
+      "statement": "Institutional catalog records concern copies of Evans's book rather than a documented chain of custody or current holder for the physical ring.",
+      "citation_num": "12",
+      "citation_url": "https://primo.getty.edu/primo-explore/fulldisplay/GETTY_ALMA21137888240001551/GRI",
+      "verdict": "support",
+      "reason": "The citation content is a library catalog record for a 1925 book authored by Sir Arthur Evans, and it does not provide information regarding the physical ring's chain of custody or current holder."
+    },
+    {
+      "statement_index": 13,
+      "statement": "Institutional catalog records concern copies of Evans's book rather than a documented chain of custody or current holder for the physical ring.",
+      "citation_num": "11",
+      "citation_url": "https://catalogue.nli.ie/Record/vtls000448863",
+      "verdict": "support",
+      "reason": "The citation is a library catalogue record for the book publication itself rather than a record documenting the provenance or ownership of the physical ring artifact."
+    },
+    {
+      "statement_index": 14,
+      "statement": "A review of the Ashmolean seal corpus groups catalogue numbers 277-281 among gold rings with cult scenes.",
+      "citation_num": "10",
+      "citation_url": "https://ajaonline.org/book-review/966",
+      "verdict": "support",
+      "reason": "The text explicitly states that 'Pride of place in part 2 goes to the famous gold rings with cult scenes (nos. 277–81).'"
+    },
+    {
+      "statement_index": 14,
+      "statement": "A review of the Ashmolean seal corpus groups catalogue numbers 277-281 among gold rings with cult scenes.",
+      "citation_num": "9",
+      "citation_url": "https://archiv.ub.uni-heidelberg.de/propylaeumdok/4408/1/Hudler_E-scaping%20arguments_2019.pdf",
+      "verdict": "not_support",
+      "reason": "The citation content is about an anti-scraping tool called Anubis and contains no information regarding seals, the Ashmolean Museum, or catalogues."
+    },
+    {
+      "statement_index": 15,
+      "statement": "There is no securely attributable physical measurement for no. 277; measurements for 278 are 2.1 cm by 1.2 cm, and an AI-generated summary provides 3.29 cm by 2.18 cm for the Nestor ring without original verification.",
+      "citation_num": "10",
+      "citation_url": "https://ajaonline.org/book-review/966",
+      "verdict": "not_support",
+      "reason": "The citation provides the dimensions for number 278, but it does not contain information regarding AI-generated summaries or measurements for number 277."
+    },
+    {
+      "statement_index": 15,
+      "statement": "There is no securely attributable physical measurement for no. 277; measurements for 278 are 2.1 cm by 1.2 cm, and an AI-generated summary provides 3.29 cm by 2.18 cm for the Nestor ring without original verification.",
+      "citation_num": "21",
+      "citation_url": "https://www.academia.edu/43416584/_2020_A.G._Vlachopoulos_The_Ring_of_Nestor_and_the_quest_for_authenticity_in_F._Blakolmer_ed._Current_Approaches_and_New_Perspectives_in_Aegean_Iconography_AEGIS_2020_pp._223-252",
+      "verdict": "not_support",
+      "reason": "The citation provides a measurement of 3.29 cm by 2.18 cm for the Ring of Nestor in its 'Key takeaways' section, but it does not contain information regarding the measurement of a ring numbered 278 or explicitly state that there is no securely attributable measurement for no. 277."
+    },
+    {
+      "statement_index": 16,
+      "statement": "Mass and inventory data associated with an Ashmolean object in secondary catalog data give CMS VI.229 rather than CMS VI.277, preventing their use as a verified description of the Nestor ring.",
+      "citation_num": "22",
+      "citation_url": "https://commons.wikimedia.org/wiki/Category:Ring_of_Nestor",
+      "verdict": "not_support",
+      "reason": "The provided citation content does not mention 'CMS VI.229' or 'CMS VI.277', nor does it discuss secondary catalog data or the verification status of these specific identifiers."
+    },
+    {
+      "statement_index": 16,
+      "statement": "Mass and inventory data associated with an Ashmolean object in secondary catalog data give CMS VI.229 rather than CMS VI.277, preventing their use as a verified description of the Nestor ring.",
+      "citation_num": "23",
+      "citation_url": "https://www.wikidata.org/wiki/Q135916069",
+      "verdict": "not_support",
+      "reason": "The citation provides the catalog code 'CMS VI.229' but does not mention 'CMS VI.277' or contain information regarding the verification of the ring's description based on that comparison."
+    },
+    {
+      "statement_index": 17,
+      "statement": "Evans interpreted the imagery on the bezel as an afterlife scene in a Minoan Elysian domain.",
+      "citation_num": "9",
+      "citation_url": "https://archiv.ub.uni-heidelberg.de/propylaeumdok/4408/1/Hudler_E-scaping%20arguments_2019.pdf",
+      "verdict": "not_support",
+      "reason": "The citation content is about an anti-scraping tool called Anubis and contains no information regarding Minoan imagery or afterlife scenes."
+    },
+    {
+      "statement_index": 18,
+      "statement": "A figure previously called Evans's 'watch-dog' or 'dragon' is identified in later iconographic discussion as a scorpion and treated as an apotropaic symbol in Bronze Age Aegean iconography.",
+      "citation_num": "6",
+      "citation_url": "https://www.academia.edu/43416584/_2020_A_G_Vlachopoulos_The_Ring_of_Nestor_and_the_quest_for_authenticity_in_F_Blakolmer_ed_Current_Approaches_and_New_Perspectives_in_Aegean_Iconography_Aegis_18_2020_pp_223_252",
+      "verdict": "support",
+      "reason": "The abstract explicitly identifies the 'watch-dog' or 'dragon' as a scorpion and notes its role as an apotropaic symbol."
+    },
+    {
+      "statement_index": 20,
+      "statement": "The claim by Theodore Eliopoulos that incurved altars support authenticity requires caution as it is derived from a landing-page summary.",
+      "citation_num": "3",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The citation contains a 'Key takeaways' section generated by AI that presents this claim as an interpretation of the paper's iconography analysis."
+    },
+    {
+      "statement_index": 21,
+      "statement": "A photograph caption identifies a Ring of Nestor displayed at the Ashmolean Museum in 2025.",
+      "citation_num": "7",
+      "citation_url": "https://commons.wikimedia.org/wiki/File:Ring_of_Nestor_Ashmolean_2025.jpg",
+      "verdict": "support",
+      "reason": "The citation explicitly identifies the file caption as: 'The \"Ring of Nestor\", displayed in the Ashmolean Museum, Oxford, in 2025'."
+    },
+    {
+      "statement_index": 22,
+      "statement": "The Ashmolean corpus review records an editorial duplication where a photograph of the Nestor ring appears on a page devoted to Evans's replicas of the Ring of Minos.",
+      "citation_num": "10",
+      "citation_url": "https://ajaonline.org/book-review/966",
+      "verdict": "support",
+      "reason": "The text states: 'Owing to a highly unfortunate slip, a photograph of the Nestor ring appears again on page 697, devoted to Evans’ replicas of the “Ring of Minos” housed in Oxford.'"
+    },
+    {
+      "statement_index": 23,
+      "statement": "Following the 1925 publication, Evans accepted the ring, while other scholars condemned it as a forgery.",
+      "citation_num": "1",
+      "citation_url": "https://www.scribd.com/document/869354154/The-Pseudo-Minoan-Nestor-Ring-and-Its-Eg",
+      "verdict": "not_support",
+      "reason": "The provided citation content is only a webpage interface for a Scribd document and does not contain information regarding Evans or the scholarly debate surrounding the ring's authenticity."
+    },
+    {
+      "statement_index": 24,
+      "statement": "Members of the archaeological board in Athens refused to buy the ring from its owner because they considered it the work of a modern artist.",
+      "citation_num": "3",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "not_support",
+      "reason": "The provided text does not contain information regarding the purchasing history or the specific reaction of the archaeological board in Athens."
+    },
+    {
+      "statement_index": 25,
+      "statement": "Nanno Marinatos and Briana Jackson characterize the find circumstances as suspicious and argue the composition depends on Egyptian prototypes.",
+      "citation_num": "5",
+      "citation_url": "https://digi.ub.uni-heidelberg.de/diglit/evans1925?ui_lang=eng",
+      "verdict": "not_support",
+      "reason": "The provided text contains no mention of Nanno Marinatos or Briana Jackson, nor any discussion regarding the legitimacy of the find circumstances or Egyptian prototypes."
+    },
+    {
+      "statement_index": 25,
+      "statement": "Nanno Marinatos and Briana Jackson characterize the find circumstances as suspicious and argue the composition depends on Egyptian prototypes.",
+      "citation_num": "4",
+      "citation_url": "https://www.nature.com/articles/116635a0",
+      "verdict": "not_support",
+      "reason": "The provided citation content does not mention Nanno Marinatos or Briana Jackson, nor does it discuss the authenticity of the find or its relation to Egyptian prototypes."
+    },
+    {
+      "statement_index": 26,
+      "statement": "The absence of a professionally documented excavation context is a reason for caution in assessing the ring's attribution to the Bronze Age.",
+      "citation_num": "3",
+      "citation_url": "https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_RING_OF_NESTOR_",
+      "verdict": "support",
+      "reason": "The paper and related summaries consistently highlight debates surrounding the ring's provenance, context, and authenticity compared to documented artifacts."
+    },
+    {
+      "statement_index": 27,
+      "statement": "A. G. Vlachopoulos's 2020 study identifies the object as CMS VI, no. 277 and identifies comparable wall paintings, gold rings, figurines, and ivories that contribute to the reassessment of rings previously classified as fakes.",
+      "citation_num": "6",
+      "citation_url": "https://www.academia.edu/43416584/_2020_A_G_Vlachopoulos_The_Ring_of_Nestor_and_the_quest_for_authenticity_in_F_Blakolmer_ed_Current_Approaches_and_New_Perspectives_in_Aegean_Iconography_Aegis_18_2020_pp_223_252",
+      "verdict": "support",
+      "reason": "The abstract confirms the Ring of Nestor is identified as CMS VI, no. 277 and cites iconographic finds like wall-paintings and ivories as evidence for its authenticity."
+    },
+    {
+      "statement_index": 28,
+      "statement": "Vlachopoulos identifies Evans's 'watch-dog' or 'dragon' as a scorpion and an apotropaic symbol in Bronze Age Aegean iconography.",
+      "citation_num": "7",
+      "citation_url": "https://commons.wikimedia.org/wiki/File:Ring_of_Nestor_Ashmolean_2025.jpg",
+      "verdict": "not_support",
+      "reason": "The provided citation content does not contain information about Vlachopoulos or his interpretations of the ring's iconography."
+    },
+    {
+      "statement_index": 29,
+      "statement": "The Ring of Nestor is considered an object whose ancient attribution and authenticity remain unresolved.",
+      "citation_num": "7",
+      "citation_url": "https://commons.wikimedia.org/wiki/File:Ring_of_Nestor_Ashmolean_2025.jpg",
+      "verdict": "support",
+      "reason": "The citation includes the comment by the author (User:UndercoverClassicist) regarding the ring: '(as for the ring... very controversial!)', which supports the statement that its status remains unresolved."
+    },
+    {
+      "statement_index": 29,
+      "statement": "The Ring of Nestor is considered an object whose ancient attribution and authenticity remain unresolved.",
+      "citation_num": "6",
+      "citation_url": "https://www.academia.edu/43416584/_2020_A_G_Vlachopoulos_The_Ring_of_Nestor_and_the_quest_for_authenticity_in_F_Blakolmer_ed_Current_Approaches_and_New_Perspectives_in_Aegean_Iconography_Aegis_18_2020_pp_223_252",
+      "verdict": "conflict",
+      "reason": "The abstract and key takeaways state that the research documents the ring's authenticity, countering previous claims of forgery, rather than leaving the matter unresolved."
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "query_texts": [
+    {
+      "index": 1,
+      "query": "Ring of Nestor",
+      "line": 865
+    },
+    {
+      "index": 2,
+      "query": "Ring of Nestor",
+      "line": 1279
+    },
+    {
+      "index": 3,
+      "query": "Ring of Nestor",
+      "line": 1946
+    },
+    {
+      "index": 4,
+      "query": "Ring of Nestor",
+      "line": 2490
+    },
+    {
+      "index": 5,
+      "query": "Ring of Nestor",
+      "line": 2975
+    },
+    {
+      "index": 6,
+      "query": "Ring of Nestor",
+      "line": 3169
+    },
+    {
+      "index": 7,
+      "query": "Ring of Nestor",
+      "line": 3290
+    },
+    {
+      "index": 8,
+      "query": "Ring of Nestor",
+      "line": 3688
+    },
+    {
+      "index": 9,
+      "query": "Ring of Nestor",
+      "line": 3893
+    },
+    {
+      "index": 10,
+      "query": "Ring of Nestor",
+      "line": 3970
+    },
+    {
+      "index": 11,
+      "query": "Ring of Nestor",
+      "line": 4398
+    }
+  ],
+  "search_results": [],
+  "assess_query": [],
+  "evaluate_portfolio": [],
+  "expand_gaps": [],
+  "convergence": [],
+  "issues": []
+}

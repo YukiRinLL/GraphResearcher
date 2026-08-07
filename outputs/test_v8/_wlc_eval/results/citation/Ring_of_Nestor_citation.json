@@ -1,0 +1,232 @@
+{
+  "title": "Ring of Nestor",
+  "status": "completed",
+  "total_statements": 20,
+  "total_citations": 3,
+  "valid_citations": 3,
+  "evaluated_statements": 20,
+  "skipped_statements": 0,
+  "support": 17,
+  "not_support": 2,
+  "conflict": 1,
+  "support_ratio": 0.85,
+  "conflict_ratio": 0.05,
+  "results": [
+    {
+      "statement_index": 0,
+      "statement": "Jack L. Davis’s 2016 study, The Lord of the Gold Rings, concerns four gold signet rings bearing Minoan ritual scenes found in a Late Helladic IIA tomb near the Palace of Nestor, but it does not identify any of them as the Ring of Nestor.",
+      "citation_num": "3",
+      "citation_url": "https://www.academia.edu/116392582/The_Lord_of_the_Gold_Rings",
+      "verdict": "support",
+      "reason": "The abstract confirms the study's author, title, publication year, the discovery of four gold signet rings with Minoan ritual scenes in a Late Helladic IIA tomb near the Palace of Nestor, and the text does not identify any of these rings as the 'Ring of Nestor'."
+    },
+    {
+      "statement_index": 1,
+      "statement": "An exhibition listing separately describes a Minoan gold signet ring with a ritual scene, dated 1630–1440 BCE and assigned to the Archaeological Museum of Chora, but it does not use the name Ring of Nestor.",
+      "citation_num": "5",
+      "citation_url": "https://www.artoftheancestors.com/blog/kingdom-of-pylos-getty-villa",
+      "verdict": "support",
+      "reason": "The exhibition preview lists a Minoan gold signet ring with a ritual scene (1630–1440 BCE) located at the Archaeological Museum of Chora without using the name 'Ring of Nestor'."
+    },
+    {
+      "statement_index": 2,
+      "statement": "The Palace of Nestor at Ano Englianos was built shortly after 1300 BCE as an administrative centre in Messenia and was destroyed by a major fire around 1200 BCE.",
+      "citation_num": "2",
+      "citation_url": "https://www.namuseum.gr/en/temporary_exhibition/pylos-of-nestor-a-mycenaean-kingdom-revealed",
+      "verdict": "support",
+      "reason": "The text confirms the Palace of Nestor was built shortly after 1300 BCE as an administrative center in Messenia and was destroyed by a fire around 1200 BCE."
+    },
+    {
+      "statement_index": 3,
+      "statement": "Documented records establish a Pylos archaeological context for related gold signet rings, but they do not establish that the four rings from the Griffin Warrior tomb and the Chora exhibition object are the same object, or provide a formal catalogue identification for a ring called the Ring of Nestor.",
+      "citation_num": "5",
+      "citation_url": "https://www.artoftheancestors.com/blog/kingdom-of-pylos-getty-villa",
+      "verdict": "not_support",
+      "reason": "The citation provides information on specific artifacts in an exhibition but does not contain external documentation or scholarly records regarding the 'Ring of Nestor' or its relation to the Griffin Warrior tomb."
+    },
+    {
+      "statement_index": 3,
+      "statement": "Documented records establish a Pylos archaeological context for related gold signet rings, but they do not establish that the four rings from the Griffin Warrior tomb and the Chora exhibition object are the same object, or provide a formal catalogue identification for a ring called the Ring of Nestor.",
+      "citation_num": "3",
+      "citation_url": "https://www.academia.edu/116392582/The_Lord_of_the_Gold_Rings",
+      "verdict": "support",
+      "reason": "The citation describes the archaeological context of the rings from the Griffin Warrior tomb near Pylos, but it does not mention a 'Chora exhibition object' or establish its identity with the four rings, nor does it formally identify any of the rings as the 'Ring of Nestor'."
+    },
+    {
+      "statement_index": 4,
+      "statement": "Davis’s 2016 study records four gold signet rings bearing Minoan ritual scenes among the grave goods of a large stone-built tomb discovered in May 2015 near Tholos Tomb IV at the Palace of Nestor, Pylos.",
+      "citation_num": "3",
+      "citation_url": "https://www.academia.edu/116392582/The_Lord_of_the_Gold_Rings",
+      "verdict": "support",
+      "reason": "The abstract explicitly states that the study concerns 'four signet rings decorated with Minoan ritual scenes' found in 'a large stone-built tomb discovered in May 2015 near Tholos Tomb IV on the first day of renewed excavations at the Palace of Nestor, Pylos'."
+    },
+    {
+      "statement_index": 5,
+      "statement": "The study dates the tomb to the Late Helladic IIA period.",
+      "citation_num": "3",
+      "citation_url": "https://www.academia.edu/116392582/The_Lord_of_the_Gold_Rings",
+      "verdict": "support",
+      "reason": "Both the abstract and the 'Key takeaways' section explicitly state that the grave dates to the Late Helladic IIA period."
+    },
+    {
+      "statement_index": 6,
+      "statement": "The study identifies the single male occupant of the tomb as approximately 30–35 years old, designates him as the Griffin Warrior, and notes that hundreds of objects made of gold, silver, bronze, ivory, and semipresent stone accompanied the burial.",
+      "citation_num": "3",
+      "citation_url": "https://www.academia.edu/116392582/The_Lord_of_the_Gold_Rings",
+      "verdict": "support",
+      "reason": "The abstract identifies the occupant as 'a single male, 30–35 years old, dubbed the “Griffin Warrior”' and mentions 'Hundreds of artifacts of gold, silver, bronze, ivory, and semiprecious stones' found with the body."
+    },
+    {
+      "statement_index": 7,
+      "statement": "The study identifies the four gold objects as signet rings decorated with Minoan ritual scenes.",
+      "citation_num": "3",
+      "citation_url": "https://www.academia.edu/116392582/The_Lord_of_the_Gold_Rings",
+      "verdict": "support",
+      "reason": "The abstract clearly states, 'Among the gold artifacts were four signet rings decorated with Minoan ritual scenes.'"
+    },
+    {
+      "statement_index": 8,
+      "statement": "The study's abstract and publication information do not provide individual inventory numbers or state that any of the four rings bears the name Ring of Nestor.",
+      "citation_num": "3",
+      "citation_url": "https://www.academia.edu/116392582/The_Lord_of_the_Gold_Rings",
+      "verdict": "support",
+      "reason": "Neither the abstract nor the publication information sections provide individual inventory numbers for the rings, nor do they name any of the four rings as the 'Ring of Nestor'."
+    },
+    {
+      "statement_index": 9,
+      "statement": "An exhibition preview published by Art of The Ancestors lists a gold signet ring with a ritual scene, attributes it to the Minoan tradition, dates it to 1630–1440 BCE, and assigns it to the Archaeological Museum of Chora under museum number SN24-0030 and exhibition number VEX.2025.1.81.",
+      "citation_num": "5",
+      "citation_url": "https://www.artoftheancestors.com/blog/kingdom-of-pylos-getty-villa",
+      "verdict": "support",
+      "reason": "The citation explicitly lists the signet ring with these exact attributes, museum number SN24-0030, and exhibition number VEX.2025.1.81."
+    },
+    {
+      "statement_index": 10,
+      "statement": "The exhibition preview does not state the object’s findspot, excavation context, ownership history, or scholarly publication, and it does not call the object the Ring of Nestor.",
+      "citation_num": "5",
+      "citation_url": "https://www.artoftheancestors.com/blog/kingdom-of-pylos-getty-villa",
+      "verdict": "support",
+      "reason": "The provided text for the signet ring includes only identification metadata and does not mention its findspot, excavation context, provenance, or the name 'Ring of Nestor'."
+    },
+    {
+      "statement_index": 11,
+      "statement": "The Palace of Nestor at Ano Englianos was an administrative centre of a kingdom controlling almost the whole of Messenia, built shortly after 1300 BCE and destroyed by a major fire around 1200 BCE.",
+      "citation_num": "2",
+      "citation_url": "https://www.namuseum.gr/en/temporary_exhibition/pylos-of-nestor-a-mycenaean-kingdom-revealed",
+      "verdict": "support",
+      "reason": "The text states the Palace of Nestor was the administrative center of a powerful kingdom controlling almost the entire region of modern-day Messenia, built shortly after 1300 BCE and destroyed around 1200 BCE."
+    },
+    {
+      "statement_index": 12,
+      "statement": "The dates established for the Palace of Nestor do not date or establish the provenance of either the four Griffin Warrior rings or the Chora-listed object.",
+      "citation_num": "2",
+      "citation_url": "https://www.namuseum.gr/en/temporary_exhibition/pylos-of-nestor-a-mycenaean-kingdom-revealed",
+      "verdict": "not_support",
+      "reason": "The provided citation does not contain information regarding the dating or provenance of specific 'Griffin Warrior rings' or a 'Chora-listed object'."
+    },
+    {
+      "statement_index": 12,
+      "statement": "The dates established for the Palace of Nestor do not date or establish the provenance of either the four Griffin Warrior rings or the Chora-listed object.",
+      "citation_num": "5",
+      "citation_url": "https://www.artoftheancestors.com/blog/kingdom-of-pylos-getty-villa",
+      "verdict": "not_support",
+      "reason": "The citation does not provide enough external historical information to determine what dates are established for the Palace of Nestor or to compare them against the provenance of the specific rings mentioned."
+    },
+    {
+      "statement_index": 12,
+      "statement": "The dates established for the Palace of Nestor do not date or establish the provenance of either the four Griffin Warrior rings or the Chora-listed object.",
+      "citation_num": "3",
+      "citation_url": "https://www.academia.edu/116392582/The_Lord_of_the_Gold_Rings",
+      "verdict": "conflict",
+      "reason": "The citation states that the tomb, and by extension the rings found within it, is dated to the Late Helladic IIA period, which is established in the context of excavations near the Palace of Nestor, thus dating the rings."
+    },
+    {
+      "statement_index": 13,
+      "statement": "Davis’s study describes the four signet rings from the Griffin Warrior tomb as bearing Minoan ritual scenes.",
+      "citation_num": "3",
+      "citation_url": "https://www.academia.edu/116392582/The_Lord_of_the_Gold_Rings",
+      "verdict": "support",
+      "reason": "The abstract explicitly states that the four gold signet rings were 'decorated with Minoan ritual scenes'."
+    },
+    {
+      "statement_index": 14,
+      "statement": "A figure caption in the study describes a male bull-leaper dismounting in mid-air behind a bull, notes the bull's tail crossing in front of the leaper's left arm, and records details of the bull and the leaper's clothing and hair.",
+      "citation_num": "3",
+      "citation_url": "https://www.academia.edu/116392582/The_Lord_of_the_Gold_Rings",
+      "verdict": "support",
+      "reason": "Figure 8's caption (Image 17) provides a detailed description of a bull-leaping scene, including the male bull-leaper dismounting, the bull's tail, and details of the leaper's clothing and hair."
+    },
+    {
+      "statement_index": 15,
+      "statement": "The study's description of imagery on one of the four rings does not identify that ring as the Ring of Nestor.",
+      "citation_num": "3",
+      "citation_url": "https://www.academia.edu/116392582/The_Lord_of_the_Gold_Rings",
+      "verdict": "support",
+      "reason": "The figure captions describing the bull-leaping imagery (Figure 8 and Figure 14) refer to 'ring 1' but do not identify it or any other ring as the 'Ring of Nestor'."
+    },
+    {
+      "statement_index": 16,
+      "statement": "The Pylos connection is documented through the archaeological setting, with the National Archaeological Museum presenting the Palace of Nestor as a Messenian administrative centre built shortly after 1300 BCE and destroyed around 1200 BCE.",
+      "citation_num": "2",
+      "citation_url": "https://www.namuseum.gr/en/temporary_exhibition/pylos-of-nestor-a-mycenaean-kingdom-revealed",
+      "verdict": "support",
+      "reason": "The text confirms the National Archaeological Museum's exhibition presents the Palace of Nestor as a Messenian administrative center built shortly after 1300 BCE and destroyed around 1200 BCE."
+    },
+    {
+      "statement_index": 17,
+      "statement": "Davis’s study places the four signet rings in a tomb near the palace, while the Chora exhibition preview lists a separate Minoan signet ring with a ritual scene.",
+      "citation_num": "2",
+      "citation_url": "https://www.namuseum.gr/en/temporary_exhibition/pylos-of-nestor-a-mycenaean-kingdom-revealed",
+      "verdict": "not_support",
+      "reason": "The citation contains no mention of a study by Davis, specific details about four signet rings, or a Chora exhibition preview list."
+    },
+    {
+      "statement_index": 17,
+      "statement": "Davis’s study places the four signet rings in a tomb near the palace, while the Chora exhibition preview lists a separate Minoan signet ring with a ritual scene.",
+      "citation_num": "5",
+      "citation_url": "https://www.artoftheancestors.com/blog/kingdom-of-pylos-getty-villa",
+      "verdict": "not_support",
+      "reason": "The citation content does not mention 'Davis' or his study, so the statement cannot be verified by the provided text."
+    },
+    {
+      "statement_index": 17,
+      "statement": "Davis’s study places the four signet rings in a tomb near the palace, while the Chora exhibition preview lists a separate Minoan signet ring with a ritual scene.",
+      "citation_num": "3",
+      "citation_url": "https://www.academia.edu/116392582/The_Lord_of_the_Gold_Rings",
+      "verdict": "not_support",
+      "reason": "While the study places the rings in a tomb near the palace, the citation content does not include a 'Chora exhibition preview' that lists a separate Minoan signet ring with a ritual scene."
+    },
+    {
+      "statement_index": 18,
+      "statement": "Davis’s publication concerns four rings from a specified tomb and reports their Minoan ritual imagery, while the Chora preview provides specific metadata for a different ring without linking it to the tomb or the name Ring of Nestor.",
+      "citation_num": "5",
+      "citation_url": "https://www.artoftheancestors.com/blog/kingdom-of-pylos-getty-villa",
+      "verdict": "not_support",
+      "reason": "The citation does not contain information about 'Davis's publication' or its contents."
+    },
+    {
+      "statement_index": 18,
+      "statement": "Davis’s publication concerns four rings from a specified tomb and reports their Minoan ritual imagery, while the Chora preview provides specific metadata for a different ring without linking it to the tomb or the name Ring of Nestor.",
+      "citation_num": "3",
+      "citation_url": "https://www.academia.edu/116392582/The_Lord_of_the_Gold_Rings",
+      "verdict": "not_support",
+      "reason": "The citation confirms Davis's publication concerns four rings from a specified tomb with Minoan ritual imagery, but it does not contain a 'Chora preview' providing specific metadata for a different ring."
+    },
+    {
+      "statement_index": 19,
+      "statement": "Bull-leaping imagery can be attributed to one of the Griffin Warrior tomb rings, but the identity of an object formally called the Ring of Nestor is not established by the current records.",
+      "citation_num": "5",
+      "citation_url": "https://www.artoftheancestors.com/blog/kingdom-of-pylos-getty-villa",
+      "verdict": "not_support",
+      "reason": "The citation does not discuss 'bull-leaping imagery' or the existence of a formal object called the 'Ring of Nestor'."
+    },
+    {
+      "statement_index": 19,
+      "statement": "Bull-leaping imagery can be attributed to one of the Griffin Warrior tomb rings, but the identity of an object formally called the Ring of Nestor is not established by the current records.",
+      "citation_num": "3",
+      "citation_url": "https://www.academia.edu/116392582/The_Lord_of_the_Gold_Rings",
+      "verdict": "support",
+      "reason": "Figure 14 explicitly attributes a 'bull-leaping scene' to 'ring 1', and the text does not formally establish the identity of an object called the 'Ring of Nestor' among the described rings."
+    }
+  ]
+}

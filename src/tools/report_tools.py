@@ -1389,6 +1389,30 @@ def _compile_section_content(content: str, source_ids: list[str], registry_by_so
     return "\n\n".join(item.strip() for item in blocks if item.strip()).strip()
 
 
+def _strip_leading_heading(content: str) -> str:
+    """Remove a leading ATX markdown heading (## Title) if present in the content.
+
+    Prevents duplicate headings when the LLM includes a section heading in the content
+    and the system also adds one.
+    """
+    lines = content.strip().split("\n")
+    if not lines:
+        return content
+    # Check if first non-empty line is an ATX heading
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if re.match(r"^#{1,6}\s+", stripped):
+            # Skip this heading line and any immediately following blank lines
+            remaining = lines[i + 1:]
+            while remaining and not remaining[0].strip():
+                remaining = remaining[1:]
+            return "\n".join(remaining).strip()
+        break
+    return content
+
+
 def _compile_section_report(
     title: str,
     compiled_sections: list[dict[str, Any]],
@@ -1401,10 +1425,11 @@ def _compile_section_report(
     report_title = str(title or ("调研报告" if is_chinese else "Research Report")).strip()
     parts = [f"# {report_title}"]
     for section in compiled_sections:
+        content = _strip_leading_heading(section["content"])
         if wikipedia_task and section.get("section_type") == "lead":
-            parts.append(section["content"])
+            parts.append(content)
         else:
-            parts.extend([f"## {section['title']}", section["content"]])
+            parts.extend([f"## {section['title']}", content])
     parts.append(_render_references(
         registry,
         cited_source_ids,

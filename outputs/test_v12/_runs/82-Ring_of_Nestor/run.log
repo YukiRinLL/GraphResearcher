@@ -1,0 +1,597 @@
+Request: Write a Wikipedia article about 'Ring of Nestor' based on the 
+following rubric. You need to directly research the relevant information and 
+complete the article; you do not need to confirm with the user.
+The current date is `December 15, 2025`.
+
+Rubric:
+---
+Well-written:
+- Clear & Concise: The prose is clear, concise, and understandable to an 
+appropriately broad audience; spelling and grammar are correct.
+1. Articles should be written in encyclopedic style, which differs from the 
+technically dense style found in scholarly writing aimed at specialists. 
+2. Articles should address the topic without twisting the truth or telling 
+"lies-to-children", but should also minimize (unexplained) jargon and not take 
+prior knowledge for granted. 
+3. Articles should be self-contained as much as possible, rather than relying 
+on excessive links to explain unfamiliar concepts.
+- Lead section: In Wikipedia, the lead section is an introduction to an article
+and a summary of its most important contents. It is located at the beginning of
+the article, before the first heading. It is not a news-style lead or "lede" 
+paragraph.
+4. An article's content should begin with an introductory lead section – a 
+concise summary of the article – which is never divided into sections. The 
+remainder of the article is typically divided into sections.
+5. The lead section gives the basics in a nutshell, introduces the article, and
+cultivates interest in reading on—though not by teasing the reader or hinting 
+at what follows.
+6. The lead section should be written in a clear, accessible style with a 
+neutral point of view.
+7. The lead should stand on its own as a concise overview of the article's 
+topic. It should identify the topic, establish context, explain why the topic 
+is notable, and summarize the most important points, including any prominent 
+controversies. The notability of the article's subject is usually established 
+in the first few sentences.
+8. As in the body of the article itself, the emphasis given to material in the 
+lead should roughly reflect its importance to the topic, according to reliable,
+published sources. Apart from basic facts, significant information should not 
+appear in the lead if it is not covered in the remainder of the article.
+9. A lead section should be carefully sourced as appropriate, although it is 
+common for citations to appear in the body and not the lead.
+10. Significant information should not appear in the lead, apart from basic 
+facts, if it is not covered in the remainder of the article, although not 
+everything in the lead must be repeated in the body of the text. Exceptions 
+include specific facts such as quotations, examples, birth dates, taxonomic 
+names and typological classifications, case numbers, and titles.
+- Words to Watch: There are no forbidden words or expressions on Wikipedia, but
+certain expressions should be used with caution because they may introduce bias
+or imprecise meaning. Strive to eliminate expressions that are flattering, 
+disparaging, vague, clichéd, or endorsing of a particular viewpoint.
+11. Puffery: Words such as these are often used without attribution to promote 
+the subject of an article, while neither imparting nor plainly summarizing 
+verifiable information. They are known as "peacock terms" by Wikipedia 
+contributors. Instead of making subjective proclamations about a subject's 
+importance, use facts and attribution to demonstrate it.Words to Watch: 
+legendary, best, great, greatest, acclaimed, iconic, visionary, outstanding, 
+leading, celebrated, popular, award-winning, landmark, cutting-edge, 
+innovative, revolutionary, extraordinary, brilliant, hit, famous, renowned, 
+remarkable, prestigious, world-class, respected, notable, virtuoso, honorable, 
+awesome, unique, pioneering, phenomenal, prominent. 
+12. Contentious labels: Value-laden labels – such as calling an organization a 
+cult, an individual a racist, sexist, terrorist, or freedom fighter, or a 
+sexual practice a perversion – may express contentious opinion and are best 
+avoided unless widely used by reliable sources to describe the subject, in 
+which case use in-text attribution. Avoid myth in its informal sense, and 
+establish the scholarly context for any formal use of the term.Words to Watch: 
+cult, racist, perverted, sexist, homophobic, transphobic, misogynistic, sect, 
+fundamentalist, heretic, extremist, denialist, terrorist, freedom fighter, 
+bigot, myth, neo-Nazi, -gate, pseudo-, controversial. 
+13. Unsupported attributions: These words may disguise a biased view. Claims 
+about what people say, think, feel, or believe, and what has been shown, 
+demonstrated, or proved should be clearly attributed.Words to Watch: ​some 
+people say, many people remember, many scholars state, it is 
+believed/regarded/considered, many are of the opinion, most feel, experts 
+declare, it is often reported, it is widely thought, research has shown, 
+science says, scientists claim, it is often said, officially, is widely 
+regarded as, X has been described as Y.
+14. Expressions of doubt: When these are used, ensure that the source of the 
+accusation is clear. Words to Watch: supposed, apparent, purported, alleged, 
+accused, so-called ...   Also, scare-quoting: a Yale "report"; undue emphasis: 
+"... a Baptist church".
+15. Editorializing: These words should usually be avoided so as to maintain an 
+impartial tone.​Words to Watch: notably, it should be noted, arguably, 
+interestingly, essentially, utterly, actually, only, clearly, absolutely, of 
+course, without a doubt, indeed, happily, sadly, tragically, aptly, 
+fortunately, unfortunately, untimely.
+16. Synonyms for said: In some types of writing, repeated use of said is 
+considered tedious, and writers are encouraged to employ synonyms. On 
+Wikipedia, it is more important to avoid language that makes undue 
+implications.Words to Watch: reveal, point out, clarify, expose, explain, find,
+note, observe, insist, speculate, surmise, claim, assert, admit, confess, deny,
+confirm ...
+17. Euphemisms: Euphemisms should generally be avoided in favor of more neutral
+and precise terms.​Words to Watch: passed away, gave her life, eternal rest, 
+make love, an issue with, collateral damage, differently abled.
+18. Clichés and idioms: Clichés and idioms should generally be avoided in favor
+of direct, literal expressions.Words to watch: lion's share, tip of the 
+iceberg, white elephant, gild the lily, take the plunge, ace up the sleeve, 
+bird in the hand, twist of fate, at the end of the day.
+19. Relative time references: Prefer specific statements to general ones.Words 
+to watch: recently, lately, currently, today, presently, to date, X years ago, 
+formerly, in the past, traditionally, this/last/next 
+(year/month/winter/spring/summer/fall/autumn), yesterday, tomorrow, in the 
+future, now, to this day, soon, since.
+20. Unspecified places or events: Prefer specific statements to general 
+ones.Words to watch: this country, here, there, somewhere, sometimes, often, 
+occasionally, somehow.
+21. Survived by: Phrasing such as "Smith died in 1982, survived by her husband 
+Jack and two sons" should be avoided; this information can be made more 
+complete and spread out through the article.Words to watch: is/was survived by,
+[Name]'s survivors include.
+---
+Broad in its coverage:
+1. It addresses the main aspects of the topic.
+2. The lead, ideally the introductory sentence or at least introductory 
+paragraph, of an article, should make clear what the scope of the article is.
+3. All material that is notable, referenced, and that a reader would be likely 
+to agree matches the specified scope must be covered (at least in a summarized 
+fashion).
+4. What reliable sources say about material that is out of scope for the 
+decided-upon subject is largely irrelevant to that article and can be removed.
+5. It stays focused on the topic without going into unnecessary detail.
+6. The lead contains a quick summary of the topic's most important points.
+7. Each major subtopic is detailed in its own section of the article.
+8. It contains no irrelevant (nor only loosely relevant) information.
+---
+Neutral:
+Achieving what the Wikipedia community understands as neutrality means 
+carefully and critically analyzing a variety of reliable sources and then 
+attempting to convey to the reader the information contained in them fairly, 
+proportionately, and as far as possible without editorial bias. Wikipedia aims 
+to describe disputes, but not engage in them. The aim is to inform, not 
+influence. Editors, while naturally having their own points of view, should 
+strive in good faith to provide complete information and not to promote one 
+particular point of view over another. The neutral point of view does not mean 
+the exclusion of certain points of view; rather, it means including all 
+verifiable points of view which have sufficient due weight. Observe the 
+following principles to help achieve the level of neutrality that is 
+appropriate for an encyclopedia:
+1. It represents viewpoints fairly and without editorial bias, giving due 
+weight to each.
+2. Avoid stating opinions as facts. Usually, articles will contain information 
+about the significant opinions that have been expressed about their subjects. 
+However, these opinions should not be stated in Wikipedia's voice. Rather, they
+should be attributed in the text to particular sources, or where justified, 
+described as widespread views, etc. For example, an article should not state 
+that genocide is an evil action but may state that genocide has been described 
+by John So-and-so as the epitome of human evil.
+3. Avoid stating seriously contested assertions as facts. If different reliable
+sources make conflicting assertions about a matter, treat these assertions as 
+opinions rather than facts, and do not present them as direct statements.
+4. Avoid stating facts as opinions. Uncontested and uncontroversial factual 
+assertions made by reliable sources should normally be directly stated in 
+Wikipedia's voice, for example the sky is blue not [name of source] believes 
+the sky is blue. Unless a topic specifically deals with a disagreement over 
+otherwise uncontested information, there is no need for specific attribution 
+for the assertion, although it is helpful to add a reference link to the source
+in support of verifiability. Further, the passage should not be worded in any 
+way that makes it appear to be contested.
+5. Prefer nonjudgmental language. A neutral point of view neither sympathizes 
+with nor disparages its subject (or what reliable sources say about the 
+subject), although this must sometimes be balanced against clarity. Present 
+opinions and conflicting findings in a disinterested tone. Do not editorialize.
+When editorial bias towards one particular point of view can be detected the 
+article needs to be fixed. The only bias that should be evident is the bias 
+attributed to the source.
+6. Indicate the relative prominence of opposing views. Ensure that the 
+reporting of different views on a subject adequately reflects the relative 
+levels of support for those views and that it does not give a false impression 
+of parity, or give undue weight to a particular view. For example, to state 
+that According to Simon Wiesenthal, the Holocaust was a program of 
+extermination of the Jewish people in Germany, but David Irving disputes this 
+analysis would be to give apparent parity between the supermajority view and a 
+tiny minority view by assigning each to a single activist in the field.
+7. An article should not give undue weight to minor aspects of its subject but 
+should strive to treat each aspect with a weight proportional to its treatment 
+in the body of reliable, published material on the subject.
+8. Any inclusion of fringe or pseudoscientific views should not give them undue
+weight. The fringe or pseudoscientific view should be clearly described as 
+such. An explanation of how experts in the relevant field have reacted to such 
+views should be prominently included. 
+9. In the case of beliefs and practices, Wikipedia content should not only 
+encompass what motivates individuals who hold these beliefs and practices but 
+also account for how such beliefs and practices developed. Wikipedia articles 
+on history and religion draw from religion's sacred texts as primary sources 
+and modern archaeological, historical, and scientific works as secondary and 
+tertiary sources.
+10. Article titles that combine alternative names are discouraged. For example,
+names such as "Derry/Londonderry", "Aluminium/Aluminum", and "Flat Earth (Round
+Earth)" should not be used. Instead, alternative names should be given their 
+due prominence within the article itself, and redirects created as appropriate.
+---
+IMPORTANT:
+1. You are prohibited from searching any Wikipedia pages (always use 
+-site:en.wikipedia.org when searching); otherwise, it will be considered 
+cheating.
+2. You are prohibited from reading the webpage at 
+https://en.wikipedia.org/wiki/Ring_of_Nestor. If this page appears in your 
+references, it will be regarded as invalid research.
+3. Ensure all factual claims are backed by citations. Use bracketed numbers 
+(e.g., [1], [2]) for in-text citations. At the very end of the article, include
+a dedicated 'References' section that lists the corresponding full URLs for 
+each number.
+Output dir: outputs\test_v12\_runs\82-Ring_of_Nestor | max search rounds: 12
+
+[HumanMessage] Write a Wikipedia article about 'Ring of Nestor' based on the 
+following rubric. You need to directly research the relevant information and 
+complete the article; you do not need to confirm with the user.
+The current date is `December 15, 2025`.
+
+Rubric:
+---
+Well-written:
+- Clear & Concise: The prose is clear, concise, and understandable to an 
+appropriately broad audience; spelling and grammar are correct.
+1. Articles should be written in encyclopedic style, which differs from the 
+technically dense style found in scholarly writing aimed at specialists. 
+2. Articles should address the topic without twisting the truth or telling 
+"lies-to-children", but should also minimize (unexplained) jargon and not take 
+prior knowledge for granted. 
+3. Articles should be self-contained as much as possible, rather than relying 
+on excessive links to explain unfamiliar concepts.
+- Lead section: In Wikipedia, the lead section is an introduction to an article
+and a summary of its most important contents. It is located at the beginning of
+the article, before the first heading. It is not a news-style lead or "lede" 
+paragraph.
+4. An article's content should begin with an introductory lead section – a 
+concise summary of the article – which is never divided into sections. The 
+remainder of the article is typically divided into sections.
+5. The lead section gives the basics in a nutshell, introduces the article, and
+cultivates interest in reading on—though not by teasing the reader or hinting 
+at what follows.
+6. The lead section should be written in a clear, accessible style with a 
+neutral point of view.
+7. The lead should stand on its own as a concise overview of the article's 
+topic. It should identify the topic, establish context, explain why the topic 
+is notable, and summarize the most important points, including any prominent 
+controversies. The notability of the article's subject is usually established 
+in the first few sentences.
+8. As in the body of the article itself, the emphasis given to material in the 
+lead should roughly reflect its importance to the topic, according to reliable,
+published sources. Apart from basic facts, significant information should not 
+appear in the lead if it is not covered in the remainder of the article.
+9. A lead section should be carefully sourced as appropriate, although it is 
+common for citations to appear in the body and not the lead.
+10. Significant information should not appear in the lead, apart from basic 
+facts, if it is not covered in the remainder of the article, although not 
+everything in the lead must be repeated in the body of the text. Exceptions 
+include specific facts such as quotations, examples, birth dates, taxonomic 
+names and typological classifications, case numbers, and titles.
+- Words to Watch: There are no forbidden words or expressions on Wikipedia, but
+certain expressions should be used with caution because they may introduce bias
+or imprecise meaning. Strive to eliminate expressions that are flattering, 
+disparaging, vague, clichéd, or endorsing of a particular viewpoint.
+11. Puffery: Words such as these are often used without attribution to promote 
+the subject of an article, while neither imparting nor plainly summarizing 
+verifiable information. They are known as "peacock terms" by Wikipedia 
+contributors. Instead of making subjective proclamations about a subject's 
+importance, use facts and attribution to demonstrate it.Words to Watch: 
+legendary, best, great, greatest, acclaimed, iconic, visionary, outstanding, 
+leading, celebrated, popular, award-winning, landmark, cutting-edge, 
+innovative, revolutionary, extraordinary, brilliant, hit, famous, renowned, 
+remarkable, prestigious, world-class, respected, notable, virtuoso, honorable, 
+awesome, unique, pioneering, phenomenal, prominent. 
+12. Contentious labels: Value-laden labels – such as calling an organization a 
+cult, an individual a racist, sexist, terrorist, or freedom fighter, or a 
+sexual practice a perversion – may express contentious opinion and are best 
+avoided unless widely used by reliable sources to describe the subject, in 
+which case use in-text attribution. Avoid myth in its informal sense, and 
+establish the scholarly context for any formal use of the term.Words to Watch: 
+cult, racist, perverted, sexist, homophobic, transphobic, misogynistic, sect, 
+fundamentalist, heretic, extremist, denialist, terrorist, freedom fighter, 
+bigot, myth, neo-Nazi, -gate, pseudo-, controversial. 
+13. Unsupported attributions: These words may disguise a biased view. Claims 
+about what people say, think, feel, or believe, and what has been shown, 
+demonstrated, or proved should be clearly attributed.Words to Watch: ​some 
+people say, many people remember, many scholars state, it is 
+believed/regarded/considered, many are of the opinion, most feel, experts 
+declare, it is often reported, it is widely thought, research has shown, 
+science says, scientists claim, it is often said, officially, is widely 
+regarded as, X has been described as Y.
+14. Expressions of doubt: When these are used, ensure that the source of the 
+accusation is clear. Words to Watch: supposed, apparent, purported, alleged, 
+accused, so-called ...   Also, scare-quoting: a Yale "report"; undue emphasis: 
+"... a Baptist church".
+15. Editorializing: These words should usually be avoided so as to maintain an 
+impartial tone.​Words to Watch: notably, it should be noted, arguably, 
+interestingly, essentially, utterly, actually, only, clearly, absolutely, of 
+course, without a doubt, indeed, happily, sadly, tragically, aptly, 
+fortunately, unfortunately, untimely.
+16. Synonyms for said: In some types of writing, repeated use of said is 
+considered tedious, and writers are encouraged to employ synonyms. On 
+Wikipedia, it is more important to avoid language that makes undue 
+implications.Words to Watch: reveal, point out, clarify, expose, explain, find,
+note, observe, insist, speculate, surmise, claim, assert, admit, confess, deny,
+confirm ...
+17. Euphemisms: Euphemisms should generally be avoided in favor of more neutral
+and precise terms.​Words to Watch: passed away, gave her life, eternal rest, 
+make love, an issue with, collateral damage, differently abled.
+18. Clichés and idioms: Clichés and idioms should generally be avoided in favor
+of direct, literal expressions.Words to watch: lion's share, tip of the 
+iceberg, white elephant, gild the lily, take the plunge, ace up the sleeve, 
+bird in the hand, twist of fate, at the end of the day.
+19. Relative time references: Prefer specific statements to general ones.Words 
+to watch: recently, lately, currently, today, presently, to date, X years ago, 
+formerly, in the past, traditionally, this/last/next 
+(year/month/winter/spring/summer/fall/autumn), yesterday, tomorrow, in the 
+future, now, to this day, soon, since.
+20. Unspecified places or events: Prefer specific statements to general 
+ones.Words to watch: this country, here, there, somewhere, sometimes, often, 
+occasionally, somehow.
+21. Survived by: Phrasing such as "Smith died in 1982, survived by her husband 
+Jack and two sons" should be avoided; this information can be made more 
+complete and spread out through the article.Words to watch: is/was survived by,
+[Name]'s survivors include.
+---
+Broad in its coverage:
+1. It addresses the main aspects of the topic.
+2. The lead, ideally the introductory sentence or at least introductory 
+paragraph, of an article, should make clear what the scope of the article is.
+3. All material that is notable, referenced, and that a reader would be likely 
+to agree matches the specified scope must be covered (at least in a summarized 
+fashion).
+4. What reliable sources say about material that is out of scope for the 
+decided-upon subject is largely irrelevant to that article and can be removed.
+5. It stays focused on the topic without going into unnecessary detail.
+6. The lead contains a quick summary of the topic's most important points.
+7. Each major subtopic is detailed in its own section of the article.
+8. It contains no irrelevant (nor only loosely relevant) information.
+---
+Neutral:
+Achieving what the Wikipedia community understands as neutrality means 
+carefully and critically analyzing a variety of reliable sources and then 
+attempting to convey to the reader the information contained in them fairly, 
+proportionately, and as far as possible without editorial bias. Wikipedia aims 
+to describe disputes, but not engage in them. The aim is to inform, not 
+influence. Editors, while naturally having their own points of view, should 
+strive in good faith to provide complete information and not to promote one 
+particular point of view over another. The neutral point of view does not mean 
+the exclusion of certain points of view; rather, it means including all 
+verifiable points of view which have sufficient due weight. Observe the 
+following principles to help achieve the level of neutrality that is 
+appropriate for an encyclopedia:
+1. It represents viewpoints fairly and without editorial bias, giving due 
+weight to each.
+2. Avoid stating opinions as facts. Usually, articles will contain information 
+about the significant opinions that have been expressed about their subjects. 
+However, these opinions should not be stated in Wikipedia's voice. Rather, they
+should be attributed in the text to particular sources, or where justified, 
+described as widespread views, etc. For example, an article should not state 
+that genocide is an evil action but may state that genocide has been described 
+by John So-and-so as the epitome of human evil.
+3. Avoid stating seriously contested assertions as facts. If different reliable
+sources make conflicting assertions about a matter, treat these assertions as 
+opinions rather than facts, and do not present them as direct statements.
+4. Avoid stating facts as opinions. Uncontested and uncontroversial factual 
+assertions made by reliable sources should normally be directly stated in 
+Wikipedia's voice, for example the sky is blue not [name of source] believes 
+the sky is blue. Unless a topic specifically deals with a disagreement over 
+otherwise uncontested information, there is no need for specific attribution 
+for the assertion, although it is helpful to add a reference link to the source
+in support of verifiability. Further, the passage should not be worded in any 
+way that makes it appear to be contested.
+5. Prefer nonjudgmental language. A neutral point of view neither sympathizes 
+with nor disparages its subject (or what reliable sources say about the 
+subject), although this must sometimes be balanced against clarity. Present 
+opinions and conflicting findings in a disinterested tone. Do not editorialize.
+When editorial bias towards one particular point of view can be detected the 
+article needs to be fixed. The only bias that should be evident is the bias 
+attributed to the source.
+6. Indicate the relative prominence of opposing views. Ensure that the 
+reporting of different views on a subject adequately reflects the relative 
+levels of support for those views and that it does not give a false impression 
+of parity, or give undue weight to a particular view. For example, to state 
+that According to Simon Wiesenthal, the Holocaust was a program of 
+extermination of the Jewish people in Germany, but David Irving disputes this 
+analysis would be to give apparent parity between the supermajority view and a 
+tiny minority view by assigning each to a single activist in the field.
+7. An article should not give undue weight to minor aspects of its subject but 
+should strive to treat each aspect with a weight proportional to its treatment 
+in the body of reliable, published material on the subject.
+8. Any inclusion of fringe or pseudoscientific views should not give them undue
+weight. The fringe or pseudoscientific view should be clearly described as 
+such. An explanation of how experts in the relevant field have reacted to such 
+views should be prominently included. 
+9. In the case of beliefs and practices, Wikipedia content should not only 
+encompass what motivates individuals who hold these beliefs and practices but 
+also account for how such beliefs and practices developed. Wikipedia articles 
+on history and religion draw from religion's sacred texts as primary sources 
+and modern archaeological, historical, and scientific works as secondary and 
+tertiary sources.
+10. Article titles that combine alternative names are discouraged. For example,
+names such as "Derry/Londonderry", "Aluminium/Aluminum", and "Flat Earth (Round
+Earth)" should not be used. Instead, alternative names should be given their 
+due prominence within the article itself, and redirects created as appropriate.
+---
+IMPORTANT:
+1. You are prohibited from searching any Wikipedia pages (always use 
+-site:en.wikipedia.org when searching); otherwise, it will be considered 
+cheating.
+2. You are prohibited from reading the webpage at 
+https://en.wikipedia.org/wiki/Ring_of_Nestor. If this page appears in your 
+references, it will be regarded as invalid research.
+3. Ensure all factual claims are backed by citations. Use bracketed numbers 
+(e.g., [1], [2]) for in-text citations. At the very end of the article, include
+a dedicated 'References' section that lists the corresponding full URLs for 
+each number.
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+[AIMessage → tool] init_research({})
+INFO:tools.middleware:wrap_tool_call: tool_call=init_research
+INFO:tools.middleware:_gate_reporter called with tool_call: name=init_research, args_keys=[]
+INFO:tools.middleware:Not a task tool call (name=init_research), skipping gate
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+[init_research result] {"goal_id": "20260804173430683942_4ee313de", 
+"research_goal": "Write a well-sourced, neutral, encyclopedic Wikipedia-style 
+article about the Ring of Nestor, covering its identification, discovery, 
+physical characteristics, imagery, historical context, interpretations, and 
+authenticity debates.", "language": "English", "scope_mode": "bounded", 
+"objectives": [{"id": "20260804173430710491_d95e2657", "type": "Analysis", 
+"coverage": 0.0, "analysis_type": "objective", "confidence": 0.0, 
+"description": "Establish what the Ring of Nestor is, where and when it was 
+found, its archaeological context, and its documented physical characteristics 
+and present status.", "weight": 1.0, "requirement": "must", "low_gain_streak": 
+0, "last_evaluated_successful_rounds": 0, "text": "Establish what the Ring of 
+Nestor is, where and when it was found, its archaeological context, and its 
+documented physical characteristics and present status.", "objective_key": 
+"identification_context", "acceptance_criteria": ["Identifies the object and 
+distinguishes it from similarly named artifacts", "Reports discovery, 
+provenance, archaeological context, materials, dimensions or other documented 
+physical details with citations", "Uses reliable non-Wikipedia sources"], 
+"status": "open"}, {"id": "20260804173430746846_7ba6ec56", "type": "Analysis", 
+"coverage": 0.0, "analysis_type": "objective", "confidence": 0.0, 
+"description": "Describe the ring's imagery and summarize major scholarly 
+interpretations within the context of Aegean Bronze Age art and religion.", 
+"weight": 1.0, "requirement": "must", "low_gain_streak": 0, 
+"last_evaluated_successful_rounds": 0, "text": "Describe the ring's imagery and
+summarize major scholarly interpretations within the context of Aegean Bronze 
+Age art and religion.", "objective_key": "imagery_interpretation", 
+"acceptance_criteria": ["Separates direct visual description from interpretive 
+claims", "Attributes competing or uncertain interpretations to named reliable 
+sources", "Explains specialized terminology for a broad audience"], "status": 
+"open"}, {"id": "20260804173430760292_db66e53f", "type": "Analysis", 
+"coverage": 0.0, "analysis_type": "objective", "confidence": 0.0, 
+"description": "Present the evidence and scholarly positions concerning the 
+ring's authenticity, dating, attribution, and relationship to the figure of 
+Nestor.", "weight": 1.0, "requirement": "must", "low_gain_streak": 0, 
+"last_evaluated_successful_rounds": 0, "text": "Present the evidence and 
+scholarly positions concerning the ring's authenticity, dating, attribution, 
+and relationship to the figure of Nestor.", "objective_key": 
+"authenticity_debate", "acceptance_criteria": ["Clearly distinguishes 
+established evidence from disputed claims", "Represents significant positions 
+proportionately and neutrally", "Cites the relevant arguments and 
+publications"], "status": "open"}, {"id": "20260804173430773046_cf7e3105", 
+"type": "Analysis", "coverage": 0.0, "analysis_type": "objective", 
+"confidence": 0.0, "description": "Deliver a self-contained Wikipedia-style 
+article with a concise lead, coherent sections, neutral prose, in-text numbered
+citations, and a corresponding References section containing full URLs.", 
+"weight": 0.9, "requirement": "must", "low_gain_streak": 0, 
+"last_evaluated_successful_rounds": 0, "text": "Deliver a self-contained 
+Wikipedia-style article with a concise lead, coherent sections, neutral prose, 
+in-text numbered citations, and a corresponding References section containing 
+full URLs.", "objective_key": "article_quality", "acceptance_criteria": 
+["Includes a lead summarizing identity, significance, and major disputes", 
+"Avoids unsupported claims, puffery, editorializing, and unexplained jargon", 
+"Every factual claim is backed by a numbered citation and every citation has a 
+full URL in References"], "status": "open"}], "queries": [{"handle": "q1", 
+"id": "20260804173430812503_39688794", "text": "Ring of Nestor 
+-site:en.wikipedia.org", "priority_tier": "high", "acceptance_criteria": 
+["Finds authoritative sources identifying the specific artifact, its discovery 
+context, imagery, and scholarly terminology"], "objective_keys": 
+["identification_context", "imagery_interpretation"]}]}
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+[AIMessage → tool] get_next_actions({'limit': 4})
+INFO:tools.middleware:wrap_tool_call: tool_call=get_next_actions
+INFO:tools.middleware:_gate_reporter called with tool_call: name=get_next_actions, args_keys=['limit']
+INFO:tools.middleware:Not a task tool call (name=get_next_actions), skipping gate
+[get_next_actions result] [{"action": "dispatch_searcher", "query_id": 
+"20260804173430812503_39688794", "query_handle": "q1", "priority": 1.0, 
+"required_for_parent": false, "required_path": false, "semantic_importance": 
+1.0, "gap_ids": [], "reason": "query awaits its first successful search"}]
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
+[AIMessage → tool] dispatch_searcher({'query_id': 
+'20260804173430812503_39688794'})
+INFO:tools.middleware:wrap_tool_call: tool_call=dispatch_searcher
+INFO:tools.middleware:_gate_reporter called with tool_call: name=dispatch_searcher, args_keys=['query_id']
+INFO:tools.middleware:Not a task tool call (name=dispatch_searcher), skipping gate
+INFO:neo4j.notifications:Received notification from DBMS server: <GqlStatusObject gql_status='03N90', status_description="info: cartesian product. The disconnected pattern '(q:Query {id: $query_id}), (g:UserRequest {id: $goal_id})' builds a cartesian product. A cartesian product may produce a large amount of data and slow down query processing.", position=<SummaryInputPosition line=2, column=13, offset=13>, raw_classification='PERFORMANCE', classification=<NotificationClassification.PERFORMANCE: 'PERFORMANCE'>, raw_severity='INFORMATION', severity=<NotificationSeverity.INFORMATION: 'INFORMATION'>, diagnostic_record={'_classification': 'PERFORMANCE', '_severity': 'INFORMATION', '_position': {'offset': 13, 'line': 2, 'column': 13}, 'OPERATION': '', 'OPERATION_CODE': '0', 'CURRENT_SCHEMA': '/'}> for query: "\n            MATCH (q:Query {id: $query_id}), (g:UserRequest {id: $goal_id})\n            SET q._claim_lock = coalesce(q._claim_lock, 0) + 1,\n                g._budget_lock = coalesce(g._budget_lock, 0) + 1\n            WITH q, g\n            WHERE q.status = 'pending'\n              AND coalesce(q.successful_search_runs, 0) = 0\n              AND (\n                coalesce(g.max_search_rounds, 0) <= 0\n                OR coalesce(g.dispatched_search_rounds, 0) < g.max_search_rounds\n              )\n            SET q.status = 'searching',\n                q.search_attempts = coalesce(q.search_attempts, 0) + 1,\n                g.dispatched_search_rounds = coalesce(g.dispatched_search_rounds, 0) + 1\n            CREATE (r:SearchRun {\n                id: $run_id,\n                context: $context,\n                query_id: $query_id,\n                status: 'running',\n                attempt: q.search_attempts\n            })\n            MERGE (q)-[:SEARCHED_BY]->(r)\n            RETURN r.id AS search_run_id,\n                   q.search_attempts AS attempt,\n                   g.dispatched_search_rounds AS dispatched_search_rounds\n            "
+[tools:3b0819e1-ca2b-fe81-9c51-1cd686b4061b] [HumanMessage] Ring of Nestor 
+-site:en.wikipedia.org
+[tools:3b0819e1-ca2b-fe81-9c51-1cd686b4061b] [AIMessage] {"query": "Ring of 
+Nestor", "error": null, "kept_results": [{"title": "some observations on the 
+iconography of the 'ring of nestor'", "url": 
+"https://www.academia.edu/83658257/SOME_OBSERVATIONS_ON_THE_ICONOGRAPHY_OF_THE_
+RING_OF_NESTOR_", "content": "A group of Late Minoan signet rings fashioned in 
+precious metals and engraved with complex and evocative iconographic schemes 
+appears to depict ‘nature’ or ‘rural’ cults enacted at extra-urban sanctuaries,
+and may have functioned as inalienable possessions implicated in the expression
+and maintenance of elite identities during the Aegean Bronze Age. The images on
+the ring bezels depict human figures in association with epiphanic figures 
+situated in settings characterised by the presence of [...] The many years of 
+research that led to the present paper on the so-called Ring of Nestor (CMS VI,
+nο. 277), with the documentation of its authenticity, have offered me the 
+opportunity to discuss the cases of erroneous identifications of some 
+Creto-Mycenaean gold rings as fakes . This tendency, underpinned by the obscure
+– even legendary – circumstances in which these rings were found, not only the 
+Ring of Nestor but also the Ring of Minos, has been reassessed completely in 
+favour of their [...] The so-called Nestor Ring was found in 1924 and was 
+accepted as authentic by Sir Arthur Evans whereas many other scholars condemned
+it as a forgery. In recent years, scholars have claimed its authenticity anew. 
+This article examines the background of the find circumstances and judges them 
+suspicious. It also adds the criterion of semantic coherence in the debate and 
+argues that the coherence depends on Egyptian prototypes and that the use of 
+the butterfly motif argues against the artifact’s", "raw_content_chars": 20000,
+"published_at": null, "score": 0.7738498}, {"title": "Catalog Record: ʻThe ring
+of Nestor;̓ a glimpse into the...", "url": 
+"https://catalog.hathitrust.org/Record/000609034", "content": "By logging into 
+HathiTrust, you agree to follow our Acceptable Use Policy.\n\nContinue\n\nCan't
+find your university or library? See options to log in as a guest\n\n   Log 
+In\n\nSearch\n\n You're searching in All Fields for all items.\n\nSearch 
+HelpAdvanced Search\n\nImage 4\n\n# ʻThe ring of Nestor;̓\n\na glimpse into the
+Minoan after-world, and a sepulchral treasure of gold signet-rings and 
+bead-seals from Thisbê, Boeotia, [...] by Sir Arthur Evans. With five plates, 
+one coloured and four collotype, and fifty-four figures in the text.\n\n## 
+Description\n\n### Tools\n\nCite thisExport citation file\n\nMain AuthorEvans, 
+Arthur, Sir, 1851-1941.\n\nLanguage(s) English \n\nPublished London, Macmillan 
+and Co., Limited, 1925.\n\nSubjectsJewelry, Ancient.\n\nCivilization, 
+Mycenaean.\n\nThisbe, Greece.\n\nNote \"This book is published separately, by 
+permission, from a paper in the Journal of Hellenic studies (April, 1925)\" 
+[...] Physical Description 75 p. illus., v pl. (1 col. fold.) 28 cm. \n\nLocate
+a Print VersionFind in a library\n\n## Viewability\n\n| Item Link | Original 
+Source |\n --- |\n| Full view | University of Virginia |\n| Full view | 
+University of Michigan |\n\nView HathiTrust MARC record\n\n## Similar 
+Items\n\n### Lichee Nuts\n\nAuthor Masters, Edgar Lee, 1868-1950.Published 
+1930\n\n### The new Spoon River\n\nAuthor Masters, Edgar Lee, 
+1868-1950.Published 1924\n\n### The nuptial flight", "raw_content_chars": 
+19691, "published_at": null, "score": 0.7265231}, {"title": "The Ring of 
+Nestor: a Glimpse into the Minoan After-World ...", "url": 
+"https://www.nature.com/articles/116635a0", "content": "CHILDE, V.\nThe Ring of
+Nestor: a Glimpse into the Minoan After-World and a Sepulchral Treasure of Gold
+Signet-Rings and Bead-Seals from Thisbe, Boeotia\n.\nNature 116, 635–636 
+(1925). \n\nDownload citation\n\nIssue date: 31 October 1925\n\nDOI: \n\n### 
+Share this article\n\nAnyone you share the following link with will be able to 
+read this content:\n\nSorry, a shareable link is not currently available for 
+this article.\n\nProvided by the Springer Nature SharedIt content-sharing 
+initiative\n\nAdvertisement [...] The Ring of Nestor: a Glimpse into the Minoan
+After-World and a Sepulchral Treasure of Gold Signet-Rings and Bead-Seals from 
+Thisbe, Boeotia.\n\nBy Sir Arthur Evans. Pp. ii + 75 + 5 plates. (London: 
+Macmillan and Co., Ltd., 1925.) 12s. 6d. net.\n\n## Enjoying our latest 
+content? Log in or create an account to continue\n\nor\n\nSearch author 
+on:PubMed Google Scholar\n\n## Rights and permissions\n\nReprints and 
+permissions\n\n## About this article\n\n### Cite this article [...] # The Ring 
+of Nestor: a Glimpse into the Minoan After-World and a Sepulchral Treasure of 
+Gold Signet-Rings and Bead-Seals from Thisbe, Boeotia\n\nNature\nvolume 116, 
+pages 635–636 (1925) Cite this article\n\n215 Accesses\n\n3 
+Altmetric\n\nMetrics details\n\n## Abstract", "raw_content_chars": 4672, 
+"published_at": null, "score": 0.72019166}, {"title": "The Pseudo-Minoan Nestor
+Ring and Its Egyptian ...", "url": 
+"https://journals.librarypublishing.arizona.edu/jaei/article/id/960", 
+"content": "The so-called Nestor Ring was found in 1924 and was accepted as 
+authentic by Sir Arthur Evans whereas many other scholars condemned it as a 
+forgery. In recent years, scholars have claimed its authenticity anew. This 
+article examines the background of the find circumstances and judges them 
+suspicious. It also adds the criterion of semantic coherence in the debate and 
+argues that the coherence depends on Egyptian prototypes and that the use of 
+the butterfly motif argues against the artifact’s [...] the artifact’s 
+authenticity. [...] |  |  |\n --- |\n| Pages | 17-27 |\n| Published on | 
+2011-05-16 |\n\n#### Licence\n\nAll rights reserved\n\n#### Identifiers\n\n 
+DOI: \n\n#### Peer Review\n\nThis article has been peer reviewed.\n\n#### File 
+Checksums (MD5)\n\n PDF: 6fd39c861c09727567c1b14d913f9d56\n\n#### Non 
+Specialist Summary\n\nThis article has no summary", "raw_content_chars": 1872, 
+"published_at": null, "score": 0.6755297}, {"title": "Evans, Arthur J.: \"The 
+ring of Nestor\". A glimpse into the Minoan after ...", "url": 
+"https://digi.ub.uni-heidelberg.de/diglit/evans1925?ui_lang=eng", "content": 
+"Heidelberg historic literature – digitized\n\nImage 1: Universitätsbibliothek 
+HeidelbergImage 2: Universitätsbibliothek Heidelberg\n\n1.   Homepage\n2.   
+Digital Library\n3.   Heidelberg historic literature– digitized\n4.   \"The 
+ring of Nestor\". A glimps ...\n\n   Watch list 0\n   \n   Login\n\nThere are  
+annotations to individual pages of this facsimile. Individual pages with 
+annotations are marked in \"Overview\" with the symbol .\n\nAnnotation 
+list\n\nYou might also be interested in…(beta)\n\nPage [...] Draft title:\n\nIf
+empty, the annotation's title will be used. Your input will be automatically 
+adjusted to meet the restrictions: Must consist of only lowercase letters 
+(a-z), digits (0-9), low lone (_) and/or hyphen-minus (-) and must be at most 
+64 characters long.\n\nAuto-adjusted::\n\n`not_specified`\n\n- [x]  Save as 
+template \n\n_💾_ Save draft\n\n#### Existing Drafts\n\nRefresh\n\nThe drafts 
+list has not been loaded yet. Click \"Refresh\" to load the current 
+list.\n\n##### ▾ Drafts for this annotation (0) [...] Page\n\nFull text 
+search\n\nInformation about full text search/OCR\n\n## Content\n\n   
+Titelblatt\n   1-42 I. Sepulchral treasure of gold signet-rings and bead-seals 
+from Thisbê, Boeotia\n   43-75 II. A glimpse into the Minoan after-world\n   
+Tafel I - V\n\n\n\n\n\nAnnotationen\n\n\n\n List \n\nRefreshImport from 
+URLImport latest draft\n\n (Guest) \n\n[Log in]( an account](\n\n⚙\n\nLoading 
+annotations…\n\nImage 5: DWork by UB HeidelbergOnline since 
+17.06.2008.\n\n##### Feedback\n\n×Close", "raw_content_chars": 9083, 
+"published_at": null, "score": 0.53968745}], "dropped_without_url": 0, 
+"dropped_without_raw_content": 0, "dropped_duplicates": 0, 
+"dropped_excluded_sources": 0, "dropped_invalid_results": 0}
+INFO:httpx:HTTP Request: POST http://168.138.175.149:8080/v1/chat/completions "HTTP/1.1 200 OK"
