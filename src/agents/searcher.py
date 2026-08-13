@@ -218,6 +218,16 @@ _EXTRACT_SOURCE_PACKET_USER_TEMPLATE = """\
 ## 任务
 只基于下面这个单一来源的网页正文做结构化知识抽取，返回该来源自己的 source packet。
 
+## 第一步：主体匹配硬判定（必须先执行）
+在抽取任何内容前，先从 Query 提取目标主体的名称、明确别名、对象类型和关键消歧特征，再检查 `raw_content` 是否真正讨论该主体。
+
+只有在来源正文对目标主体进行对象级讨论，并且正文包含该主体自身的事实、描述、解释、争议或目录信息时，才允许继续抽取。以下情况一律拒绝整篇来源：只讨论相关人物、地点、时代、一般类别、相似或同名对象；仅在标题、标签、相关推荐、元数据或搜索摘要中出现 Query 关键词；只有 AI 摘要、社交媒体 caption、图片 alt text 或泛化新闻汇总；无法确认正文内容属于目标主体。
+
+如果主体不匹配，必须只返回以下完全空 packet，不得生成任何负面说明或占位内容：
+{{"source": {{}}, "document": {{}}, "statements": [], "evidence": [], "conflicts": []}}
+
+主体不匹配时禁止把“该来源无关”“没有找到目标”或主体混淆判断写入 `document_summary`、statement、evidence 或 conflict。`confidence=low` 不能替代主体拒绝。
+
 ## Query
 {query_text}
 
@@ -241,7 +251,8 @@ _EXTRACT_SOURCE_PACKET_USER_TEMPLATE = """\
 }}
 - 这是单一来源抽取，不要跨来源合并。
 - 只能依据 raw_content；标题仅用于识别来源，不得把搜索摘要或外部知识写入结果。
-- document_summary 必须非空，并且至少抽取一条 statement 或 evidence；否则返回空数组。
+- 主体匹配成功时，`document_summary` 必须非空，并且至少抽取一条 statement 或 evidence；主体不匹配时必须返回上面的完全空 packet。
+- 主体匹配成功后，如果某条内容无法确认属于目标主体，则排除该条内容；如果整个来源的主体归属变得不确定，则返回完全空 packet，不返回部分 packet。
 - 不要生成 Claim。
 """
 
