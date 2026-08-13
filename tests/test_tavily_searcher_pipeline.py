@@ -61,12 +61,11 @@ def _test_tavily_tool_contract():
             "query": "test query",
             "max_results": 3,
             "topic": "news",
-            "exclude_domains": ["blocked.example"],
         })
         call = fake.calls[0]
         assert call["include_raw_content"] is True, call
         assert call["max_results"] == 3 and call["topic"] == "news", call
-        assert call["exclude_domains"] == ["blocked.example"], call
+        assert "exclude_domains" not in call, call
         assert call["timeout"] == search_tools.SEARCH_TIMEOUT, call
         raw_content = result["results"][0]["raw_content"]
         assert raw_content.startswith("x" * 20_000), len(raw_content)
@@ -171,6 +170,20 @@ def _test_searcher_pipeline():
                 "evidence": [],
                 "conflicts": [],
             },
+            {
+                "source": {"source_type": "other"},
+                "document": {"document_summary": ""},
+                "statements": [],
+                "evidence": [],
+                "conflicts": [],
+            },
+            {
+                "source": {"source_type": "other"},
+                "document": {"document_summary": ""},
+                "statements": [],
+                "evidence": [],
+                "conflicts": [],
+            },
         ])
         searcher.config._model_cache["default"] = model
 
@@ -180,29 +193,30 @@ def _test_searcher_pipeline():
             "search_run_id": "run1",
             "query_text": "test query",
             "source_preferences": ["official sources"],
-            "excluded_domains": ["blocked.example"],
-            "excluded_urls": ["https://allowed.example/forbidden"],
         }
         searched = searcher.web_search_node(state)
         results = searched["search_results"]
         assert search_calls[0]["query"] == "test query", search_calls
-        assert search_calls[0]["exclude_domains"] == ["blocked.example"], search_calls
+        assert "exclude_domains" not in search_calls[0], search_calls
         assert results["dropped_duplicates"] == 1, results
         assert results["dropped_without_raw_content"] == 1, results
         assert results["dropped_without_url"] == 1, results
         assert results["dropped_invalid_results"] == 1, results
-        assert results["dropped_excluded_sources"] == 2, results
-        assert len(results["results"]) == 3, results
+        assert "dropped_excluded_sources" not in results, results
+        assert len(results["results"]) == 5, results
         assert results["results"][0]["url"] == "https://example.com/article?a=1&b=2", results
         assert results["results"][1]["url"] == "https://example.org/other", results
+        assert results["results"][3]["url"] == "https://blocked.example/domain-result", results
+        assert results["results"][4]["url"] == "https://allowed.example/forbidden", results
         assert "FULL_BODY_A" not in searched["search_output"], searched["search_output"]
 
         state.update(searched)
         extracted = searcher.extract_evidence_package_node(state)
         package = extracted["evidence_package"]
-        assert len(model.prompts) == 3, model.prompts
+        assert len(model.prompts) == 5, model.prompts
         assert "FULL_BODY_A" in model.prompts[0] and "FULL_BODY_B" in model.prompts[1]
-        assert all("SNIPPET_ONLY" not in prompt for prompt in model.prompts), model.prompts
+        assert "FORBIDDEN_DOMAIN_BODY" in model.prompts[3], model.prompts
+        assert "FORBIDDEN_URL_BODY" in model.prompts[4], model.prompts
         assert len(package["sources"]) == 2 and len(package["documents"]) == 2, package
         assert all("raw_content" not in document for document in package["documents"]), package
         assert [item["local_ref"] for item in package["statements"]] == ["st1"], package
@@ -225,8 +239,6 @@ def _test_empty_search_results():
             "search_run_id": "run1",
             "query_text": "empty query",
             "source_preferences": [],
-            "excluded_domains": [],
-            "excluded_urls": [],
         }
         searcher._TAVILY_SEARCH = lambda **_kwargs: {"error": "offline", "results": []}
         searched = searcher.web_search_node(state)

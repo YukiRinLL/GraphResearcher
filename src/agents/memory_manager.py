@@ -206,18 +206,6 @@ def _normalize_query_text(text: str) -> str:
     return " ".join((text or "").lower().split())
 
 
-def _apply_domain_exclusions(text: str, excluded_domains: list[str]) -> str:
-    """把缺失的禁用域名操作符追加到检索词."""
-    query = " ".join((text or "").split())
-    lowered = query.lower()
-    for domain in dict.fromkeys(filter(None, (_normalize_domain(item) for item in excluded_domains))):
-        operator = f"-site:{domain}"
-        if operator not in lowered:
-            query = f"{query} {operator}".strip()
-            lowered = query.lower()
-    return query
-
-
 def _query_text_issue(text: Any) -> Optional[str]:
     """检查候选 Query 是否为可直接提交的网页检索词."""
     if not isinstance(text, str) or not text.strip():
@@ -297,7 +285,6 @@ class MemoryManager:
             initial_queries = self._select_initial_queries(
                 parsed.get("initial_queries"),
                 limit=initial_query_limit,
-                excluded_domains=excluded_domains,
             )
             if not initial_queries:
                 parsed = self._plan_initial_queries(
@@ -315,7 +302,6 @@ class MemoryManager:
                 initial_queries = self._select_initial_queries(
                     parsed.get("initial_queries"),
                     limit=initial_query_limit,
-                    excluded_domains=excluded_domains,
                 )
             if not initial_queries:
                 return {
@@ -449,7 +435,6 @@ class MemoryManager:
     def _select_initial_queries(
         candidates: Any,
         limit: int,
-        excluded_domains: Optional[list[str]] = None,
     ) -> list[dict]:
         """Keep a bounded set of distinct valid discovery Queries."""
         if not isinstance(candidates, list):
@@ -461,7 +446,6 @@ class MemoryManager:
             if not isinstance(item, (dict, str)):
                 continue
             text, criteria, objective_keys = _query_spec(item)
-            text = _apply_domain_exclusions(text, excluded_domains or [])
             if _query_text_issue(text):
                 continue
             key = _normalize_query_text(text)
@@ -2848,7 +2832,6 @@ class MemoryManager:
             A list of Query specs (cross-referencing ones dropped).
         """
         gaps_text = gaps if isinstance(gaps, str) else json.dumps(gaps or [], ensure_ascii=False)
-        excluded_domains = _string_list(research_constraints.get("excluded_domains"))
         existing_keys = {
             _normalize_query_text(text)
             for text in existing_query_texts or []
@@ -2874,7 +2857,6 @@ class MemoryManager:
             authored_keys: set[str] = set()
             for raw in raw_queries:
                 text, criteria, objective_keys = _query_spec(raw)
-                text = _apply_domain_exclusions(text, excluded_domains)
                 key = _normalize_query_text(text)
                 if _query_text_issue(text) or key in existing_keys or key in authored_keys:
                     continue

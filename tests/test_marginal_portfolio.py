@@ -35,13 +35,9 @@ def test_exploratory_initial_query_selection():
     ]
     selected = MemoryManager._select_initial_queries(candidates, limit=1)
     assert [item["text"] for item in selected] == ["first exploratory query"], selected
-    budgeted = MemoryManager._select_initial_queries(
-        candidates,
-        limit=3,
-        excluded_domains=["en.wikipedia.org"],
-    )
+    budgeted = MemoryManager._select_initial_queries(candidates, limit=3)
     assert len(budgeted) == 3, budgeted
-    assert all(item["text"].endswith("-site:en.wikipedia.org") for item in budgeted)
+    assert all("-site:" not in item["text"] for item in budgeted)
     assert {key for item in budgeted for key in item["objective_keys"]} == {"a", "b"}
     assert all("importance" not in item for item in budgeted)
     invalid = MemoryManager._select_initial_queries(
@@ -99,7 +95,7 @@ def test_followup_query_validation_and_constraints():
         reason="vertical evidence gap",
     )
     assert queries == [{
-        "text": "日本 国家数字战略 1960 2022 政策 年份 核心目标 -site:en.wikipedia.org",
+        "text": "日本 国家数字战略 1960 2022 政策 年份 核心目标",
         "acceptance_criteria": [],
         "objective_keys": [],
     }], queries
