@@ -846,7 +846,10 @@ class MemoryManager:
                 "evidence_refs": [
                     {"id": item["id"], "stance": item.get("stance") or "supports"}
                     for item in evidence
-                    if item.get("statement_ref") == statement["id"]
+                    if statement["id"] in (
+                        item.get("statement_refs")
+                        or ([item.get("statement_ref")] if item.get("statement_ref") else [])
+                    )
                 ],
                 "objective_keys": objective_keys,
                 "confidence": 0.5,
@@ -923,6 +926,7 @@ class MemoryManager:
                     "source_id": item.get("source_id"),
                     "source_credibility": _get_source_credibility(item.get("source_id")),
                     "statement_ref": item.get("statement_ref"),
+                    "statement_refs": item.get("statement_refs") or [],
                     "claim_ref": item.get("claim_ref"),
                     "stance": item.get("stance"),
                     "qualifiers": item.get("qualifiers") or [],
@@ -2189,6 +2193,13 @@ class MemoryManager:
                 "query_id": resolved,
                 "query_handle": query.get("handle"),
                 "query_text": query.get("text"),
+                "query_role": query.get("query_role") or "evidence_gap",
+                "acceptance_criteria": _string_list(query.get("acceptance_criteria")),
+                "research_context": {
+                    "research_goal": goal.get("research_goal") or "",
+                    "time_window": goal.get("time_window"),
+                    "region_scope": goal.get("region_scope"),
+                },
                 "source_preferences": preferences,
                 "excluded_domains": excluded_domains,
                 "excluded_urls": _string_list(goal.get("excluded_urls")),
@@ -2303,6 +2314,12 @@ class MemoryManager:
                 return "Evidence document_ref must reference a valid Document"
             if not valid_ref(_first(evidence, "source_ref", "source"), NodeType.SOURCE.value):
                 return "Evidence source_ref must reference a valid Source"
+            statement_refs = evidence.get("statement_refs") or []
+            if not isinstance(statement_refs, list) or any(
+                not isinstance(ref, str) or not valid_ref(ref, NodeType.STATEMENT.value)
+                for ref in statement_refs
+            ):
+                return "Evidence statement_refs must all reference valid Statements"
             claim_ref = _first(evidence, "claim_ref", "normalized_claim_ref")
             if claim_ref and not valid_ref(claim_ref, NodeType.CLAIM.value):
                 return "Evidence claim_ref must reference a valid Claim"
@@ -2464,13 +2481,18 @@ class MemoryManager:
                 doc_ref = sources_ref[0]
             
             legacy_ref = _first(evidence_item, "supports_or_contradicts", "supports_claim")
-            statement_ref = None
+            statement_refs = list(dict.fromkeys(filter(None, (
+                resolve(ref) for ref in evidence_item.get("statement_refs") or []
+            ))))
+            statement_ref = statement_refs[0] if statement_refs else None
             claim_ref = resolve(_first(evidence_item, "claim_ref", "normalized_claim_ref"))
             if legacy_ref and legacy_ref not in {"supports", "contradicts", "qualifies", "support", "contradict", "qualify"}:
                 resolved_legacy = resolve(legacy_ref)
                 legacy_node = graph_tools.get_node(resolved_legacy) if resolved_legacy else {}
                 if legacy_node.get("type") == NodeType.STATEMENT.value:
                     statement_ref = resolved_legacy
+                    if resolved_legacy not in statement_refs:
+                        statement_refs.append(resolved_legacy)
                 elif legacy_node.get("type") == NodeType.CLAIM.value:
                     claim_ref = resolved_legacy
             
@@ -2484,6 +2506,7 @@ class MemoryManager:
                 limitations=evidence_item.get("limitations") if isinstance(evidence_item.get("limitations"), list) else [],
                 locator=_first(evidence_item, "locator", "span", "quote_locator"),
                 statement_ref=statement_ref,
+                statement_refs=statement_refs,
                 claim_ref=claim_ref,
                 stance=_first(evidence_item, "stance") or (
                     legacy_ref if legacy_ref in {"supports", "contradicts", "qualifies"} else None
@@ -2491,6 +2514,8 @@ class MemoryManager:
             )
             if evidence_item.get("local_ref"):
                 ref_map[evidence_item["local_ref"]] = evidence_id
+            for linked_statement_id in statement_refs:
+                graph_tools.add_edge(evidence_id, linked_statement_id, EdgeType.SUPPORTED_BY)
             evidence_ids.append(evidence_id)
             produced_ids.append(evidence_id)
 

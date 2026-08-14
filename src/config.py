@@ -83,10 +83,8 @@ def load_prompt(name: str) -> str:
 
 # System prompts (loaded lazily-at-import; cheap file reads).
 orchestrator_system_prompt = load_prompt("orchestrator")
-searcher_system_prompt = load_prompt("searcher")
 reporter_system_prompt = load_prompt("reporter")
 report_reviewer_system_prompt = load_prompt("report_reviewer")
-web_searcher_system_prompt = load_prompt("web_searcher")
 analyzer_system_prompt = load_prompt("analyzer")
 
 # Model handles. Built lazily so importing the module (e.g. for assembly checks

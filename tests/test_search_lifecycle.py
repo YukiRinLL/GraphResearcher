@@ -20,6 +20,9 @@ NODES = {
         "dispatched_search_rounds": 0,
         "successful_search_rounds": 0,
         "source_preferences": ["official sources"],
+        "research_goal": "test research goal",
+        "time_window": "2025",
+        "region_scope": "global",
         "excluded_domains": ["en.wikipedia.org"],
         "excluded_urls": ["https://example.com/forbidden"],
     },
@@ -32,6 +35,8 @@ NODES = {
         "search_attempts": 0,
         "successful_search_runs": 0,
         "required_for_parent": True,
+        "query_role": "discovery",
+        "acceptance_criteria": ["identify the subject"],
     },
     "q2": {
         "id": "q2",
@@ -179,6 +184,13 @@ def main():
     first = mm.prepare_search("q1", ["academic sources", "-site:blocked.example"])
     assert first.get("search_run_id"), first
     assert first["query_text"] == "successful query", first
+    assert first["query_role"] == "discovery", first
+    assert first["acceptance_criteria"] == ["identify the subject"], first
+    assert first["research_context"] == {
+        "research_goal": "test research goal",
+        "time_window": "2025",
+        "region_scope": "global",
+    }, first
     assert first["source_preferences"] == ["official sources", "academic sources"], first
     assert first["excluded_domains"] == ["en.wikipedia.org", "blocked.example"], first
     assert first["excluded_urls"] == ["https://example.com/forbidden"], first
@@ -198,16 +210,24 @@ def main():
         ],
         "evidence": [
             {
-                "statement": "valid evidence",
+                "local_ref": "e1",
+                "text": "valid evidence",
                 "document_ref": "d1",
                 "source_ref": "s1",
-                "supports_or_contradicts": "c1",
+                "statement_refs": ["c1"],
             },
         ],
     })
     assert result["status"] == "succeeded" and result["written"]["sources"] == 1, result
     assert result["written"]["evidence"] == 1 and NODES["q1"]["status"] == "assessing", result
     assert result["written"]["statements"] == 1 and result["written"]["claims"] == 0, result
+    written_evidence = next(node for node in NODES.values() if node.get("type") == "Evidence")
+    assert written_evidence["statement_refs"] == [written_evidence["statement_ref"]], written_evidence
+    assert {
+        "source": written_evidence["id"],
+        "target": written_evidence["statement_ref"],
+        "type": "SUPPORTED_BY",
+    } in EDGES, EDGES
     repeated_submit = mm.submit_search_result(first["search_run_id"], "q1", {})
     assert repeated_submit.get("error"), repeated_submit
     assert mm.prepare_search("q1").get("error")

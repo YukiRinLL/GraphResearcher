@@ -49,6 +49,9 @@ def dispatch_searcher(query_id: str, source_preferences: list[str] | None = None
             "search_run_id": prepared["search_run_id"],
             "query_id": prepared["query_id"],
             "query_text": prepared["query_text"],
+            "query_role": prepared.get("query_role") or "evidence_gap",
+            "acceptance_criteria": prepared.get("acceptance_criteria", []),
+            "research_context": prepared.get("research_context", {}),
             "source_preferences": prepared.get("source_preferences", []),
             "messages": [HumanMessage(content=prepared["query_text"])],
         })

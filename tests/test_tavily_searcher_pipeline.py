@@ -82,6 +82,13 @@ def _test_searcher_pipeline():
     original_search = searcher._TAVILY_SEARCH
     original_model = searcher.config._model_cache.get("default")
     try:
+        normalized, reason = searcher._normalize_search_result({
+            "url": "https://example.com/long",
+            "raw_content": "x" * (searcher._MAX_SOURCE_RAW_CHARS + 1),
+        })
+        assert reason is None and normalized["raw_content_truncated"] is True, normalized
+        assert len(normalized["raw_content"]) == searcher._MAX_SOURCE_RAW_CHARS, normalized
+
         search_calls = []
 
         def fake_search(**kwargs):
@@ -145,16 +152,23 @@ def _test_searcher_pipeline():
             {
                 "source": {"source_type": "report", "published_at": "2025-01-01"},
                 "document": {"document_summary": "summary A"},
-                "statements": [{"local_ref": "st-local", "text": "statement A"}],
-                "evidence": [
-                    {"local_ref": "first", "text": "evidence A1", "evidence_type": "quote"},
-                    {"local_ref": "second", "text": "evidence A2", "evidence_type": "data"},
+                "statements": [
+                    {"local_ref": "first-statement", "text": "statement A1"},
+                    {"local_ref": "second-statement", "text": "statement A2"},
                 ],
-                "conflicts": [{
-                    "local_ref": "conflict-local",
-                    "description": "internal conflict",
-                    "evidence_refs": ["first", "second"],
-                }],
+                "evidence": [
+                    {
+                        "local_ref": "first",
+                        "text": "evidence A1",
+                        "statement_refs": ["first-statement", "second-statement"],
+                    },
+                    {
+                        "local_ref": "second",
+                        "text": "evidence A2",
+                        "statement_refs": ["second-statement"],
+                    },
+                ],
+                "conflicts": [],
             },
             {
                 "source": {"source_type": "news"},
@@ -192,6 +206,13 @@ def _test_searcher_pipeline():
             "query_id": "q1",
             "search_run_id": "run1",
             "query_text": "test query",
+            "query_role": "discovery",
+            "acceptance_criteria": ["identify the subject"],
+            "research_context": {
+                "research_goal": "understand the subject",
+                "time_window": None,
+                "region_scope": None,
+            },
             "source_preferences": ["official sources"],
         }
         searched = searcher.web_search_node(state)
@@ -214,23 +235,24 @@ def _test_searcher_pipeline():
         extracted = searcher.extract_evidence_package_node(state)
         package = extracted["evidence_package"]
         assert len(model.prompts) == 5, model.prompts
-        assert all("来源类型准入" in prompt for prompt in model.prompts), model.prompts
-        assert all("社交媒体平台上的帖子" in prompt for prompt in model.prompts), model.prompts
-        assert all("即使这些来源完整讨论" in prompt for prompt in model.prompts), model.prompts
-        assert all("第二门槛：主体匹配" in prompt for prompt in model.prompts), model.prompts
+        analyzer_inputs = [json.loads(prompt) for prompt in model.prompts]
+        assert all(item["query"]["role"] == "discovery" for item in analyzer_inputs), analyzer_inputs
         assert all(
-            '"source": {}, "document": {}, "statements": [], "evidence": [], "conflicts": []'
-            in prompt
-            for prompt in model.prompts
-        ), model.prompts
-        assert "FULL_BODY_A" in model.prompts[0] and "FULL_BODY_B" in model.prompts[1]
+            item["query"]["acceptance_criteria"] == ["identify the subject"]
+            for item in analyzer_inputs
+        ), analyzer_inputs
+        assert all("content" not in item["source"] for item in analyzer_inputs), analyzer_inputs
+        assert analyzer_inputs[0]["source"]["raw_content"] == "FULL_BODY_A", analyzer_inputs[0]
+        assert analyzer_inputs[1]["source"]["raw_content"] == "FULL_BODY_B", analyzer_inputs[1]
         assert "FORBIDDEN_DOMAIN_BODY" in model.prompts[3], model.prompts
         assert "FORBIDDEN_URL_BODY" in model.prompts[4], model.prompts
-        assert len(package["sources"]) == 2 and len(package["documents"]) == 2, package
+        assert len(package["sources"]) == 1 and len(package["documents"]) == 1, package
         assert all("raw_content" not in document for document in package["documents"]), package
-        assert [item["local_ref"] for item in package["statements"]] == ["st1"], package
-        assert [item["local_ref"] for item in package["evidence"]] == ["e1", "e2", "e3"], package
-        assert package["conflicts"][0]["evidence_refs"] == ["e1", "e2"], package
+        assert [item["local_ref"] for item in package["statements"]] == ["st1", "st2"], package
+        assert [item["local_ref"] for item in package["evidence"]] == ["e1", "e2"], package
+        assert package["evidence"][0]["statement_refs"] == ["st1", "st2"], package
+        assert package["evidence"][1]["statement_refs"] == ["st2"], package
+        assert package["conflicts"] == [], package
     finally:
         searcher._TAVILY_SEARCH = original_search
         if original_model is None:

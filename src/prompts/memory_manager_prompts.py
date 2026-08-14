@@ -327,6 +327,8 @@ Rules:
 - Return only valid JSON.
 - Base every Claim on provided node IDs. Do not invent facts.
 - Merge duplicate or paraphrased Statements into one Claim when they express the same proposition.
+- Treat each Evidence `statement_refs` list as the analyzer's direct support binding;
+  one Evidence may support multiple Statements.
 - Use evidence stance: supports, contradicts, or qualifies.
 - If the material is weak, keep the Claim narrow and put limitations/qualifiers in fields.
 - **Source credibility weighting**: When synthesizing Claims, consider the source_credibility scores:
