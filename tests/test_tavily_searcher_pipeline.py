@@ -214,7 +214,10 @@ def _test_searcher_pipeline():
         extracted = searcher.extract_evidence_package_node(state)
         package = extracted["evidence_package"]
         assert len(model.prompts) == 5, model.prompts
-        assert all("主体匹配硬判定" in prompt for prompt in model.prompts), model.prompts
+        assert all("来源类型准入" in prompt for prompt in model.prompts), model.prompts
+        assert all("社交媒体平台上的帖子" in prompt for prompt in model.prompts), model.prompts
+        assert all("即使这些来源完整讨论" in prompt for prompt in model.prompts), model.prompts
+        assert all("第二门槛：主体匹配" in prompt for prompt in model.prompts), model.prompts
         assert all(
             '"source": {}, "document": {}, "statements": [], "evidence": [], "conflicts": []'
             in prompt
