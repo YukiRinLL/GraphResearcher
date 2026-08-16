@@ -161,9 +161,9 @@ def build_reference_registry() -> list[dict]:
     """Return the canonical, URL-deduped, stably-numbered reference registry.
 
     Reads every ``Source`` node for the current run context, drops entries
-    without a URL, deduplicates by URL (first node in id order wins), and sorts
-    by node id — the ``<timestamp>_<uuid8>`` id sorts lexicographically, i.e. in
-    creation order, which neo4j does not otherwise guarantee. Assigns 1-based
+    without a URL or that are not transitively referenced by any Statement
+    (ghost sources from login-wall/catalog pages are excluded), deduplicates by
+    URL (first node in id order wins), and sorts by node id.  Assigns 1-based
     numbers.
 
     Both ``export_report_context`` (what the Reporter cites from) and
@@ -173,7 +173,33 @@ def build_reference_registry() -> list[dict]:
     Returns:
         A list of ``{"n", "source_id", "title", "url"}`` dicts.
     """
-    sources = [s for s in graph_tools.search_nodes("source", {}) if s.get("url")]
+    all_sources = [s for s in graph_tools.search_nodes("source", {}) if s.get("url")]
+    referenced_source_ids: set[str] = set()
+    # direction="in" returns edges where target == stmt_id; edge["source"] is the
+    # upstream node (Document or Source). Walk Statement -> Document -> Source.
+    for stmt in graph_tools.search_nodes("statement", {}):
+        stmt_id = stmt.get("id")
+        if not stmt_id:
+            continue
+        for edge in graph_tools.get_node_edges(stmt_id, direction="in") or []:
+            src_node_id = edge.get("source")
+            if not src_node_id:
+                continue
+            src_node = graph_tools.get_node(src_node_id)
+            if not src_node:
+                continue
+            node_type = str(src_node.get("type") or "").lower()
+            if node_type == "document":
+                for doc_edge in graph_tools.get_node_edges(src_node_id, direction="in") or []:
+                    doc_src_id = doc_edge.get("source")
+                    if not doc_src_id:
+                        continue
+                    doc_src_node = graph_tools.get_node(doc_src_id)
+                    if doc_src_node and str(doc_src_node.get("type") or "").lower() == "source":
+                        referenced_source_ids.add(doc_src_node.get("id"))
+            elif node_type == "source":
+                referenced_source_ids.add(src_node_id)
+    sources = [s for s in all_sources if s.get("id") in referenced_source_ids]
     sources.sort(key=lambda s: s.get("id") or "")
     registry: list[dict] = []
     seen: set[str] = set()

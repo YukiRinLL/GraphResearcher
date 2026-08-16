@@ -90,7 +90,8 @@ _GAP_EVIDENCE_TYPES = {
 
 OBJECTIVE_COVERAGE_THRESHOLD = 0.75
 OBJECTIVE_CONFIDENCE_THRESHOLD = 0.65
-EXPANSION_UTILITY_THRESHOLD = 0.25
+EXPANSION_UTILITY_THRESHOLD = 0.12
+MIN_SUCCESSFUL_ROUNDS_BEFORE_BEST_EFFORT = 4
 LOW_REALIZED_GAIN_THRESHOLD = 0.05
 LOW_GAIN_WINDOW = 2
 _ACTIVE_QUERY_WORK_STATUSES = {
@@ -2079,6 +2080,7 @@ class MemoryManager:
             and not selected_gaps
             and not fatal
             and not created_fatal_gaps
+            and int(goal.get("successful_search_rounds") or 0) >= MIN_SUCCESSFUL_ROUNDS_BEFORE_BEST_EFFORT
         ):
             research_state.update_goal({
                 "research_state": research_state.LIMITED_REPORT_READY,
@@ -2901,6 +2903,23 @@ class MemoryManager:
                 "or agent instructions."
             )
             queries = author(retry)
+        if not queries:
+            fallback_text = f"{(parent_text or '').strip()}".strip()
+            if fallback_text and not _query_text_issue(fallback_text):
+                key = _normalize_query_text(fallback_text)
+                if key not in existing_keys:
+                    fallback_criteria = []
+                    for gap in (gaps or []):
+                        if isinstance(gap.get("acceptance_criteria"), list):
+                            fallback_criteria.extend([
+                                c for c in gap["acceptance_criteria"]
+                                if isinstance(c, str)
+                            ][:1])
+                    queries = [{
+                        "text": fallback_text,
+                        "acceptance_criteria": fallback_criteria,
+                        "objective_keys": [],
+                    }]
         return queries[:max_new]
 
     def extract_content(self, content: str) -> dict:

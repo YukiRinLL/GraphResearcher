@@ -240,12 +240,14 @@ def dispatch_node(state: dict) -> dict:
 
     submit_result = result.get("submit_result")
     if isinstance(submit_result, dict):
-        sources = submit_result.get("sources_count", "?")
-        documents = submit_result.get("documents_count", "?")
-        evidence = submit_result.get("evidence_count", "?")
+        written = submit_result.get("written") or {}
+        sources = written.get("sources", "?")
+        documents = written.get("documents", "?")
+        evidence = written.get("evidence", "?")
+        status = submit_result.get("status", "?")
         summary = (
             f"[dispatch_searcher] {action.get('query_handle', query_id)}: "
-            f"sources={sources}, documents={documents}, evidence={evidence}"
+            f"status={status}, sources={sources}, documents={documents}, evidence={evidence}"
         )
     else:
         fail_search(

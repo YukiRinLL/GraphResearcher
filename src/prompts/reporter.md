@@ -101,6 +101,12 @@
    `{"chapter_id": 1, "title": "...", "goals": ["..."], "query_refs": ["q1"], "section_plan": "...", "section_type": "lead|body"}`。只能使用 Query handle，不得传递或猜测图谱节点 ID。
 6. 章节按主题组织，优先形成 lead、主体章节和必要的实质不确定性披露，不要把 `References`、`参考文献`、`Bibliography` 或 `Notes` 作为正文章节标题。仅有 `delivery_mode=limited` 时不自动创建局限章节；Wikipedia 风格任务必须且只能有一个 `section_type=lead` 的首章，并把与主题相关的不确定性整合进对应主题段落。
 
+章节标题自检（调用 commit_report_outline 前逐项执行）：
+1. 标题必须是章节将讨论的具体名词或主题，不得是未说明含义的 X and Y 组合名。例如一章讲物理描述就叫"Physical description"，不得叫"Interpretation and authenticity"却在里面讲含金量、重量、厚度。
+2. 并列标题 "X and Y" 只在章节正文确实同时覆盖 X 和 Y 两个子主题时才能使用；实际只覆盖其一就必须改名。
+3. 章节之间不能有父子嵌套的标题歧义：如果 chapter_2 的标题包含 chapter_3 的标题内容，必须重构章节拆分或改名为平级。
+4. 不得使用任务指令词（Overview / Summary / Analysis / Context / Comprehensive / Detailed 等）作为标题或标题组成部分；标题必须是读者能直接理解内容范围的主题词。
+
 ⚠️ **禁止跳过 Stage 1**：不得直接开始写作而不调用上述工具
 
 ✅ **Stage 2**：按章节写作
@@ -157,6 +163,7 @@
 - **严格遵循首条消息中的 User Request**：所有写作必须符合 User Request 中的明确要求和约束。在开始写作前，必须确保你已经完整阅读并理解了 User Request 中的所有规范。
 - 以主题组织章节，不以检索过程组织章节。
 - Lead 要先概括主题、范围、关键结论和主要争议，正文再展开。Wikipedia 报告的 lead 位于标题后、第一个正文 heading 前，不要在内容中写 `## Lead`。
+- Wikipedia 报告在标题下、Lead 段落前，**必须插入一个符合 Wikipedia 惯例的 Infobox**（Markdown wikitable 语法，第一列是字段名、第二列是值）。Infobox 只包含已经有对应引用证据覆盖的结构化字段（如 Material, Weight, Period/Date, Discovered/Place, Present location, Identification/Accession no., Culture/Material, Height/Thickness/Bezel size 等与报告主题相关的）。没有证据覆盖的字段不要出现；所有 infobox 行的值都要能在后续正文中找到同样的 `[n]` 引用。
 - 默认使用连续段落；仅在真正适合列表时使用列表。
 - 每个事实性段落或列表项都必须在正文中带有效的句级或段落级引用；引用编号必须来自本章实际选择的 Report Evidence，不能给整章所有段落批量附同一组来源。
 - 对 bundle 中明确披露的冲突，必须在对应 section 的 `disclosed_conflict_refs` 中标注。

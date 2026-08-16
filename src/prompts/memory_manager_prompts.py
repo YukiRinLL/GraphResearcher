@@ -114,7 +114,7 @@ init_research = """你是 GraphResearcher 的 Query Planner。
 
 ### 按检索依赖选择入口
 
-- 单一命名对象：通常只生成一条用于身份确认、规范名称和消歧的 Query。
+- 单一命名对象：只生成一条 Query，文本就是对象名称本身（必要时加引号精确匹配），不附加任何限定词。身份确认、规范名称和消歧由首次搜索返回的来源完成，不由 Query 文本承担。
 - 未知分类或未知对象集合：先生成一条用于发现分类体系、规范术语或候选范围的 Query，不得用模型先验列出成员。
 - 用户明确列出的多个独立对象：在预算允许时，可以分别建立发现入口；不得把每个对象的属性继续拆分。
 - 多阶段任务：只为当前最上游的发现任务生成 Query，依赖其结果的工作交给后续 Gap 扩展。
@@ -128,7 +128,7 @@ init_research = """你是 GraphResearcher 的 Query Planner。
 - 每条 Query 只承担一个发现目的。
 - 不得把报告提纲、全部研究维度、表格字段、验收标准、引用要求或写作要求塞进 Query。
 - 不得加入模型推断的实体、分类、年代、地点、人物、公司、产品、事件、观点或争议。
-- 可以使用通用检索词完成身份确认、分类发现或消歧，但这些词不得暗示未经确认的事实。
+- 不得加入身份确认、规范名称、消歧、来源筛选等任务性或来源性限定词；这些职责由搜索结果承担，不由 Query 文本承担。
 - 名称需要精确匹配时可以使用引号，但不得改变用户给出的名称。
 - 只有用户明确要求且能实质限定首次搜索时，才在 Query 中写入时间或地域条件。
 - Query 使用用户请求的语言。
@@ -378,16 +378,10 @@ Atomic gaps to cover: {gaps}
 Reason: {reason}
 
 Requirements:
-- Inline the parent's concrete subject BY VALUE into every new query (e.g. write "Figure AI 人形机器人 量产进度 2025", never "该公司的量产进度"). Never reference another query: no "上述/前述/该/这些/the above".
-- Each query must be SELF-CONTAINED and a TIGHT natural-language search phrase:
-  concrete entities plus relevant time, region, policy version, or factual
-  dimensions. It is not a report title, acceptance standard, verbose question,
-  or instruction to an agent.
-- Never use "调研/梳理/整理/分析/上述/前述/该/这些". Do not start an English
-  query with "write/provide/ensure/explain/describe/analyze/research".
+- Inline the parent's concrete subject BY VALUE into every new query — but use only the LITERAL NOUN PHRASE of the subject, NOT any task or attribute words. Never reference another query: no "上述/前述/该/这些/the above".
+- Each query must be a SHORT, TIGHT natural-language search phrase composed of 1–3 concrete nouns (subject plus one gap-related dimension) only. No "authoritative" / "identification" / "disambiguation" / "museum" / "scholarly sources" / "principal facts" / "evidence" / "debate" / "analysis" / "summary" / "overview" / "context" / "authoritative" / "comprehensive" / "detailed" or other task/meta/format/source words.
 - Cover only the assigned related gaps; do not repeat any existing Query.
-- Preserve forbidden domains with `-site:domain`; do not print exact forbidden
-  URLs into the query.
+- Preserve forbidden domains with `-site:domain`; do not print exact forbidden URLs into the query.
 - Author the query text in the language of the research goal.
 - Include concrete acceptance_criteria copied or refined from the assigned atomic gap.
 

@@ -282,6 +282,39 @@ def _nonempty_items(items: object, field: str = "text") -> list[dict]:
     ]
 
 
+LOGIN_WALL_HINTS = (
+    "sign in", "sign up", "log in", "login", "register", "create an account",
+    "access through your institution", "continue with google", "continue with orcid",
+    "enjoying our latest content", "access the most recent journalism",
+    "rights and permissions", "bibliographic information",
+    "marc record", "library catalog record", "catalog record",
+    "borrow", "viewability", "full text unavailable", "limited preview",
+    "subscribe", "subscription required", "buy now", "unlock",
+)
+
+CATALOG_BOOLEAN_HINTS = (
+    "catalog.hathitrust.org", "worldcat.org", "librarything.com", "goodreads.com",
+)
+
+
+def _looks_like_login_wall_or_catalog(source: dict, raw_content: str) -> bool:
+    """Heuristic: reject sources with content dominated by login walls / catalog cards."""
+    url = str(source.get("url") or "").lower()
+    if any(domain in url for domain in CATALOG_BOOLEAN_HINTS):
+        return True
+    text = (raw_content or "").lower()
+    if len(text) < 400:
+        return True
+    hits = sum(1 for hint in LOGIN_WALL_HINTS if hint in text)
+    if hits >= 3:
+        return False
+    if hits == 2 and len(text) < 1200:
+        return True
+    if hits == 1 and len(text) < 700:
+        return True
+    return False
+
+
 def _merge_source_packets(search_results: dict, packets: list[dict]) -> dict:
     """把有效的单来源 packet 合并为现有 evidence_package shape."""
     package = _empty_package()
@@ -290,6 +323,9 @@ def _merge_source_packets(search_results: dict, packets: list[dict]) -> dict:
 
     for source, packet in zip(search_results.get("results", []) or [], packets):
         if not isinstance(source, dict) or not isinstance(packet, dict):
+            continue
+        raw_content = str(source.get("content") or source.get("raw_content") or "")
+        if _looks_like_login_wall_or_catalog(source, raw_content):
             continue
         document = packet.get("document") if isinstance(packet.get("document"), dict) else {}
         summary = str(document.get("document_summary") or "").strip()
