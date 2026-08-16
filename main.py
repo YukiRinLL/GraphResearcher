@@ -1,6 +1,6 @@
 """GraphResearcher entry point.
 
-Loads environment, assembles the Orchestrator deep agent, and runs a research
+Loads environment, assembles the LangGraph research workflow, and runs a research
 request end to end. Streams progress to the console while saving the research
 graph, final report, and run log under the output directory.
 
@@ -187,7 +187,7 @@ def _prepare_report_for_delivery(
     attempt_summary: dict | None = None,
 ) -> tuple[str, list[str], str]:
     """Deliver the best complete Reporter artifact with validation warnings."""
-    del final_text  # Orchestrator terminal prose is never a canonical report.
+    del final_text  # Workflow terminal prose is never a canonical report.
     issues: list[str] = []
     from tools import report_tools
 
@@ -301,7 +301,7 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
             graph_manager_tools.configure(output_dir=str(output_dir), user_request=request)
 
             import config
-            from agents.orchestrator import orchestrator
+            from workflow import workflow
 
             langfuse_run = start_langfuse_run(
                 output_dir=output_dir,
@@ -323,7 +323,7 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
             # many messages we have already printed so we surface every new one,
             # not just the last of each superstep.
             seen_by_ns: dict[tuple, int] = {}
-            for chunk in orchestrator.stream({"messages": [{"role": "user", "content": request}]}, **stream_kwargs):
+            for chunk in workflow.stream({"messages": [{"role": "user", "content": request}]}, **stream_kwargs):
                 namespace: tuple = ()
                 if opts["subgraphs"]:
                     namespace, chunk = chunk

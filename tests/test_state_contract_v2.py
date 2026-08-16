@@ -371,12 +371,8 @@ def test_limited_report_ready_authorizes_reporter():
 
 
 def test_agent_prompts_enforce_report_visibility_contract():
-    orchestrator = (repo_dir / "src/prompts/orchestrator.md").read_text(encoding="utf-8")
     reporter = (repo_dir / "src/prompts/reporter.md").read_text(encoding="utf-8")
-    assert "LIMITED_REPORT_READY" in orchestrator
     assert "LIMITED_REPORT_READY" in reporter
-    assert "不得在同一个模型回合中并行调用" in orchestrator
-    assert "只有当它明确返回 `assess_convergence`" in orchestrator
     assert "unmet_objectives" not in reporter
     assert "原始 User Request" in reporter
     assert "无参数的 `submit_final_report()`" in reporter

@@ -59,11 +59,11 @@ SAMPLE_SIZE = 5
 # 每条数据允许的 Searcher 调度轮数：
 #   测试阶段设置为 1 可以快速检查流程、日志和文件输出。
 #   正式跑质量评测时可调大，例如 6、12；设置为 0 表示不限制轮数。
-MAX_ROUNDS = 1
+MAX_ROUNDS = 25
 
 # 日志详细程度：
 #   debug 会在每条 run.log 中保留最完整的信息：
-#     - Orchestrator 顶层消息
+#     - workflow 顶层消息
 #     - Searcher / Reporter 子图消息
 #     - tool call 参数与 tool result
 #     - INFO 级 Python logging
