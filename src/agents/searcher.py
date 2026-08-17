@@ -163,20 +163,60 @@ def _compact_search_output(search_results: dict) -> str:
 
 _TAVILY_SEARCH = getattr(tavily_search, "func", tavily_search)
 
+_QUERY_WRAP_QUOTE_RE = re.compile(r'^["\'\u201c\u201d\u2018\u2019]+|["\'\u201c\u201d\u2018\u2019]+$')
+_QUERY_SCAFFOLD_RE = re.compile(r'\b(?:query|search|find|look up)\s*[:\uff1a]\s*', re.IGNORECASE)
+_QUERY_QID_PREFIX_RE = re.compile(r'\bq\d+\s*[:\uff1a]\s*', re.IGNORECASE)
+
+
+def _sanitize_query_text(text: str) -> str:
+    """Normalize a query string before passing it to Tavily.
+
+    Strips wrapping quotes, collapses whitespace, and removes scaffolding
+    tokens (e.g. ``query:`` prefixes) that LLM-authored queries sometimes
+    carry. Returns the cleaned text; never returns empty if input had content.
+    """
+    if not isinstance(text, str):
+        return ""
+    cleaned = text.strip()
+    cleaned = _QUERY_WRAP_QUOTE_RE.sub('', cleaned)
+    cleaned = _QUERY_SCAFFOLD_RE.sub('', cleaned)
+    cleaned = _QUERY_QID_PREFIX_RE.sub('', cleaned)
+    cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+    return cleaned
+
 
 def web_search_node(state: SearcherState) -> dict:
     """固定执行一次 Tavily general 搜索，并只保留唯一且带正文的来源."""
+    raw_query = state["query_text"]
+    cleaned_query = _sanitize_query_text(raw_query)
     result = _TAVILY_SEARCH(
-        query=state["query_text"],
+        query=cleaned_query,
         max_results=_DEFAULT_MAX_RESULTS,
         topic="general",
     )
     if not isinstance(result, dict):
         result = {
             "error": "tavily_search returned a non-dict response",
-            "query": state["query_text"],
+            "query": cleaned_query,
             "results": [],
         }
+
+    # Empty-result sanitization retry: if the first call returned no usable
+    # results AND removing all internal quotes yields a different query,
+    # retry once with the aggressively-cleaned variant.
+    kept_check = result.get("results") or []
+    if not kept_check and cleaned_query:
+        aggressive = re.sub(r'["\']', '', cleaned_query).strip()
+        aggressive = re.sub(r'\s+', ' ', aggressive).strip()
+        if aggressive and aggressive != cleaned_query:
+            retry = _TAVILY_SEARCH(
+                query=aggressive,
+                max_results=_DEFAULT_MAX_RESULTS,
+                topic="general",
+            )
+            if isinstance(retry, dict) and (retry.get("results") or []):
+                result = retry
+                cleaned_query = aggressive
 
     kept: list[dict[str, Any]] = []
     seen_urls: set[str] = set()
@@ -202,7 +242,7 @@ def web_search_node(state: SearcherState) -> dict:
         kept.append(normalized)
 
     structured = {
-        "query": result.get("query") or state["query_text"],
+        "query": result.get("query") or cleaned_query,
         "error": result.get("error"),
         "results": kept,
         "dropped_without_url": dropped_without_url,

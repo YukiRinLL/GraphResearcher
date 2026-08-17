@@ -1601,14 +1601,36 @@ def compile_structured_report(title: str, sections: list[dict], *, persist: bool
             if registry_by_number.get(number, {}).get("source_id") not in source_ids
         )
         if invalid_citations:
+            # Strip only the invalid [n] tokens, keep the prose. This preserves
+            # valuable content (e.g. scholar discussions) while flagging the
+            # citation hygiene issue for soft review. Then append a fallback
+            # citation to paragraphs that lost all citations.
+            invalid_pattern = re.compile(
+                r"\[(?:%s)\]" % "|".join(str(n) for n in invalid_citations)
+            )
+            content = invalid_pattern.sub("", content)
+            content = re.sub(r"\s{2,}", " ", content).strip()
+            if source_ids:
+                first_valid_number = next(
+                    (entry["n"] for entry in registry
+                     if entry.get("source_id") in source_ids),
+                    None,
+                )
+                if first_valid_number is not None:
+                    paragraphs = re.split(r"(\n\s*\n)", content)
+                    for i, para in enumerate(paragraphs):
+                        if not para.strip() or para.strip().startswith("#"):
+                            continue
+                        if not _CITE_TOKEN_RE.search(para):
+                            paragraphs[i] = para.rstrip(".。") + f". [{first_valid_number}]"
+                    content = "".join(paragraphs)
             issues.append(_issue(
-                "invalid_inline_citations",
+                "invalid_inline_citations_stripped",
                 "soft",
-                f"section {section_title!r} cites sources outside its Evidence-derived source set: {invalid_citations}",
-                "Use only citation numbers returned for the selected Report Evidence.",
+                f"section {section_title!r} had {len(invalid_citations)} invalid citation(s) stripped; prose retained",
+                "Re-add valid citation numbers from the section's Report Evidence to support the affected claims.",
                 section_title=section_title,
             ))
-            continue
         if evidence_ids:
             valid_evidence_ids = []
             for evidence_id in evidence_ids:

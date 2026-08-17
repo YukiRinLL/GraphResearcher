@@ -265,6 +265,11 @@ Rules:
 - A discovery gap's description and `search_subject_key` must be grounded in
   Query-owned evidence or an explicit delivery requirement, never model prior
   knowledge.
+- `decision_impact` (0.0-1.0): estimate how much resolving this gap changes the
+  report's conclusions. A missing core fact = 0.5-0.8; contextual detail = 0.2-0.4;
+  enrichment = 0.1-0.2.
+- `confidence_gain` (0.0-1.0): how much resolving this gap raises confidence of an
+  existing weak claim. Default 0.2 for verification gaps.
 
 Return:
 {
@@ -285,8 +290,8 @@ Return:
       "gap_category": "missing_core_evidence|fatal_conflict|enrichment|additional_example|verification|detail",
       "objective_keys": ["affected-report-objective-key"],
       "search_subject_key": "stable-topic-key-for-grouping-related-gaps",
-      "decision_impact": 0.0,
-      "confidence_gain": 0.0,
+      "decision_impact": 0.3,
+      "confidence_gain": 0.2,
       "estimated_search_rounds": 1,
       "acceptance_criteria": ["what evidence closes this gap"],
       "expansion_mode": "horizontal|vertical",

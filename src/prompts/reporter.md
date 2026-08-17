@@ -101,6 +101,18 @@
    `{"chapter_id": 1, "title": "...", "goals": ["..."], "query_refs": ["q1"], "section_plan": "...", "section_type": "lead|body"}`。只能使用 Query handle，不得传递或猜测图谱节点 ID。
 6. 章节按主题组织，优先形成 lead、主体章节和必要的实质不确定性披露，不要把 `References`、`参考文献`、`Bibliography` 或 `Notes` 作为正文章节标题。仅有 `delivery_mode=limited` 时不自动创建局限章节；Wikipedia 风格任务必须且只能有一个 `section_type=lead` 的首章，并把与主题相关的不确定性整合进对应主题段落。
 
+**章节规划硬约束**：
+- 章节数量按可用 evidence 量自适应：当 `export_report_context` 返回的 report_evidence 条目 >= 30 条时，正文 chapter 数量不得少于 5；evidence 在 15-29 条时不得少于 4；evidence < 15 条时不得少于 3。
+- 每个 body chapter 必须挂载至少 3 条独立 evidence_refs，且来源数 >= 2。
+- 若 User Request 中列出多个具体子主题或场景（如"四个场景的详细描述"），必须为每个子主题/场景分配独立 chapter 或独立 section_plan 段落，不得合并到一章一笔带过。
+- 大纲提交前必须自检：每个 User Request 中点名的子主题都能映射到至少一个 chapter 的 `goals` 字段中；缺失任一子主题必须先补章再提交。
+
+**章节一致性铁律（强制）**：
+- outline 中提交的 chapter 数量必须等于最终报告中实际出现的章节部分数量。Reporter 不得在写作阶段把一章拆成多章，也不得合并多章为一章。
+- 如发现单章内容过载需要拆分，必须先回到 Stage 1 调用 `commit_report_outline` 重新提交大纲，再进入 Stage 2 写作。
+- 大纲章节标题与最终报告章节标题必须 1:1 对应（允许小修润色，不得改主题）。
+- 写作过程中如发现某章 evidence 不足，应在大纲层调整（合并或删除该章），不得在最终报告中"自行多写一段"或"省略某章"。
+
 章节标题自检（调用 commit_report_outline 前逐项执行）：
 1. 标题必须是章节将讨论的具体名词或主题，不得是未说明含义的 X and Y 组合名。例如一章讲物理描述就叫"Physical description"，不得叫"Interpretation and authenticity"却在里面讲含金量、重量、厚度。
 2. 并列标题 "X and Y" 只在章节正文确实同时覆盖 X 和 Y 两个子主题时才能使用；实际只覆盖其一就必须改名。
@@ -144,17 +156,24 @@
 - 不得使用"暂无可核实的补充资料"等占位语句
 - 当某章节缺乏足够信息时，应整合现有资料撰写有实质内容的段落，或在大纲阶段调整章节设计
 - 避免出现空章节或仅含占位语句的章节
-- **内容深度标准**：每个章节必须包含以下要素中的至少 2-3 项：
+- **内容深度标准**：每个章节必须包含以下要素中的至少 3 项：
   - 具体事实（日期、数值、名称、地点等）
   - 来自学术来源的引用
   - 对不同观点的呈现（如有争议）
-  - 对关键特征的详细描述
+  - 对关键特征的详细描述（不得用一句话概括）
   - 对历史背景或意义的阐述
-- **禁止空洞概括**：不得仅用 1-2 句话概括整个章节主题，必须展开论述
+- **禁止空洞概括**：每个 body chapter 的 prose 不得少于 200 词（中文不少于 400 字）；若 evidence 充足却写不到该长度，说明 outline 拆分过粗，应回到 Stage 1 重拆。
+- **场景/子主题覆盖检查**：User Request 中点名的每个场景、子主题或对比维度必须在正文中得到至少一段独立论述，不得仅在 Lead 一句带过。
 
 ## Stage 3：组装草稿并提交最终报告
 1. 调用 `assemble_report_draft()` 获取整篇草稿。
 2. 检查整篇逻辑、覆盖范围、冲突披露和语言风格；必要时回到章节级修订。
+
+**跨章节去重检查（提交最终报告前必做）**：
+- 同一具体事实（如重量"31.76g"、出土地"Pylos"、收藏号"AN1938.1130"、机构"Ashmolean"）在一个章节中完整陈述后，其他章节如需引用应以简短回指方式（"上述 31.76g 重量" / "the Pylos find discussed above"）提及，不得在多个章节重复展开同一事实的完整陈述。
+- 同一来源（同一 URL 或同一作者+年份）的核心论点应集中在最相关的章节详述；其他章节如需引用该来源的次要观点，使用 "as noted in [n]" 形式简短回指，不得重复展开。
+- 同一学者观点不得在多个章节重复完整引用；后续引用使用 "Smith (2020), as discussed above" 形式。
+- 提交前自查：若同一实体名（机构、收藏号、人名、数值）在 >= 3 个章节中各占一段以上篇幅独立展开，必须合并或回指化处理。
 3. 最终调用无参数的 `submit_final_report()`。系统只读取 outline 中保存的最新候选章节，不接受另一份 title 或 sections；修改报告必须先通过 `commit_report_chapter_batch()` 更新对应章节。
 4. `submit_final_report()` 会保留正文中的合法 `[n]`，并统一生成唯一的末尾参考文献区。不要在 chapter `content` 中自行附加 `## References` / `## 参考文献`。
 5. 首次提交执行一次独立 Report Review，并把确定性问题与 review issues 合并。若 `revision_requested=true`，只进行一次定点修订并再次提交；第二次不再审查，无论验证结果如何都交付完整报告。`delivered=true` 且 `revision_requested=false` 即表示交付完成；`validated` 和 `graph_persisted` 分别表示验证与图谱写入状态。
@@ -163,7 +182,29 @@
 - **严格遵循首条消息中的 User Request**：所有写作必须符合 User Request 中的明确要求和约束。在开始写作前，必须确保你已经完整阅读并理解了 User Request 中的所有规范。
 - 以主题组织章节，不以检索过程组织章节。
 - Lead 要先概括主题、范围、关键结论和主要争议，正文再展开。Wikipedia 报告的 lead 位于标题后、第一个正文 heading 前，不要在内容中写 `## Lead`。
-- Wikipedia 报告在标题下、Lead 段落前，**必须插入一个符合 Wikipedia 惯例的 Infobox**（Markdown wikitable 语法，第一列是字段名、第二列是值）。Infobox 只包含已经有对应引用证据覆盖的结构化字段（如 Material, Weight, Period/Date, Discovered/Place, Present location, Identification/Accession no., Culture/Material, Height/Thickness/Bezel size 等与报告主题相关的）。没有证据覆盖的字段不要出现；所有 infobox 行的值都要能在后续正文中找到同样的 `[n]` 引用。
+- **Lead 段落内容约束（Wikipedia 与非 Wikipedia 任务通用）**：
+  - Lead 第一段：用 3-5 句概括主题定义、范围、关键结论和主要争议。
+  - Lead 第二段及以后：仅展开主题本身的实质信息（发现/构造/历史意义等），不得包含出版物的元数据（页数、plates 数、ISBN、卷期号、出版社地址）。
+  - 出版物元数据只能出现在正文 References 区或正文中引用具体出处时作为脚注式短表述，不得塞入导言。
+  - Lead 不得包含 "the publication includes X plates / Y pages / Z figures" 这类描述；如需提及学术出版物的存在，使用 "first published by Author (Year)" 的简短归因即可。
+- Wikipedia 报告在标题下、Lead 段落前，**必须插入一个 Infobox**，使用**标准 Markdown pipe table 语法**（不要使用 MediaWiki 的 `{| ... |}` wikitable 语法，那种语法在普通 Markdown 渲染器中不会被识别为表格）。格式要求：
+  - 第一行是表头：`| Field | Value |`
+  - 第二行是分隔行：`|-------|-------|`
+  - 后续每行一个字段：`| Material | Gold [1] |`
+  - 完整示例：
+    ```
+    | Field | Value |
+    |-------|-------|
+    | Material | Gold [1] |
+    | Weight | 31.76 g (1.12 oz) [1] |
+    | Period | Late Minoan I (c. 1700–1450 BCE), proposed if ancient [1] |
+    | Present location | Ashmolean Museum, University of Oxford [1] |
+    | Identification | AN1938.1130; CMS VI.229 [1] |
+    ```
+  - Infobox 只包含已经有对应引用证据覆盖的结构化字段（如 Material, Weight, Period/Date, Discovered/Place, Present location, Identification/Accession no., Culture/Material, Height/Thickness/Bezel size 等与报告主题相关的）。
+  - **字段完整性要求**：凡是正文中已陈述且有引用支持的关键物理/标识字段（材质、重量、尺寸、时期、出土地、收藏地、编号等）都必须在 Infobox 中列出，不得遗漏。如果证据中有 Weight/Height/Thickness/Bezel size 等数值字段，必须出现在 Infobox 中。
+  - 没有证据覆盖的字段不要出现；所有 infobox 行的值都要能在后续正文中找到同样的 `[n]` 引用。
+  - 字段名使用 Wikipedia 惯例的标准命名（Material, Weight, Period, Discovered, Present location, Identification 等），不要使用非标准名称（如 "Reported discovery" 应为 "Discovered"）。
 - 默认使用连续段落；仅在真正适合列表时使用列表。
 - 每个事实性段落或列表项都必须在正文中带有效的句级或段落级引用；引用编号必须来自本章实际选择的 Report Evidence，不能给整章所有段落批量附同一组来源。
 - 对 bundle 中明确披露的冲突，必须在对应 section 的 `disclosed_conflict_refs` 中标注。

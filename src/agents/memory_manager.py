@@ -90,7 +90,8 @@ _GAP_EVIDENCE_TYPES = {
 
 OBJECTIVE_COVERAGE_THRESHOLD = 0.75
 OBJECTIVE_CONFIDENCE_THRESHOLD = 0.65
-EXPANSION_UTILITY_THRESHOLD = 0.12
+EXPANSION_UTILITY_THRESHOLD = 0.05
+EXPANSION_UTILITY_THRESHOLD_REDUNDANT = 0.03
 MIN_SUCCESSFUL_ROUNDS_BEFORE_BEST_EFFORT = 4
 LOW_REALIZED_GAIN_THRESHOLD = 0.05
 LOW_GAIN_WINDOW = 2
@@ -1566,17 +1567,20 @@ class MemoryManager:
                 if item.get("status") not in {"satisfied", "blocked"}
             ]
             deficit = max(deficits, default=0.0)
-            redundancy = 0.75 if subject in existing_subjects else 0.0
+            is_redundant_subject = subject in existing_subjects
             decision_impact = max(float(gap.get("decision_impact") or 0.0) for gap in group)
             confidence_gain = max(float(gap.get("confidence_gain") or 0.0) for gap in group)
             rounds = max(1, max(int(gap.get("estimated_search_rounds") or 1) for gap in group))
-            benefit = 0.5 * deficit + 0.3 * decision_impact + 0.2 * confidence_gain
-            utility = benefit * (1.0 - redundancy) / rounds
+            benefit = 0.7 * deficit + 0.2 * decision_impact + 0.1 * confidence_gain
+            min_floor = 0.04 if (deficit > 0 or decision_impact > 0 or confidence_gain > 0) else 0.0
+            utility = max(benefit / rounds, min_floor)
             fatal = any(gap.get("gap_category") == "fatal_conflict" for gap in group)
-            choose = fatal or (
-                bool(deficits)
-                and utility >= EXPANSION_UTILITY_THRESHOLD
+            threshold = (
+                EXPANSION_UTILITY_THRESHOLD_REDUNDANT
+                if is_redundant_subject
+                else EXPANSION_UTILITY_THRESHOLD
             )
+            choose = fatal or (utility >= threshold)
             new_status = "selected" if choose else "deferred_low_value"
             owners = [
                 graph_tools.get_node(owner_id)
@@ -2579,9 +2583,9 @@ class MemoryManager:
             self._bump_portfolio_revision()
         else:
             attempts = int(query.get("search_attempts") or 0)
-            next_status = "blocked" if attempts >= 3 else "pending"
+            next_status = "blocked" if attempts >= 2 else "pending"
             transition_attributes = (
-                {"block_reason": "three SearchRuns completed without valid Source and Evidence"}
+                {"block_reason": "two SearchRuns completed without valid Source and Evidence"}
                 if next_status == "blocked"
                 else {}
             )
@@ -2603,7 +2607,7 @@ class MemoryManager:
                 "conflicts": len(conflict_ids),
             },
             "status": run_status,
-            "query_status": "assessing" if succeeded else ("blocked" if int(query.get("search_attempts") or 0) >= 3 else "pending"),
+            "query_status": "assessing" if succeeded else ("blocked" if int(query.get("search_attempts") or 0) >= 2 else "pending"),
             "novelty_score": novelty,
         }
         return result
