@@ -341,7 +341,7 @@ Rules:
   - Lower credibility sources (<0.5) should reduce the claim's confidence and their contributions should be weighted less
   - When high and low credibility sources contradict each other, prefer the high credibility source's version and disclose the conflict
   - Claims supported only by low-credibility sources should have confidence ≤0.4
-- **Contradiction detection**: When multiple Statements/Evidence describe the same attribute (e.g., museum location, weight, dimensions) with contradictory information:
+- **Contradiction detection**: When multiple Statements/Evidence describe the same attribute (e.g., location, date, quantity, or other identifying property) with contradictory information:
   - This may indicate entity confusion (different entities being discussed)
   - Mark such contradictions clearly and reduce the claim's confidence
   - Include details about the contradiction in qualifiers/limitations
@@ -383,10 +383,10 @@ Atomic gaps to cover: {gaps}
 Reason: {reason}
 
 Requirements:
-- Inline the parent's concrete subject BY VALUE into every new query — use only the LITERAL NOUN PHRASE of the subject (e.g., "Ring of Nestor", "Arthur Evans"), NOT any task or attribute words. Never reference another query: no "上述/前述/该/这些/the above".
-- Each query must be a SHORT, TIGHT natural-language search phrase composed of the entity name (1-3 words) plus ONE specific dimension keyword from the gap (e.g., "authenticity", "iconography", "provenance", "weight", "material", "scholar"). Total length: 3-6 words maximum.
-- Good query examples: "Ring of Nestor authenticity", "Ring of Nestor iconography scenes", "Arthur Evans Ring of Nestor", "Ring of Nestor Ashmolean Museum"
-- Bad query examples (AVOID): "Ring of Nestor research", "Ring of Nestor analysis study", "comprehensive study of Ring of Nestor", "Ring of Nestor scholarly sources evidence"
+- Inline the parent's concrete subject BY VALUE into every new query — use only the LITERAL NOUN PHRASE of the subject (the entity's proper name exactly as given in the research goal), NOT any task or attribute words. Never reference another query: no "上述/前述/该/这些/the above".
+- Each query must be a SHORT, TIGHT natural-language search phrase composed of the entity name (1-3 words) plus ONE specific dimension keyword drawn from the assigned gap. Total length: 3-6 words maximum.
+- Good queries take the form: "<entity name> <one dimension keyword>". The entity name must be the literal subject noun phrase; the dimension keyword must be a concrete facet named in the assigned gap, not generic research vocabulary.
+- Bad queries (AVOID) pile the entity name together with generic research filler words (words meaning "research/analysis/study/sources/evidence" or other non-dimensional vocabulary) instead of a single concrete dimension keyword from the gap.
 - Do NOT use generic filler words: "authoritative", "identification", "disambiguation", "museum", "scholarly", "sources", "principal facts", "evidence", "debate", "analysis", "summary", "overview", "context", "comprehensive", "detailed", "research", "study", "investigation"
 - Cover only the assigned related gaps; do not repeat any existing Query.
 - Preserve forbidden domains with `-site:domain`; do not print exact forbidden URLs into the query.

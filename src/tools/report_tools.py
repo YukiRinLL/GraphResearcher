@@ -84,7 +84,16 @@ _FORBIDDEN_META_RE = re.compile(
     r"not\s+a\s+(?:securely|reliably)\s+documented\s+\w+(?:\s+chain\s+of\s+custody)?|"
     r"reported\s+reconstructions\s+rather\s+than|"
     r"concern\s+reported\s+(?:discovery|reconstructions|judgments|findings)|"
-    r"further\s+(?:catalogue|catalog)\s+verification",
+    r"further\s+(?:catalogue|catalog)\s+verification|"
+    # Fix C: residual meta-analytical / evidence-state commentary (auto-strip —
+    # pure commentary on what the evidence can/cannot establish, no facts lost).
+    r"are\s+best\s+presented\s+as\s+\w+\s+rather\s+than|"
+    r"rather\s+than\s+as\s+an?\s+uncontested|"
+    r"do\s+not,?\s+(?:by\s+themselves|alone|on\s+their\s+own),?\s+(?:establish|demonstrate|prove)|"
+    r"do\s+not\s+(?:establish|demonstrate|prove)\s+that|"
+    r"the\s+evidence\s+does\s+not\s+(?:reconcile|establish|support|demonstrate)|"
+    r"remains\s+(?:contested|unresolved|undetermined)\s+rather\s+than|"
+    r"parts\s+of\s+the\s+recorded\s+history\s+of\s+the\s+object\s+rather\s+than",
     re.IGNORECASE,
 )
 _REFERENCE_VARIANT_RE = re.compile(

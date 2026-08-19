@@ -512,6 +512,23 @@ class ReporterWorkflowMiddleware(AgentMiddleware):
         r"it\s+has\s+been\s+(?:argued|suggested|noted|proposed)",
         r"scholars\s+have\s+(?:discussed|noted|argued|suggested)",
         r"many\s+scholars\s+(?:believe|argue|consider|regard)",
+        # Fix D (extra): vague-attribution variants that escaped the first pass
+        r"one\s+(?:position|view)\s+(?:treats|holds|regards|considers)",
+        r"the\s+other\s+position\s+(?:treats|holds|regards|considers)",
+        r"arguments\s+(?:advanced|have\s+been\s+advanced)\s+in\s+the\s+debate",
+        r"some\s+(?:argue|contend)\s+that",
+        r"the\s+debate\s+involves",
+        # Fix C: residual meta-analytical / evidence-state commentary
+        r"are\s+best\s+presented\s+as\s+\w+\s+rather\s+than",
+        r"rather\s+than\s+as\s+an?\s+uncontested",
+        r"do\s+not,?\s+(?:by\s+themselves|alone|on\s+their\s+own),?\s+(?:establish|demonstrate|prove)",
+        r"do\s+not\s+(?:establish|demonstrate|prove)\s+that",
+        r"the\s+evidence\s+does\s+not\s+(?:reconcile|establish|support|demonstrate)",
+        r"remains\s+(?:contested|unresolved|undetermined)\s+rather\s+than",
+        r"parts\s+of\s+the\s+recorded\s+history\s+of\s+the\s+object\s+rather\s+than",
+        # Fix A: hedge masking an established fact (discovery/holding/date)
+        r"reportedly\s+(?:discovered|found|excavated|dated|uncovered)",
+        r"reports\s+that\s+(?:the\s+(?:ring|object)\s+(?:was|is)\s+(?:discovered|found))",
     ]
 
     def __init__(self, remind_at: int = 20, force_at: int = 24):
