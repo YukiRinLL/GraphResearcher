@@ -111,6 +111,13 @@ _GAP_CATEGORIES = {
     "detail",
 }
 
+# Dimension-coverage gate: prevent premature convergence when evidence/sources/
+# expanded queries are too thin. Thresholds calibrated from V25 baseline
+# (3 sources, 14 queries, 33 evidence → 21.65% coverage).
+_MIN_EVIDENCE_FOR_CONVERGENCE = 15
+_MIN_SOURCES_FOR_CONVERGENCE = 5
+_MIN_EXPANDED_QUERIES_FOR_CONVERGENCE = 3
+
 
 def _strip_internal_fields(node: dict) -> dict:
     """Return a copy of a node dict without internal scheduling fields.
@@ -2062,6 +2069,22 @@ class MemoryManager:
             if query.get("status") not in research_state.TERMINAL_QUERY_STATUSES
         ] if goal.get("scope_mode") == "exhaustive" else []
         remaining = research_state.remaining_budget(goal_id)
+
+        # Dimension-coverage gate: prevent premature convergence when the evidence
+        # base is too thin across sources and expanded dimensions.
+        evidence_nodes = graph_tools.search_nodes("evidence", {})
+        source_nodes = graph_tools.search_nodes("source", {})
+        initial_query_ids = set(graph_tools.get_query_children(goal.get("id")) or [])
+        expanded_queries = [
+            q for q in all_queries
+            if q.get("id") not in initial_query_ids
+        ]
+        dimension_coverage_adequate = (
+            len(evidence_nodes) >= _MIN_EVIDENCE_FOR_CONVERGENCE
+            and len(source_nodes) >= _MIN_SOURCES_FOR_CONVERGENCE
+            and len(expanded_queries) >= _MIN_EXPANDED_QUERIES_FOR_CONVERGENCE
+        )
+
         if active:
             research_state.update_goal({
                 "research_state": research_state.RESEARCHING,
@@ -2074,6 +2097,7 @@ class MemoryManager:
             tree["valid"]
             and portfolio_current
             and objectives_ready
+            and dimension_coverage_adequate
             and not active
             and not selected_gaps
             and not fatal
@@ -2097,7 +2121,12 @@ class MemoryManager:
             }, goal_id)
             recommendation = "stop"
             state = research_state.REPORT_READY
-        elif remaining == 0 and (selected_gaps or not objectives_ready or exhaustive_open):
+        elif remaining == 0 and (
+            selected_gaps
+            or not objectives_ready
+            or not dimension_coverage_adequate
+            or exhaustive_open
+        ):
             research_state.mark_budget_exhausted(goal_id)
             recommendation = "stop"
             state = research_state.BUDGET_EXHAUSTED
