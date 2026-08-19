@@ -72,7 +72,19 @@ _FORBIDDEN_META_RE = re.compile(
     r"available\s+(?:material|evidence|data)|"
     r"本研究|本次检索|本轮|本次|检索轮次|摘要线索|未读取正文|标题层|"
     r"source\s+节点|evidence\s+节点|claim\s+节点|"
-    r"sufficiency|snippet",
+    r"sufficiency|snippet|"
+    # Fix 1 (auto-strip safety net): reader-directive / methodological-caveat
+    # meta-narratives — sentences that instruct the reader on how to use
+    # sources or pronounce on the reliability/nature of the record. These
+    # describe "how to use the material" rather than the subject itself.
+    r"should\s+not\s+be\s+(?:treated|taken|regarded|considered|used)\s+as\s+(?:interchangeable|equivalent|synonymous|definitive|secure|reliable)|"
+    r"should\s+not\s+be\s+used\s+to\s+(?:collapse|treat|conflate|conclude|infer)|"
+    r"do\s+not\s+amount\s+to\s+a\s+\w+\s+(?:determination|account|assessment|conclusion|verdict)|"
+    r"rather\s+than\s+a\s+(?:definitive|secure|reliable|forensic)\s+(?:laboratory\s+)?(?:account|determination|assessment|record)|"
+    r"not\s+a\s+(?:securely|reliably)\s+documented\s+\w+(?:\s+chain\s+of\s+custody)?|"
+    r"reported\s+reconstructions\s+rather\s+than|"
+    r"concern\s+reported\s+(?:discovery|reconstructions|judgments|findings)|"
+    r"further\s+(?:catalogue|catalog)\s+verification",
     re.IGNORECASE,
 )
 _REFERENCE_VARIANT_RE = re.compile(
