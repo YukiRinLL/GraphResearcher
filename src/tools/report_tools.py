@@ -44,6 +44,15 @@ _INTERNAL_TERMS = (
     "标题层",
     "sufficiency",
     "source 节点",
+    "evidence 节点",
+    "claim 节点",
+    "supplied material",
+    "supplied evidence",
+    "provided material",
+    "provided evidence",
+    "available material",
+    "available evidence",
+    "研究图谱",
 )
 _FORBIDDEN_META_RE = re.compile(
     r"research graph|研究图谱|本次图谱|图谱覆盖范围|导出片段|"
@@ -57,7 +66,13 @@ _FORBIDDEN_META_RE = re.compile(
     r"(?:搜索|检索|研究)预算(?:已经|已)?(?:耗尽|用尽)|"
     r"定向(?:恢复|检索)(?:查询)?(?:已经|已)?失败|"
     r"如果你(?:后续|接下来|希望|需要|想)|可以指定维度|可直接进\s*ppt|"
-    r"帮你补全|如需.{0,40}可",
+    r"帮你补全|如需.{0,40}可|"
+    r"supplied\s+(?:material|evidence|data|information)|"
+    r"the\s+supplied|provided\s+(?:material|evidence|data)|"
+    r"available\s+(?:material|evidence|data)|"
+    r"本研究|本次检索|本轮|本次|检索轮次|摘要线索|未读取正文|标题层|"
+    r"source\s+节点|evidence\s+节点|claim\s+节点|"
+    r"sufficiency|snippet",
     re.IGNORECASE,
 )
 _REFERENCE_VARIANT_RE = re.compile(
@@ -1446,7 +1461,11 @@ def _compile_section_report(
     cited_source_ids: set[str],
     wikipedia_task: bool = False,
 ) -> str:
-    """Render a structured report from already-validated sections."""
+    """Render a structured report from already-validated sections.
+
+    Renumbers in-text citations contiguously by first-appearance order so that
+    the references section has no gaps (e.g. [1][2][3] instead of [1][3][5]).
+    """
     is_chinese = bool(re.search(r"[\u4e00-\u9fff]", title or ""))
     report_title = str(title or ("调研报告" if is_chinese else "Research Report")).strip()
     parts = [f"# {report_title}"]
@@ -1456,12 +1475,58 @@ def _compile_section_report(
             parts.append(content)
         else:
             parts.extend([f"## {section['title']}", content])
-    parts.append(_render_references(
-        registry,
-        cited_source_ids,
+
+    raw_body = "\n\n".join(parts)
+
+    registry_by_number = {entry["n"]: entry for entry in registry}
+    cited_source_ids = {sid for sid in cited_source_ids if sid}
+
+    first_seen_numbers: list[int] = []
+    seen_numbers: set[int] = set()
+    for token in _CITE_TOKEN_RE.finditer(raw_body):
+        old_num = int(token.group(1))
+        if old_num in seen_numbers:
+            continue
+        entry = registry_by_number.get(old_num)
+        if entry is None or entry["source_id"] not in cited_source_ids:
+            continue
+        seen_numbers.add(old_num)
+        first_seen_numbers.append(old_num)
+
+    old_to_new: dict[int, int] = {old: i + 1 for i, old in enumerate(first_seen_numbers)}
+
+    def _renumber(match: re.Match) -> str:
+        old = int(match.group(1))
+        new = old_to_new.get(old)
+        return f"[{new}]" if new is not None else ""
+
+    renumbered_body = _CITE_TOKEN_RE.sub(_renumber, raw_body)
+
+    cited_registry_entries = [
+        registry_by_number[old_num]
+        for old_num in first_seen_numbers
+        if old_num in registry_by_number
+    ]
+
+    references_text = _render_references(
+        _renumber_registry(cited_registry_entries, old_to_new),
+        {entry["source_id"] for entry in cited_registry_entries},
         "参考文献" if is_chinese else "References",
-    ))
-    return sanitize_report("\n\n".join(parts))
+    )
+
+    return sanitize_report(f"{renumbered_body}\n\n{references_text}")
+
+
+def _renumber_registry(
+    entries: list[dict],
+    old_to_new: dict[int, int],
+) -> list[dict]:
+    """Renumber a subset of registry entries using the old→new mapping."""
+    renumbered: list[dict] = []
+    for entry in entries:
+        new_n = old_to_new.get(entry["n"], entry["n"])
+        renumbered.append({**entry, "n": new_n})
+    return renumbered
 
 
 def _validate_compiled_report_content(report_text: str) -> list[str]:

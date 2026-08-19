@@ -478,6 +478,22 @@ class ReportValidationMiddleware(AgentMiddleware):
 class ReporterWorkflowMiddleware(AgentMiddleware):
     """Bound the Reporter run and force a complete final submission."""
 
+    _INFOBOX_RE = re.compile(r"^\s*\|.*\|\s*\n\s*\|[\s-]+\|\s*\n", re.MULTILINE)
+    _META_NARRATIVE_TERMS = [
+        r"supplied\s+(?:material|evidence|data)",
+        r"the\s+supplied",
+        r"provided\s+(?:material|evidence)",
+        r"available\s+(?:material|evidence)",
+        r"本研究",
+        r"本次检索",
+        r"本轮",
+        r"研究图谱",
+        r"摘要线索",
+        r"未读取正文",
+        r"source\s+节点",
+        r"evidence\s+节点",
+    ]
+
     def __init__(self, remind_at: int = 20, force_at: int = 24):
         """Configure the reminder and forced-submission model-call limits."""
         self.remind_at = remind_at
@@ -521,6 +537,44 @@ class ReporterWorkflowMiddleware(AgentMiddleware):
         lines.append("修订后调用一次无参数的 submit_final_report()；第二次提交将直接交付。")
         return "\n".join(lines)
 
+    @classmethod
+    def _check_report_quality(cls, report_text: str) -> list[str]:
+        """Validate post-generation: Infobox, meta-narrative terms, chapter count."""
+        issues: list[str] = []
+        text = report_text or ""
+        if not text.strip():
+            return ["报告为空"]
+
+        has_infobox = bool(cls._INFOBOX_RE.search(text))
+        request_text = ""
+        try:
+            from tools import graph_tools
+            requests = graph_tools.search_nodes("user_request", {})
+            if requests:
+                request_text = str(requests[0].get("request") or "").casefold()
+        except Exception:
+            pass
+
+        is_wikipedia = "wikipedia" in request_text or "维基百科" in request_text
+
+        if is_wikipedia and not has_infobox:
+            issues.append("Wikipedia 风格报告缺少 Infobox（Markdown pipe table），必须在标题下、正文前插入")
+
+        meta_found = []
+        for term_re in cls._META_NARRATIVE_TERMS:
+            matches = re.findall(term_re, text, re.IGNORECASE)
+            if matches:
+                meta_found.append(f"'{matches[0]}'")
+        if meta_found:
+            issues.append(f"报告中包含元叙述短语：{', '.join(meta_found[:5])}")
+
+        body_headings = re.findall(r"^##\s+", text, re.MULTILINE)
+        heading_count = len(body_headings)
+        if is_wikipedia and heading_count < 3:
+            issues.append(f"Wikipedia 风格报告章节数不足（当前 {heading_count} 个 ## 标题，建议至少 3 个主体章节）")
+
+        return issues
+
     def wrap_model_call(self, request, handler):
         """Bound synchronous Reporter calls and force a terminal submission."""
         from tools import graph_manager_tools
@@ -538,6 +592,13 @@ class ReporterWorkflowMiddleware(AgentMiddleware):
             )))
         elif attempt.get("revision_requested"):
             messages.append(HumanMessage(content=self._revision_prompt(attempt)))
+            report_text = str(attempt.get("report") or attempt.get("salvaged_report") or "")
+            quality_issues = self._check_report_quality(report_text)
+            if quality_issues:
+                messages.append(HumanMessage(content=(
+                    "提交前质量检查发现以下问题，请一并修复：\n" +
+                    "\n".join(f"- {q}" for q in quality_issues)
+                )))
         response = handler(request.override(messages=messages))
         last = _last_ai_message(response)
         if last is not None and not last.tool_calls:
@@ -561,6 +622,13 @@ class ReporterWorkflowMiddleware(AgentMiddleware):
             )))
         elif attempt.get("revision_requested"):
             messages.append(HumanMessage(content=self._revision_prompt(attempt)))
+            report_text = str(attempt.get("report") or attempt.get("salvaged_report") or "")
+            quality_issues = self._check_report_quality(report_text)
+            if quality_issues:
+                messages.append(HumanMessage(content=(
+                    "提交前质量检查发现以下问题，请一并修复：\n" +
+                    "\n".join(f"- {q}" for q in quality_issues)
+                )))
         response = await handler(request.override(messages=messages))
         last = _last_ai_message(response)
         if last is not None and not last.tool_calls:

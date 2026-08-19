@@ -355,11 +355,43 @@ def _looks_like_login_wall_or_catalog(source: dict, raw_content: str) -> bool:
     return False
 
 
+_SCHOLAR_WIKI_RE = re.compile(
+    r'https?://(?:en\.)?wikipedia\.org/wiki/([^)\s"\']+_(?:[A-Z][a-z]+(?:_[A-Z][a-z]+)+))',
+    re.IGNORECASE,
+)
+_WIKI_GENERAL_RE = re.compile(
+    r'https?://(?:en\.)?wikipedia\.org/wiki/([^)\s"\']+)',
+    re.IGNORECASE,
+)
+
+
+def _extract_scholar_wiki_links(raw_content: str) -> list[dict[str, str]]:
+    """Extract Wikipedia links for scholar-like names from raw content.
+
+    Matches patterns like /wiki/Arthur_Evans, /wiki/Martin_P._Nilsson, etc.
+    Returns list of {url, title} dicts for scholar Wikipedia pages.
+    """
+    if not raw_content:
+        return []
+    found: list[dict[str, str]] = []
+    seen: set[str] = set()
+    for match in _SCHOLAR_WIKI_RE.finditer(raw_content):
+        slug = match.group(1)
+        url = f"https://en.wikipedia.org/wiki/{slug}"
+        if url in seen:
+            continue
+        seen.add(url)
+        title = slug.replace("_", " ")
+        found.append({"url": url, "title": title, "source_type": "scholar_wiki"})
+    return found
+
+
 def _merge_source_packets(search_results: dict, packets: list[dict]) -> dict:
     """把有效的单来源 packet 合并为现有 evidence_package shape."""
     package = _empty_package()
     statement_counter = 0
     evidence_counter = 0
+    scholar_sources: list[dict[str, str]] = []
 
     for source, packet in zip(search_results.get("results", []) or [], packets):
         if not isinstance(source, dict) or not isinstance(packet, dict):
@@ -367,6 +399,12 @@ def _merge_source_packets(search_results: dict, packets: list[dict]) -> dict:
         raw_content = str(source.get("content") or source.get("raw_content") or "")
         if _looks_like_login_wall_or_catalog(source, raw_content):
             continue
+
+        scholar_links = _extract_scholar_wiki_links(raw_content)
+        for sl in scholar_links:
+            if sl["url"] not in {s["url"] for s in scholar_sources}:
+                scholar_sources.append(sl)
+
         document = packet.get("document") if isinstance(packet.get("document"), dict) else {}
         summary = str(document.get("document_summary") or "").strip()
         statements = _nonempty_items(packet.get("statements"))
@@ -434,6 +472,23 @@ def _merge_source_packets(search_results: dict, packets: list[dict]) -> dict:
                 "source_ref": source_ref,
                 "statement_refs": [local_statement_map[ref] for ref in statement_refs],
             })
+
+    for scholar in scholar_sources:
+        scholar_ref = f"s{len(package['sources']) + 1}"
+        document_ref = f"d{len(package['documents']) + 1}"
+        package["sources"].append({
+            "local_ref": scholar_ref,
+            "url": scholar["url"],
+            "title": scholar["title"],
+            "source_type": "scholar_wiki",
+            "published_at": None,
+        })
+        package["documents"].append({
+            "local_ref": document_ref,
+            "document_summary": f"Scholar Wikipedia page: {scholar['title']}",
+            "source_ref": scholar_ref,
+        })
+
     return package
 
 

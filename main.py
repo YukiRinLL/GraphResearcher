@@ -314,7 +314,7 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
             if langfuse_run.enabled:
                 emit(f"Langfuse session: {langfuse_run.session_id}")
 
-            stream_config = {"recursion_limit": 1000, **langfuse_run.langchain_config()}
+            stream_config = {"recursion_limit": 200, **langfuse_run.langchain_config()}
             stream_kwargs = {"config": stream_config, "stream_mode": "values"}
             if opts["subgraphs"]:
                 stream_kwargs["subgraphs"] = True

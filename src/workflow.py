@@ -66,6 +66,8 @@ class WorkflowState(TypedDict):
     user_request: str
     current_action: Optional[dict]
     step_count: int
+    consecutive_idle: int  # 连续无进展动作数（dispatch 成功或 expand created>0 时重置）
+    forced_convergence_count: int  # 连续强制收敛次数（正常收敛或成功搜索时重置）
     error: Optional[str]
 
 
@@ -122,24 +124,68 @@ def init_node(state: dict) -> dict:
         "messages": [AIMessage(content=summary)],
         "user_request": user_request,
         "step_count": 0,
+        "consecutive_idle": 0,
+        "forced_convergence_count": 0,
     }
 
 
+# 连续无进展动作的熔断阈值：超过此值后强制路由到 convergence。
+# 正常流程中两次 dispatch_searcher 之间最多有 ~4 次非搜索动作
+# (assess + portfolio + expand + portfolio)，阈值 6 容纳一轮半空转。
+_MAX_CONSECUTIVE_IDLE = 6
+
+
 def scheduler_node(state: dict) -> dict:
-    """从状态机获取最高优先级动作，写入 ``current_action`` 供下游节点消费."""
+    """从状态机获取最高优先级动作，写入 ``current_action`` 供下游节点消费.
+
+    连续无进展熔断：当连续 ``_MAX_CONSECUTIVE_IDLE`` 次动作既不是成功的
+    dispatch_searcher 也不是产生子查询的 expand_gaps 时，跳过正常调度
+    直接路由到 convergence，避免 expand_gaps(created=0) /
+    evaluate_portfolio(selected=0) 之间的空转循环。
+    """
     step_count = int(state.get("step_count") or 0) + 1
+    consecutive_idle = int(state.get("consecutive_idle") or 0)
+    forced_count = int(state.get("forced_convergence_count") or 0)
+
     actions = gmt.get_next_actions.func(limit=1)
     if not actions:
         return {
             "current_action": None,
             "step_count": step_count,
+            "consecutive_idle": consecutive_idle,
+            "forced_convergence_count": forced_count,
             "messages": [AIMessage(content="[scheduler] no actions, routing to convergence")],
         }
     action = actions[0]
+
+    # 熔断：连续无进展超过阈值时，将 expand_gaps/evaluate_research_portfolio
+    # 替换为 assess_convergence，强制进入收敛裁决。
+    if consecutive_idle >= _MAX_CONSECUTIVE_IDLE and action.get("action") in {
+        "expand_gaps",
+        "evaluate_research_portfolio",
+    }:
+        action = {
+            "action": "assess_convergence",
+            "query_id": None,
+            "goal_id": action.get("goal_id"),
+            "query_handle": None,
+            "reason": f"forced convergence after {consecutive_idle} consecutive idle actions",
+        }
+        summary = f"[scheduler] FORCED CONVERGENCE (idle={consecutive_idle}, forced_count={forced_count + 1}): {_action_summary(action)}"
+        return {
+            "current_action": action,
+            "step_count": step_count,
+            "consecutive_idle": consecutive_idle,
+            "forced_convergence_count": forced_count + 1,
+            "messages": [AIMessage(content=summary)],
+        }
+
     summary = f"[scheduler] {_action_summary(action)}"
     return {
         "current_action": action,
         "step_count": step_count,
+        "consecutive_idle": consecutive_idle,
+        "forced_convergence_count": forced_count,
         "messages": [AIMessage(content=summary)],
     }
 
@@ -148,19 +194,21 @@ def assess_node(state: dict) -> dict:
     """评估单个 Query 的证据充分性并推进其状态."""
     action = state.get("current_action") or {}
     query_id = action.get("query_id")
+    forced_count = int(state.get("forced_convergence_count") or 0)
     if not query_id:
-        return {"current_action": None, "messages": [AIMessage(content="[assess_query] no query_id")]}
+        return {"current_action": None, "forced_convergence_count": forced_count, "messages": [AIMessage(content="[assess_query] no query_id")]}
 
     result = gmt.assess_query.func(query_id)
+    idle = int(state.get("consecutive_idle") or 0) + 1  # assess 不直接产生搜索进展
     if result.get("error"):
         summary = f"[assess_query] {action.get('query_handle', query_id)} ERROR: {result['error']}"
     else:
         summary = (
             f"[assess_query] {action.get('query_handle', query_id)}: "
             f"status={result.get('status', '?')}, "
-            f"sufficient={result.get('sufficient', '?')}"
+            f"sufficient_score={result.get('sufficiency_score', '?')}"
         )
-    return {"current_action": None, "messages": [AIMessage(content=summary)]}
+    return {"current_action": None, "consecutive_idle": idle, "forced_convergence_count": forced_count, "messages": [AIMessage(content=summary)]}
 
 
 def portfolio_node(state: dict) -> dict:
@@ -170,15 +218,21 @@ def portfolio_node(state: dict) -> dict:
     result = gmt.evaluate_research_portfolio.func(goal_id)
     if result.get("error"):
         summary = f"[evaluate_portfolio] ERROR: {result['error']}"
+        idle = int(state.get("consecutive_idle") or 0) + 1
+        forced_count = int(state.get("forced_convergence_count") or 0)
     else:
-        selected = len(result.get("selected_gaps", []))
-        deferred = len(result.get("deferred_gaps", []))
+        selected = len(result.get("selected_gap_ids", []))
+        deferred = len(result.get("deferred_gap_ids", []))
         coverage = result.get("report_completeness_score", 0.0)
         summary = (
             f"[evaluate_portfolio] selected={selected}, deferred={deferred}, "
             f"coverage={coverage:.2f}"
         )
-    return {"current_action": None, "messages": [AIMessage(content=summary)]}
+        # selected > 0 表示有新 gap 被选中（有进展），重置计数；否则递增
+        idle = 0 if selected > 0 else int(state.get("consecutive_idle") or 0) + 1
+        # 有进展时一并重置强制收敛计数
+        forced_count = 0 if selected > 0 else int(state.get("forced_convergence_count") or 0)
+    return {"current_action": None, "consecutive_idle": idle, "forced_convergence_count": forced_count, "messages": [AIMessage(content=summary)]}
 
 
 def expand_node(state: dict) -> dict:
@@ -187,18 +241,24 @@ def expand_node(state: dict) -> dict:
     parent_id = action.get("parent_id")
     gap_ids = action.get("gap_ids")
     if not parent_id:
-        return {"current_action": None, "messages": [AIMessage(content="[expand_gaps] no parent_id")]}
+        return {"current_action": None, "consecutive_idle": int(state.get("consecutive_idle") or 0) + 1, "forced_convergence_count": int(state.get("forced_convergence_count") or 0), "messages": [AIMessage(content="[expand_gaps] no parent_id")]}
 
     result = gmt.expand_gaps.func(parent_id, gap_ids)
     if result.get("error"):
         summary = f"[expand_gaps] parent={action.get('query_handle', parent_id)} ERROR: {result['error']}"
+        idle = int(state.get("consecutive_idle") or 0) + 1
+        forced_count = int(state.get("forced_convergence_count") or 0)
     else:
-        created = len(result.get("queries", []))
+        created = len(result.get("created", []))
         summary = (
             f"[expand_gaps] parent={action.get('query_handle', parent_id)}, "
             f"created={created} child queries"
         )
-    return {"current_action": None, "messages": [AIMessage(content=summary)]}
+        # created > 0 表示产生了新子查询（有进展），重置计数；否则递增
+        idle = 0 if created > 0 else int(state.get("consecutive_idle") or 0) + 1
+        # 有进展时一并重置强制收敛计数
+        forced_count = 0 if created > 0 else int(state.get("forced_convergence_count") or 0)
+    return {"current_action": None, "consecutive_idle": idle, "forced_convergence_count": forced_count, "messages": [AIMessage(content=summary)]}
 
 
 def dispatch_node(state: dict) -> dict:
@@ -206,13 +266,15 @@ def dispatch_node(state: dict) -> dict:
     action = state.get("current_action") or {}
     query_id = action.get("query_id")
     if not query_id:
-        return {"current_action": None, "messages": [AIMessage(content="[dispatch_searcher] no query_id")]}
+        return {"current_action": None, "consecutive_idle": int(state.get("consecutive_idle") or 0) + 1, "forced_convergence_count": int(state.get("forced_convergence_count") or 0), "messages": [AIMessage(content="[dispatch_searcher] no query_id")]}
 
     source_preferences = action.get("source_preferences")
     prepared = prepare_search(query_id, source_preferences)
     if prepared.get("error"):
         return {
             "current_action": None,
+            "consecutive_idle": int(state.get("consecutive_idle") or 0) + 1,
+            "forced_convergence_count": int(state.get("forced_convergence_count") or 0),
             "messages": [AIMessage(
                 content=f"[dispatch_searcher] {action.get('query_handle', query_id)} prepare ERROR: {prepared['error']}"
             )],
@@ -233,6 +295,8 @@ def dispatch_node(state: dict) -> dict:
         fail_search(prepared["search_run_id"], prepared["query_id"], str(exc))
         return {
             "current_action": None,
+            "consecutive_idle": int(state.get("consecutive_idle") or 0) + 1,
+            "forced_convergence_count": int(state.get("forced_convergence_count") or 0),
             "messages": [AIMessage(
                 content=f"[dispatch_searcher] {action.get('query_handle', query_id)} FAILED: {exc}"
             )],
@@ -249,6 +313,13 @@ def dispatch_node(state: dict) -> dict:
             f"[dispatch_searcher] {action.get('query_handle', query_id)}: "
             f"status={status}, sources={sources}, documents={documents}, evidence={evidence}"
         )
+        # 成功的搜索产生新证据，重置空转计数与强制收敛计数
+        if status == "succeeded":
+            idle = 0
+            forced_count = 0
+        else:
+            idle = int(state.get("consecutive_idle") or 0) + 1
+            forced_count = int(state.get("forced_convergence_count") or 0)
     else:
         fail_search(
             prepared["search_run_id"],
@@ -259,13 +330,32 @@ def dispatch_node(state: dict) -> dict:
             f"[dispatch_searcher] {action.get('query_handle', query_id)}: "
             f"no submit result (recorded as failure)"
         )
-    return {"current_action": None, "messages": [AIMessage(content=summary)]}
+        idle = int(state.get("consecutive_idle") or 0) + 1
+        forced_count = int(state.get("forced_convergence_count") or 0)
+    return {"current_action": None, "consecutive_idle": idle, "forced_convergence_count": forced_count, "messages": [AIMessage(content=summary)]}
 
 
 def convergence_node(state: dict) -> dict:
-    """裁决收敛：检查目标覆盖、致命冲突和预算，决定继续还是授权报告."""
+    """裁决收敛：检查目标覆盖、致命冲突和预算，决定继续还是授权报告.
+
+    二级死锁防护：当 scheduler 因连续空转强制路由到此节点
+    （``action.reason`` 含 "forced convergence"）而 assess_convergence 仍建议
+    ``continue`` 时，说明研究未收敛但又无法取得进展（expand_gaps created=0、
+    portfolio selected=0）。此时::
+
+      - 第 1 次强制收敛（forced_convergence_count == 1）：重置 consecutive_idle
+        给一轮重试机会，可能只是暂时性卡顿。
+      - 第 2 次及以上强制收敛（forced_convergence_count >= 2）：将 research_state
+        覆盖为 LIMITED_REPORT_READY，授权生成 best-effort 报告，彻底打破
+        scheduler ⇄ convergence 的空转循环。
+    """
+    from tools import research_state
+
     action = state.get("current_action") or {}
     goal_id = action.get("goal_id")
+    is_forced = "forced convergence" in (action.get("reason") or "")
+    forced_count = int(state.get("forced_convergence_count") or 0)
+
     result = gmt.assess_convergence.func(goal_id)
     if result.get("error"):
         summary = f"[assess_convergence] ERROR: {result['error']}"
@@ -278,8 +368,29 @@ def convergence_node(state: dict) -> dict:
             f"[assess_convergence] recommendation={recommendation}, "
             f"converged={converged}, fatal_conflicts={fatal}, active_queries={active}"
         )
+        # 二级熔断：强制收敛后仍建议 continue 且已重试过 → 授权 best-effort 报告。
+        # 此时 research_state 通常仍为 RESEARCHING，迁移到 LIMITED_REPORT_READY 合法；
+        # 用 try/except 兜底，万一 assess_convergence 已迁移状态则不强制覆盖。
+        if is_forced and recommendation == "continue" and forced_count >= 2:
+            try:
+                research_state.update_goal({
+                    "research_state": research_state.LIMITED_REPORT_READY,
+                })
+                summary += (
+                    f" -> OVERRIDE to LIMITED_REPORT_READY "
+                    f"(forced_count={forced_count}, no progress possible)"
+                )
+            except ValueError as exc:  # 状态迁移不合法——说明已进入可报告状态
+                summary += f" -> override skipped (transition invalid: {exc})"
+
+    # 收敛节点始终重置 consecutive_idle，避免 scheduler 立即再次强制收敛。
+    # 非强制收敛（正常裁决）重置 forced_convergence_count；
+    # 强制收敛保留计数以累计触发二级熔断。
+    new_forced_count = forced_count if is_forced else 0
     return {
         "current_action": None,
+        "consecutive_idle": 0,
+        "forced_convergence_count": new_forced_count,
         "messages": [AIMessage(content=summary)],
     }
 

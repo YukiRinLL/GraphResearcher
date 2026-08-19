@@ -383,8 +383,11 @@ Atomic gaps to cover: {gaps}
 Reason: {reason}
 
 Requirements:
-- Inline the parent's concrete subject BY VALUE into every new query — but use only the LITERAL NOUN PHRASE of the subject, NOT any task or attribute words. Never reference another query: no "上述/前述/该/这些/the above".
-- Each query must be a SHORT, TIGHT natural-language search phrase composed of 1–3 concrete nouns (subject plus one gap-related dimension) only. No "authoritative" / "identification" / "disambiguation" / "museum" / "scholarly sources" / "principal facts" / "evidence" / "debate" / "analysis" / "summary" / "overview" / "context" / "authoritative" / "comprehensive" / "detailed" or other task/meta/format/source words.
+- Inline the parent's concrete subject BY VALUE into every new query — use only the LITERAL NOUN PHRASE of the subject (e.g., "Ring of Nestor", "Arthur Evans"), NOT any task or attribute words. Never reference another query: no "上述/前述/该/这些/the above".
+- Each query must be a SHORT, TIGHT natural-language search phrase composed of the entity name (1-3 words) plus ONE specific dimension keyword from the gap (e.g., "authenticity", "iconography", "provenance", "weight", "material", "scholar"). Total length: 3-6 words maximum.
+- Good query examples: "Ring of Nestor authenticity", "Ring of Nestor iconography scenes", "Arthur Evans Ring of Nestor", "Ring of Nestor Ashmolean Museum"
+- Bad query examples (AVOID): "Ring of Nestor research", "Ring of Nestor analysis study", "comprehensive study of Ring of Nestor", "Ring of Nestor scholarly sources evidence"
+- Do NOT use generic filler words: "authoritative", "identification", "disambiguation", "museum", "scholarly", "sources", "principal facts", "evidence", "debate", "analysis", "summary", "overview", "context", "comprehensive", "detailed", "research", "study", "investigation"
 - Cover only the assigned related gaps; do not repeat any existing Query.
 - Preserve forbidden domains with `-site:domain`; do not print exact forbidden URLs into the query.
 - Author the query text in the language of the research goal.

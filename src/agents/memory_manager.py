@@ -547,8 +547,15 @@ class MemoryManager:
         selected_by_owner: dict[str, list[str]] = {}
         for gap in gaps:
             owner_id = gap.get("expansion_parent_id")
-            if gap.get("status") == "selected" and owner_id:
+            if not owner_id:
+                continue
+            status = gap.get("status")
+            if status == "selected":
                 selected_by_owner.setdefault(owner_id, []).append(gap["id"])
+            elif status == "candidate":
+                owner_node = graph_tools.get_node(owner_id)
+                if owner_node.get("status") == "needs_expansion":
+                    selected_by_owner.setdefault(owner_id, []).append(gap["id"])
         for owner_id, gap_ids in selected_by_owner.items():
             owner = graph_tools.get_node(owner_id)
             if owner.get("type") not in {NodeType.QUERY.value, NodeType.USER_REQUEST.value}:
@@ -765,6 +772,7 @@ class MemoryManager:
                 estimated_search_rounds=1,
                 acceptance_criteria=objective.get("acceptance_criteria") or [],
                 expansion_mode="horizontal",
+                expansion_parent_id=goal["id"],
                 trigger_type="delivery_requirement",
                 trigger_refs=[objective["id"]],
                 recovery_objective_key=key,
@@ -1171,6 +1179,7 @@ class MemoryManager:
                     else []
                 ),
                 expansion_mode=expansion_mode,
+                expansion_parent_id=resolved,
                 trigger_type=trigger_type,
                 trigger_refs=trigger_refs,
             )
@@ -1580,13 +1589,17 @@ class MemoryManager:
                 if is_redundant_subject
                 else EXPANSION_UTILITY_THRESHOLD
             )
-            choose = fatal or (utility >= threshold)
-            new_status = "selected" if choose else "deferred_low_value"
             owners = [
                 graph_tools.get_node(owner_id)
                 for owner_id in {self._gap_owner_id(gap["id"]) for gap in group}
                 if owner_id
             ]
+            force_expand = any(
+                owner and owner.get("status") == "needs_expansion"
+                for owner in owners
+            )
+            choose = fatal or force_expand or (utility >= threshold)
+            new_status = "selected" if choose else "deferred_low_value"
             expansion_parent_id = (
                 max(owners, key=lambda item: float(item.get("priority") or 0.0))["id"]
                 if choose and owners else None
@@ -1710,7 +1723,7 @@ class MemoryManager:
         assigned_selected_gap_ids = {
             gap["id"]
             for gap in graph_tools.search_nodes("analysis", {"analysis_type": "gap"})
-            if gap.get("status") == "selected"
+            if gap.get("status") in {"selected", "candidate"}
             and gap.get("expansion_parent_id") == resolved
         }
         candidates = gap_ids or list(assigned_selected_gap_ids)
@@ -1718,8 +1731,16 @@ class MemoryManager:
             graph_tools.get_node(gid) for gid in candidates
             if gid in assigned_selected_gap_ids
             and graph_tools.get_node(gid).get("analysis_type") == "gap"
-            and graph_tools.get_node(gid).get("status") == "selected"
+            and graph_tools.get_node(gid).get("status") in {"selected", "candidate"}
         ]
+        processed_ids = {gap["id"] for gap in gaps}
+        for sid in assigned_selected_gap_ids - processed_ids:
+            node = graph_tools.get_node(sid)
+            if node and node.get("status") in {"selected", "candidate"}:
+                graph_tools.upsert_node(NodeType.ANALYSIS, {
+                    "status": "blocked",
+                    "resolution_reason": "gap not found or filtered during expansion",
+                }, sid)
         grouped: dict[tuple[str, str], list[dict]] = {}
         for gap in gaps:
             subject = str(gap.get("search_subject_key") or gap.get("gap_key") or gap["id"])
@@ -1826,6 +1847,11 @@ class MemoryManager:
             for key in objective_keys:
                 graph_tools.add_edge(child_id, objective_by_key[key]["id"], EdgeType.COVERS_OBJECTIVE)
             child = graph_tools.get_node(child_id)
+            for gap in group:
+                graph_tools.upsert_node(NodeType.ANALYSIS, {
+                    "status": "expanded",
+                    "resolution_reason": f"child query created: {child.get('handle')}",
+                }, gap["id"])
             created.append({
                 "id": child_id,
                 "handle": child.get("handle"),
@@ -1981,6 +2007,7 @@ class MemoryManager:
                     conflict_id=conflict["id"],
                     acceptance_criteria=["Find independent evidence that resolves or clearly scopes the conflict"],
                     expansion_mode="vertical",
+                    expansion_parent_id=gap_parent_id,
                     trigger_type="graph_evidence",
                     trigger_refs=[conflict["id"]],
                 )
