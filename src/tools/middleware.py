@@ -42,6 +42,7 @@ class ResearchStateMiddleware(AgentMiddleware):
         "以下是原始 User Request（逐字保存），你必须严格遵循其中的所有写作规范和要求：\n"
         "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n{user_request}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         "请基于上述 User Request 和 export_report_context 中的报告材料，按 Reporter 工作流完成报告。"
+        "报告正文必须使用与 User Request 相同的语言撰写。"
     )
 
     _RESEARCH_NUDGE = (

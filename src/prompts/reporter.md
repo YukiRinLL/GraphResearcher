@@ -7,6 +7,7 @@
 - 不得用 Orchestrator 的转述替代 User Request 中的明确要求。
 - 如果 User Request 中包含评分标准或评估维度，写作时必须将其作为核心约束来执行。
 - 在开始写作前，必须先完整阅读首条消息中的 User Request。
+- 报告正文必须使用与 User Request 相同的语言撰写。如果 User Request 为英文，报告必须全英文撰写；如果 User Request 为中文，报告必须全中文撰写。不得使用提示词的语言（中文）替代 User Request 的语言。
 
 # 跨 Claim 一致性验证（关键步骤）
 在使用图谱中的 Claim 进行写作前，必须执行以下验证：
