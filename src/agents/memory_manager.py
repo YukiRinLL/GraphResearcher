@@ -95,6 +95,11 @@ EXPANSION_UTILITY_THRESHOLD_REDUNDANT = 0.03
 MIN_SUCCESSFUL_ROUNDS_BEFORE_BEST_EFFORT = 4
 LOW_REALIZED_GAIN_THRESHOLD = 0.05
 LOW_GAIN_WINDOW = 2
+# When remaining search rounds drop to this threshold or below, the system
+# enters "completion mode": no new child queries are created, and queries
+# needing expansion are deferred so the remaining budget is spent finishing
+# in-flight work instead of starting new branches.
+_BUDGET_RESERVE_FOR_COMPLETION = 5
 _ACTIVE_QUERY_WORK_STATUSES = {
     "searching",
     "assessing",
@@ -570,24 +575,33 @@ class MemoryManager:
                 owner_node = graph_tools.get_node(owner_id)
                 if owner_node.get("status") == "needs_expansion":
                     selected_by_owner.setdefault(owner_id, []).append(gap["id"])
-        for owner_id, gap_ids in selected_by_owner.items():
-            owner = graph_tools.get_node(owner_id)
-            if owner.get("type") not in {NodeType.QUERY.value, NodeType.USER_REQUEST.value}:
-                continue
-            is_query = owner.get("type") == NodeType.QUERY.value
-            actions.append({
-                "action": "expand_gaps",
-                "parent_id": owner_id,
-                "query_id": owner_id if is_query else None,
-                "query_handle": owner.get("handle"),
-                "goal_id": None if is_query else owner_id,
-                "priority": owner.get("priority", 1.0 if not is_query else 0.0),
-                "required_for_parent": owner.get("required_for_parent", False),
-                "required_path": research_state.is_required_path(owner_id) if is_query else False,
-                "semantic_importance": owner.get("sem", 1.0 if not is_query else 0.0),
-                "gap_ids": gap_ids,
-                "reason": "globally selected gaps await a grounded search query",
-            })
+        # Completion mode: when remaining budget is at or below the reserve
+        # threshold, stop creating new child queries so the remaining rounds
+        # are spent finishing in-flight work.
+        _remaining_for_mode = research_state.remaining_budget()
+        in_completion_mode = (
+            _remaining_for_mode is not None
+            and _remaining_for_mode <= _BUDGET_RESERVE_FOR_COMPLETION
+        )
+        if not in_completion_mode:
+            for owner_id, gap_ids in selected_by_owner.items():
+                owner = graph_tools.get_node(owner_id)
+                if owner.get("type") not in {NodeType.QUERY.value, NodeType.USER_REQUEST.value}:
+                    continue
+                is_query = owner.get("type") == NodeType.QUERY.value
+                actions.append({
+                    "action": "expand_gaps",
+                    "parent_id": owner_id,
+                    "query_id": owner_id if is_query else None,
+                    "query_handle": owner.get("handle"),
+                    "goal_id": None if is_query else owner_id,
+                    "priority": owner.get("priority", 1.0 if not is_query else 0.0),
+                    "required_for_parent": owner.get("required_for_parent", False),
+                    "required_path": research_state.is_required_path(owner_id) if is_query else False,
+                    "semantic_importance": owner.get("sem", 1.0 if not is_query else 0.0),
+                    "gap_ids": gap_ids,
+                    "reason": "globally selected gaps await a grounded search query",
+                })
 
         if not any(action["action"] == "assess_query" for action in actions):
             if int(goal.get("evaluated_portfolio_revision") or 0) < int(goal.get("portfolio_revision") or 0):
@@ -621,11 +635,14 @@ class MemoryManager:
                     "reason": "no higher-priority workflow action remains",
                 })
 
+        # 优先完成已有查询（dispatch_searcher）再创建新查询（expand_gaps），
+        # 实现类似广度优先的子查询创建：各分支查询相对均匀推进，避免预算
+        # 耗尽时仍有大量活跃查询未完成。
         action_rank = {
             "assess_query": 0,
             "evaluate_research_portfolio": 1,
-            "expand_gaps": 2,
-            "dispatch_searcher": 3,
+            "dispatch_searcher": 2,
+            "expand_gaps": 3,
             "assess_convergence": 4,
         }
         actions.sort(key=lambda a: (
@@ -1212,7 +1229,18 @@ class MemoryManager:
         ):
             new_status = "sufficient"
         elif open_gap_ids:
-            new_status = "needs_expansion"
+            # Completion mode: if remaining budget is at or below the reserve
+            # threshold, defer expansion instead of creating new child queries
+            # so the remaining rounds are spent finishing in-flight work.
+            from tools import research_state
+            remaining_budget = research_state.remaining_budget()
+            if (
+                remaining_budget is not None
+                and remaining_budget <= _BUDGET_RESERVE_FOR_COMPLETION
+            ):
+                new_status = "deferred"
+            else:
+                new_status = "needs_expansion"
         else:
             new_status = "blocked"
 
@@ -1224,7 +1252,7 @@ class MemoryManager:
             covered=verdict.get("covered") or [],
             assessment_reason=verdict.get("reason") or "",
         )
-        if new_status in {"sufficient", "blocked"}:
+        if new_status in {"sufficient", "blocked", "deferred"}:
             self._propagate_child_completion(resolved, new_status)
         revision = self._bump_portfolio_revision()
         graph_tools.upsert_node(
@@ -2092,6 +2120,30 @@ class MemoryManager:
             and any(item.get("status") == "blocked" for item in must)
             and all(item.get("status") in {"satisfied", "blocked"} for item in must)
         )
+        remaining = research_state.remaining_budget(goal_id)
+
+        # Completion mode: when remaining budget is at or below the reserve
+        # threshold, defer queries that still need expansion so the remaining
+        # rounds are spent finishing in-flight searches rather than starting
+        # new branches.
+        if remaining is not None and remaining <= _BUDGET_RESERVE_FOR_COMPLETION:
+            for query in all_queries:
+                if query.get("status") == "needs_expansion":
+                    graph_tools.transition_query(query["id"], "deferred")
+                    self._propagate_child_completion(query["id"], "deferred")
+            all_queries = graph_tools.search_nodes("query", {})
+
+        # Budget-exhausted cleanup: when the budget is fully consumed, force
+        # all still-active and pending queries into a terminal state so the
+        # convergence gate can evaluate a clean tree.
+        if remaining is not None and remaining == 0:
+            for query in all_queries:
+                status = query.get("status")
+                if status in _ACTIVE_QUERY_WORK_STATUSES or status == "pending":
+                    graph_tools.transition_query(query["id"], "deferred")
+                    self._propagate_child_completion(query["id"], "deferred")
+            all_queries = graph_tools.search_nodes("query", {})
+
         active = [
             query for query in all_queries
             if query.get("status") in _ACTIVE_QUERY_WORK_STATUSES
@@ -2109,7 +2161,6 @@ class MemoryManager:
             query for query in all_queries
             if query.get("status") not in research_state.TERMINAL_QUERY_STATUSES
         ] if goal.get("scope_mode") == "exhaustive" else []
-        remaining = research_state.remaining_budget(goal_id)
 
         # Dimension-coverage gate: prevent premature convergence when the evidence
         # base is too thin across sources and expanded dimensions.
