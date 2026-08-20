@@ -453,8 +453,16 @@ Use the validated `criterion_results` as the sole Query-level record of whether
 an acceptance criterion is satisfied. If the supplied results leave an
 Objective criterion unmet, return that exact criterion in
 `unmet_acceptance_criteria` regardless of aggregate coverage scores.
-Raise coverage or confidence only when the supplied Claim/Evidence/Conflict and
-Source fields substantiate the Objective; do not fill missing facts from memory.
+Raise coverage or confidence when the supplied Claim/Evidence/Conflict and
+Source fields substantiate the Objective, directly or indirectly; do not fill
+missing facts from memory.
+Allow indirect and inferential evidence to contribute to coverage: when
+multiple pieces of evidence jointly imply a fact, or when a source discusses
+the subject from a related angle that reasonably supports the criterion,
+count that as partial coverage. Do not require every criterion to have a
+single dedicated source; convergent evidence from different angles is
+sufficient. A criterion is met when the available evidence, taken together,
+reasonably supports it—even if no single source states it verbatim.
 
 Return only JSON:
 {
