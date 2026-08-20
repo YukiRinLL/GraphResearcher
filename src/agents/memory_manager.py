@@ -2342,10 +2342,6 @@ class MemoryManager:
             "sources": ("Source", lambda item: bool(_first(item, "url"))),
             "documents": ("Document", lambda item: bool(_first(item, "document_summary", "summary_zh", "summary", "text", "content"))),
             "statements": ("Statement", lambda item: bool(_first(item, "statement", "text_zh", "text"))),
-            # Legacy packages used ``claims`` for document-bound extracted
-            # statements. Treat them as Statement refs at ingest time; Claim
-            # nodes are created later by normalize_claims().
-            "claims": ("Statement", lambda item: bool(_first(item, "statement", "text_zh", "text"))),
             "evidence": ("Evidence", lambda item: bool(_first(item, "statement", "evidence_text", "text_zh", "text"))),
         }
         for section, (node_type, valid) in sections.items():
