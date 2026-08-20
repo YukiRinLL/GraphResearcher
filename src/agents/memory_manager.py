@@ -117,6 +117,13 @@ _GAP_CATEGORIES = {
 _MIN_EVIDENCE_FOR_CONVERGENCE = 15
 _MIN_SOURCES_FOR_CONVERGENCE = 5
 _MIN_EXPANDED_QUERIES_FOR_CONVERGENCE = 3
+# Depth-breadth balance: gradually discount the marginal utility of gaps on
+# deep query chains so the portfolio prefers breadth over excessive vertical
+# drilling. Not a hard cap — a gap with high raw utility (e.g. fatal conflict)
+# can still be selected at depth 6; it just needs ~2x the raw utility of a
+# shallow gap to clear the same threshold.
+_DEPTH_FREE_TIER = 3          # levels 1-3 incur no penalty (root + 2 expansions)
+_DEPTH_PENALTY_FACTOR = 0.3   # each level beyond free tier: discount = 1/(1+0.3*n)
 
 
 def _strip_internal_fields(node: dict) -> dict:
@@ -1318,6 +1325,26 @@ class MemoryManager:
             })
         return results
 
+    def _query_depth(self, query_id: str) -> int:
+        """Return the depth of a query in the query tree (root initial queries = 1).
+
+        Counts Query nodes along the ancestor chain (including ``query_id``
+        itself) by following inbound ``HAS_QUERY`` / ``PARENT_OF`` edges until
+        the ``user_request`` goal is reached. Used for depth-breadth balancing
+        so the portfolio prefers breadth expansion on shallower parents.
+        """
+        depth = 0
+        current = query_id
+        seen: set[str] = set()
+        while current and current not in seen:
+            seen.add(current)
+            node = graph_tools.get_node(current)
+            if not node or node.get("type") != NodeType.QUERY.value:
+                break
+            depth += 1
+            current = graph_tools.get_query_parent(current)
+        return depth
+
     def _gap_key_in_ancestors(self, query_id: str, gap_key: str) -> bool:
         """Return whether a gap fingerprint already exists on the ancestor path."""
         current = graph_tools.get_query_parent(query_id)
@@ -1589,7 +1616,19 @@ class MemoryManager:
             rounds = max(1, max(int(gap.get("estimated_search_rounds") or 1) for gap in group))
             benefit = 0.7 * deficit + 0.2 * decision_impact + 0.1 * confidence_gain
             min_floor = 0.04 if (deficit > 0 or decision_impact > 0 or confidence_gain > 0) else 0.0
-            utility = max(benefit / rounds, min_floor)
+            owner_ids = {self._gap_owner_id(gap["id"]) for gap in group}
+            # Depth-breadth balance: discount utility for gaps on deep query
+            # chains so breadth expansion wins ties; fatal / force_expand
+            # bypass this via the ``choose`` clause below.
+            max_owner_depth = max(
+                (self._query_depth(oid) for oid in owner_ids if oid),
+                default=0,
+            )
+            depth_discount = 1.0 / (
+                1.0 + _DEPTH_PENALTY_FACTOR
+                * max(0, max_owner_depth - _DEPTH_FREE_TIER)
+            )
+            utility = max(benefit / rounds, min_floor) * depth_discount
             fatal = any(gap.get("gap_category") == "fatal_conflict" for gap in group)
             threshold = (
                 EXPANSION_UTILITY_THRESHOLD_REDUNDANT
@@ -1598,7 +1637,7 @@ class MemoryManager:
             )
             owners = [
                 graph_tools.get_node(owner_id)
-                for owner_id in {self._gap_owner_id(gap["id"]) for gap in group}
+                for owner_id in owner_ids
                 if owner_id
             ]
             force_expand = any(
@@ -1616,6 +1655,8 @@ class MemoryManager:
                     "status": new_status,
                     "marginal_utility": utility,
                     "objective_deficit": deficit,
+                    "depth_discount": depth_discount,
+                    "owner_depth": max_owner_depth,
                     "expansion_parent_id": expansion_parent_id,
                     "expansion_mode": mode,
                     "resolution_reason": None if choose else "global marginal utility below expansion threshold",
@@ -2635,15 +2676,64 @@ class MemoryManager:
             self._bump_portfolio_revision()
         else:
             attempts = int(query.get("search_attempts") or 0)
-            next_status = "blocked" if attempts >= 2 else "pending"
-            transition_attributes = (
-                {"block_reason": "two SearchRuns completed without valid Source and Evidence"}
-                if next_status == "blocked"
-                else {}
-            )
-            graph_tools.transition_query(resolved_query_id, next_status, **transition_attributes)
-            if next_status == "blocked":
+            if attempts >= 2:
+                # Second attempt also returned empty → blocked.
+                # Restore the original text if a variant was used on attempt 2.
+                original_text = query.get("original_text")
+                if original_text:
+                    graph_tools.upsert_node(
+                        NodeType.QUERY,
+                        {"text": original_text},
+                        resolved_query_id,
+                    )
+                graph_tools.transition_query(
+                    resolved_query_id,
+                    "blocked",
+                    block_reason="two SearchRuns completed without valid Source and Evidence",
+                )
                 self._propagate_child_completion(resolved_query_id, "blocked")
+            else:
+                # First attempt returned empty (all results rejected as
+                # duplicates).  Reformulate the query text so the second
+                # SearchRun searches from a different angle instead of
+                # repeating the identical Tavily call.
+                original_text = query.get("original_text") or query.get("text", "")
+                existing_source_titles: list[str] = []
+                try:
+                    all_sources = graph_tools.search_nodes("source", {})
+                    existing_source_titles = [
+                        (s.get("title") or s.get("url") or "")
+                        for s in all_sources
+                        if (s.get("title") or s.get("url"))
+                    ][:10]
+                except Exception:
+                    pass
+                goal_node = graph_tools.get_node(
+                    graph_tools.get_query_parent(resolved_query_id) or ""
+                ) or {}
+                research_goal = goal_node.get("research_goal") or goal_node.get("request") or ""
+                new_text = self._reformulate_query_text(
+                    original_text, research_goal, existing_source_titles
+                )
+                if new_text:
+                    logger.info(
+                        "Reformulating query %s: '%s' → '%s'",
+                        resolved_query_id, original_text, new_text,
+                    )
+                    graph_tools.upsert_node(
+                        NodeType.QUERY,
+                        {
+                            "text": new_text,
+                            "original_text": original_text,
+                        },
+                        resolved_query_id,
+                    )
+                else:
+                    logger.info(
+                        "Could not reformulate query %s ('%s'); retrying as-is",
+                        resolved_query_id, original_text,
+                    )
+                graph_tools.transition_query(resolved_query_id, "pending")
 
         graph_tools.save_graph()
         result = {
@@ -2977,6 +3067,33 @@ class MemoryManager:
                         "objective_keys": [],
                     }]
         return queries[:max_new]
+
+    def _reformulate_query_text(
+        self,
+        original_text: str,
+        research_goal: str,
+        existing_sources: list,
+    ) -> Optional[str]:
+        """Reformulate a query whose search returned only duplicate results.
+
+        Asks the LLM to produce a variant query that searches from a different
+        angle, to attract new sources that the original phrasing missed.
+
+        Returns the new query text, or ``None`` if the LLM output is invalid or
+        identical to the original.
+        """
+        prompt = (
+            mm_prompts.reformulate_query
+            .replace("{original_query}", original_text or "")
+            .replace("{research_goal}", research_goal or "")
+            .replace("{existing_sources}", json.dumps(existing_sources or [], ensure_ascii=False))
+        )
+        parsed = self._invoke_json(prompt)
+        new_text = (parsed.get("query_text") or "").strip()
+        if new_text and not _query_text_issue(new_text):
+            if _normalize_query_text(new_text) != _normalize_query_text(original_text):
+                return new_text
+        return None
 
     def extract_content(self, content: str) -> dict:
         """Extract keywords, statements and a summary from document text.

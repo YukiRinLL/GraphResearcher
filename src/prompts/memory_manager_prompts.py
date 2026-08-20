@@ -397,6 +397,27 @@ Return only valid JSON, no Markdown, at most {max_new} queries:
 {"queries": [{"text": "...", "acceptance_criteria": ["..."]}]}
 """
 
+reformulate_query = """You are the Query Reformulator for GraphResearcher.
+
+A web-search query returned results but all were rejected as duplicates of already-collected evidence. Reformulate the query to search from a different angle and potentially retrieve new sources.
+
+Original query: {original_query}
+Research goal: {research_goal}
+Previously found source titles (do NOT target these again): {existing_sources}
+
+Rules:
+- Keep the same core entity/subject as the original query.
+- Change the dimension keyword or perspective to approach the topic from a different angle.
+- Use synonyms, related terms, or more specific sub-topics to attract new sources.
+- Keep it short: 3-6 words, natural-language search phrase.
+- Write in the same language as the original query.
+- Do NOT use generic filler words like "research", "analysis", "study", "evidence", "sources".
+- Do NOT merely add or remove a single word; genuinely change the search angle.
+
+Return only valid JSON:
+{"query_text": "..."}
+"""
+
 assess_convergence = """You are the Graph Manager for GraphResearcher. Classify unresolved conflicts before the deterministic Objective-based convergence gate runs.
 
 FATAL conflicts directly threaten a report-level conclusion and must receive one targeted resolution attempt. Non-fatal conflicts can be disclosed and explained in the report.

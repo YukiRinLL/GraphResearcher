@@ -454,9 +454,9 @@ def main() -> None:
         "-r",
         "--max-rounds",
         type=int,
-        default=12,
+        default=30,
         help="Maximum number of Searcher dispatches (search rounds); 0 means no limit. "
-        "Default: 12 — fewer coarse initial queries leave budget for vertical/horizontal expansion.",
+        "Default: 30 — leaves ample budget for depth-breadth balanced expansion.",
     )
     parser.add_argument(
         "-o",
