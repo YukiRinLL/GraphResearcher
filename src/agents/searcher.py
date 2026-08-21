@@ -326,11 +326,17 @@ LOGIN_WALL_HINTS = (
     "sign in", "sign up", "log in", "login", "register", "create an account",
     "access through your institution", "continue with google", "continue with orcid",
     "enjoying our latest content", "access the most recent journalism",
-    "rights and permissions", "bibliographic information",
     "marc record", "library catalog record", "catalog record",
     "borrow", "viewability", "full text unavailable", "limited preview",
     "subscribe", "subscription required", "buy now", "unlock",
 )
+
+# NOTE: "rights and permissions" and "bibliographic information" were removed from
+# LOGIN_WALL_HINTS. Both are normal phrases on scholarly publisher pages (Cambridge
+# Core, journal sites) and caused legitimate article pages to be flagged as login
+# walls when the Tavily snippet was short. Catalog-card signal phrases ("marc record",
+# "library catalog record", "catalog record", "viewability", "borrow") are kept so
+# HathiTrust catalog cards accumulate hits>=3 and are forwarded to the analyzer.
 
 CATALOG_BOOLEAN_HINTS = (
     "catalog.hathitrust.org", "worldcat.org", "librarything.com", "goodreads.com",
@@ -338,12 +344,16 @@ CATALOG_BOOLEAN_HINTS = (
 
 
 def _looks_like_login_wall_or_catalog(source: dict, raw_content: str) -> bool:
-    """Heuristic: reject sources with content dominated by login walls / catalog cards."""
-    url = str(source.get("url") or "").lower()
-    if any(domain in url for domain in CATALOG_BOOLEAN_HINTS):
-        return True
+    """Heuristic: flag sources whose body is dominated by login-wall / catalog boilerplate.
+
+    Catalog domains and short pages are NO LONGER hard-rejected here. They are forwarded
+    to the analyzer; sources that fail extraction are still registered as source nodes
+    (without evidence) by _merge_source_packets. Only pages with login-wall boilerplate
+    and too little extractable body text are flagged, so the caller can skip the strict
+    statement/evidence binding path and fall back to source-only registration.
+    """
     text = (raw_content or "").lower()
-    if len(text) < 400:
+    if not text:
         return True
     hits = sum(1 for hint in LOGIN_WALL_HINTS if hint in text)
     if hits >= 3:
@@ -351,6 +361,8 @@ def _looks_like_login_wall_or_catalog(source: dict, raw_content: str) -> bool:
     if hits == 2 and len(text) < 1200:
         return True
     if hits == 1 and len(text) < 700:
+        return True
+    if hits == 0 and len(text) < 400:
         return True
     return False
 
@@ -407,11 +419,36 @@ def _merge_source_packets(search_results: dict, packets: list[dict]) -> dict:
 
         document = packet.get("document") if isinstance(packet.get("document"), dict) else {}
         summary = str(document.get("document_summary") or "").strip()
-        statements = _nonempty_items(packet.get("statements"))
-        evidence_items = _nonempty_items(packet.get("evidence"))
-        if not summary or not statements or not evidence_items or packet.get("conflicts"):
+        # 关卡C：只有 analyzer 完全无法生成来源概述时才丢弃。
+        # 有 summary 但缺 statements/evidence 的来源仍注册为可引用来源
+        # （带 document_summary），只是不写结构化命题绑定。
+        if not summary or packet.get("conflicts"):
             continue
 
+        # 先注册 source + document（基于 analyzer 的来源概述）
+        source_ref = f"s{len(package['sources']) + 1}"
+        document_ref = f"d{len(package['documents']) + 1}"
+        source_meta = packet.get("source") if isinstance(packet.get("source"), dict) else {}
+        package["sources"].append({
+            "local_ref": source_ref,
+            "url": source.get("url"),
+            "title": source.get("title"),
+            "source_type": source_meta.get("source_type") or "other",
+            "published_at": source_meta.get("published_at") or source.get("published_at"),
+        })
+        package["documents"].append({
+            "local_ref": document_ref,
+            "document_summary": summary,
+            "source_ref": source_ref,
+        })
+
+        statements = _nonempty_items(packet.get("statements"))
+        evidence_items = _nonempty_items(packet.get("evidence"))
+        # 无完整 statement-evidence 绑定时，source+document 已注册，跳过绑定阶段
+        if not statements or not evidence_items:
+            continue
+
+        # 关卡D：local_ref / statement_refs 格式校验；失败则跳过绑定，保留 source+document
         statement_local_refs = [str(item.get("local_ref") or "").strip() for item in statements]
         evidence_local_refs = [str(item.get("local_ref") or "").strip() for item in evidence_items]
         if (
@@ -433,22 +470,6 @@ def _merge_source_packets(search_results: dict, packets: list[dict]) -> dict:
             or set(ref for refs in evidence_statement_refs for ref in refs) != statement_ref_set
         ):
             continue
-
-        source_ref = f"s{len(package['sources']) + 1}"
-        document_ref = f"d{len(package['documents']) + 1}"
-        source_meta = packet.get("source") if isinstance(packet.get("source"), dict) else {}
-        package["sources"].append({
-            "local_ref": source_ref,
-            "url": source.get("url"),
-            "title": source.get("title"),
-            "source_type": source_meta.get("source_type") or "other",
-            "published_at": source_meta.get("published_at") or source.get("published_at"),
-        })
-        package["documents"].append({
-            "local_ref": document_ref,
-            "document_summary": summary,
-            "source_ref": source_ref,
-        })
 
         local_statement_map: dict[str, str] = {}
         for statement, local_ref in zip(statements, statement_local_refs):

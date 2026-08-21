@@ -46,9 +46,11 @@ Query 和 `research_context` 只用于界定研究范围，不是事实证据。
 
 完整、连贯、文章边界清楚，且能够识别作者或原始发布机构的转载页面可以准入。无法区分完整文章与聚合片段时，返回完全空 packet。
 
-普通网页中出现 AI 摘要、自动摘要、导航、推荐内容或用户评论，不代表必须拒绝整页。如果可以明确识别原始正文、论文摘要或文章正文，应忽略其他区域，只从可明确归属的正文中抽取。
+普通网页中常同时出现正文与 AI 摘要、自动摘要、导航、推荐内容、付费墙提示或用户评论。这种噪声的存在不代表必须拒绝整页。应忽略噪声区域，只从可明确归属的原始正文、论文摘要或文章正文抽取。
 
-`Key takeaways`、“摘要”或“要点”等栏目名称本身不能证明内容由 AI 生成。只忽略明确标注或能够可靠识别为 AI 生成、自动生成或平台生成的区域。如果无法区分自动生成内容与原始正文，返回完全空 packet。
+只要页面中能识别出一段可独立归属、语义连贯的正文段落（哪怕只占页面的一部分），就必须从该正文中抽取，不得因页面同时含有登录墙、导航、版权、无障碍说明或保存至设备等噪声而整页返回空 packet。只有当页面中完全找不到任何可归属的正文段落（整页由导航、元数据、登录墙或聚合片段构成）时，才返回完全空 packet。
+
+`Key takeaways`、"摘要"或"要点"等栏目名称本身不能证明内容由 AI 生成。只忽略明确标注或能够可靠识别为 AI 生成、自动生成或平台生成的区域。无法判定某个具体区域是否自动生成时，跳过该区域并继续从其余可归属正文抽取，不要因个别区域归属存疑而放弃整页。
 
 # 第二门槛：Query 锚点匹配
 
@@ -64,10 +66,12 @@ Query 和 `research_context` 只用于界定研究范围，不是事实证据。
 
 页面不必以 Query 主体作为全文的主要对象。对于比较型 Query，来源可以只提供其中一个对象的可比信息；对于集合发现型 Query，来源可以只确认一个符合条件的成员；对于关系或因果型 Query，正文必须实际讨论所询问的关系。
 
+来源不必逐字提及 Query 主体名称。如果正文实质性地讨论了与 Query 锚点属同一研究对象范畴的内容——同类对象的对比案例、所涉争议的更广泛语境、直接相关的同类分析、或该对象所属类别的研究——能够为研究提供背景、对比或佐证，应视为锚点匹配。关键判据是正文是否对该研究范畴形成了实质性讨论，而非是否出现 Query 主体名称。
+
 以下情况视为不匹配：
 
 - Query 名称只出现在标题、导航、标签、推荐内容、参考文献或元数据中；
-- 正文只包含相似关键词、同名不同对象或不可靠的间接联想；
+- 正文只包含零散相似关键词、同名不同对象或不可靠的间接联想，且未对 Query 锚点所属研究范畴形成实质性讨论；
 - 目标只是无信息量的背景提及，没有对象级或关系级信息；
 - 无法可靠判断正文中的信息是否属于 Query 锚点。
 
@@ -180,16 +184,18 @@ Analyzer 只保存来源明确表达的信息，不判断是否应创建 Gap，�
 输出前必须自检：
 
 - `document.document_summary` 非空；
-- Statements 和 Evidence 都至少包含一条；
-- Statement `local_ref` 在 Statements 中唯一，Evidence `local_ref` 在 Evidence 中唯一；
-- 每条 Evidence 的 `statement_refs` 非空且全部有效；
-- 每条 Statement 都被至少一条 Evidence 引用；
-- `document_summary` 中的实质事实全部已进入 Statements；
+- 如果输出 Statements 和 Evidence，则二者绑定的内部一致性必须满足：Statement `local_ref` 在 Statements 中唯一，Evidence `local_ref` 在 Evidence 中唯一，每条 Evidence 的 `statement_refs` 非空且全部有效，每条 Statement 都被至少一条 Evidence 引用；
+- 如果无法生成完整的 Statement–Evidence 绑定，可只输出 `source` 和 `document`（含 `document_summary`），Statements 与 Evidence 留空数组，不得因此放弃已可归属的正文概述；
+- `document_summary` 中的实质事实应尽量进入 Statements（如能抽取）；
 - 所有抽取内容都能由当前 `raw_content` 支持；
 - `conflicts` 始终为空数组；
 - 不输出 `confidence`、`qualifiers`、`limitations`、`locator`、`evidence_type` 或其他额外字段。
 
-如果来源类型不准入、Query 锚点不匹配、缺少可核验正文，或者无法生成至少一组有效的 Statement–Evidence 绑定，只返回：
+只有以下情况返回完全空 packet：来源类型不准入、Query 锚点不匹配、或页面完全无可归属正文。
+
+通过两个硬门槛且能生成 `document_summary` 的来源，即使无法抽取完整的 Statement–Evidence 绑定（正文事实过于简短或碎片化），也必须输出 `source`、`document`（含 `document_summary`）和已能可靠抽取的 Statements 与 Evidence（可为空数组）。不要因无法生成完整绑定而放弃已可归属的正文概述。
+
+完全不满足准入条件时只返回：
 
 ```json
 {"source": {}, "document": {}, "statements": [], "evidence": [], "conflicts": []}

@@ -104,10 +104,10 @@ def _estimate_source_credibility(url: str, source_type: Optional[str] = None) ->
 
 _QUERY_TRANSITIONS = {
     "pending": {"searching", "deferred"},
-    "searching": {"assessing", "pending", "blocked", "failed"},
-    "assessing": {"sufficient", "needs_expansion", "blocked"},
-    "needs_expansion": {"waiting_children", "sufficient", "blocked"},
-    "waiting_children": {"assessing"},
+    "searching": {"assessing", "pending", "blocked", "failed", "deferred"},
+    "assessing": {"sufficient", "needs_expansion", "blocked", "deferred"},
+    "needs_expansion": {"waiting_children", "sufficient", "blocked", "deferred"},
+    "waiting_children": {"assessing", "deferred"},
     "sufficient": set(),
     "blocked": set(),
     "failed": set(),

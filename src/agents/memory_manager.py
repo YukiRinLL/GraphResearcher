@@ -119,8 +119,10 @@ _GAP_CATEGORIES = {
 # Dimension-coverage gate: prevent premature convergence when evidence/sources/
 # expanded queries are too thin. Thresholds calibrated from V25 baseline
 # (3 sources, 14 queries, 33 evidence → 21.65% coverage).
+# source threshold lowered 5→3: 3 high-quality real sources should converge,
+# not be forced into budget-exhausted by a numeric gate that invited shells.
 _MIN_EVIDENCE_FOR_CONVERGENCE = 15
-_MIN_SOURCES_FOR_CONVERGENCE = 5
+_MIN_SOURCES_FOR_CONVERGENCE = 3
 _MIN_EXPANDED_QUERIES_FOR_CONVERGENCE = 3
 # Depth-breadth balance: gradually discount the marginal utility of gaps on
 # deep query chains so the portfolio prefers breadth over excessive vertical
