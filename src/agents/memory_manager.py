@@ -1553,13 +1553,13 @@ class MemoryManager:
             return {"error": "Portfolio evaluation is only allowed while researching"}
         objectives = self.get_research_objectives(goal_id)
         queries = graph_tools.search_nodes("query", {})
-        # Collect candidate gaps early so we can build the branch summary that
-        # feeds the LLM's global balancing decision before it scores gaps.
-        candidate_gaps = [
+        # Collect active gaps early so the branch summary sees every in-flight
+        # gap owner, not just candidate/selected ones.
+        active_gaps = [
             gap for gap in graph_tools.search_nodes("analysis", {"analysis_type": "gap"})
-            if gap.get("status") in {"candidate", "selected"}
+            if gap.get("status") in research_state.OPEN_GAP_STATUSES
         ]
-        branch_summary_text = self._build_branch_summary(candidate_gaps)
+        branch_summary_text = self._build_branch_summary(active_gaps)
         prompt = (
             mm_prompts.evaluate_portfolio
             .replace("{objectives}", json.dumps(objectives, ensure_ascii=False))
@@ -1575,11 +1575,11 @@ class MemoryManager:
             if isinstance(item, dict) and item.get("objective_key")
         }
         # Parse the LLM's branch-level cool-down / pause decisions and build
-        # the owner whitelist that gates gap expansion this round. Owners not
-        # mentioned by the LLM default to allow (continue_expansion).
+        # the owner whitelist that gates gap expansion this round.
         branch_decisions_raw = verdict.get("branch_decisions") or []
         allowed_owners: set[str] = set()
         cooled_down_owners: dict[str, str] = {}
+        parsed_owner_ids: set[str] = set()
         for item in branch_decisions_raw:
             if not isinstance(item, dict):
                 continue
@@ -1587,10 +1587,20 @@ class MemoryManager:
             action = str(item.get("action") or "").strip().lower()
             if not owner_id or not action:
                 continue
+            parsed_owner_ids.add(owner_id)
             if action == "continue_expansion":
                 allowed_owners.add(owner_id)
             elif action in {"cool_down", "pause"}:
                 cooled_down_owners[owner_id] = action
+        active_owner_ids = {
+            owner_id
+            for owner_id in (self._gap_owner_id(gap["id"]) for gap in active_gaps)
+            if owner_id
+        }
+        branch_decisions_complete = active_owner_ids.issubset(parsed_owner_ids)
+        if not branch_decisions_complete:
+            for owner_id in sorted(active_owner_ids - parsed_owner_ids):
+                cooled_down_owners[owner_id] = "cool_down"
         objective_by_key: dict[str, dict] = {}
         objective_deltas: dict[str, tuple[float, float]] = {}
         for objective in objectives:
@@ -1690,9 +1700,9 @@ class MemoryManager:
                     if str(edge.get("type", "")).lower() == "searched_by":
                         graph_tools.upsert_node(NodeType.SEARCH_RUN, gain_attributes, edge["target"])
 
-        # Reuse the candidate gaps collected before the LLM call so the
+        # Reuse the active gaps collected before the LLM call so the
         # branch summary and the selection loop see the same set.
-        candidates = candidate_gaps
+        candidates = active_gaps
         selected: list[dict] = []
         deferred: list[dict] = []
         existing_subjects = {
@@ -1758,49 +1768,56 @@ class MemoryManager:
                 for owner in owners
             )
             choose = fatal or force_expand or (utility >= threshold)
-            # Apply branch-level cool-down: if the LLM marked ALL owners of
-            # this gap group as cool_down or pause, defer this round. This
-            # overrides local force_expand (needs_expansion) because the global
-            # balancer sees depth and novelty signals the per-query assessor
-            # cannot. Fatal conflicts still bypass cool-down to protect
-            # report-level conclusions. When the LLM provided no whitelist
+            # Apply branch-level cool-down at per-gap granularity: each gap is
+            # deferred iff its own owner is marked cool_down/pause (and the
+            # group is not a fatal conflict). This prevents a cooled owner from
+            # piggybacking on a non-cooled owner that shares the same subject.
+            # Fatal conflicts bypass cool-down to protect report-level
+            # conclusions. When the LLM provided no whitelist
             # (allowed_owners empty), fall back to pure marginal-utility logic.
-            cool_down_applies = (
-                choose
-                and not fatal
-                and bool(allowed_owners)
-                and bool(owner_ids)
-                and not (owner_ids & allowed_owners)
-            )
-            if cool_down_applies:
-                choose = False
-                new_status = "deferred_branch_cool_down"
-                resolution_reason = (
-                    f"branch cooled down by global portfolio balancer "
-                    f"({', '.join(sorted(cooled_down_owners.get(oid, 'cool_down') for oid in owner_ids))})"
-                )
-            else:
-                new_status = "selected" if choose else "deferred_low_value"
-                resolution_reason = (
-                    None if choose
-                    else "global marginal utility below expansion threshold"
-                )
-            expansion_parent_id = (
+            has_whitelist = bool(allowed_owners)
+            group_chosen_owner: Optional[str] = (
                 max(owners, key=lambda item: float(item.get("priority") or 0.0))["id"]
                 if choose and owners else None
             )
             for gap in group:
+                gap_owner_id = self._gap_owner_id(gap["id"])
+                gap_cooled = (
+                    choose
+                    and not fatal
+                    and has_whitelist
+                    and bool(gap_owner_id)
+                    and gap_owner_id not in allowed_owners
+                )
+                if gap_cooled:
+                    gap_status = "deferred_branch_cool_down"
+                    gap_reason = (
+                        f"branch cooled down by global portfolio balancer "
+                        f"({cooled_down_owners.get(gap_owner_id, 'cool_down')})"
+                    )
+                    gap_parent = None
+                else:
+                    gap_status = "selected" if choose else "deferred_low_value"
+                    gap_reason = (
+                        None if choose
+                        else "global marginal utility below expansion threshold"
+                    )
+                    gap_parent = group_chosen_owner
                 graph_tools.upsert_node(NodeType.ANALYSIS, {
-                    "status": new_status,
+                    "status": gap_status,
                     "marginal_utility": utility,
                     "objective_deficit": deficit,
                     "depth_discount": depth_discount,
                     "owner_depth": max_owner_depth,
-                    "expansion_parent_id": expansion_parent_id,
+                    "expansion_parent_id": gap_parent,
                     "expansion_mode": mode,
-                    "resolution_reason": resolution_reason,
+                    "resolution_reason": gap_reason,
                 }, gap["id"])
-                (selected if choose else deferred).append(graph_tools.get_node(gap["id"]))
+                updated = graph_tools.get_node(gap["id"])
+                if gap_status == "selected":
+                    selected.append(updated)
+                else:
+                    deferred.append(updated)
 
         for query in queries:
             if query.get("status") == "needs_expansion":
