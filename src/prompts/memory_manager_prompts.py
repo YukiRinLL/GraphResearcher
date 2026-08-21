@@ -475,6 +475,13 @@ Return only JSON:
       "unmet_acceptance_criteria": ["exact unmet criterion copied from the Research contract"],
       "reason": "short evidence-based explanation"
     }
+  ],
+  "branch_decisions": [
+    {
+      "owner_id": "query-id-from-branch-summary",
+      "action": "continue_expansion|cool_down|pause",
+      "reason": "short justification grounded in branch_summary signals"
+    }
   ]
 }
 
@@ -484,9 +491,55 @@ still-unmet acceptance criteria exactly from the Research contract; do not
 paraphrase or invent criteria. Return an empty unmet list when all criteria are
 supported.
 
+## Branch-level global balancing
+
+You are also acting as the global search-tree balancer. The
+`branch_summary` block below lists every active owner (Query whose status is
+still in flight) with its current depth in the query tree, how many child
+queries it has already spawned, how many of its gaps are still open, its last
+sufficiency score, and the recent per-round novelty trend across the whole run.
+
+For each owner in `branch_summary`, emit one `branch_decisions` entry with:
+- `action="continue_expansion"`: the owner is shallow, still has substantive
+  open gaps, and the search has not clearly stalled on it. Normal expansion.
+- `action="cool_down"`: the owner has grown too deep, its sufficiency score
+  has stalled, or recent novelty on this branch is diminishing. Do NOT expand
+  it this round; let other branches catch up. Soft pause.
+- `action="pause"`: the owner is sufficiently covered or clearly exhausted;
+  do not expand it again in future rounds. Hard stop.
+
+Decision heuristics (apply together, not as a single threshold):
+- Depth: deeper chains tend to yield less new information. When an owner's
+  depth is large relative to other active owners, prefer cool_down so
+  shallower branches get search budget. Only keep expanding a deep owner if
+  it still has substantive open gaps AND its sufficiency_score is still
+  rising.
+- Sufficiency stagnation: if `last_sufficiency` has stayed low while the owner
+  already has many child_queries, prefer cool_down so breadth wins. If
+  sufficiency is high and open_gaps is zero, prefer pause.
+- Novelty trend: when the recent novelty ratios are low, the whole run is
+  yielding few new facts; prefer cooling down the owners that are deepest or
+  have the most child_queries.
+- Relative balance: compare owners against each other. An owner that is
+  markedly deeper or has markedly more child_queries than its peers is a
+  cool_down candidate even if its own absolute numbers are not extreme.
+- Always emit a decision for every owner listed in `branch_summary`. Copy the
+  `owner_id` verbatim; do not invent owner ids not present in the summary.
+- An owner with open_gaps=0 and high sufficiency should be `pause`.
+- An owner with open_gaps=0 but low sufficiency should be `cool_down`, not
+  `pause`, because new gaps may still be discovered by other branches.
+
+The dispatcher will only allow gap expansion for owners marked
+`continue_expansion`. Owners marked `cool_down` or `pause` have their
+candidate gaps deferred for this round, preventing any single branch from
+growing arbitrarily deep while shallower branches remain unexplored.
+
 Research contract:
 {objectives}
 
 Query summaries:
 {queries}
+
+Branch summary (one line per active owner):
+{branch_summary}
 """

@@ -1485,6 +1485,65 @@ class MemoryManager:
 
         return bool(linked_queries) and all(complete(query) for query in linked_queries)
 
+    def _build_branch_summary(self, candidates: list[dict]) -> str:
+        """Compose the per-branch health summary fed to the portfolio evaluator.
+
+        Returns one line per active owner (a Query that owns at least one
+        candidate/selected gap). The signals are intentionally compact to stay
+        well within the model's context window even for deep query trees.
+
+        The LLM uses this summary to emit ``branch_decisions`` that gate gap
+        expansion per owner, preventing any single branch from growing
+        arbitrarily deep while shallower branches remain unexplored.
+        """
+        from tools import convergence as convergence_metrics
+
+        # Collect owner query ids from candidate gaps via graph edges, since
+        # ``expansion_parent_id`` may not yet be assigned at portfolio time.
+        owner_ids: list[str] = []
+        open_gap_counts: dict[str, int] = {}
+        seen: set[str] = set()
+        for gap in candidates:
+            owner_id = self._gap_owner_id(gap["id"])
+            if not owner_id:
+                continue
+            open_gap_counts[owner_id] = open_gap_counts.get(owner_id, 0) + 1
+            if owner_id not in seen:
+                seen.add(owner_id)
+                owner_ids.append(owner_id)
+
+        if not owner_ids:
+            return "(no active owners with candidate gaps)"
+
+        # Global novelty trend (history of last 3 rounds). Per-owner novelty
+        # would require tracking evidence provenance per round; the global
+        # trend is a good proxy for "is the whole run stalling on this branch".
+        novelty_snapshot = convergence_metrics._novelty_metrics(advance=False)
+        novelty_tail = novelty_snapshot.get("history_tail") or []
+        novelty_trend = "->".join(f"{r:.2f}" for r in novelty_tail) if novelty_tail else "-"
+
+        lines: list[str] = []
+        for owner_id in owner_ids:
+            owner = graph_tools.get_node(owner_id)
+            if not owner or owner.get("type") != NodeType.QUERY.value:
+                # UserRequest owner (root): not a branch to balance.
+                continue
+            depth = self._query_depth(owner_id)
+            children = graph_tools.get_query_children(owner_id) or []
+            child_count = len(children)
+            open_gaps = open_gap_counts.get(owner_id, 0)
+            last_suff = owner.get("sufficiency_score")
+            last_sufficiency = (
+                f"{float(last_suff):.2f}" if isinstance(last_suff, (int, float)) else "-"
+            )
+            handle = owner.get("handle") or owner.get("text") or ""
+            lines.append(
+                f"- owner_id={owner_id} handle={handle!r}: depth={depth}, "
+                f"child_queries={child_count}, open_gaps={open_gaps}, "
+                f"last_sufficiency={last_sufficiency}, novelty_trend={novelty_trend}"
+            )
+        return "\n".join(lines) or "(no active owners with candidate gaps)"
+
     def evaluate_research_portfolio(self, goal_id: Optional[str] = None) -> dict:
         """Select candidate gaps by report-level marginal utility."""
         from tools import research_state
@@ -1494,12 +1553,20 @@ class MemoryManager:
             return {"error": "Portfolio evaluation is only allowed while researching"}
         objectives = self.get_research_objectives(goal_id)
         queries = graph_tools.search_nodes("query", {})
+        # Collect candidate gaps early so we can build the branch summary that
+        # feeds the LLM's global balancing decision before it scores gaps.
+        candidate_gaps = [
+            gap for gap in graph_tools.search_nodes("analysis", {"analysis_type": "gap"})
+            if gap.get("status") in {"candidate", "selected"}
+        ]
+        branch_summary_text = self._build_branch_summary(candidate_gaps)
         prompt = (
             mm_prompts.evaluate_portfolio
             .replace("{objectives}", json.dumps(objectives, ensure_ascii=False))
             .replace("{queries}", json.dumps([
                 self._portfolio_query_view(query) for query in queries
             ], ensure_ascii=False))
+            .replace("{branch_summary}", branch_summary_text)
         )
         verdict = self._invoke_json(prompt)
         scored = {
@@ -1507,6 +1574,23 @@ class MemoryManager:
             for item in verdict.get("objectives", [])
             if isinstance(item, dict) and item.get("objective_key")
         }
+        # Parse the LLM's branch-level cool-down / pause decisions and build
+        # the owner whitelist that gates gap expansion this round. Owners not
+        # mentioned by the LLM default to allow (continue_expansion).
+        branch_decisions_raw = verdict.get("branch_decisions") or []
+        allowed_owners: set[str] = set()
+        cooled_down_owners: dict[str, str] = {}
+        for item in branch_decisions_raw:
+            if not isinstance(item, dict):
+                continue
+            owner_id = str(item.get("owner_id") or "").strip()
+            action = str(item.get("action") or "").strip().lower()
+            if not owner_id or not action:
+                continue
+            if action == "continue_expansion":
+                allowed_owners.add(owner_id)
+            elif action in {"cool_down", "pause"}:
+                cooled_down_owners[owner_id] = action
         objective_by_key: dict[str, dict] = {}
         objective_deltas: dict[str, tuple[float, float]] = {}
         for objective in objectives:
@@ -1606,10 +1690,9 @@ class MemoryManager:
                     if str(edge.get("type", "")).lower() == "searched_by":
                         graph_tools.upsert_node(NodeType.SEARCH_RUN, gain_attributes, edge["target"])
 
-        candidates = [
-            gap for gap in graph_tools.search_nodes("analysis", {"analysis_type": "gap"})
-            if gap.get("status") in {"candidate", "selected"}
-        ]
+        # Reuse the candidate gaps collected before the LLM call so the
+        # branch summary and the selection loop see the same set.
+        candidates = candidate_gaps
         selected: list[dict] = []
         deferred: list[dict] = []
         existing_subjects = {
@@ -1675,7 +1758,33 @@ class MemoryManager:
                 for owner in owners
             )
             choose = fatal or force_expand or (utility >= threshold)
-            new_status = "selected" if choose else "deferred_low_value"
+            # Apply branch-level cool-down: if the LLM marked ALL owners of
+            # this gap group as cool_down or pause, defer this round. This
+            # overrides local force_expand (needs_expansion) because the global
+            # balancer sees depth and novelty signals the per-query assessor
+            # cannot. Fatal conflicts still bypass cool-down to protect
+            # report-level conclusions. When the LLM provided no whitelist
+            # (allowed_owners empty), fall back to pure marginal-utility logic.
+            cool_down_applies = (
+                choose
+                and not fatal
+                and bool(allowed_owners)
+                and bool(owner_ids)
+                and not (owner_ids & allowed_owners)
+            )
+            if cool_down_applies:
+                choose = False
+                new_status = "deferred_branch_cool_down"
+                resolution_reason = (
+                    f"branch cooled down by global portfolio balancer "
+                    f"({', '.join(sorted(cooled_down_owners.get(oid, 'cool_down') for oid in owner_ids))})"
+                )
+            else:
+                new_status = "selected" if choose else "deferred_low_value"
+                resolution_reason = (
+                    None if choose
+                    else "global marginal utility below expansion threshold"
+                )
             expansion_parent_id = (
                 max(owners, key=lambda item: float(item.get("priority") or 0.0))["id"]
                 if choose and owners else None
@@ -1689,7 +1798,7 @@ class MemoryManager:
                     "owner_depth": max_owner_depth,
                     "expansion_parent_id": expansion_parent_id,
                     "expansion_mode": mode,
-                    "resolution_reason": None if choose else "global marginal utility below expansion threshold",
+                    "resolution_reason": resolution_reason,
                 }, gap["id"])
                 (selected if choose else deferred).append(graph_tools.get_node(gap["id"]))
 
