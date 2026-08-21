@@ -263,6 +263,9 @@ class MemoryManager:
         self.model = model if model is not None else config.build_model()
         self.user_request = user_request
         self._state_lock = threading.RLock()
+        # Track consecutive cool-down rounds per owner so the LLM can see when a
+        # branch has been parked for a while and decide whether to revive it.
+        self._cooldown_streaks: dict[str, int] = {}
 
     def _invoke_json(self, prompt: str) -> dict:
         """Invoke the model and parse a JSON object from its response."""
@@ -1537,10 +1540,12 @@ class MemoryManager:
                 f"{float(last_suff):.2f}" if isinstance(last_suff, (int, float)) else "-"
             )
             handle = owner.get("handle") or owner.get("text") or ""
+            cooldown_streak = self._cooldown_streaks.get(owner_id, 0)
             lines.append(
                 f"- owner_id={owner_id} handle={handle!r}: depth={depth}, "
                 f"child_queries={child_count}, open_gaps={open_gaps}, "
-                f"last_sufficiency={last_sufficiency}, novelty_trend={novelty_trend}"
+                f"last_sufficiency={last_sufficiency}, novelty_trend={novelty_trend}, "
+                f"cooldown_streak={cooldown_streak}"
             )
         return "\n".join(lines) or "(no active owners with candidate gaps)"
 
@@ -1579,6 +1584,7 @@ class MemoryManager:
         branch_decisions_raw = verdict.get("branch_decisions") or []
         allowed_owners: set[str] = set()
         cooled_down_owners: dict[str, str] = {}
+        branch_decision_reasons: dict[str, str] = {}
         parsed_owner_ids: set[str] = set()
         for item in branch_decisions_raw:
             if not isinstance(item, dict):
@@ -1588,6 +1594,8 @@ class MemoryManager:
             if not owner_id or not action:
                 continue
             parsed_owner_ids.add(owner_id)
+            reason = str(item.get("reason") or "").strip()
+            branch_decision_reasons[owner_id] = reason
             if action == "continue_expansion":
                 allowed_owners.add(owner_id)
             elif action in {"cool_down", "pause"}:
@@ -1601,6 +1609,28 @@ class MemoryManager:
         if not branch_decisions_complete:
             for owner_id in sorted(active_owner_ids - parsed_owner_ids):
                 cooled_down_owners[owner_id] = "cool_down"
+                branch_decision_reasons[owner_id] = "LLM omitted this owner; default cool_down"
+        # Update consecutive cool-down streaks: increment for cooled owners,
+        # reset to 0 for owners that got continue_expansion. This lets the LLM
+        # see in the next round's branch_summary that a branch has been parked
+        # for several rounds and decide whether to revive it.
+        for owner_id in branch_decision_reasons:
+            if owner_id in cooled_down_owners:
+                self._cooldown_streaks[owner_id] = self._cooldown_streaks.get(owner_id, 0) + 1
+            elif owner_id in allowed_owners:
+                self._cooldown_streaks[owner_id] = 0
+        if branch_decision_reasons:
+            logger.info(
+                "branch_decisions: %s",
+                json.dumps(
+                    {oid: {"action": (
+                        "continue_expansion" if oid in allowed_owners
+                        else cooled_down_owners.get(oid, "cool_down")
+                    ), "reason": branch_decision_reasons.get(oid, "")}
+                     for oid in branch_decision_reasons},
+                    ensure_ascii=False,
+                ),
+            )
         objective_by_key: dict[str, dict] = {}
         objective_deltas: dict[str, tuple[float, float]] = {}
         for objective in objectives:
@@ -1793,7 +1823,8 @@ class MemoryManager:
                     gap_status = "deferred_branch_cool_down"
                     gap_reason = (
                         f"branch cooled down by global portfolio balancer "
-                        f"({cooled_down_owners.get(gap_owner_id, 'cool_down')})"
+                        f"({cooled_down_owners.get(gap_owner_id, 'cool_down')}: "
+                        f"{branch_decision_reasons.get(gap_owner_id, 'no reason given')})"
                     )
                     gap_parent = None
                 else:

@@ -480,7 +480,7 @@ Return only JSON:
     {
       "owner_id": "query-id-from-branch-summary",
       "action": "continue_expansion|cool_down|pause",
-      "reason": "short justification grounded in branch_summary signals"
+      "reason": "cite the specific signals that drove the decision, e.g. 'depth=5 vs peers_max_depth=2; novelty=0.05; sufficiency=0.25 stuck; child_queries=4; cooldown_streak=0' or for a recovery decision 'cooldown_streak=3 ended; open_gaps=2; peers_max_depth=4'"
     }
   ]
 }
@@ -497,7 +497,9 @@ You are also acting as the global search-tree balancer. The
 `branch_summary` block below lists every active owner (Query whose status is
 still in flight) with its current depth in the query tree, how many child
 queries it has already spawned, how many of its gaps are still open, its last
-sufficiency score, and the recent per-round novelty trend across the whole run.
+sufficiency score, the recent per-round novelty trend across the whole run,
+and how many consecutive rounds the owner has been marked for cool_down or
+pause (cooldown_streak; 0 means it was expanded last round).
 
 For each owner in `branch_summary`, emit one `branch_decisions` entry with:
 - `action="continue_expansion"`: the owner is shallow, still has substantive
@@ -507,6 +509,14 @@ For each owner in `branch_summary`, emit one `branch_decisions` entry with:
   it this round; let other branches catch up. Soft pause.
 - `action="pause"`: the owner is sufficiently covered or clearly exhausted;
   do not expand it again in future rounds. Hard stop.
+- `reason` MUST cite concrete signals from `branch_summary` (depth, child_queries,
+  open_gaps, last_sufficiency, novelty_trend, cooldown_streak) as `key=value`
+  pairs separated by semicolons. Do NOT write vague prose like "branch is
+  deep" — write `depth=5 vs peers_max_depth=2; sufficiency=0.25; novelty=0.05`.
+  For `continue_expansion` decisions, briefly state why the owner still
+  deserves budget (e.g. `depth=1; open_gaps=2; sufficiency=0.3 rising`). For
+  a recovery decision on a previously cooled owner, cite the streak that is
+  ending (e.g. `cooldown_streak=3 ended; open_gaps=2; peers caught up`).
 
 Decision heuristics (apply together, not as a single threshold):
 - Depth: deeper chains tend to yield less new information. When an owner's
@@ -523,6 +533,12 @@ Decision heuristics (apply together, not as a single threshold):
 - Relative balance: compare owners against each other. An owner that is
   markedly deeper or has markedly more child_queries than its peers is a
   cool_down candidate even if its own absolute numbers are not extreme.
+- Cooldown recovery: an owner parked for several rounds
+  (`cooldown_streak>=3`) whose `open_gaps` are still substantive AND whose
+  peers have caught up in depth should be revived via `continue_expansion`
+  so the branch is not starved indefinitely. Conversely, an owner with
+  `cooldown_streak>=5` and still-low `last_sufficiency` is a `pause`
+  candidate — it has had multiple chances and is not converging.
 - Always emit a decision for every owner listed in `branch_summary`. Copy the
   `owner_id` verbatim; do not invent owner ids not present in the summary.
 - An owner with open_gaps=0 and high sufficiency should be `pause`.

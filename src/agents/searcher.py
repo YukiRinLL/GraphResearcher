@@ -54,6 +54,7 @@ def _empty_package() -> dict:
         "statements": [],
         "evidence": [],
         "conflicts": [],
+        "extraction_log": [],
     }
 
 
@@ -408,8 +409,14 @@ def _merge_source_packets(search_results: dict, packets: list[dict]) -> dict:
     for source, packet in zip(search_results.get("results", []) or [], packets):
         if not isinstance(source, dict) or not isinstance(packet, dict):
             continue
+        src_url = source.get("url") or ""
+        src_title = (source.get("title") or "")[:80]
         raw_content = str(source.get("content") or source.get("raw_content") or "")
         if _looks_like_login_wall_or_catalog(source, raw_content):
+            package["extraction_log"].append({
+                "url": src_url, "title": src_title,
+                "stage": "B_login_wall", "reason": "login-wall/catalog boilerplate or too short",
+            })
             continue
 
         scholar_links = _extract_scholar_wiki_links(raw_content)
@@ -422,7 +429,17 @@ def _merge_source_packets(search_results: dict, packets: list[dict]) -> dict:
         # 关卡C：只有 analyzer 完全无法生成来源概述时才丢弃。
         # 有 summary 但缺 statements/evidence 的来源仍注册为可引用来源
         # （带 document_summary），只是不写结构化命题绑定。
-        if not summary or packet.get("conflicts"):
+        if not summary:
+            package["extraction_log"].append({
+                "url": src_url, "title": src_title,
+                "stage": "C_no_summary", "reason": "analyzer returned empty packet (no document_summary)",
+            })
+            continue
+        if packet.get("conflicts"):
+            package["extraction_log"].append({
+                "url": src_url, "title": src_title,
+                "stage": "C_conflicts", "reason": "analyzer flagged conflicts in packet",
+            })
             continue
 
         # 先注册 source + document（基于 analyzer 的来源概述）
@@ -446,6 +463,10 @@ def _merge_source_packets(search_results: dict, packets: list[dict]) -> dict:
         evidence_items = _nonempty_items(packet.get("evidence"))
         # 无完整 statement-evidence 绑定时，source+document 已注册，跳过绑定阶段
         if not statements or not evidence_items:
+            package["extraction_log"].append({
+                "url": src_url, "title": src_title,
+                "stage": "registered_source_only", "reason": "has summary but missing statements/evidence",
+            })
             continue
 
         # 关卡D：local_ref / statement_refs 格式校验；失败则跳过绑定，保留 source+document
@@ -456,10 +477,18 @@ def _merge_source_packets(search_results: dict, packets: list[dict]) -> dict:
             or len(set(statement_local_refs)) != len(statement_local_refs)
             or len(set(evidence_local_refs)) != len(evidence_local_refs)
         ):
+            package["extraction_log"].append({
+                "url": src_url, "title": src_title,
+                "stage": "D_format_invalid", "reason": "local_ref missing/duplicate",
+            })
             continue
         statement_ref_set = set(statement_local_refs)
         raw_evidence_statement_refs = [item.get("statement_refs") for item in evidence_items]
         if any(not isinstance(refs, list) for refs in raw_evidence_statement_refs):
+            package["extraction_log"].append({
+                "url": src_url, "title": src_title,
+                "stage": "D_format_invalid", "reason": "statement_refs not a list",
+            })
             continue
         evidence_statement_refs = [
             [str(ref).strip() for ref in refs if str(ref).strip()]
@@ -469,6 +498,10 @@ def _merge_source_packets(search_results: dict, packets: list[dict]) -> dict:
             any(not refs or any(ref not in statement_ref_set for ref in refs) for refs in evidence_statement_refs)
             or set(ref for refs in evidence_statement_refs for ref in refs) != statement_ref_set
         ):
+            package["extraction_log"].append({
+                "url": src_url, "title": src_title,
+                "stage": "D_format_invalid", "reason": "statement_refs mismatch",
+            })
             continue
 
         local_statement_map: dict[str, str] = {}
@@ -493,6 +526,10 @@ def _merge_source_packets(search_results: dict, packets: list[dict]) -> dict:
                 "source_ref": source_ref,
                 "statement_refs": [local_statement_map[ref] for ref in statement_refs],
             })
+        package["extraction_log"].append({
+            "url": src_url, "title": src_title,
+            "stage": "binding_ok", "reason": f"statements={len(statements)} evidence={len(evidence_items)}",
+        })
 
     for scholar in scholar_sources:
         scholar_ref = f"s{len(package['sources']) + 1}"
@@ -538,9 +575,16 @@ def extract_evidence_package_node(state: SearcherState) -> dict:
         if isinstance(source, dict)
     ]
     package = _merge_source_packets(search_results, packets)
+    # Summarize extraction log per stage for quick diagnosis
+    log_entries = package.get("extraction_log") or []
+    stage_counts: dict[str, int] = {}
+    for entry in log_entries:
+        stage = entry.get("stage") or "unknown"
+        stage_counts[stage] = stage_counts.get(stage, 0) + 1
     summary = {
         "searched_sources": len(sources),
         "accepted_sources": len(package["sources"]),
+        "extraction_stages": stage_counts,
     }
     return {
         "evidence_package": package,
