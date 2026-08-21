@@ -289,6 +289,7 @@ def dispatch_node(state: dict) -> dict:
             "acceptance_criteria": prepared.get("acceptance_criteria", []),
             "research_context": prepared.get("research_context", {}),
             "source_preferences": prepared.get("source_preferences", []),
+            "search_mode": prepared.get("search_mode") or "general",
             "messages": [HumanMessage(content=prepared["query_text"])],
         })
     except Exception as exc:  # noqa: BLE001 — Searcher 异常不应中断整个工作流

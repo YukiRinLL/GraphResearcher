@@ -87,6 +87,7 @@ init_research = """你是 GraphResearcher 的 Query Planner。
 
 - 只记录用户明确指定的来源类别或域名。
 - 不要把模型认为合适的来源类型写成用户偏好。
+- 这条规则只针对 `source_preferences` 字段；per-query 的 `search_mode` 路由提示由 followup planner 按 gap 性质决定，不属于用户偏好。
 
 ### excluded_domains 和 excluded_urls
 
@@ -393,8 +394,21 @@ Requirements:
 - Author the query text in the language of the research goal.
 - Include concrete acceptance_criteria copied or refined from the assigned atomic gap.
 
+Search routing hint:
+- Each query also carries a `search_mode` field with exactly one value chosen from:
+  `general` (default; no domain or topic restriction), `news` (only for current
+  events / time-sensitive policy developments covered by mainstream media),
+  `finance` (only for market or company financial metrics), `linkedin` (only
+  when the gap is about a person's professional profile), `github` (only when
+  it is about a code repository, library, or developer artifact), `academic`
+  (only when it is about a scholarly publication, scientific claim, or research
+  finding).
+- Choose based on the gap's subject nature. When in doubt, use `general`. Do
+  NOT pick a specialized mode merely because the entity name resembles a known
+  platform — pick it only when the gap's substance matches that mode's purpose.
+
 Return only valid JSON, no Markdown, at most {max_new} queries:
-{"queries": [{"text": "...", "acceptance_criteria": ["..."]}]}
+{"queries": [{"text": "...", "acceptance_criteria": ["..."], "search_mode": "general|news|finance|linkedin|github|academic"}]}
 """
 
 reformulate_query = """You are the Query Reformulator for GraphResearcher.

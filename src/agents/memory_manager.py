@@ -193,6 +193,32 @@ def _query_spec(item: Any) -> tuple:
     return item, [], []
 
 
+_FOLLOWUP_VALID_SEARCH_MODES = {
+    "general", "news", "finance", "linkedin", "github", "academic"
+}
+
+
+def _followup_query_spec(item: Any) -> tuple:
+    """Like :func:`_query_spec` but also extracts the per-query search_mode hint.
+
+    Used only by the followup planner path (``_plan_followup_queries``); the
+    initial planner (``init_research``) keeps using ``_query_spec`` so initial
+    Queries carry the default mode.
+
+    Returns:
+        A ``(text, acceptance_criteria, objective_keys, search_mode)`` tuple.
+        ``search_mode`` falls back to ``"general"`` when missing or invalid.
+    """
+    text, criteria, objective_keys = _query_spec(item)
+    mode = "general"
+    if isinstance(item, dict):
+        candidate = item.get("search_mode")
+        if isinstance(candidate, str):
+            candidate = candidate.strip().lower()
+        mode = candidate if candidate in _FOLLOWUP_VALID_SEARCH_MODES else "general"
+    return text, criteria, objective_keys, mode
+
+
 def _initial_query_limit(max_search_rounds: int) -> int:
     """Return a budget-aware hard limit for discovery Queries."""
     if max_search_rounds <= 0:
@@ -2078,6 +2104,7 @@ class MemoryManager:
                 search_subject_key=subject,
                 expansion_mode=mode,
                 query_role="evidence_gap",
+                search_mode=spec.get("search_mode") or "general",
             )
             for key in objective_keys:
                 graph_tools.add_edge(child_id, objective_by_key[key]["id"], EdgeType.COVERS_OBJECTIVE)
@@ -2516,6 +2543,7 @@ class MemoryManager:
                 "source_preferences": preferences,
                 "excluded_domains": excluded_domains,
                 "excluded_urls": _string_list(goal.get("excluded_urls")),
+                "search_mode": query.get("search_mode") or "general",
             }
 
     def fail_search(self, search_run_id: str, query_id: str, error: str) -> dict:
@@ -3239,7 +3267,7 @@ class MemoryManager:
                 raw_queries = []
             authored_keys: set[str] = set()
             for raw in raw_queries:
-                text, criteria, objective_keys = _query_spec(raw)
+                text, criteria, objective_keys, search_mode = _followup_query_spec(raw)
                 key = _normalize_query_text(text)
                 if _query_text_issue(text) or key in existing_keys or key in authored_keys:
                     continue
@@ -3248,6 +3276,7 @@ class MemoryManager:
                     "text": text,
                     "acceptance_criteria": criteria,
                     "objective_keys": objective_keys,
+                    "search_mode": search_mode,
                 })
             return items
 
@@ -3275,6 +3304,7 @@ class MemoryManager:
                         "text": fallback_text,
                         "acceptance_criteria": fallback_criteria,
                         "objective_keys": [],
+                        "search_mode": "general",
                     }]
         return queries[:max_new]
 

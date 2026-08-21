@@ -33,6 +33,7 @@ class SearcherState(TypedDict):
     acceptance_criteria: list[str]
     research_context: dict[str, Any]
     source_preferences: list[str]
+    search_mode: str
     search_results: Optional[dict]
     search_output: str
     evidence_package: Optional[dict]
@@ -44,6 +45,60 @@ _TRACKING_QUERY_KEYS = {"gclid", "fbclid"}
 _MAX_DEBUG_SEARCH_OUTPUT_CHARS = 30_000
 _MAX_SOURCE_RAW_CHARS = 20_000
 _DEFAULT_MAX_RESULTS = 5
+_VALID_SEARCH_MODES = {
+    "general", "news", "finance", "linkedin", "github", "academic"
+}
+
+
+def _mode_search_params(mode: str) -> tuple[str, Optional[list[str]], Optional[str]]:
+    """Map a search_mode to (topic, include_domains, search_depth).
+
+    - general / news / finance: pass through as the Tavily ``topic`` parameter,
+      no domain restriction, no explicit depth.
+    - linkedin / github / academic: force ``topic='general'`` (Tavily's news /
+      finance topics are incompatible with domain-restricted profile search and
+      would over-constrain results), and apply the profile's include_domains.
+    - academic additionally enables ``search_depth='advanced'`` per the project
+      decision that scholarly retrieval benefits from the deeper index.
+
+    Returns ``("general", None, None)`` for any unknown mode so callers stay
+    safe against LLM-emitted invalid values.
+    """
+    from tools.search_tools import _PROFILE_INCLUDE_DOMAINS
+
+    if mode in ("general", "news", "finance"):
+        return mode, None, None
+    if mode == "academic":
+        return "general", list(_PROFILE_INCLUDE_DOMAINS["academic"]), "advanced"
+    if mode in ("linkedin", "github"):
+        return "general", list(_PROFILE_INCLUDE_DOMAINS[mode]), None
+    return "general", None, None
+
+
+def _normalize_domain_pref(value: str) -> Optional[str]:
+    """Normalize a ``source_preferences`` entry to a bare include-domain.
+
+    Handles ``+site:domain`` and bare-domain forms (e.g. ``"linkedin.com"``,
+    ``"+site:github.com"``). ``-site:`` entries are dropped here because they
+    are routed through ``excluded_domains`` by ``prepare_search`` rather than
+    through ``include_domains``.
+
+    Non-domain category descriptions (e.g. ``"official sources"``,
+    ``"academic journals"``) are rejected by requiring at least one dot and no
+    whitespace — this prevents free-text preference labels from being
+    misinterpreted as Tavily host constraints.
+    """
+    text = str(value or "").strip().lower()
+    if not text or text.startswith("-site:"):
+        return None
+    if text.startswith("+site:"):
+        text = text[6:]
+    if "://" in text:
+        text = urlsplit(text).hostname or ""
+    text = text.strip("./")
+    if not text or " " in text or "." not in text:
+        return None
+    return text
 
 
 def _empty_package() -> dict:
@@ -187,14 +242,35 @@ def _sanitize_query_text(text: str) -> str:
 
 
 def web_search_node(state: SearcherState) -> dict:
-    """固定执行一次 Tavily general 搜索，并只保留唯一且带正文的来源."""
+    """执行一次 Tavily 搜索，按 search_mode 路由 topic / include_domains /
+    search_depth，并只保留唯一且带正文的来源."""
     raw_query = state["query_text"]
     cleaned_query = _sanitize_query_text(raw_query)
-    result = _TAVILY_SEARCH(
-        query=cleaned_query,
-        max_results=_DEFAULT_MAX_RESULTS,
-        topic="general",
-    )
+    mode = state.get("search_mode") or "general"
+    if mode not in _VALID_SEARCH_MODES:
+        mode = "general"
+    topic, include_domains, search_depth = _mode_search_params(mode)
+
+    # 用户硬约束优先：source_preferences 里的 +site: 或裸域名覆盖 mode 的
+    # include_domains，避免 per-query mode 与用户 goal 级硬约束冲突。
+    user_prefs = state.get("source_preferences") or []
+    user_domains = [
+        d for d in (_normalize_domain_pref(p) for p in user_prefs) if d
+    ]
+    if user_domains:
+        include_domains = user_domains
+        search_depth = None  # 用户硬约束不强制 advanced
+
+    call_kwargs = {
+        "query": cleaned_query,
+        "max_results": _DEFAULT_MAX_RESULTS,
+        "topic": topic,
+    }
+    if include_domains:
+        call_kwargs["include_domains"] = include_domains
+    if search_depth:
+        call_kwargs["search_depth"] = search_depth
+    result = _TAVILY_SEARCH(**call_kwargs)
     if not isinstance(result, dict):
         result = {
             "error": "tavily_search returned a non-dict response",
@@ -204,17 +280,18 @@ def web_search_node(state: SearcherState) -> dict:
 
     # Empty-result sanitization retry: if the first call returned no usable
     # results AND removing all internal quotes yields a different query,
-    # retry once with the aggressively-cleaned variant.
+    # retry once with the aggressively-cleaned variant. The retry keeps the
+    # same topic / include_domains / search_depth because it is a query-text
+    # wash (strip quotes), not a strategy retreat — dropping the profile
+    # constraints would silently drift the search behavior and make run.log
+    # attribution harder.
     kept_check = result.get("results") or []
     if not kept_check and cleaned_query:
         aggressive = re.sub(r'["\']', '', cleaned_query).strip()
         aggressive = re.sub(r'\s+', ' ', aggressive).strip()
         if aggressive and aggressive != cleaned_query:
-            retry = _TAVILY_SEARCH(
-                query=aggressive,
-                max_results=_DEFAULT_MAX_RESULTS,
-                topic="general",
-            )
+            retry_kwargs = dict(call_kwargs, query=aggressive)
+            retry = _TAVILY_SEARCH(**retry_kwargs)
             if isinstance(retry, dict) and (retry.get("results") or []):
                 result = retry
                 cleaned_query = aggressive
