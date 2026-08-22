@@ -63,6 +63,16 @@ def _parse_json(text: str) -> dict:
 # otherwise the model narrates graph state (e.g. "this query is blocked").
 _INTERNAL_NODE_FIELDS = ("kind", "status", "sufficiency_score", "_claim_lock", "_budget_lock")
 
+# Hard-brake thresholds used by the scheduler when LLM branch_decisions are
+# insufficient or missing entirely. These are intentionally conservative so
+# healthy branches are never clipped, but pathological tail-chains are always
+# intercepted even if the evaluator keeps returning `needs_expansion`.
+_LOW_SUFFICIENCY_THRESHOLD = 0.22
+_CONSECUTIVE_EMPTY_BRAKE = 2
+_CONSECUTIVE_LOW_SUFF_BRAKE = 3
+_COOLDOWN_HARD_SKIP_THRESHOLD = 2
+_COOLDOWN_HARD_PAUSE_THRESHOLD = 5
+
 # Cross-reference tokens that break a query's self-containment: a follow-up
 # query containing any of these depends on another query's output and is not
 # independently searchable. Authored follow-ups containing them are dropped.
@@ -292,6 +302,11 @@ class MemoryManager:
         # Track consecutive cool-down rounds per owner so the LLM can see when a
         # branch has been parked for a while and decide whether to revive it.
         self._cooldown_streaks: dict[str, int] = {}
+        # Hard-brake signals that do not depend on the LLM emitting a
+        # cool_down / pause decision. `_sufficiency_history` records the tail
+        # of per-assessment sufficiency scores per query id so the code can
+        # detect "stuck at 0.20 for 3+ consecutive assessments" tail chains.
+        self._sufficiency_history: dict[str, list[float]] = {}
 
     def _invoke_json(self, prompt: str) -> dict:
         """Invoke the model and parse a JSON object from its response."""
@@ -1099,7 +1114,7 @@ class MemoryManager:
                 graph_tools.get_node(cid)
                 for cid in graph_tools.get_query_children(resolved)
             ]
-            if any(c.get("status") not in {"sufficient", "blocked", "failed", "deferred"} for c in children):
+            if any(c.get("status") not in research_state.TERMINAL_QUERY_STATUSES for c in children):
                 return {"error": f"Query {query.get('handle') or resolved} still has unfinished selected children"}
 
         normalization = self.normalize_claims(resolved)
@@ -1155,6 +1170,14 @@ class MemoryManager:
             score = max(0.0, min(1.0, float(verdict.get("sufficiency_score", 0.0))))
         except (TypeError, ValueError):
             score = 0.0
+        with self._state_lock:
+            history = self._sufficiency_history.setdefault(resolved, [])
+            history.append(score)
+            # Bound memory to the tail: the hard-brake helpers only ever look
+            # at the last few entries, so there is no need to retain the full
+            # assessment history for the entire run.
+            if len(history) > max(_CONSECUTIVE_LOW_SUFF_BRAKE, 8):
+                del history[: len(history) - _CONSECUTIVE_LOW_SUFF_BRAKE - 1]
 
         created_gaps: list[str] = []
         existing = {
@@ -1404,6 +1427,62 @@ class MemoryManager:
             current = graph_tools.get_query_parent(current)
         return depth
 
+    def _query_search_runs(self, query_id: str) -> list[dict]:
+        """Return the list of SearchRun nodes reachable from a query.
+
+        Runs are returned in creation order (by ``attempt`` field when
+        available, otherwise by string id as a stable surrogate) so callers
+        can inspect tail sequences for empty-run patterns.
+        """
+        runs: list[dict] = []
+        for edge in graph_tools.get_node_edges(query_id, direction="out"):
+            if str(edge.get("type", "")).lower() != "searched_by":
+                continue
+            node = graph_tools.get_node(edge["target"])
+            if node and node.get("type") == NodeType.SEARCH_RUN.value:
+                runs.append(node)
+
+        def sort_key(run: dict) -> tuple[int, str]:
+            attempt = int(run.get("attempt") or 0)
+            return (attempt, str(run.get("id") or ""))
+
+        runs.sort(key=sort_key)
+        return runs
+
+    def _query_empty_streak(self, query_id: str) -> int:
+        """Count the strict tail of consecutive ``status='empty'`` SearchRuns.
+
+        A single succeeded run in the middle resets the counter because it
+        means the query was still productive. This threshold catches only the
+        pathological "retry 5 different phrasings on a source-starved branch"
+        tail chain (V32 q2.2.1.1.1.1.2.x was the example).
+        """
+        runs = self._query_search_runs(query_id)
+        streak = 0
+        for run in reversed(runs):
+            if run.get("status") == "empty":
+                streak += 1
+            else:
+                break
+        return streak
+
+    def _query_low_sufficiency_streak(self, query_id: str) -> int:
+        """Count consecutive tail assessments below ``_LOW_SUFFICIENCY_THRESHOLD``.
+
+        The sequence comes from the local ``_sufficiency_history`` tracker that
+        :meth:`assess_query` appends after each call. Scores at or above the
+        threshold break the streak because they mean the branch is still
+        making useful progress.
+        """
+        tail = list(self._sufficiency_history.get(query_id, []))
+        streak = 0
+        for score in reversed(tail):
+            if score < _LOW_SUFFICIENCY_THRESHOLD:
+                streak += 1
+            else:
+                break
+        return streak
+
     def _gap_key_in_ancestors(self, query_id: str, gap_key: str) -> bool:
         """Return whether a gap fingerprint already exists on the ancestor path."""
         current = graph_tools.get_query_parent(query_id)
@@ -1442,7 +1521,7 @@ class MemoryManager:
             graph_tools.get_node(cid) for cid in graph_tools.get_query_children(parent_id)
         ]
         if children and all(
-            c.get("status") in {"sufficient", "blocked", "failed", "deferred"}
+            c.get("status") in research_state.TERMINAL_QUERY_STATUSES
             for c in children
         ):
             graph_tools.transition_query(parent_id, "assessing")
@@ -1636,6 +1715,43 @@ class MemoryManager:
             for owner_id in sorted(active_owner_ids - parsed_owner_ids):
                 cooled_down_owners[owner_id] = "cool_down"
                 branch_decision_reasons[owner_id] = "LLM omitted this owner; default cool_down"
+        # Hard cool-down / pause thresholds. These override (or replace) the
+        # LLM signal so a branch that has been parked twice in a row is
+        # definitely skipped this round, and a branch that has been parked 5+
+        # consecutive rounds is permanently moved to the paused terminal
+        # state regardless of what the LLM would have decided. This prevents
+        # an optimistic LLM from re-greenlighting the same deep tail chain
+        # every round and driving the run into GraphRecursionError.
+        for owner_id in list(active_owner_ids):
+            streak = self._cooldown_streaks.get(owner_id, 0)
+            if streak >= _COOLDOWN_HARD_PAUSE_THRESHOLD:
+                cooled_down_owners[owner_id] = "pause"
+                allowed_owners.discard(owner_id)
+                branch_decision_reasons[owner_id] = (
+                    f"hard pause: cooldown_streak={streak} >= "
+                    f"{_COOLDOWN_HARD_PAUSE_THRESHOLD}"
+                )
+                owner_node = graph_tools.get_node(owner_id)
+                if owner_node and owner_node.get("status") not in {
+                    "paused", "sufficient", "blocked", "failed", "deferred",
+                }:
+                    graph_tools.transition_query(
+                        owner_id,
+                        "paused",
+                        assessment_reason=(
+                            f"auto-paused after {streak} consecutive cool-down rounds"
+                        ),
+                    )
+                # Streak stays elevated at >= threshold so downstream tools
+                # (expand_gaps, assess_query convergence) continue to treat
+                # the branch as parked.
+            elif streak >= _COOLDOWN_HARD_SKIP_THRESHOLD:
+                cooled_down_owners.setdefault(owner_id, "cool_down")
+                allowed_owners.discard(owner_id)
+                branch_decision_reasons[owner_id] = (
+                    f"hard skip: cooldown_streak={streak} >= "
+                    f"{_COOLDOWN_HARD_SKIP_THRESHOLD}"
+                )
         # Update consecutive cool-down streaks: increment for cooled owners,
         # reset to 0 for owners that got continue_expansion. This lets the LLM
         # see in the next round's branch_summary that a branch has been parked
@@ -2044,6 +2160,63 @@ class MemoryManager:
                         "status": "blocked",
                         "resolution_reason": "duplicate gap_key already exists on the ancestor path",
                     }, gap["id"])
+                continue
+            # Hard-brake 1: refuse to deepen a vertical branch once its parent
+            # has produced two consecutive empty SearchRuns. This is the
+            # "phrasing doesn't matter any more" regime and extra child
+            # queries only serve to exhaust the recursion budget on a tail
+            # chain. The brake is intentionally applied only to vertical
+            # expansions under a Query parent because horizontal expansions
+            # pivot to a different subject and therefore deserve a real try.
+            empty_streak = (
+                self._query_empty_streak(resolved)
+                if parent.get("type") == NodeType.QUERY.value else 0
+            )
+            low_suf_streak = (
+                self._query_low_sufficiency_streak(resolved)
+                if parent.get("type") == NodeType.QUERY.value else 0
+            )
+            # Hard-brake 2: a three-run tail of sufficiency_scores *all* below
+            # 0.22 with non-increasing source counts means the evidence curve
+            # is already saturated. Further sub-queries on this path will
+            # return duplicated snippets; stop.
+            sources_increasing = False
+            if parent.get("type") == NodeType.QUERY.value:
+                runs = self._query_search_runs(resolved)
+                recent = runs[-3:] if len(runs) >= 2 else runs
+                source_counts = [int(run.get("sources") or 0) for run in recent]
+                if len(source_counts) >= 2 and source_counts[-1] > max(source_counts[:-1], default=0):
+                    sources_increasing = True
+            vertical_hit = (
+                parent.get("type") == NodeType.QUERY.value
+                and mode == "vertical"
+                and (
+                    empty_streak >= _CONSECUTIVE_EMPTY_BRAKE
+                    or (
+                        low_suf_streak >= _CONSECUTIVE_LOW_SUFF_BRAKE
+                        and not sources_increasing
+                    )
+                )
+            )
+            if vertical_hit:
+                for gap in group:
+                    graph_tools.upsert_node(NodeType.ANALYSIS, {
+                        "status": "blocked",
+                        "resolution_reason": (
+                            "auto-paused parent chain: "
+                            f"consecutive empty={empty_streak}, "
+                            f"low suf streak={low_suf_streak}, "
+                            f"sources_increasing={sources_increasing}"
+                        ),
+                    }, gap["id"])
+                logger.warning(
+                    "expand_gaps hard-brake: skipped vertical expansion for %s "
+                    "(empty streak=%d, low_suf streak=%d, sources increasing=%s)",
+                    parent.get("handle") or resolved,
+                    empty_streak,
+                    low_suf_streak,
+                    sources_increasing,
+                )
                 continue
             if mode == "horizontal":
                 attach_parent_id = (

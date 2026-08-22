@@ -103,15 +103,16 @@ def _estimate_source_credibility(url: str, source_type: Optional[str] = None) ->
 
 
 _QUERY_TRANSITIONS = {
-    "pending": {"searching", "deferred"},
-    "searching": {"assessing", "pending", "blocked", "failed", "deferred"},
-    "assessing": {"sufficient", "needs_expansion", "blocked", "deferred"},
-    "needs_expansion": {"waiting_children", "sufficient", "blocked", "deferred"},
-    "waiting_children": {"assessing", "deferred"},
+    "pending": {"searching", "deferred", "paused"},
+    "searching": {"assessing", "pending", "blocked", "failed", "deferred", "paused"},
+    "assessing": {"sufficient", "needs_expansion", "blocked", "deferred", "paused"},
+    "needs_expansion": {"waiting_children", "sufficient", "blocked", "deferred", "paused"},
+    "waiting_children": {"assessing", "deferred", "paused"},
     "sufficient": set(),
     "blocked": set(),
     "failed": set(),
     "deferred": set(),
+    "paused": set(),
 }
 
 # A single persistent background event loop runs every coroutine. The neo4j

@@ -17,7 +17,7 @@ COMPLETED = "COMPLETED"
 FAILED = "FAILED"
 
 REPORT_ALLOWED = {REPORT_READY, LIMITED_REPORT_READY, BUDGET_EXHAUSTED, REPORTING, COMPLETED}
-TERMINAL_QUERY_STATUSES = {"sufficient", "blocked", "failed", "deferred"}
+TERMINAL_QUERY_STATUSES = {"sufficient", "blocked", "failed", "deferred", "paused"}
 OPEN_GAP_STATUSES = {"candidate", "selected", "assigned"}
 _TRANSITIONS = {
     INITIALIZING: {INITIALIZING, RESEARCHING, FAILED},

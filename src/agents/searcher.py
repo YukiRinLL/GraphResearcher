@@ -9,6 +9,7 @@ Orchestrator 通过 ``dispatch_searcher`` 注入 ``query_id``、``search_run_id`
 """
 
 import json
+import logging
 import re
 from typing import Annotated, Any, Optional, TypedDict
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
@@ -20,6 +21,8 @@ from langgraph.graph.message import add_messages
 import config
 from tools.graph_manager_tools import submit_search_result
 from tools.search_tools import tavily_search
+
+logger = logging.getLogger(__name__)
 
 
 class SearcherState(TypedDict):
@@ -242,8 +245,15 @@ def _sanitize_query_text(text: str) -> str:
 
 
 def web_search_node(state: SearcherState) -> dict:
-    """执行一次 Tavily 搜索，按 search_mode 路由 topic / include_domains /
-    search_depth，并只保留唯一且带正文的来源."""
+    """执行一次 Tavily 搜索，按 search_mode 路由参数并去重.
+
+    按 ``state['search_mode']`` 映射到 Tavily 的 ``topic`` /
+    ``include_domains`` / ``search_depth``，调用 Tavily 搜索，并只保留唯一
+    且带正文（``raw_content`` + ``url``）的来源结果。
+
+    Args:
+        state: 单次搜索状态，至少包含 ``query_text``。
+    """
     raw_query = state["query_text"]
     cleaned_query = _sanitize_query_text(raw_query)
     mode = state.get("search_mode") or "general"
@@ -260,6 +270,18 @@ def web_search_node(state: SearcherState) -> dict:
     if user_domains:
         include_domains = user_domains
         search_depth = None  # 用户硬约束不强制 advanced
+
+    # Explicit routing trace so we can tell at a glance whether the LLM
+    # actually surfaced search_mode=academic (etc.) instead of silently
+    # defaulting to general on every call. One INFO row per search attempt.
+    logger.info(
+        "web_search_node: handle=%s mode=%s topic=%s include_domains=%s search_depth=%s",
+        state.get("handle"),
+        mode,
+        topic,
+        include_domains,
+        search_depth,
+    )
 
     call_kwargs = {
         "query": cleaned_query,
