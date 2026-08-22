@@ -1734,9 +1734,13 @@ class MemoryManager:
                     f"{_COOLDOWN_HARD_PAUSE_THRESHOLD}"
                 )
                 owner_node = graph_tools.get_node(owner_id)
-                if owner_node and owner_node.get("status") not in {
-                    "paused", "sufficient", "blocked", "failed", "deferred",
-                }:
+                if (
+                    owner_node
+                    and owner_node.get("type") == NodeType.QUERY.value
+                    and owner_node.get("status") not in {
+                        "paused", "sufficient", "blocked", "failed", "deferred",
+                    }
+                ):
                     graph_tools.transition_query(
                         owner_id,
                         "paused",

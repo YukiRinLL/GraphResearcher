@@ -131,8 +131,16 @@ def init_node(state: dict) -> dict:
 
 # 连续无进展动作的熔断阈值：超过此值后强制路由到 convergence。
 # 正常流程中两次 dispatch_searcher 之间最多有 ~4 次非搜索动作
-# (assess + portfolio + expand + portfolio)，阈值 6 容纳一轮半空转。
+# (assess + portfolio + expand + portfolio)，阈值 6 容容一轮半空转。
 _MAX_CONSECUTIVE_IDLE = 6
+
+# 递归预算安全阈值：当 scheduler 调用次数（step_count）达到此值时，
+# 无论 consecutive_idle 是否达标，强制路由到 convergence。
+# 每个 scheduler→action 周期消耗 ~2-6 递归步；recursion_limit=400 时，
+# 阈值 150 消耗 ~300 递归步，为 convergence + report 子图保留 ~100 步。
+# 这防止系统在"成功"搜索/gap 扩展之间循环而始终不收敛——
+# consecutive_idle 被每次成功搜索重置，无法触发原有的空转熔断。
+_STEP_BUDGET_FOR_CONVERGENCE = 150
 
 
 def scheduler_node(state: dict) -> dict:
@@ -142,6 +150,11 @@ def scheduler_node(state: dict) -> dict:
     dispatch_searcher 也不是产生子查询的 expand_gaps 时，跳过正常调度
     直接路由到 convergence，避免 expand_gaps(created=0) /
     evaluate_portfolio(selected=0) 之间的空转循环。
+
+    递归预算安全熔断：当 ``step_count`` 达到 ``_STEP_BUDGET_FOR_CONVERGENCE``
+    时，无论 consecutive_idle 是否达标，强制路由到 convergence。这防止系统
+    在"成功"搜索之间循环而始终不收敛——每次成功搜索都重置 consecutive_idle，
+    导致原空转熔断无法触发，最终耗尽 LangGraph 递归预算。
     """
     step_count = int(state.get("step_count") or 0) + 1
     consecutive_idle = int(state.get("consecutive_idle") or 0)
@@ -157,6 +170,29 @@ def scheduler_node(state: dict) -> dict:
             "messages": [AIMessage(content="[scheduler] no actions, routing to convergence")],
         }
     action = actions[0]
+
+    # 递归预算安全熔断：step_count 接近递归限制时强制收敛。
+    # 此检查必须在 consecutive_idle 熔断之前——consecutive_idle 被成功
+    # 搜索不断重置，无法在预算耗尽前触发收敛。
+    if step_count >= _STEP_BUDGET_FOR_CONVERGENCE:
+        summary = (
+            f"[scheduler] FORCED CONVERGENCE "
+            f"(step={step_count} >= {_STEP_BUDGET_FOR_CONVERGENCE}, "
+            f"forced_count={forced_count + 1}): recursion budget near limit"
+        )
+        return {
+            "current_action": {
+                "action": "assess_convergence",
+                "query_id": None,
+                "goal_id": action.get("goal_id"),
+                "query_handle": None,
+                "reason": f"forced convergence: step budget near limit (step={step_count})",
+            },
+            "step_count": step_count,
+            "consecutive_idle": consecutive_idle,
+            "forced_convergence_count": forced_count + 1,
+            "messages": [AIMessage(content=summary)],
+        }
 
     # 熔断：连续无进展超过阈值时，将 expand_gaps/evaluate_research_portfolio
     # 替换为 assess_convergence，强制进入收敛裁决。
