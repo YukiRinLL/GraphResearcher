@@ -1498,6 +1498,8 @@ class MemoryManager:
 
     def _propagate_child_completion(self, query_id: str, child_status: str) -> None:
         """Resolve assigned gaps and make a completed child's parent assessable."""
+        from tools import research_state
+
         gap_status = {
             "sufficient": "resolved",
             "deferred": "deferred_low_value",
