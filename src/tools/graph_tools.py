@@ -107,7 +107,7 @@ _QUERY_TRANSITIONS = {
     "searching": {"assessing", "pending", "blocked", "failed", "deferred", "paused"},
     "assessing": {"sufficient", "needs_expansion", "blocked", "deferred", "paused"},
     "needs_expansion": {"waiting_children", "sufficient", "blocked", "deferred", "paused"},
-    "waiting_children": {"assessing", "blocked", "deferred", "failed", "paused"},
+    "waiting_children": {"assessing", "blocked", "deferred", "failed", "needs_expansion", "paused"},
     "sufficient": set(),
     "blocked": set(),
     "failed": set(),
