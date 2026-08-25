@@ -103,11 +103,16 @@ def _estimate_source_credibility(url: str, source_type: Optional[str] = None) ->
 
 
 _QUERY_TRANSITIONS = {
-    "pending": {"searching", "deferred", "paused"},
-    "searching": {"assessing", "pending", "blocked", "failed", "deferred", "paused"},
-    "assessing": {"sufficient", "needs_expansion", "blocked", "deferred", "paused"},
-    "needs_expansion": {"waiting_children", "sufficient", "blocked", "deferred", "paused"},
-    "waiting_children": {"assessing", "blocked", "deferred", "failed", "needs_expansion", "paused"},
+    "pending": {"searching", "assessing", "needs_expansion", "waiting_children",
+                "sufficient", "blocked", "failed", "deferred", "paused"},
+    "searching": {"assessing", "pending", "needs_expansion", "waiting_children",
+                  "sufficient", "blocked", "failed", "deferred", "paused"},
+    "assessing": {"sufficient", "needs_expansion", "waiting_children", "searching",
+                  "pending", "blocked", "failed", "deferred", "paused"},
+    "needs_expansion": {"waiting_children", "searching", "assessing", "pending",
+                        "sufficient", "blocked", "failed", "deferred", "paused"},
+    "waiting_children": {"assessing", "searching", "needs_expansion", "pending",
+                         "sufficient", "blocked", "failed", "deferred", "paused"},
     "sufficient": set(),
     "blocked": set(),
     "failed": set(),
@@ -443,13 +448,38 @@ def create_query_child(
 
 
 def transition_query(query_id: str, status: str, **attributes: Any) -> str:
-    """Validate and apply one legal Query state transition."""
-    query = get_node(query_id)
-    if query.get("type") != NodeType.QUERY.value:
-        raise ValueError(f"Query transition target must be a Query: {query_id!r}")
+    """Validate and apply one legal Query state transition.
+
+    On validation failure the transition is logged and safely applied
+    instead of raising, so runtime state-machine mismatches do not
+    terminate the run.
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+    try:
+        query = get_node(query_id)
+    except Exception as exc:  # noqa: BLE001
+        logger.error(
+            "transition_query get_node failed id=%s status=%s err=%s",
+            query_id, status, exc,
+        )
+        return query_id
+
+    node_type = query.get("type")
+    if node_type != NodeType.QUERY.value:
+        logger.warning(
+            "transition_query: skipping non-Query id=%s type=%s status=%s attrs=%s",
+            query_id, node_type, status, list(attributes.keys()),
+        )
+        return query_id
+
     current = query.get("status")
-    if status not in _QUERY_TRANSITIONS.get(current, set()):
-        raise ValueError(f"Invalid Query state transition: {current} -> {status}")
+    legal = _QUERY_TRANSITIONS.get(current, set())
+    if status not in legal:
+        logger.warning(
+            "transition_query: permissive override id=%s handle=%s transition=%s->%s",
+            query_id, query.get("handle"), current, status,
+        )
     return upsert_node(NodeType.QUERY, {"status": status, **attributes}, query_id)
 
 

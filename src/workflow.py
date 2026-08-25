@@ -251,6 +251,17 @@ def portfolio_node(state: dict) -> dict:
     """全局评估目标覆盖率，选择高价值 gap 并延迟低价值工作."""
     action = state.get("current_action") or {}
     goal_id = action.get("goal_id")
+    # 记录调用前 portfolio_revision，用于检测 evaluate_research_portfolio 是否
+    # 真的改变了 portfolio 状态。仅看 selected > 0 不够——_recover_unactionable_research
+    # 会反复重置同一个 Gap 并 bump revision，使 selected 永远 > 0 但实际无进展
+    prior_revision = 0
+    if goal_id:
+        try:
+            from tools import graph_tools
+            prior_node = graph_tools.get_node(goal_id)
+            prior_revision = int(prior_node.get("portfolio_revision") or 0)
+        except Exception:
+            prior_revision = 0
     result = gmt.evaluate_research_portfolio.func(goal_id)
     if result.get("error"):
         summary = f"[evaluate_portfolio] ERROR: {result['error']}"
@@ -264,10 +275,21 @@ def portfolio_node(state: dict) -> dict:
             f"[evaluate_portfolio] selected={selected}, deferred={deferred}, "
             f"coverage={coverage:.2f}"
         )
-        # selected > 0 表示有新 gap 被选中（有进展），重置计数；否则递增
-        idle = 0 if selected > 0 else int(state.get("consecutive_idle") or 0) + 1
+        # 真进展 = selected > 0 且 portfolio_revision 在这次调用后确实增长了。
+        # 若 selected > 0 但 revision 没变（或反而降低），说明 selector 选的还是
+        # 同一批 Gap、没有任何新 Graph 变化——视为空转，递增 idle。
+        post_revision = prior_revision
+        try:
+            if goal_id:
+                from tools import graph_tools
+                post_node = graph_tools.get_node(goal_id)
+                post_revision = int(post_node.get("portfolio_revision") or 0)
+        except Exception:
+            post_revision = prior_revision
+        made_progress = selected > 0 and post_revision > prior_revision
+        idle = 0 if made_progress else int(state.get("consecutive_idle") or 0) + 1
         # 有进展时一并重置强制收敛计数
-        forced_count = 0 if selected > 0 else int(state.get("forced_convergence_count") or 0)
+        forced_count = 0 if made_progress else int(state.get("forced_convergence_count") or 0)
     return {"current_action": None, "consecutive_idle": idle, "forced_convergence_count": forced_count, "messages": [AIMessage(content=summary)]}
 
 

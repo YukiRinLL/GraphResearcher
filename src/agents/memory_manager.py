@@ -67,11 +67,20 @@ _INTERNAL_NODE_FIELDS = ("kind", "status", "sufficiency_score", "_claim_lock", "
 # insufficient or missing entirely. These are intentionally conservative so
 # healthy branches are never clipped, but pathological tail-chains are always
 # intercepted even if the evaluator keeps returning `needs_expansion`.
-_LOW_SUFFICIENCY_THRESHOLD = 0.22
+_LOW_SUFFICIENCY_THRESHOLD = 0.50
 _CONSECUTIVE_EMPTY_BRAKE = 2
-_CONSECUTIVE_LOW_SUFF_BRAKE = 3
+_CONSECUTIVE_LOW_SUFF_BRAKE = 2
+_MAX_VERTICAL_DEPTH = 5
 _COOLDOWN_HARD_SKIP_THRESHOLD = 2
 _COOLDOWN_HARD_PAUSE_THRESHOLD = 5
+
+# 防止 _recover_unactionable_research 与 scheduler 之间死循环的硬限额。
+# 每次 reopen 会 _bump_portfolio_revision()，scheduler 立刻重新调用
+# evaluate_research_portfolio 再回到这里。若 portfolio selector 一直
+# 无法为该 Gap 生成有效 recovery query，此循环会无限持续（V36 卡了
+# ~170 次）。达到 _MAX_RECOVERY_REOPENS 后强制把 Objective 标记为
+# blocked (bounded) 或 FAILED (unbounded)。
+_MAX_RECOVERY_REOPENS = 3
 
 # Cross-reference tokens that break a query's self-containment: a follow-up
 # query containing any of these depends on another query's output and is not
@@ -803,10 +812,34 @@ class MemoryManager:
                         for query in recovery_queries
                     ):
                         return None
+                    # 防死循环硬限额：若此 Gap 已经被 reopen 达上限，说明 portfolio
+                    # selector 无法为该 Objective 生成有效 recovery query。直接走
+                    # blocked/failed 分支，不再 bump portfolio_revision 触发新循环。
+                    prior_gap = prior[0]
+                    reopen_count = int(prior_gap.get("reopen_count") or 0)
+                    if reopen_count >= _MAX_RECOVERY_REOPENS:
+                        if goal.get("scope_mode") == "bounded":
+                            graph_tools.upsert_node(NodeType.ANALYSIS, {
+                                "status": "blocked",
+                                "resolution_reason": (
+                                    f"targeted recovery stalled after {reopen_count} reopen attempts "
+                                    f"without query progress"
+                                ),
+                            }, objective["id"])
+                            continue
+                        research_state.update_goal({
+                            "research_state": research_state.FAILED,
+                            "last_error": (
+                                f"Targeted recovery stalled after {reopen_count} reopen attempts "
+                                f"for Objective {key}"
+                            ),
+                        }, goal.get("id"))
+                        return None
                     graph_tools.upsert_node(NodeType.ANALYSIS, {
                         "status": "candidate",
                         "resolution_reason": None,
-                    }, prior[0]["id"])
+                        "reopen_count": reopen_count + 1,
+                    }, prior_gap["id"])
                     self._bump_portfolio_revision()
                     return {
                         "action": "evaluate_research_portfolio",
@@ -2204,24 +2237,40 @@ class MemoryManager:
                     )
                 )
             )
-            if vertical_hit:
+            # Hard-brake 3: absolute vertical depth cap.  Past
+            # _MAX_VERTICAL_DEPTH the evaluator typically keeps producing
+            # reworded variants of the same unmet acceptance criterion while
+            # ss hovers in the 0.50-0.67 zone.  Cut the chain so the budget is
+            # spent exploring orthogonal dimensions instead.
+            parent_depth = int(parent.get("depth") or 0) if parent.get("type") == NodeType.QUERY.value else 0
+            depth_hit = (
+                parent.get("type") == NodeType.QUERY.value
+                and mode == "vertical"
+                and parent_depth >= _MAX_VERTICAL_DEPTH
+            )
+            if vertical_hit or depth_hit:
+                resolution = (
+                    f"auto-paused parent chain: "
+                    f"consecutive empty={empty_streak}, "
+                    f"low suf streak={low_suf_streak}, "
+                    f"sources_increasing={sources_increasing}, "
+                    f"depth={parent_depth}, max_depth={_MAX_VERTICAL_DEPTH}"
+                )
                 for gap in group:
                     graph_tools.upsert_node(NodeType.ANALYSIS, {
                         "status": "blocked",
-                        "resolution_reason": (
-                            "auto-paused parent chain: "
-                            f"consecutive empty={empty_streak}, "
-                            f"low suf streak={low_suf_streak}, "
-                            f"sources_increasing={sources_increasing}"
-                        ),
+                        "resolution_reason": resolution,
                     }, gap["id"])
                 logger.warning(
                     "expand_gaps hard-brake: skipped vertical expansion for %s "
-                    "(empty streak=%d, low_suf streak=%d, sources increasing=%s)",
+                    "(empty streak=%d, low_suf streak=%d, sources increasing=%s, "
+                    "parent_depth=%d, max_depth=%d)",
                     parent.get("handle") or resolved,
                     empty_streak,
                     low_suf_streak,
                     sources_increasing,
+                    parent_depth,
+                    _MAX_VERTICAL_DEPTH,
                 )
                 continue
             if mode == "horizontal":
@@ -2603,6 +2652,29 @@ class MemoryManager:
                 "research_state": research_state.LIMITED_REPORT_READY,
                 "last_convergence_recommendation": "stop",
                 "report_authorized_reason": "bounded research reached best-effort convergence",
+            }, goal_id)
+            recommendation = "stop"
+            state = research_state.LIMITED_REPORT_READY
+        elif (
+            not active
+            and not pending
+            and not selected_gaps
+            and not created_fatal_gaps
+        ):
+            # 兜底防死循环：没有任何可推进的 active/pending 查询或 blocking gap，
+            # 但前面 4 个收敛分支都没匹配（objectives 未全部 satisfied、
+            # dimension_coverage 不够、剩余预算 > 0）。继续 research 只会让
+            # scheduler 再次 fallback 到 assess_convergence，形成 ping-pong
+            # 死循环（V36 在此卡了 50+ 次，每次 active_queries=0 但
+            # recommendation=continue）。授权 best-effort report，进入 reporter。
+            research_state.update_goal({
+                "research_state": research_state.LIMITED_REPORT_READY,
+                "last_convergence_recommendation": "stop",
+                "report_authorized_reason": (
+                    "no actionable work remains (no active/pending queries, "
+                    "no blocking gaps); authorizing best-effort report to break "
+                    "assess_convergence ping-pong"
+                ),
             }, goal_id)
             recommendation = "stop"
             state = research_state.LIMITED_REPORT_READY
