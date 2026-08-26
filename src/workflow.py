@@ -131,8 +131,16 @@ def init_node(state: dict) -> dict:
 
 # 连续无进展动作的熔断阈值：超过此值后强制路由到 convergence。
 # 正常流程中两次 dispatch_searcher 之间最多有 ~4 次非搜索动作
-# (assess + portfolio + expand + portfolio)，阈值 6 容纳一轮半空转。
+# (assess + portfolio + expand + portfolio)，阈值 6 容容一轮半空转。
 _MAX_CONSECUTIVE_IDLE = 6
+
+# 递归预算安全阈值：当 scheduler 调用次数（step_count）达到此值时，
+# 无论 consecutive_idle 是否达标，强制路由到 convergence。
+# 每个 scheduler→action 周期消耗 ~2-6 递归步；recursion_limit=400 时，
+# 阈值 150 消耗 ~300 递归步，为 convergence + report 子图保留 ~100 步。
+# 这防止系统在"成功"搜索/gap 扩展之间循环而始终不收敛——
+# consecutive_idle 被每次成功搜索重置，无法触发原有的空转熔断。
+_STEP_BUDGET_FOR_CONVERGENCE = 150
 
 
 def scheduler_node(state: dict) -> dict:
@@ -142,6 +150,11 @@ def scheduler_node(state: dict) -> dict:
     dispatch_searcher 也不是产生子查询的 expand_gaps 时，跳过正常调度
     直接路由到 convergence，避免 expand_gaps(created=0) /
     evaluate_portfolio(selected=0) 之间的空转循环。
+
+    递归预算安全熔断：当 ``step_count`` 达到 ``_STEP_BUDGET_FOR_CONVERGENCE``
+    时，无论 consecutive_idle 是否达标，强制路由到 convergence。这防止系统
+    在"成功"搜索之间循环而始终不收敛——每次成功搜索都重置 consecutive_idle，
+    导致原空转熔断无法触发，最终耗尽 LangGraph 递归预算。
     """
     step_count = int(state.get("step_count") or 0) + 1
     consecutive_idle = int(state.get("consecutive_idle") or 0)
@@ -157,6 +170,29 @@ def scheduler_node(state: dict) -> dict:
             "messages": [AIMessage(content="[scheduler] no actions, routing to convergence")],
         }
     action = actions[0]
+
+    # 递归预算安全熔断：step_count 接近递归限制时强制收敛。
+    # 此检查必须在 consecutive_idle 熔断之前——consecutive_idle 被成功
+    # 搜索不断重置，无法在预算耗尽前触发收敛。
+    if step_count >= _STEP_BUDGET_FOR_CONVERGENCE:
+        summary = (
+            f"[scheduler] FORCED CONVERGENCE "
+            f"(step={step_count} >= {_STEP_BUDGET_FOR_CONVERGENCE}, "
+            f"forced_count={forced_count + 1}): recursion budget near limit"
+        )
+        return {
+            "current_action": {
+                "action": "assess_convergence",
+                "query_id": None,
+                "goal_id": action.get("goal_id"),
+                "query_handle": None,
+                "reason": f"forced convergence: step budget near limit (step={step_count})",
+            },
+            "step_count": step_count,
+            "consecutive_idle": consecutive_idle,
+            "forced_convergence_count": forced_count + 1,
+            "messages": [AIMessage(content=summary)],
+        }
 
     # 熔断：连续无进展超过阈值时，将 expand_gaps/evaluate_research_portfolio
     # 替换为 assess_convergence，强制进入收敛裁决。
@@ -215,6 +251,17 @@ def portfolio_node(state: dict) -> dict:
     """全局评估目标覆盖率，选择高价值 gap 并延迟低价值工作."""
     action = state.get("current_action") or {}
     goal_id = action.get("goal_id")
+    # 记录调用前 portfolio_revision，用于检测 evaluate_research_portfolio 是否
+    # 真的改变了 portfolio 状态。仅看 selected > 0 不够——_recover_unactionable_research
+    # 会反复重置同一个 Gap 并 bump revision，使 selected 永远 > 0 但实际无进展
+    prior_revision = 0
+    if goal_id:
+        try:
+            from tools import graph_tools
+            prior_node = graph_tools.get_node(goal_id)
+            prior_revision = int(prior_node.get("portfolio_revision") or 0)
+        except Exception:
+            prior_revision = 0
     result = gmt.evaluate_research_portfolio.func(goal_id)
     if result.get("error"):
         summary = f"[evaluate_portfolio] ERROR: {result['error']}"
@@ -228,10 +275,21 @@ def portfolio_node(state: dict) -> dict:
             f"[evaluate_portfolio] selected={selected}, deferred={deferred}, "
             f"coverage={coverage:.2f}"
         )
-        # selected > 0 表示有新 gap 被选中（有进展），重置计数；否则递增
-        idle = 0 if selected > 0 else int(state.get("consecutive_idle") or 0) + 1
+        # 真进展 = selected > 0 且 portfolio_revision 在这次调用后确实增长了。
+        # 若 selected > 0 但 revision 没变（或反而降低），说明 selector 选的还是
+        # 同一批 Gap、没有任何新 Graph 变化——视为空转，递增 idle。
+        post_revision = prior_revision
+        try:
+            if goal_id:
+                from tools import graph_tools
+                post_node = graph_tools.get_node(goal_id)
+                post_revision = int(post_node.get("portfolio_revision") or 0)
+        except Exception:
+            post_revision = prior_revision
+        made_progress = selected > 0 and post_revision > prior_revision
+        idle = 0 if made_progress else int(state.get("consecutive_idle") or 0) + 1
         # 有进展时一并重置强制收敛计数
-        forced_count = 0 if selected > 0 else int(state.get("forced_convergence_count") or 0)
+        forced_count = 0 if made_progress else int(state.get("forced_convergence_count") or 0)
     return {"current_action": None, "consecutive_idle": idle, "forced_convergence_count": forced_count, "messages": [AIMessage(content=summary)]}
 
 
@@ -339,16 +397,14 @@ def dispatch_node(state: dict) -> dict:
 def convergence_node(state: dict) -> dict:
     """裁决收敛：检查目标覆盖、致命冲突和预算，决定继续还是授权报告.
 
-    二级死锁防护：当 scheduler 因连续空转强制路由到此节点
-    （``action.reason`` 含 "forced convergence"）而 assess_convergence 仍建议
-    ``continue`` 时，说明研究未收敛但又无法取得进展（expand_gaps created=0、
-    portfolio selected=0）。此时::
+    正常的收敛裁决完全委托 ``memory_manager.assess_convergence``，后者基于
+    ``get_next_actions`` 的"单源 actionability 定义"判断是否还有可推进的
+    工作。只要 ``get_next_actions`` 能排出任何非 assess_convergence 的动
+    作就 ``continue``，否则 ``LIMITED_REPORT_READY``。
 
-      - 第 1 次强制收敛（forced_convergence_count == 1）：重置 consecutive_idle
-        给一轮重试机会，可能只是暂时性卡顿。
-      - 第 2 次及以上强制收敛（forced_convergence_count >= 2）：将 research_state
-        覆盖为 LIMITED_REPORT_READY，授权生成 best-effort 报告，彻底打破
-        scheduler ⇄ convergence 的空转循环。
+    ``forced_convergence_count`` 和 LangGraph ``_STEP_BUDGET_FOR_CONVERGENCE``
+    仅在 assess_convergence 被异常
+    绕过、或发生了不可预期调度故障时，作为最后一道系统级界限。
     """
     from tools import research_state
 
@@ -369,24 +425,26 @@ def convergence_node(state: dict) -> dict:
             f"[assess_convergence] recommendation={recommendation}, "
             f"converged={converged}, fatal_conflicts={fatal}, active_queries={active}"
         )
-        # 二级熔断：强制收敛后仍建议 continue 且已重试过 → 授权 best-effort 报告。
-        # 此时 research_state 通常仍为 RESEARCHING，迁移到 LIMITED_REPORT_READY 合法；
-        # 用 try/except 兜底，万一 assess_convergence 已迁移状态则不强制覆盖。
-        if is_forced and recommendation == "continue" and forced_count >= 2:
+        # 递归预算安全网：step 熔断触发时 assess_convergence 仍 say continue，
+        # 说明调度/收敛逻辑出现了未覆盖的异常分支。此时仍要从 RESEARCHING 迁
+        # 移到 LIMITED_REPORT_READY，避免 LangGraph 直接把整个 graph 抛
+        # RecursionError。这是系统层保留的硬界限，不再承载"打破乒乓"语义。
+        if is_forced and recommendation == "continue":
             try:
                 research_state.update_goal({
                     "research_state": research_state.LIMITED_REPORT_READY,
                 })
                 summary += (
-                    f" -> OVERRIDE to LIMITED_REPORT_READY "
-                    f"(forced_count={forced_count}, no progress possible)"
+                    f" -> RECURSION BUDGET GUARD: step budget forced "
+                    f"convergence override to LIMITED_REPORT_READY "
+                    f"(forced_count={forced_count})"
                 )
             except ValueError as exc:  # 状态迁移不合法——说明已进入可报告状态
-                summary += f" -> override skipped (transition invalid: {exc})"
+                summary += f" -> recursion guard override skipped (transition invalid: {exc})"
 
-    # 收敛节点始终重置 consecutive_idle，避免 scheduler 立即再次强制收敛。
-    # 非强制收敛（正常裁决）重置 forced_convergence_count；
-    # 强制收敛保留计数以累计触发二级熔断。
+    # 收敛节点始终重置 consecutive_idle，避免 scheduler 立即再次触发
+    # consecutive_idle 分支。forced_convergence_count 同理：正常裁决重置，
+    # 递归熔断时保留计数以方便事后统计故障频次。
     new_forced_count = forced_count if is_forced else 0
     return {
         "current_action": None,
