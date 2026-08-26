@@ -632,12 +632,30 @@ class MemoryManager:
                     selected_by_owner.setdefault(owner_id, []).append(gap["id"])
         # Completion mode: when remaining budget is at or below the reserve
         # threshold, stop creating new child queries so the remaining rounds
-        # are spent finishing in-flight work.
+        # are spent finishing in-flight work. Also demote any "selected" gaps
+        # that would have generated expand_gaps back to "candidate" so the
+        # rest of the state machine sees the same ground truth as the
+        # scheduler. Without this demotion, assess_convergence would still
+        # count those gaps as actionable work (and keep recommending
+        # ``continue``) while the scheduler would never enqueue expand_gaps,
+        # producing a scheduler ⇄ assess_convergence ping-pong loop until the
+        # recursion step budget finally forces convergence.
         _remaining_for_mode = research_state.remaining_budget()
         in_completion_mode = (
             _remaining_for_mode is not None
             and _remaining_for_mode <= _BUDGET_RESERVE_FOR_COMPLETION
         )
+        if in_completion_mode:
+            for gap in gaps:
+                if gap.get("status") == "selected":
+                    graph_tools.upsert_node(
+                        NodeType.ANALYSIS,
+                        {"status": "candidate"},
+                        gap["id"],
+                    )
+            # Re-read gaps after the demotion so the subsequent scheduling
+            # and expansion checks use the newly consistent statuses.
+            gaps = graph_tools.search_nodes("analysis", {"analysis_type": "gap"})
         if not in_completion_mode:
             for owner_id, gap_ids in selected_by_owner.items():
                 owner = graph_tools.get_node(owner_id)
@@ -2661,23 +2679,52 @@ class MemoryManager:
             and not selected_gaps
             and not created_fatal_gaps
         ):
-            # 兜底防死循环：没有任何可推进的 active/pending 查询或 blocking gap，
-            # 但前面 4 个收敛分支都没匹配（objectives 未全部 satisfied、
-            # dimension_coverage 不够、剩余预算 > 0）。继续 research 只会让
-            # scheduler 再次 fallback 到 assess_convergence，形成 ping-pong
-            # 死循环（V36 在此卡了 50+ 次，每次 active_queries=0 但
-            # recommendation=continue）。授权 best-effort report，进入 reporter。
-            research_state.update_goal({
-                "research_state": research_state.LIMITED_REPORT_READY,
-                "last_convergence_recommendation": "stop",
-                "report_authorized_reason": (
-                    "no actionable work remains (no active/pending queries, "
-                    "no blocking gaps); authorizing best-effort report to break "
-                    "assess_convergence ping-pong"
-                ),
-            }, goal_id)
-            recommendation = "stop"
-            state = research_state.LIMITED_REPORT_READY
+            # 当且仅当"scheduler侧下一轮真正能出队的动作"与"assess_convergence
+            # 侧看到的 active/pending/gap 工作清单"都为空时，才判定系统没
+            # 有可推进的工作，授权 best-effort 报告。这两个条件必须以同一份
+            # actionability 定义作为单源真源——get_next_actions() 本身就是
+            # 这一单源，它已经考虑 completion_mode、required_path、树完整性、
+            # recoverability 等所有调度约束，因此这里不再另行枚举局部条件，
+            # 直接复用 get_next_actions 的"是否真的还能排出 assess_convergence
+            # 以外的动作"做判定。
+            #
+            # 只要 get_next_actions 能排出任何非 assess_convergence 的动
+            # 作（包括 evaluate_research_portfolio、recover_unactionable 产
+            # 生的新 gap 展开等），就说明系统确实有下一步，不能收敛。
+            #
+            # 根因保障：如果未来某条调度规则会让"看上去可推进"的工作被屏
+            # 蔽（比如 completion_mode 屏蔽 expand_gaps），那么那种屏蔽动作
+            # 必须在 get_next_actions 里同步修改 graph 语义（例如把 selected
+            # gap 降回 candidate），让 assess_convergence 侧对 selected_gaps
+            # 的读取自然为空。这样本分支条件和 get_next_actions 必然一致，
+            # 不会再出现 scheduler 走不通但 assess_convergence 还说有活的
+            # "乒乓死循环"。
+            scheduler_actions = list(self.get_next_actions(limit=8) or [])
+            actionable_exists = any(
+                (a.get("action") or "") != "assess_convergence"
+                for a in scheduler_actions
+            )
+            if actionable_exists:
+                research_state.update_goal({
+                    "research_state": research_state.RESEARCHING,
+                    "last_convergence_recommendation": "continue",
+                    "report_authorized_reason": None,
+                }, goal_id)
+                recommendation = "continue"
+                state = research_state.RESEARCHING
+            else:
+                research_state.update_goal({
+                    "research_state": research_state.LIMITED_REPORT_READY,
+                    "last_convergence_recommendation": "stop",
+                    "report_authorized_reason": (
+                        "no actionable work remains according to the shared "
+                        "scheduler actionability definition (no active/pending "
+                        "queries and no non-convergence next action); "
+                        "authorizing best-effort report"
+                    ),
+                }, goal_id)
+                recommendation = "stop"
+                state = research_state.LIMITED_REPORT_READY
         else:
             research_state.update_goal({
                 "research_state": research_state.RESEARCHING,

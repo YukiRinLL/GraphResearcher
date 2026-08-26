@@ -397,16 +397,14 @@ def dispatch_node(state: dict) -> dict:
 def convergence_node(state: dict) -> dict:
     """裁决收敛：检查目标覆盖、致命冲突和预算，决定继续还是授权报告.
 
-    二级死锁防护：当 scheduler 因连续空转强制路由到此节点
-    （``action.reason`` 含 "forced convergence"）而 assess_convergence 仍建议
-    ``continue`` 时，说明研究未收敛但又无法取得进展（expand_gaps created=0、
-    portfolio selected=0）。此时::
+    正常的收敛裁决完全委托 ``memory_manager.assess_convergence``，后者基于
+    ``get_next_actions`` 的"单源 actionability 定义"判断是否还有可推进的
+    工作。只要 ``get_next_actions`` 能排出任何非 assess_convergence 的动
+    作就 ``continue``，否则 ``LIMITED_REPORT_READY``。
 
-      - 第 1 次强制收敛（forced_convergence_count == 1）：重置 consecutive_idle
-        给一轮重试机会，可能只是暂时性卡顿。
-      - 第 2 次及以上强制收敛（forced_convergence_count >= 2）：将 research_state
-        覆盖为 LIMITED_REPORT_READY，授权生成 best-effort 报告，彻底打破
-        scheduler ⇄ convergence 的空转循环。
+    ``forced_convergence_count`` 和 LangGraph ``_STEP_BUDGET_FOR_CONVERGENCE``
+    仅在 assess_convergence 被异常
+    绕过、或发生了不可预期调度故障时，作为最后一道系统级界限。
     """
     from tools import research_state
 
@@ -427,24 +425,26 @@ def convergence_node(state: dict) -> dict:
             f"[assess_convergence] recommendation={recommendation}, "
             f"converged={converged}, fatal_conflicts={fatal}, active_queries={active}"
         )
-        # 二级熔断：强制收敛后仍建议 continue 且已重试过 → 授权 best-effort 报告。
-        # 此时 research_state 通常仍为 RESEARCHING，迁移到 LIMITED_REPORT_READY 合法；
-        # 用 try/except 兜底，万一 assess_convergence 已迁移状态则不强制覆盖。
-        if is_forced and recommendation == "continue" and forced_count >= 2:
+        # 递归预算安全网：step 熔断触发时 assess_convergence 仍 say continue，
+        # 说明调度/收敛逻辑出现了未覆盖的异常分支。此时仍要从 RESEARCHING 迁
+        # 移到 LIMITED_REPORT_READY，避免 LangGraph 直接把整个 graph 抛
+        # RecursionError。这是系统层保留的硬界限，不再承载"打破乒乓"语义。
+        if is_forced and recommendation == "continue":
             try:
                 research_state.update_goal({
                     "research_state": research_state.LIMITED_REPORT_READY,
                 })
                 summary += (
-                    f" -> OVERRIDE to LIMITED_REPORT_READY "
-                    f"(forced_count={forced_count}, no progress possible)"
+                    f" -> RECURSION BUDGET GUARD: step budget forced "
+                    f"convergence override to LIMITED_REPORT_READY "
+                    f"(forced_count={forced_count})"
                 )
             except ValueError as exc:  # 状态迁移不合法——说明已进入可报告状态
-                summary += f" -> override skipped (transition invalid: {exc})"
+                summary += f" -> recursion guard override skipped (transition invalid: {exc})"
 
-    # 收敛节点始终重置 consecutive_idle，避免 scheduler 立即再次强制收敛。
-    # 非强制收敛（正常裁决）重置 forced_convergence_count；
-    # 强制收敛保留计数以累计触发二级熔断。
+    # 收敛节点始终重置 consecutive_idle，避免 scheduler 立即再次触发
+    # consecutive_idle 分支。forced_convergence_count 同理：正常裁决重置，
+    # 递归熔断时保留计数以方便事后统计故障频次。
     new_forced_count = forced_count if is_forced else 0
     return {
         "current_action": None,
