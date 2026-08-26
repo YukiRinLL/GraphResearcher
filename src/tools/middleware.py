@@ -15,7 +15,7 @@ from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 logger = logging.getLogger(__name__)
 
 # Maximum number of Searcher dispatches per run; 0 (or less) means no limit.
-_MAX_SEARCH_ROUNDS = 0
+_MAX_SEARCH_ROUNDS = 30
 
 
 def configure(max_search_rounds: int) -> None:
@@ -42,6 +42,7 @@ class ResearchStateMiddleware(AgentMiddleware):
         "以下是原始 User Request（逐字保存），你必须严格遵循其中的所有写作规范和要求：\n"
         "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n{user_request}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
         "请基于上述 User Request 和 export_report_context 中的报告材料，按 Reporter 工作流完成报告。"
+        "报告正文必须使用与 User Request 相同的语言撰写。"
     )
 
     _RESEARCH_NUDGE = (
@@ -478,6 +479,59 @@ class ReportValidationMiddleware(AgentMiddleware):
 class ReporterWorkflowMiddleware(AgentMiddleware):
     """Bound the Reporter run and force a complete final submission."""
 
+    _INFOBOX_RE = re.compile(r"^\s*\|.*\|\s*\n\s*\|[\s-]+\|\s*\n", re.MULTILINE)
+    _TABLE_ROW_RE = re.compile(r"^\s*\|.*\|\s*$", re.MULTILINE)
+    _META_NARRATIVE_TERMS = [
+        r"supplied\s+(?:material|evidence|data)",
+        r"the\s+supplied",
+        r"provided\s+(?:material|evidence)",
+        r"available\s+(?:material|evidence)",
+        r"本研究",
+        r"本次检索",
+        r"本轮",
+        r"研究图谱",
+        r"摘要线索",
+        r"未读取正文",
+        r"source\s+节点",
+        r"evidence\s+节点",
+        # Fix 1: reader-directive / methodological-caveat meta-narratives
+        r"should\s+not\s+be\s+(?:treated|taken|regarded|considered|used)\s+as",
+        r"should\s+not\s+be\s+used\s+to",
+        r"do\s+not\s+amount\s+to\s+a\s+\w+",
+        r"rather\s+than\s+a\s+(?:definitive|secure|reliable|forensic)\s+\w+",
+        r"not\s+a\s+(?:securely|reliably)\s+documented",
+        r"concern\s+reported\s+\w+",
+        r"reported\s+reconstructions",
+        r"further\s+(?:catalogue|catalog)\s+verification",
+        # Fix 5: over-hedging on the subject itself
+        r"so-called\s+",
+        r"(?:purported|alleged)\s+(?:Ring|Nestor|the\s+\w+\s+ring)",
+        # Fix 6: vague / anonymous attribution
+        r"some\s+(?:interpretations?|scholars?|researchers?|experts?)\s+(?:regard|argue|believe|suggest|state|note|consider|claim)",
+        r"a\s+(?:discussion|study|paper)\s+(?:reports|states|notes|suggests|claims)",
+        r"a\s+\d{4}\s+discussion\s+(?:reports|states|notes|suggests)",
+        r"it\s+has\s+been\s+(?:argued|suggested|noted|proposed)",
+        r"scholars\s+have\s+(?:discussed|noted|argued|suggested)",
+        r"many\s+scholars\s+(?:believe|argue|consider|regard)",
+        # Fix D (extra): vague-attribution variants that escaped the first pass
+        r"one\s+(?:position|view)\s+(?:treats|holds|regards|considers)",
+        r"the\s+other\s+position\s+(?:treats|holds|regards|considers)",
+        r"arguments\s+(?:advanced|have\s+been\s+advanced)\s+in\s+the\s+debate",
+        r"some\s+(?:argue|contend)\s+that",
+        r"the\s+debate\s+involves",
+        # Fix C: residual meta-analytical / evidence-state commentary
+        r"are\s+best\s+presented\s+as\s+\w+\s+rather\s+than",
+        r"rather\s+than\s+as\s+an?\s+uncontested",
+        r"do\s+not,?\s+(?:by\s+themselves|alone|on\s+their\s+own),?\s+(?:establish|demonstrate|prove)",
+        r"do\s+not\s+(?:establish|demonstrate|prove)\s+that",
+        r"the\s+evidence\s+does\s+not\s+(?:reconcile|establish|support|demonstrate)",
+        r"remains\s+(?:contested|unresolved|undetermined)\s+rather\s+than",
+        r"parts\s+of\s+the\s+recorded\s+history\s+of\s+the\s+object\s+rather\s+than",
+        # Fix A: hedge masking an established fact (discovery/holding/date)
+        r"reportedly\s+(?:discovered|found|excavated|dated|uncovered)",
+        r"reports\s+that\s+(?:the\s+(?:ring|object)\s+(?:was|is)\s+(?:discovered|found))",
+    ]
+
     def __init__(self, remind_at: int = 20, force_at: int = 24):
         """Configure the reminder and forced-submission model-call limits."""
         self.remind_at = remind_at
@@ -521,6 +575,73 @@ class ReporterWorkflowMiddleware(AgentMiddleware):
         lines.append("修订后调用一次无参数的 submit_final_report()；第二次提交将直接交付。")
         return "\n".join(lines)
 
+    @classmethod
+    def _check_report_quality(cls, report_text: str) -> list[str]:
+        """Validate post-generation: Infobox placement, meta-narrative terms, chapter count."""
+        issues: list[str] = []
+        text = report_text or ""
+        if not text.strip():
+            return ["报告为空"]
+
+        has_infobox = bool(cls._INFOBOX_RE.search(text))
+        request_text = ""
+        evidence_count = 0
+        try:
+            from tools import graph_tools
+            requests = graph_tools.search_nodes("user_request", {})
+            if requests:
+                request_text = str(requests[0].get("request") or "").casefold()
+            evidence_count = len(graph_tools.search_nodes("evidence", {}))
+        except Exception:
+            pass
+
+        is_wikipedia = "wikipedia" in request_text or "维基百科" in request_text
+
+        if is_wikipedia and not has_infobox:
+            issues.append("Wikipedia 风格报告缺少 Infobox（Markdown pipe table），必须在 Lead 之后插入")
+
+        # Fix 2: Lead prose must precede the Infobox table — the first content
+        # line after the title heading must not be a table row.
+        if is_wikipedia and has_infobox:
+            lines = text.splitlines()
+            title_idx = -1
+            for i, ln in enumerate(lines):
+                if ln.strip().startswith("#"):
+                    title_idx = i
+                    break
+            scan_from = title_idx + 1 if title_idx >= 0 else 0
+            first_line = ""
+            for ln in lines[scan_from:]:
+                s = ln.strip()
+                if s:
+                    first_line = s
+                    break
+            if first_line.startswith("|"):
+                issues.append(
+                    "Lead 散文必须在 Infobox 之前：当前标题后第一行是表格，应先写概括主题的散文导言，"
+                    "Infobox 放在 Lead 段落之后"
+                )
+
+        meta_found = []
+        for term_re in cls._META_NARRATIVE_TERMS:
+            matches = re.findall(term_re, text, re.IGNORECASE)
+            if matches:
+                meta_found.append(f"'{matches[0]}'")
+        if meta_found:
+            issues.append(f"报告中包含元叙述/模糊归因短语：{', '.join(meta_found[:5])}")
+
+        body_headings = re.findall(r"^##\s+", text, re.MULTILINE)
+        heading_count = len(body_headings)
+        # Fix 3b: require more chapters when the evidence base is large.
+        min_headings = 5 if evidence_count >= 30 else 3
+        if is_wikipedia and heading_count < min_headings:
+            issues.append(
+                f"Wikipedia 风格报告章节数不足（当前 {heading_count} 个 ## 标题，"
+                f"证据 {evidence_count} 条，建议至少 {min_headings} 个主体章节，按维度独立分节）"
+            )
+
+        return issues
+
     def wrap_model_call(self, request, handler):
         """Bound synchronous Reporter calls and force a terminal submission."""
         from tools import graph_manager_tools
@@ -538,6 +659,13 @@ class ReporterWorkflowMiddleware(AgentMiddleware):
             )))
         elif attempt.get("revision_requested"):
             messages.append(HumanMessage(content=self._revision_prompt(attempt)))
+            report_text = str(attempt.get("report") or attempt.get("salvaged_report") or "")
+            quality_issues = self._check_report_quality(report_text)
+            if quality_issues:
+                messages.append(HumanMessage(content=(
+                    "提交前质量检查发现以下问题，请一并修复：\n" +
+                    "\n".join(f"- {q}" for q in quality_issues)
+                )))
         response = handler(request.override(messages=messages))
         last = _last_ai_message(response)
         if last is not None and not last.tool_calls:
@@ -561,6 +689,13 @@ class ReporterWorkflowMiddleware(AgentMiddleware):
             )))
         elif attempt.get("revision_requested"):
             messages.append(HumanMessage(content=self._revision_prompt(attempt)))
+            report_text = str(attempt.get("report") or attempt.get("salvaged_report") or "")
+            quality_issues = self._check_report_quality(report_text)
+            if quality_issues:
+                messages.append(HumanMessage(content=(
+                    "提交前质量检查发现以下问题，请一并修复：\n" +
+                    "\n".join(f"- {q}" for q in quality_issues)
+                )))
         response = await handler(request.override(messages=messages))
         last = _last_ai_message(response)
         if last is not None and not last.tool_calls:

@@ -1,9 +1,9 @@
 """Reporter agent — a subagent that writes the report from the graph only.
 
 The Reporter is defined purely by `prompts/reporter.md`. It is a plain
-`SubAgent` spec (no model override; it inherits the Orchestrator's model) with
-the Reporter-facing Graph Manager tools, and is delegated to by the
-Orchestrator via the built-in `task` tool.
+`SubAgent` spec (no model override; it inherits the workflow's default model)
+with the Reporter-facing Graph Manager tools, and is invoked by the workflow's
+``report_node`` via ``langchain.agents.create_agent``.
 """
 
 import config

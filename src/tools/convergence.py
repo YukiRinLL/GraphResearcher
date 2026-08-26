@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 # Query statuses that count as resolved for convergence (mirrors the gate the
 # middleware enforces before allowing further Searcher dispatches).
-_RESOLVED_STATUSES = {"sufficient", "blocked", "failed", "deferred"}
+_RESOLVED_STATUSES = {"sufficient", "blocked", "failed", "deferred", "paused"}
 
 # --- Priority model -------------------------------------------------------
 # A query's priority blends a SEMANTIC signal (how central its topic is to the

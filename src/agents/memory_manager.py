@@ -63,6 +63,25 @@ def _parse_json(text: str) -> dict:
 # otherwise the model narrates graph state (e.g. "this query is blocked").
 _INTERNAL_NODE_FIELDS = ("kind", "status", "sufficiency_score", "_claim_lock", "_budget_lock")
 
+# Hard-brake thresholds used by the scheduler when LLM branch_decisions are
+# insufficient or missing entirely. These are intentionally conservative so
+# healthy branches are never clipped, but pathological tail-chains are always
+# intercepted even if the evaluator keeps returning `needs_expansion`.
+_LOW_SUFFICIENCY_THRESHOLD = 0.50
+_CONSECUTIVE_EMPTY_BRAKE = 2
+_CONSECUTIVE_LOW_SUFF_BRAKE = 2
+_MAX_VERTICAL_DEPTH = 5
+_COOLDOWN_HARD_SKIP_THRESHOLD = 2
+_COOLDOWN_HARD_PAUSE_THRESHOLD = 5
+
+# 防止 _recover_unactionable_research 与 scheduler 之间死循环的硬限额。
+# 每次 reopen 会 _bump_portfolio_revision()，scheduler 立刻重新调用
+# evaluate_research_portfolio 再回到这里。若 portfolio selector 一直
+# 无法为该 Gap 生成有效 recovery query，此循环会无限持续（V36 卡了
+# ~170 次）。达到 _MAX_RECOVERY_REOPENS 后强制把 Objective 标记为
+# blocked (bounded) 或 FAILED (unbounded)。
+_MAX_RECOVERY_REOPENS = 3
+
 # Cross-reference tokens that break a query's self-containment: a follow-up
 # query containing any of these depends on another query's output and is not
 # independently searchable. Authored follow-ups containing them are dropped.
@@ -88,11 +107,18 @@ _GAP_EVIDENCE_TYPES = {
     NodeType.CONFLICT.value,
 }
 
-OBJECTIVE_COVERAGE_THRESHOLD = 0.75
-OBJECTIVE_CONFIDENCE_THRESHOLD = 0.65
-EXPANSION_UTILITY_THRESHOLD = 0.25
+OBJECTIVE_COVERAGE_THRESHOLD = 0.60
+OBJECTIVE_CONFIDENCE_THRESHOLD = 0.50
+EXPANSION_UTILITY_THRESHOLD = 0.05
+EXPANSION_UTILITY_THRESHOLD_REDUNDANT = 0.03
+MIN_SUCCESSFUL_ROUNDS_BEFORE_BEST_EFFORT = 4
 LOW_REALIZED_GAIN_THRESHOLD = 0.05
 LOW_GAIN_WINDOW = 2
+# When remaining search rounds drop to this threshold or below, the system
+# enters "completion mode": no new child queries are created, and queries
+# needing expansion are deferred so the remaining budget is spent finishing
+# in-flight work instead of starting new branches.
+_BUDGET_RESERVE_FOR_COMPLETION = 5
 _ACTIVE_QUERY_WORK_STATUSES = {
     "searching",
     "assessing",
@@ -108,6 +134,22 @@ _GAP_CATEGORIES = {
     "verification",
     "detail",
 }
+
+# Dimension-coverage gate: prevent premature convergence when evidence/sources/
+# expanded queries are too thin. Thresholds calibrated from V25 baseline
+# (3 sources, 14 queries, 33 evidence → 21.65% coverage).
+# source threshold lowered 5→3: 3 high-quality real sources should converge,
+# not be forced into budget-exhausted by a numeric gate that invited shells.
+_MIN_EVIDENCE_FOR_CONVERGENCE = 15
+_MIN_SOURCES_FOR_CONVERGENCE = 3
+_MIN_EXPANDED_QUERIES_FOR_CONVERGENCE = 3
+# Depth-breadth balance: gradually discount the marginal utility of gaps on
+# deep query chains so the portfolio prefers breadth over excessive vertical
+# drilling. Not a hard cap — a gap with high raw utility (e.g. fatal conflict)
+# can still be selected at depth 6; it just needs ~2x the raw utility of a
+# shallow gap to clear the same threshold.
+_DEPTH_FREE_TIER = 3          # levels 1-3 incur no penalty (root + 2 expansions)
+_DEPTH_PENALTY_FACTOR = 0.3   # each level beyond free tier: discount = 1/(1+0.3*n)
 
 
 def _strip_internal_fields(node: dict) -> dict:
@@ -168,6 +210,32 @@ def _query_spec(item: Any) -> tuple:
             objective_keys if isinstance(objective_keys, list) else [],
         )
     return item, [], []
+
+
+_FOLLOWUP_VALID_SEARCH_MODES = {
+    "general", "news", "finance", "linkedin", "github", "academic"
+}
+
+
+def _followup_query_spec(item: Any) -> tuple:
+    """Like :func:`_query_spec` but also extracts the per-query search_mode hint.
+
+    Used only by the followup planner path (``_plan_followup_queries``); the
+    initial planner (``init_research``) keeps using ``_query_spec`` so initial
+    Queries carry the default mode.
+
+    Returns:
+        A ``(text, acceptance_criteria, objective_keys, search_mode)`` tuple.
+        ``search_mode`` falls back to ``"general"`` when missing or invalid.
+    """
+    text, criteria, objective_keys = _query_spec(item)
+    mode = "general"
+    if isinstance(item, dict):
+        candidate = item.get("search_mode")
+        if isinstance(candidate, str):
+            candidate = candidate.strip().lower()
+        mode = candidate if candidate in _FOLLOWUP_VALID_SEARCH_MODES else "general"
+    return text, criteria, objective_keys, mode
 
 
 def _initial_query_limit(max_search_rounds: int) -> int:
@@ -240,6 +308,14 @@ class MemoryManager:
         self.model = model if model is not None else config.build_model()
         self.user_request = user_request
         self._state_lock = threading.RLock()
+        # Track consecutive cool-down rounds per owner so the LLM can see when a
+        # branch has been parked for a while and decide whether to revive it.
+        self._cooldown_streaks: dict[str, int] = {}
+        # Hard-brake signals that do not depend on the LLM emitting a
+        # cool_down / pause decision. `_sufficiency_history` records the tail
+        # of per-assessment sufficiency scores per query id so the code can
+        # detect "stuck at 0.20 for 3+ consecutive assessments" tail chains.
+        self._sufficiency_history: dict[str, list[float]] = {}
 
     def _invoke_json(self, prompt: str) -> dict:
         """Invoke the model and parse a JSON object from its response."""
@@ -545,26 +621,60 @@ class MemoryManager:
         selected_by_owner: dict[str, list[str]] = {}
         for gap in gaps:
             owner_id = gap.get("expansion_parent_id")
-            if gap.get("status") == "selected" and owner_id:
-                selected_by_owner.setdefault(owner_id, []).append(gap["id"])
-        for owner_id, gap_ids in selected_by_owner.items():
-            owner = graph_tools.get_node(owner_id)
-            if owner.get("type") not in {NodeType.QUERY.value, NodeType.USER_REQUEST.value}:
+            if not owner_id:
                 continue
-            is_query = owner.get("type") == NodeType.QUERY.value
-            actions.append({
-                "action": "expand_gaps",
-                "parent_id": owner_id,
-                "query_id": owner_id if is_query else None,
-                "query_handle": owner.get("handle"),
-                "goal_id": None if is_query else owner_id,
-                "priority": owner.get("priority", 1.0 if not is_query else 0.0),
-                "required_for_parent": owner.get("required_for_parent", False),
-                "required_path": research_state.is_required_path(owner_id) if is_query else False,
-                "semantic_importance": owner.get("sem", 1.0 if not is_query else 0.0),
-                "gap_ids": gap_ids,
-                "reason": "globally selected gaps await a grounded search query",
-            })
+            status = gap.get("status")
+            if status == "selected":
+                selected_by_owner.setdefault(owner_id, []).append(gap["id"])
+            elif status == "candidate":
+                owner_node = graph_tools.get_node(owner_id)
+                if owner_node.get("status") == "needs_expansion":
+                    selected_by_owner.setdefault(owner_id, []).append(gap["id"])
+        # Completion mode: when remaining budget is at or below the reserve
+        # threshold, stop creating new child queries so the remaining rounds
+        # are spent finishing in-flight work. Also demote any "selected" gaps
+        # that would have generated expand_gaps back to "candidate" so the
+        # rest of the state machine sees the same ground truth as the
+        # scheduler. Without this demotion, assess_convergence would still
+        # count those gaps as actionable work (and keep recommending
+        # ``continue``) while the scheduler would never enqueue expand_gaps,
+        # producing a scheduler ⇄ assess_convergence ping-pong loop until the
+        # recursion step budget finally forces convergence.
+        _remaining_for_mode = research_state.remaining_budget()
+        in_completion_mode = (
+            _remaining_for_mode is not None
+            and _remaining_for_mode <= _BUDGET_RESERVE_FOR_COMPLETION
+        )
+        if in_completion_mode:
+            for gap in gaps:
+                if gap.get("status") == "selected":
+                    graph_tools.upsert_node(
+                        NodeType.ANALYSIS,
+                        {"status": "candidate"},
+                        gap["id"],
+                    )
+            # Re-read gaps after the demotion so the subsequent scheduling
+            # and expansion checks use the newly consistent statuses.
+            gaps = graph_tools.search_nodes("analysis", {"analysis_type": "gap"})
+        if not in_completion_mode:
+            for owner_id, gap_ids in selected_by_owner.items():
+                owner = graph_tools.get_node(owner_id)
+                if owner.get("type") not in {NodeType.QUERY.value, NodeType.USER_REQUEST.value}:
+                    continue
+                is_query = owner.get("type") == NodeType.QUERY.value
+                actions.append({
+                    "action": "expand_gaps",
+                    "parent_id": owner_id,
+                    "query_id": owner_id if is_query else None,
+                    "query_handle": owner.get("handle"),
+                    "goal_id": None if is_query else owner_id,
+                    "priority": owner.get("priority", 1.0 if not is_query else 0.0),
+                    "required_for_parent": owner.get("required_for_parent", False),
+                    "required_path": research_state.is_required_path(owner_id) if is_query else False,
+                    "semantic_importance": owner.get("sem", 1.0 if not is_query else 0.0),
+                    "gap_ids": gap_ids,
+                    "reason": "globally selected gaps await a grounded search query",
+                })
 
         if not any(action["action"] == "assess_query" for action in actions):
             if int(goal.get("evaluated_portfolio_revision") or 0) < int(goal.get("portfolio_revision") or 0):
@@ -598,11 +708,14 @@ class MemoryManager:
                     "reason": "no higher-priority workflow action remains",
                 })
 
+        # 优先完成已有查询（dispatch_searcher）再创建新查询（expand_gaps），
+        # 实现类似广度优先的子查询创建：各分支查询相对均匀推进，避免预算
+        # 耗尽时仍有大量活跃查询未完成。
         action_rank = {
             "assess_query": 0,
             "evaluate_research_portfolio": 1,
-            "expand_gaps": 2,
-            "dispatch_searcher": 3,
+            "dispatch_searcher": 2,
+            "expand_gaps": 3,
             "assess_convergence": 4,
         }
         actions.sort(key=lambda a: (
@@ -717,10 +830,34 @@ class MemoryManager:
                         for query in recovery_queries
                     ):
                         return None
+                    # 防死循环硬限额：若此 Gap 已经被 reopen 达上限，说明 portfolio
+                    # selector 无法为该 Objective 生成有效 recovery query。直接走
+                    # blocked/failed 分支，不再 bump portfolio_revision 触发新循环。
+                    prior_gap = prior[0]
+                    reopen_count = int(prior_gap.get("reopen_count") or 0)
+                    if reopen_count >= _MAX_RECOVERY_REOPENS:
+                        if goal.get("scope_mode") == "bounded":
+                            graph_tools.upsert_node(NodeType.ANALYSIS, {
+                                "status": "blocked",
+                                "resolution_reason": (
+                                    f"targeted recovery stalled after {reopen_count} reopen attempts "
+                                    f"without query progress"
+                                ),
+                            }, objective["id"])
+                            continue
+                        research_state.update_goal({
+                            "research_state": research_state.FAILED,
+                            "last_error": (
+                                f"Targeted recovery stalled after {reopen_count} reopen attempts "
+                                f"for Objective {key}"
+                            ),
+                        }, goal.get("id"))
+                        return None
                     graph_tools.upsert_node(NodeType.ANALYSIS, {
                         "status": "candidate",
                         "resolution_reason": None,
-                    }, prior[0]["id"])
+                        "reopen_count": reopen_count + 1,
+                    }, prior_gap["id"])
                     self._bump_portfolio_revision()
                     return {
                         "action": "evaluate_research_portfolio",
@@ -763,6 +900,7 @@ class MemoryManager:
                 estimated_search_rounds=1,
                 acceptance_criteria=objective.get("acceptance_criteria") or [],
                 expansion_mode="horizontal",
+                expansion_parent_id=goal["id"],
                 trigger_type="delivery_requirement",
                 trigger_refs=[objective["id"]],
                 recovery_objective_key=key,
@@ -1027,7 +1165,7 @@ class MemoryManager:
                 graph_tools.get_node(cid)
                 for cid in graph_tools.get_query_children(resolved)
             ]
-            if any(c.get("status") not in {"sufficient", "blocked", "failed", "deferred"} for c in children):
+            if any(c.get("status") not in research_state.TERMINAL_QUERY_STATUSES for c in children):
                 return {"error": f"Query {query.get('handle') or resolved} still has unfinished selected children"}
 
         normalization = self.normalize_claims(resolved)
@@ -1083,6 +1221,14 @@ class MemoryManager:
             score = max(0.0, min(1.0, float(verdict.get("sufficiency_score", 0.0))))
         except (TypeError, ValueError):
             score = 0.0
+        with self._state_lock:
+            history = self._sufficiency_history.setdefault(resolved, [])
+            history.append(score)
+            # Bound memory to the tail: the hard-brake helpers only ever look
+            # at the last few entries, so there is no need to retain the full
+            # assessment history for the entire run.
+            if len(history) > max(_CONSECUTIVE_LOW_SUFF_BRAKE, 8):
+                del history[: len(history) - _CONSECUTIVE_LOW_SUFF_BRAKE - 1]
 
         created_gaps: list[str] = []
         existing = {
@@ -1169,6 +1315,7 @@ class MemoryManager:
                     else []
                 ),
                 expansion_mode=expansion_mode,
+                expansion_parent_id=resolved,
                 trigger_type=trigger_type,
                 trigger_refs=trigger_refs,
             )
@@ -1187,7 +1334,18 @@ class MemoryManager:
         ):
             new_status = "sufficient"
         elif open_gap_ids:
-            new_status = "needs_expansion"
+            # Completion mode: if remaining budget is at or below the reserve
+            # threshold, defer expansion instead of creating new child queries
+            # so the remaining rounds are spent finishing in-flight work.
+            from tools import research_state
+            remaining_budget = research_state.remaining_budget()
+            if (
+                remaining_budget is not None
+                and remaining_budget <= _BUDGET_RESERVE_FOR_COMPLETION
+            ):
+                new_status = "deferred"
+            else:
+                new_status = "needs_expansion"
         else:
             new_status = "blocked"
 
@@ -1199,7 +1357,7 @@ class MemoryManager:
             covered=verdict.get("covered") or [],
             assessment_reason=verdict.get("reason") or "",
         )
-        if new_status in {"sufficient", "blocked"}:
+        if new_status in {"sufficient", "blocked", "deferred"}:
             self._propagate_child_completion(resolved, new_status)
         revision = self._bump_portfolio_revision()
         graph_tools.upsert_node(
@@ -1300,6 +1458,82 @@ class MemoryManager:
             })
         return results
 
+    def _query_depth(self, query_id: str) -> int:
+        """Return the depth of a query in the query tree (root initial queries = 1).
+
+        Counts Query nodes along the ancestor chain (including ``query_id``
+        itself) by following inbound ``HAS_QUERY`` / ``PARENT_OF`` edges until
+        the ``user_request`` goal is reached. Used for depth-breadth balancing
+        so the portfolio prefers breadth expansion on shallower parents.
+        """
+        depth = 0
+        current = query_id
+        seen: set[str] = set()
+        while current and current not in seen:
+            seen.add(current)
+            node = graph_tools.get_node(current)
+            if not node or node.get("type") != NodeType.QUERY.value:
+                break
+            depth += 1
+            current = graph_tools.get_query_parent(current)
+        return depth
+
+    def _query_search_runs(self, query_id: str) -> list[dict]:
+        """Return the list of SearchRun nodes reachable from a query.
+
+        Runs are returned in creation order (by ``attempt`` field when
+        available, otherwise by string id as a stable surrogate) so callers
+        can inspect tail sequences for empty-run patterns.
+        """
+        runs: list[dict] = []
+        for edge in graph_tools.get_node_edges(query_id, direction="out"):
+            if str(edge.get("type", "")).lower() != "searched_by":
+                continue
+            node = graph_tools.get_node(edge["target"])
+            if node and node.get("type") == NodeType.SEARCH_RUN.value:
+                runs.append(node)
+
+        def sort_key(run: dict) -> tuple[int, str]:
+            attempt = int(run.get("attempt") or 0)
+            return (attempt, str(run.get("id") or ""))
+
+        runs.sort(key=sort_key)
+        return runs
+
+    def _query_empty_streak(self, query_id: str) -> int:
+        """Count the strict tail of consecutive ``status='empty'`` SearchRuns.
+
+        A single succeeded run in the middle resets the counter because it
+        means the query was still productive. This threshold catches only the
+        pathological "retry 5 different phrasings on a source-starved branch"
+        tail chain (V32 q2.2.1.1.1.1.2.x was the example).
+        """
+        runs = self._query_search_runs(query_id)
+        streak = 0
+        for run in reversed(runs):
+            if run.get("status") == "empty":
+                streak += 1
+            else:
+                break
+        return streak
+
+    def _query_low_sufficiency_streak(self, query_id: str) -> int:
+        """Count consecutive tail assessments below ``_LOW_SUFFICIENCY_THRESHOLD``.
+
+        The sequence comes from the local ``_sufficiency_history`` tracker that
+        :meth:`assess_query` appends after each call. Scores at or above the
+        threshold break the streak because they mean the branch is still
+        making useful progress.
+        """
+        tail = list(self._sufficiency_history.get(query_id, []))
+        streak = 0
+        for score in reversed(tail):
+            if score < _LOW_SUFFICIENCY_THRESHOLD:
+                streak += 1
+            else:
+                break
+        return streak
+
     def _gap_key_in_ancestors(self, query_id: str, gap_key: str) -> bool:
         """Return whether a gap fingerprint already exists on the ancestor path."""
         current = graph_tools.get_query_parent(query_id)
@@ -1315,6 +1549,8 @@ class MemoryManager:
 
     def _propagate_child_completion(self, query_id: str, child_status: str) -> None:
         """Resolve assigned gaps and make a completed child's parent assessable."""
+        from tools import research_state
+
         gap_status = {
             "sufficient": "resolved",
             "deferred": "deferred_low_value",
@@ -1338,7 +1574,7 @@ class MemoryManager:
             graph_tools.get_node(cid) for cid in graph_tools.get_query_children(parent_id)
         ]
         if children and all(
-            c.get("status") in {"sufficient", "blocked", "failed", "deferred"}
+            c.get("status") in research_state.TERMINAL_QUERY_STATUSES
             for c in children
         ):
             graph_tools.transition_query(parent_id, "assessing")
@@ -1410,6 +1646,67 @@ class MemoryManager:
 
         return bool(linked_queries) and all(complete(query) for query in linked_queries)
 
+    def _build_branch_summary(self, candidates: list[dict]) -> str:
+        """Compose the per-branch health summary fed to the portfolio evaluator.
+
+        Returns one line per active owner (a Query that owns at least one
+        candidate/selected gap). The signals are intentionally compact to stay
+        well within the model's context window even for deep query trees.
+
+        The LLM uses this summary to emit ``branch_decisions`` that gate gap
+        expansion per owner, preventing any single branch from growing
+        arbitrarily deep while shallower branches remain unexplored.
+        """
+        from tools import convergence as convergence_metrics
+
+        # Collect owner query ids from candidate gaps via graph edges, since
+        # ``expansion_parent_id`` may not yet be assigned at portfolio time.
+        owner_ids: list[str] = []
+        open_gap_counts: dict[str, int] = {}
+        seen: set[str] = set()
+        for gap in candidates:
+            owner_id = self._gap_owner_id(gap["id"])
+            if not owner_id:
+                continue
+            open_gap_counts[owner_id] = open_gap_counts.get(owner_id, 0) + 1
+            if owner_id not in seen:
+                seen.add(owner_id)
+                owner_ids.append(owner_id)
+
+        if not owner_ids:
+            return "(no active owners with candidate gaps)"
+
+        # Global novelty trend (history of last 3 rounds). Per-owner novelty
+        # would require tracking evidence provenance per round; the global
+        # trend is a good proxy for "is the whole run stalling on this branch".
+        novelty_snapshot = convergence_metrics._novelty_metrics(advance=False)
+        novelty_tail = novelty_snapshot.get("history_tail") or []
+        novelty_trend = "->".join(f"{r:.2f}" for r in novelty_tail) if novelty_tail else "-"
+
+        lines: list[str] = []
+        for owner_id in owner_ids:
+            owner = graph_tools.get_node(owner_id)
+            if not owner or owner.get("type") != NodeType.QUERY.value:
+                # UserRequest owner (root): not a branch to balance.
+                continue
+            depth = self._query_depth(owner_id)
+            children = graph_tools.get_query_children(owner_id) or []
+            child_count = len(children)
+            open_gaps = open_gap_counts.get(owner_id, 0)
+            last_suff = owner.get("sufficiency_score")
+            last_sufficiency = (
+                f"{float(last_suff):.2f}" if isinstance(last_suff, (int, float)) else "-"
+            )
+            handle = owner.get("handle") or owner.get("text") or ""
+            cooldown_streak = self._cooldown_streaks.get(owner_id, 0)
+            lines.append(
+                f"- owner_id={owner_id} handle={handle!r}: depth={depth}, "
+                f"child_queries={child_count}, open_gaps={open_gaps}, "
+                f"last_sufficiency={last_sufficiency}, novelty_trend={novelty_trend}, "
+                f"cooldown_streak={cooldown_streak}"
+            )
+        return "\n".join(lines) or "(no active owners with candidate gaps)"
+
     def evaluate_research_portfolio(self, goal_id: Optional[str] = None) -> dict:
         """Select candidate gaps by report-level marginal utility."""
         from tools import research_state
@@ -1419,12 +1716,20 @@ class MemoryManager:
             return {"error": "Portfolio evaluation is only allowed while researching"}
         objectives = self.get_research_objectives(goal_id)
         queries = graph_tools.search_nodes("query", {})
+        # Collect active gaps early so the branch summary sees every in-flight
+        # gap owner, not just candidate/selected ones.
+        active_gaps = [
+            gap for gap in graph_tools.search_nodes("analysis", {"analysis_type": "gap"})
+            if gap.get("status") in research_state.OPEN_GAP_STATUSES
+        ]
+        branch_summary_text = self._build_branch_summary(active_gaps)
         prompt = (
             mm_prompts.evaluate_portfolio
             .replace("{objectives}", json.dumps(objectives, ensure_ascii=False))
             .replace("{queries}", json.dumps([
                 self._portfolio_query_view(query) for query in queries
             ], ensure_ascii=False))
+            .replace("{branch_summary}", branch_summary_text)
         )
         verdict = self._invoke_json(prompt)
         scored = {
@@ -1432,6 +1737,99 @@ class MemoryManager:
             for item in verdict.get("objectives", [])
             if isinstance(item, dict) and item.get("objective_key")
         }
+        # Parse the LLM's branch-level cool-down / pause decisions and build
+        # the owner whitelist that gates gap expansion this round.
+        branch_decisions_raw = verdict.get("branch_decisions") or []
+        allowed_owners: set[str] = set()
+        cooled_down_owners: dict[str, str] = {}
+        branch_decision_reasons: dict[str, str] = {}
+        parsed_owner_ids: set[str] = set()
+        for item in branch_decisions_raw:
+            if not isinstance(item, dict):
+                continue
+            owner_id = str(item.get("owner_id") or "").strip()
+            action = str(item.get("action") or "").strip().lower()
+            if not owner_id or not action:
+                continue
+            parsed_owner_ids.add(owner_id)
+            reason = str(item.get("reason") or "").strip()
+            branch_decision_reasons[owner_id] = reason
+            if action == "continue_expansion":
+                allowed_owners.add(owner_id)
+            elif action in {"cool_down", "pause"}:
+                cooled_down_owners[owner_id] = action
+        active_owner_ids = {
+            owner_id
+            for owner_id in (self._gap_owner_id(gap["id"]) for gap in active_gaps)
+            if owner_id
+        }
+        branch_decisions_complete = active_owner_ids.issubset(parsed_owner_ids)
+        if not branch_decisions_complete:
+            for owner_id in sorted(active_owner_ids - parsed_owner_ids):
+                cooled_down_owners[owner_id] = "cool_down"
+                branch_decision_reasons[owner_id] = "LLM omitted this owner; default cool_down"
+        # Hard cool-down / pause thresholds. These override (or replace) the
+        # LLM signal so a branch that has been parked twice in a row is
+        # definitely skipped this round, and a branch that has been parked 5+
+        # consecutive rounds is permanently moved to the paused terminal
+        # state regardless of what the LLM would have decided. This prevents
+        # an optimistic LLM from re-greenlighting the same deep tail chain
+        # every round and driving the run into GraphRecursionError.
+        for owner_id in list(active_owner_ids):
+            streak = self._cooldown_streaks.get(owner_id, 0)
+            if streak >= _COOLDOWN_HARD_PAUSE_THRESHOLD:
+                cooled_down_owners[owner_id] = "pause"
+                allowed_owners.discard(owner_id)
+                branch_decision_reasons[owner_id] = (
+                    f"hard pause: cooldown_streak={streak} >= "
+                    f"{_COOLDOWN_HARD_PAUSE_THRESHOLD}"
+                )
+                owner_node = graph_tools.get_node(owner_id)
+                if (
+                    owner_node
+                    and owner_node.get("type") == NodeType.QUERY.value
+                    and owner_node.get("status") not in {
+                        "paused", "sufficient", "blocked", "failed", "deferred",
+                    }
+                ):
+                    graph_tools.transition_query(
+                        owner_id,
+                        "paused",
+                        assessment_reason=(
+                            f"auto-paused after {streak} consecutive cool-down rounds"
+                        ),
+                    )
+                # Streak stays elevated at >= threshold so downstream tools
+                # (expand_gaps, assess_query convergence) continue to treat
+                # the branch as parked.
+            elif streak >= _COOLDOWN_HARD_SKIP_THRESHOLD:
+                cooled_down_owners.setdefault(owner_id, "cool_down")
+                allowed_owners.discard(owner_id)
+                branch_decision_reasons[owner_id] = (
+                    f"hard skip: cooldown_streak={streak} >= "
+                    f"{_COOLDOWN_HARD_SKIP_THRESHOLD}"
+                )
+        # Update consecutive cool-down streaks: increment for cooled owners,
+        # reset to 0 for owners that got continue_expansion. This lets the LLM
+        # see in the next round's branch_summary that a branch has been parked
+        # for several rounds and decide whether to revive it.
+        for owner_id in branch_decision_reasons:
+            if owner_id in cooled_down_owners:
+                self._cooldown_streaks[owner_id] = self._cooldown_streaks.get(owner_id, 0) + 1
+            elif owner_id in allowed_owners:
+                self._cooldown_streaks[owner_id] = 0
+        if branch_decision_reasons:
+            logger.info(
+                "branch_decisions: %s",
+                json.dumps(
+                    {oid: {"action": (
+                        "continue_expansion" if oid in allowed_owners
+                        else cooled_down_owners.get(oid, "cool_down")
+                    ), "reason": branch_decision_reasons.get(oid, "")}
+                     for oid in branch_decision_reasons},
+                    ensure_ascii=False,
+                ),
+            )
         objective_by_key: dict[str, dict] = {}
         objective_deltas: dict[str, tuple[float, float]] = {}
         for objective in objectives:
@@ -1531,10 +1929,9 @@ class MemoryManager:
                     if str(edge.get("type", "")).lower() == "searched_by":
                         graph_tools.upsert_node(NodeType.SEARCH_RUN, gain_attributes, edge["target"])
 
-        candidates = [
-            gap for gap in graph_tools.search_nodes("analysis", {"analysis_type": "gap"})
-            if gap.get("status") in {"candidate", "selected"}
-        ]
+        # Reuse the active gaps collected before the LLM call so the
+        # branch summary and the selection loop see the same set.
+        candidates = active_gaps
         selected: list[dict] = []
         deferred: list[dict] = []
         existing_subjects = {
@@ -1565,37 +1962,92 @@ class MemoryManager:
                 if item.get("status") not in {"satisfied", "blocked"}
             ]
             deficit = max(deficits, default=0.0)
-            redundancy = 0.75 if subject in existing_subjects else 0.0
+            is_redundant_subject = subject in existing_subjects
             decision_impact = max(float(gap.get("decision_impact") or 0.0) for gap in group)
             confidence_gain = max(float(gap.get("confidence_gain") or 0.0) for gap in group)
             rounds = max(1, max(int(gap.get("estimated_search_rounds") or 1) for gap in group))
-            benefit = 0.5 * deficit + 0.3 * decision_impact + 0.2 * confidence_gain
-            utility = benefit * (1.0 - redundancy) / rounds
-            fatal = any(gap.get("gap_category") == "fatal_conflict" for gap in group)
-            choose = fatal or (
-                bool(deficits)
-                and utility >= EXPANSION_UTILITY_THRESHOLD
+            benefit = 0.7 * deficit + 0.2 * decision_impact + 0.1 * confidence_gain
+            min_floor = 0.04 if (deficit > 0 or decision_impact > 0 or confidence_gain > 0) else 0.0
+            owner_ids = {self._gap_owner_id(gap["id"]) for gap in group}
+            # Depth-breadth balance: discount utility for gaps on deep query
+            # chains so breadth expansion wins ties; fatal / force_expand
+            # bypass this via the ``choose`` clause below.
+            max_owner_depth = max(
+                (self._query_depth(oid) for oid in owner_ids if oid),
+                default=0,
             )
-            new_status = "selected" if choose else "deferred_low_value"
+            depth_discount = 1.0 / (
+                1.0 + _DEPTH_PENALTY_FACTOR
+                * max(0, max_owner_depth - _DEPTH_FREE_TIER)
+            )
+            utility = max(benefit / rounds, min_floor) * depth_discount
+            fatal = any(gap.get("gap_category") == "fatal_conflict" for gap in group)
+            threshold = (
+                EXPANSION_UTILITY_THRESHOLD_REDUNDANT
+                if is_redundant_subject
+                else EXPANSION_UTILITY_THRESHOLD
+            )
             owners = [
                 graph_tools.get_node(owner_id)
-                for owner_id in {self._gap_owner_id(gap["id"]) for gap in group}
+                for owner_id in owner_ids
                 if owner_id
             ]
-            expansion_parent_id = (
+            force_expand = any(
+                owner and owner.get("status") == "needs_expansion"
+                for owner in owners
+            )
+            choose = fatal or force_expand or (utility >= threshold)
+            # Apply branch-level cool-down at per-gap granularity: each gap is
+            # deferred iff its own owner is marked cool_down/pause (and the
+            # group is not a fatal conflict). This prevents a cooled owner from
+            # piggybacking on a non-cooled owner that shares the same subject.
+            # Fatal conflicts bypass cool-down to protect report-level
+            # conclusions. When the LLM provided no whitelist
+            # (allowed_owners empty), fall back to pure marginal-utility logic.
+            has_whitelist = bool(allowed_owners)
+            group_chosen_owner: Optional[str] = (
                 max(owners, key=lambda item: float(item.get("priority") or 0.0))["id"]
                 if choose and owners else None
             )
             for gap in group:
+                gap_owner_id = self._gap_owner_id(gap["id"])
+                gap_cooled = (
+                    choose
+                    and not fatal
+                    and has_whitelist
+                    and bool(gap_owner_id)
+                    and gap_owner_id not in allowed_owners
+                )
+                if gap_cooled:
+                    gap_status = "deferred_branch_cool_down"
+                    gap_reason = (
+                        f"branch cooled down by global portfolio balancer "
+                        f"({cooled_down_owners.get(gap_owner_id, 'cool_down')}: "
+                        f"{branch_decision_reasons.get(gap_owner_id, 'no reason given')})"
+                    )
+                    gap_parent = None
+                else:
+                    gap_status = "selected" if choose else "deferred_low_value"
+                    gap_reason = (
+                        None if choose
+                        else "global marginal utility below expansion threshold"
+                    )
+                    gap_parent = group_chosen_owner
                 graph_tools.upsert_node(NodeType.ANALYSIS, {
-                    "status": new_status,
+                    "status": gap_status,
                     "marginal_utility": utility,
                     "objective_deficit": deficit,
-                    "expansion_parent_id": expansion_parent_id,
+                    "depth_discount": depth_discount,
+                    "owner_depth": max_owner_depth,
+                    "expansion_parent_id": gap_parent,
                     "expansion_mode": mode,
-                    "resolution_reason": None if choose else "global marginal utility below expansion threshold",
+                    "resolution_reason": gap_reason,
                 }, gap["id"])
-                (selected if choose else deferred).append(graph_tools.get_node(gap["id"]))
+                updated = graph_tools.get_node(gap["id"])
+                if gap_status == "selected":
+                    selected.append(updated)
+                else:
+                    deferred.append(updated)
 
         for query in queries:
             if query.get("status") == "needs_expansion":
@@ -1705,7 +2157,7 @@ class MemoryManager:
         assigned_selected_gap_ids = {
             gap["id"]
             for gap in graph_tools.search_nodes("analysis", {"analysis_type": "gap"})
-            if gap.get("status") == "selected"
+            if gap.get("status") in {"selected", "candidate"}
             and gap.get("expansion_parent_id") == resolved
         }
         candidates = gap_ids or list(assigned_selected_gap_ids)
@@ -1713,8 +2165,16 @@ class MemoryManager:
             graph_tools.get_node(gid) for gid in candidates
             if gid in assigned_selected_gap_ids
             and graph_tools.get_node(gid).get("analysis_type") == "gap"
-            and graph_tools.get_node(gid).get("status") == "selected"
+            and graph_tools.get_node(gid).get("status") in {"selected", "candidate"}
         ]
+        processed_ids = {gap["id"] for gap in gaps}
+        for sid in assigned_selected_gap_ids - processed_ids:
+            node = graph_tools.get_node(sid)
+            if node and node.get("status") in {"selected", "candidate"}:
+                graph_tools.upsert_node(NodeType.ANALYSIS, {
+                    "status": "blocked",
+                    "resolution_reason": "gap not found or filtered during expansion",
+                }, sid)
         grouped: dict[tuple[str, str], list[dict]] = {}
         for gap in gaps:
             subject = str(gap.get("search_subject_key") or gap.get("gap_key") or gap["id"])
@@ -1757,6 +2217,79 @@ class MemoryManager:
                         "status": "blocked",
                         "resolution_reason": "duplicate gap_key already exists on the ancestor path",
                     }, gap["id"])
+                continue
+            # Hard-brake 1: refuse to deepen a vertical branch once its parent
+            # has produced two consecutive empty SearchRuns. This is the
+            # "phrasing doesn't matter any more" regime and extra child
+            # queries only serve to exhaust the recursion budget on a tail
+            # chain. The brake is intentionally applied only to vertical
+            # expansions under a Query parent because horizontal expansions
+            # pivot to a different subject and therefore deserve a real try.
+            empty_streak = (
+                self._query_empty_streak(resolved)
+                if parent.get("type") == NodeType.QUERY.value else 0
+            )
+            low_suf_streak = (
+                self._query_low_sufficiency_streak(resolved)
+                if parent.get("type") == NodeType.QUERY.value else 0
+            )
+            # Hard-brake 2: a three-run tail of sufficiency_scores *all* below
+            # 0.22 with non-increasing source counts means the evidence curve
+            # is already saturated. Further sub-queries on this path will
+            # return duplicated snippets; stop.
+            sources_increasing = False
+            if parent.get("type") == NodeType.QUERY.value:
+                runs = self._query_search_runs(resolved)
+                recent = runs[-3:] if len(runs) >= 2 else runs
+                source_counts = [int(run.get("sources") or 0) for run in recent]
+                if len(source_counts) >= 2 and source_counts[-1] > max(source_counts[:-1], default=0):
+                    sources_increasing = True
+            vertical_hit = (
+                parent.get("type") == NodeType.QUERY.value
+                and mode == "vertical"
+                and (
+                    empty_streak >= _CONSECUTIVE_EMPTY_BRAKE
+                    or (
+                        low_suf_streak >= _CONSECUTIVE_LOW_SUFF_BRAKE
+                        and not sources_increasing
+                    )
+                )
+            )
+            # Hard-brake 3: absolute vertical depth cap.  Past
+            # _MAX_VERTICAL_DEPTH the evaluator typically keeps producing
+            # reworded variants of the same unmet acceptance criterion while
+            # ss hovers in the 0.50-0.67 zone.  Cut the chain so the budget is
+            # spent exploring orthogonal dimensions instead.
+            parent_depth = int(parent.get("depth") or 0) if parent.get("type") == NodeType.QUERY.value else 0
+            depth_hit = (
+                parent.get("type") == NodeType.QUERY.value
+                and mode == "vertical"
+                and parent_depth >= _MAX_VERTICAL_DEPTH
+            )
+            if vertical_hit or depth_hit:
+                resolution = (
+                    f"auto-paused parent chain: "
+                    f"consecutive empty={empty_streak}, "
+                    f"low suf streak={low_suf_streak}, "
+                    f"sources_increasing={sources_increasing}, "
+                    f"depth={parent_depth}, max_depth={_MAX_VERTICAL_DEPTH}"
+                )
+                for gap in group:
+                    graph_tools.upsert_node(NodeType.ANALYSIS, {
+                        "status": "blocked",
+                        "resolution_reason": resolution,
+                    }, gap["id"])
+                logger.warning(
+                    "expand_gaps hard-brake: skipped vertical expansion for %s "
+                    "(empty streak=%d, low_suf streak=%d, sources increasing=%s, "
+                    "parent_depth=%d, max_depth=%d)",
+                    parent.get("handle") or resolved,
+                    empty_streak,
+                    low_suf_streak,
+                    sources_increasing,
+                    parent_depth,
+                    _MAX_VERTICAL_DEPTH,
+                )
                 continue
             if mode == "horizontal":
                 attach_parent_id = (
@@ -1817,10 +2350,16 @@ class MemoryManager:
                 search_subject_key=subject,
                 expansion_mode=mode,
                 query_role="evidence_gap",
+                search_mode=spec.get("search_mode") or "general",
             )
             for key in objective_keys:
                 graph_tools.add_edge(child_id, objective_by_key[key]["id"], EdgeType.COVERS_OBJECTIVE)
             child = graph_tools.get_node(child_id)
+            for gap in group:
+                graph_tools.upsert_node(NodeType.ANALYSIS, {
+                    "status": "expanded",
+                    "resolution_reason": f"child query created: {child.get('handle')}",
+                }, gap["id"])
             created.append({
                 "id": child_id,
                 "handle": child.get("handle"),
@@ -1976,6 +2515,7 @@ class MemoryManager:
                     conflict_id=conflict["id"],
                     acceptance_criteria=["Find independent evidence that resolves or clearly scopes the conflict"],
                     expansion_mode="vertical",
+                    expansion_parent_id=gap_parent_id,
                     trigger_type="graph_evidence",
                     trigger_refs=[conflict["id"]],
                 )
@@ -2012,6 +2552,30 @@ class MemoryManager:
             and any(item.get("status") == "blocked" for item in must)
             and all(item.get("status") in {"satisfied", "blocked"} for item in must)
         )
+        remaining = research_state.remaining_budget(goal_id)
+
+        # Completion mode: when remaining budget is at or below the reserve
+        # threshold, defer queries that still need expansion so the remaining
+        # rounds are spent finishing in-flight searches rather than starting
+        # new branches.
+        if remaining is not None and remaining <= _BUDGET_RESERVE_FOR_COMPLETION:
+            for query in all_queries:
+                if query.get("status") == "needs_expansion":
+                    graph_tools.transition_query(query["id"], "deferred")
+                    self._propagate_child_completion(query["id"], "deferred")
+            all_queries = graph_tools.search_nodes("query", {})
+
+        # Budget-exhausted cleanup: when the budget is fully consumed, force
+        # all still-active and pending queries into a terminal state so the
+        # convergence gate can evaluate a clean tree.
+        if remaining is not None and remaining == 0:
+            for query in all_queries:
+                status = query.get("status")
+                if status in _ACTIVE_QUERY_WORK_STATUSES or status == "pending":
+                    graph_tools.transition_query(query["id"], "deferred")
+                    self._propagate_child_completion(query["id"], "deferred")
+            all_queries = graph_tools.search_nodes("query", {})
+
         active = [
             query for query in all_queries
             if query.get("status") in _ACTIVE_QUERY_WORK_STATUSES
@@ -2029,7 +2593,22 @@ class MemoryManager:
             query for query in all_queries
             if query.get("status") not in research_state.TERMINAL_QUERY_STATUSES
         ] if goal.get("scope_mode") == "exhaustive" else []
-        remaining = research_state.remaining_budget(goal_id)
+
+        # Dimension-coverage gate: prevent premature convergence when the evidence
+        # base is too thin across sources and expanded dimensions.
+        evidence_nodes = graph_tools.search_nodes("evidence", {})
+        source_nodes = graph_tools.search_nodes("source", {})
+        initial_query_ids = set(graph_tools.get_query_children(goal.get("id")) or [])
+        expanded_queries = [
+            q for q in all_queries
+            if q.get("id") not in initial_query_ids
+        ]
+        dimension_coverage_adequate = (
+            len(evidence_nodes) >= _MIN_EVIDENCE_FOR_CONVERGENCE
+            and len(source_nodes) >= _MIN_SOURCES_FOR_CONVERGENCE
+            and len(expanded_queries) >= _MIN_EXPANDED_QUERIES_FOR_CONVERGENCE
+        )
+
         if active:
             research_state.update_goal({
                 "research_state": research_state.RESEARCHING,
@@ -2042,6 +2621,7 @@ class MemoryManager:
             tree["valid"]
             and portfolio_current
             and objectives_ready
+            and dimension_coverage_adequate
             and not active
             and not selected_gaps
             and not fatal
@@ -2065,7 +2645,12 @@ class MemoryManager:
             }, goal_id)
             recommendation = "stop"
             state = research_state.REPORT_READY
-        elif remaining == 0 and (selected_gaps or not objectives_ready or exhaustive_open):
+        elif remaining == 0 and (
+            selected_gaps
+            or not objectives_ready
+            or not dimension_coverage_adequate
+            or exhaustive_open
+        ):
             research_state.mark_budget_exhausted(goal_id)
             recommendation = "stop"
             state = research_state.BUDGET_EXHAUSTED
@@ -2079,6 +2664,7 @@ class MemoryManager:
             and not selected_gaps
             and not fatal
             and not created_fatal_gaps
+            and int(goal.get("successful_search_rounds") or 0) >= MIN_SUCCESSFUL_ROUNDS_BEFORE_BEST_EFFORT
         ):
             research_state.update_goal({
                 "research_state": research_state.LIMITED_REPORT_READY,
@@ -2087,6 +2673,58 @@ class MemoryManager:
             }, goal_id)
             recommendation = "stop"
             state = research_state.LIMITED_REPORT_READY
+        elif (
+            not active
+            and not pending
+            and not selected_gaps
+            and not created_fatal_gaps
+        ):
+            # 当且仅当"scheduler侧下一轮真正能出队的动作"与"assess_convergence
+            # 侧看到的 active/pending/gap 工作清单"都为空时，才判定系统没
+            # 有可推进的工作，授权 best-effort 报告。这两个条件必须以同一份
+            # actionability 定义作为单源真源——get_next_actions() 本身就是
+            # 这一单源，它已经考虑 completion_mode、required_path、树完整性、
+            # recoverability 等所有调度约束，因此这里不再另行枚举局部条件，
+            # 直接复用 get_next_actions 的"是否真的还能排出 assess_convergence
+            # 以外的动作"做判定。
+            #
+            # 只要 get_next_actions 能排出任何非 assess_convergence 的动
+            # 作（包括 evaluate_research_portfolio、recover_unactionable 产
+            # 生的新 gap 展开等），就说明系统确实有下一步，不能收敛。
+            #
+            # 根因保障：如果未来某条调度规则会让"看上去可推进"的工作被屏
+            # 蔽（比如 completion_mode 屏蔽 expand_gaps），那么那种屏蔽动作
+            # 必须在 get_next_actions 里同步修改 graph 语义（例如把 selected
+            # gap 降回 candidate），让 assess_convergence 侧对 selected_gaps
+            # 的读取自然为空。这样本分支条件和 get_next_actions 必然一致，
+            # 不会再出现 scheduler 走不通但 assess_convergence 还说有活的
+            # "乒乓死循环"。
+            scheduler_actions = list(self.get_next_actions(limit=8) or [])
+            actionable_exists = any(
+                (a.get("action") or "") != "assess_convergence"
+                for a in scheduler_actions
+            )
+            if actionable_exists:
+                research_state.update_goal({
+                    "research_state": research_state.RESEARCHING,
+                    "last_convergence_recommendation": "continue",
+                    "report_authorized_reason": None,
+                }, goal_id)
+                recommendation = "continue"
+                state = research_state.RESEARCHING
+            else:
+                research_state.update_goal({
+                    "research_state": research_state.LIMITED_REPORT_READY,
+                    "last_convergence_recommendation": "stop",
+                    "report_authorized_reason": (
+                        "no actionable work remains according to the shared "
+                        "scheduler actionability definition (no active/pending "
+                        "queries and no non-convergence next action); "
+                        "authorizing best-effort report"
+                    ),
+                }, goal_id)
+                recommendation = "stop"
+                state = research_state.LIMITED_REPORT_READY
         else:
             research_state.update_goal({
                 "research_state": research_state.RESEARCHING,
@@ -2203,6 +2841,7 @@ class MemoryManager:
                 "source_preferences": preferences,
                 "excluded_domains": excluded_domains,
                 "excluded_urls": _string_list(goal.get("excluded_urls")),
+                "search_mode": query.get("search_mode") or "general",
             }
 
     def fail_search(self, search_run_id: str, query_id: str, error: str) -> dict:
@@ -2280,10 +2919,6 @@ class MemoryManager:
             "sources": ("Source", lambda item: bool(_first(item, "url"))),
             "documents": ("Document", lambda item: bool(_first(item, "document_summary", "summary_zh", "summary", "text", "content"))),
             "statements": ("Statement", lambda item: bool(_first(item, "statement", "text_zh", "text"))),
-            # Legacy packages used ``claims`` for document-bound extracted
-            # statements. Treat them as Statement refs at ingest time; Claim
-            # nodes are created later by normalize_claims().
-            "claims": ("Statement", lambda item: bool(_first(item, "statement", "text_zh", "text"))),
             "evidence": ("Evidence", lambda item: bool(_first(item, "statement", "evidence_text", "text_zh", "text"))),
         }
         for section, (node_type, valid) in sections.items():
@@ -2577,15 +3212,64 @@ class MemoryManager:
             self._bump_portfolio_revision()
         else:
             attempts = int(query.get("search_attempts") or 0)
-            next_status = "blocked" if attempts >= 3 else "pending"
-            transition_attributes = (
-                {"block_reason": "three SearchRuns completed without valid Source and Evidence"}
-                if next_status == "blocked"
-                else {}
-            )
-            graph_tools.transition_query(resolved_query_id, next_status, **transition_attributes)
-            if next_status == "blocked":
+            if attempts >= 2:
+                # Second attempt also returned empty → blocked.
+                # Restore the original text if a variant was used on attempt 2.
+                original_text = query.get("original_text")
+                if original_text:
+                    graph_tools.upsert_node(
+                        NodeType.QUERY,
+                        {"text": original_text},
+                        resolved_query_id,
+                    )
+                graph_tools.transition_query(
+                    resolved_query_id,
+                    "blocked",
+                    block_reason="two SearchRuns completed without valid Source and Evidence",
+                )
                 self._propagate_child_completion(resolved_query_id, "blocked")
+            else:
+                # First attempt returned empty (all results rejected as
+                # duplicates).  Reformulate the query text so the second
+                # SearchRun searches from a different angle instead of
+                # repeating the identical Tavily call.
+                original_text = query.get("original_text") or query.get("text", "")
+                existing_source_titles: list[str] = []
+                try:
+                    all_sources = graph_tools.search_nodes("source", {})
+                    existing_source_titles = [
+                        (s.get("title") or s.get("url") or "")
+                        for s in all_sources
+                        if (s.get("title") or s.get("url"))
+                    ][:10]
+                except Exception:
+                    pass
+                goal_node = graph_tools.get_node(
+                    graph_tools.get_query_parent(resolved_query_id) or ""
+                ) or {}
+                research_goal = goal_node.get("research_goal") or goal_node.get("request") or ""
+                new_text = self._reformulate_query_text(
+                    original_text, research_goal, existing_source_titles
+                )
+                if new_text:
+                    logger.info(
+                        "Reformulating query %s: '%s' → '%s'",
+                        resolved_query_id, original_text, new_text,
+                    )
+                    graph_tools.upsert_node(
+                        NodeType.QUERY,
+                        {
+                            "text": new_text,
+                            "original_text": original_text,
+                        },
+                        resolved_query_id,
+                    )
+                else:
+                    logger.info(
+                        "Could not reformulate query %s ('%s'); retrying as-is",
+                        resolved_query_id, original_text,
+                    )
+                graph_tools.transition_query(resolved_query_id, "pending")
 
         graph_tools.save_graph()
         result = {
@@ -2601,7 +3285,7 @@ class MemoryManager:
                 "conflicts": len(conflict_ids),
             },
             "status": run_status,
-            "query_status": "assessing" if succeeded else ("blocked" if int(query.get("search_attempts") or 0) >= 3 else "pending"),
+            "query_status": "assessing" if succeeded else ("blocked" if int(query.get("search_attempts") or 0) >= 2 else "pending"),
             "novelty_score": novelty,
         }
         return result
@@ -2881,7 +3565,7 @@ class MemoryManager:
                 raw_queries = []
             authored_keys: set[str] = set()
             for raw in raw_queries:
-                text, criteria, objective_keys = _query_spec(raw)
+                text, criteria, objective_keys, search_mode = _followup_query_spec(raw)
                 key = _normalize_query_text(text)
                 if _query_text_issue(text) or key in existing_keys or key in authored_keys:
                     continue
@@ -2890,6 +3574,7 @@ class MemoryManager:
                     "text": text,
                     "acceptance_criteria": criteria,
                     "objective_keys": objective_keys,
+                    "search_mode": search_mode,
                 })
             return items
 
@@ -2901,7 +3586,52 @@ class MemoryManager:
                 "or agent instructions."
             )
             queries = author(retry)
+        if not queries:
+            fallback_text = f"{(parent_text or '').strip()}".strip()
+            if fallback_text and not _query_text_issue(fallback_text):
+                key = _normalize_query_text(fallback_text)
+                if key not in existing_keys:
+                    fallback_criteria = []
+                    for gap in (gaps or []):
+                        if isinstance(gap.get("acceptance_criteria"), list):
+                            fallback_criteria.extend([
+                                c for c in gap["acceptance_criteria"]
+                                if isinstance(c, str)
+                            ][:1])
+                    queries = [{
+                        "text": fallback_text,
+                        "acceptance_criteria": fallback_criteria,
+                        "objective_keys": [],
+                        "search_mode": "general",
+                    }]
         return queries[:max_new]
+
+    def _reformulate_query_text(
+        self,
+        original_text: str,
+        research_goal: str,
+        existing_sources: list,
+    ) -> Optional[str]:
+        """Reformulate a query whose search returned only duplicate results.
+
+        Asks the LLM to produce a variant query that searches from a different
+        angle, to attract new sources that the original phrasing missed.
+
+        Returns the new query text, or ``None`` if the LLM output is invalid or
+        identical to the original.
+        """
+        prompt = (
+            mm_prompts.reformulate_query
+            .replace("{original_query}", original_text or "")
+            .replace("{research_goal}", research_goal or "")
+            .replace("{existing_sources}", json.dumps(existing_sources or [], ensure_ascii=False))
+        )
+        parsed = self._invoke_json(prompt)
+        new_text = (parsed.get("query_text") or "").strip()
+        if new_text and not _query_text_issue(new_text):
+            if _normalize_query_text(new_text) != _normalize_query_text(original_text):
+                return new_text
+        return None
 
     def extract_content(self, content: str) -> dict:
         """Extract keywords, statements and a summary from document text.

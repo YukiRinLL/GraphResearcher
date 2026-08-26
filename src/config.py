@@ -1,7 +1,7 @@
 """Central configuration for GraphResearcher agents.
 
 Provides the model factory, prompt loader, and the `system_prompt` / model
-constants that the agent modules (`agents/orchestrator.py`,
+constants that the agent modules (`workflow.py`,
 `agents/searcher.py`, `agents/reporter.py`) reference as `config.*`.
 
 Follows the repo import convention: `src/` is on `sys.path`, so this module
@@ -82,7 +82,6 @@ def load_prompt(name: str) -> str:
 
 
 # System prompts (loaded lazily-at-import; cheap file reads).
-orchestrator_system_prompt = load_prompt("orchestrator")
 reporter_system_prompt = load_prompt("reporter")
 report_reviewer_system_prompt = load_prompt("report_reviewer")
 analyzer_system_prompt = load_prompt("analyzer")
@@ -111,13 +110,13 @@ def _report_reviewer_model() -> ChatOpenAI:
 
 
 def __getattr__(name: str) -> ChatOpenAI:
-    """Lazily provide ``orchestrator_model`` / ``searcher_model`` / ``reporter_model``.
+    """Lazily provide ``default_model`` / ``searcher_model`` / ``reporter_model``.
 
     Building the model is deferred until first access so that importing
     ``config`` (for prompt loading or assembly checks) does not require API
     credentials to be present.
     """
-    if name in ("orchestrator_model", "searcher_model"):
+    if name in ("default_model", "searcher_model"):
         return _shared_model()
     if name == "reporter_model":
         return _reporter_model()

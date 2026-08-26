@@ -44,6 +44,15 @@ _INTERNAL_TERMS = (
     "标题层",
     "sufficiency",
     "source 节点",
+    "evidence 节点",
+    "claim 节点",
+    "supplied material",
+    "supplied evidence",
+    "provided material",
+    "provided evidence",
+    "available material",
+    "available evidence",
+    "研究图谱",
 )
 _FORBIDDEN_META_RE = re.compile(
     r"research graph|研究图谱|本次图谱|图谱覆盖范围|导出片段|"
@@ -57,7 +66,34 @@ _FORBIDDEN_META_RE = re.compile(
     r"(?:搜索|检索|研究)预算(?:已经|已)?(?:耗尽|用尽)|"
     r"定向(?:恢复|检索)(?:查询)?(?:已经|已)?失败|"
     r"如果你(?:后续|接下来|希望|需要|想)|可以指定维度|可直接进\s*ppt|"
-    r"帮你补全|如需.{0,40}可",
+    r"帮你补全|如需.{0,40}可|"
+    r"supplied\s+(?:material|evidence|data|information)|"
+    r"the\s+supplied|provided\s+(?:material|evidence|data)|"
+    r"available\s+(?:material|evidence|data)|"
+    r"本研究|本次检索|本轮|本次|检索轮次|摘要线索|未读取正文|标题层|"
+    r"source\s+节点|evidence\s+节点|claim\s+节点|"
+    r"sufficiency|snippet|"
+    # Fix 1 (auto-strip safety net): reader-directive / methodological-caveat
+    # meta-narratives — sentences that instruct the reader on how to use
+    # sources or pronounce on the reliability/nature of the record. These
+    # describe "how to use the material" rather than the subject itself.
+    r"should\s+not\s+be\s+(?:treated|taken|regarded|considered|used)\s+as\s+(?:interchangeable|equivalent|synonymous|definitive|secure|reliable)|"
+    r"should\s+not\s+be\s+used\s+to\s+(?:collapse|treat|conflate|conclude|infer)|"
+    r"do\s+not\s+amount\s+to\s+a\s+\w+\s+(?:determination|account|assessment|conclusion|verdict)|"
+    r"rather\s+than\s+a\s+(?:definitive|secure|reliable|forensic)\s+(?:laboratory\s+)?(?:account|determination|assessment|record)|"
+    r"not\s+a\s+(?:securely|reliably)\s+documented\s+\w+(?:\s+chain\s+of\s+custody)?|"
+    r"reported\s+reconstructions\s+rather\s+than|"
+    r"concern\s+reported\s+(?:discovery|reconstructions|judgments|findings)|"
+    r"further\s+(?:catalogue|catalog)\s+verification|"
+    # Fix C: residual meta-analytical / evidence-state commentary (auto-strip —
+    # pure commentary on what the evidence can/cannot establish, no facts lost).
+    r"are\s+best\s+presented\s+as\s+\w+\s+rather\s+than|"
+    r"rather\s+than\s+as\s+an?\s+uncontested|"
+    r"do\s+not,?\s+(?:by\s+themselves|alone|on\s+their\s+own),?\s+(?:establish|demonstrate|prove)|"
+    r"do\s+not\s+(?:establish|demonstrate|prove)\s+that|"
+    r"the\s+evidence\s+does\s+not\s+(?:reconcile|establish|support|demonstrate)|"
+    r"remains\s+(?:contested|unresolved|undetermined)\s+rather\s+than|"
+    r"parts\s+of\s+the\s+recorded\s+history\s+of\s+the\s+object\s+rather\s+than",
     re.IGNORECASE,
 )
 _REFERENCE_VARIANT_RE = re.compile(
@@ -161,9 +197,9 @@ def build_reference_registry() -> list[dict]:
     """Return the canonical, URL-deduped, stably-numbered reference registry.
 
     Reads every ``Source`` node for the current run context, drops entries
-    without a URL, deduplicates by URL (first node in id order wins), and sorts
-    by node id — the ``<timestamp>_<uuid8>`` id sorts lexicographically, i.e. in
-    creation order, which neo4j does not otherwise guarantee. Assigns 1-based
+    without a URL or that are not transitively referenced by any Statement
+    (ghost sources from login-wall/catalog pages are excluded), deduplicates by
+    URL (first node in id order wins), and sorts by node id.  Assigns 1-based
     numbers.
 
     Both ``export_report_context`` (what the Reporter cites from) and
@@ -173,7 +209,33 @@ def build_reference_registry() -> list[dict]:
     Returns:
         A list of ``{"n", "source_id", "title", "url"}`` dicts.
     """
-    sources = [s for s in graph_tools.search_nodes("source", {}) if s.get("url")]
+    all_sources = [s for s in graph_tools.search_nodes("source", {}) if s.get("url")]
+    referenced_source_ids: set[str] = set()
+    # direction="in" returns edges where target == stmt_id; edge["source"] is the
+    # upstream node (Document or Source). Walk Statement -> Document -> Source.
+    for stmt in graph_tools.search_nodes("statement", {}):
+        stmt_id = stmt.get("id")
+        if not stmt_id:
+            continue
+        for edge in graph_tools.get_node_edges(stmt_id, direction="in") or []:
+            src_node_id = edge.get("source")
+            if not src_node_id:
+                continue
+            src_node = graph_tools.get_node(src_node_id)
+            if not src_node:
+                continue
+            node_type = str(src_node.get("type") or "").lower()
+            if node_type == "document":
+                for doc_edge in graph_tools.get_node_edges(src_node_id, direction="in") or []:
+                    doc_src_id = doc_edge.get("source")
+                    if not doc_src_id:
+                        continue
+                    doc_src_node = graph_tools.get_node(doc_src_id)
+                    if doc_src_node and str(doc_src_node.get("type") or "").lower() == "source":
+                        referenced_source_ids.add(doc_src_node.get("id"))
+            elif node_type == "source":
+                referenced_source_ids.add(src_node_id)
+    sources = [s for s in all_sources if s.get("id") in referenced_source_ids]
     sources.sort(key=lambda s: s.get("id") or "")
     registry: list[dict] = []
     seen: set[str] = set()
@@ -1389,6 +1451,30 @@ def _compile_section_content(content: str, source_ids: list[str], registry_by_so
     return "\n\n".join(item.strip() for item in blocks if item.strip()).strip()
 
 
+def _strip_leading_heading(content: str) -> str:
+    """Remove a leading ATX markdown heading (## Title) if present in the content.
+
+    Prevents duplicate headings when the LLM includes a section heading in the content
+    and the system also adds one.
+    """
+    lines = content.strip().split("\n")
+    if not lines:
+        return content
+    # Check if first non-empty line is an ATX heading
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if re.match(r"^#{1,6}\s+", stripped):
+            # Skip this heading line and any immediately following blank lines
+            remaining = lines[i + 1:]
+            while remaining and not remaining[0].strip():
+                remaining = remaining[1:]
+            return "\n".join(remaining).strip()
+        break
+    return content
+
+
 def _compile_section_report(
     title: str,
     compiled_sections: list[dict[str, Any]],
@@ -1396,21 +1482,72 @@ def _compile_section_report(
     cited_source_ids: set[str],
     wikipedia_task: bool = False,
 ) -> str:
-    """Render a structured report from already-validated sections."""
+    """Render a structured report from already-validated sections.
+
+    Renumbers in-text citations contiguously by first-appearance order so that
+    the references section has no gaps (e.g. [1][2][3] instead of [1][3][5]).
+    """
     is_chinese = bool(re.search(r"[\u4e00-\u9fff]", title or ""))
     report_title = str(title or ("调研报告" if is_chinese else "Research Report")).strip()
     parts = [f"# {report_title}"]
     for section in compiled_sections:
+        content = _strip_leading_heading(section["content"])
         if wikipedia_task and section.get("section_type") == "lead":
-            parts.append(section["content"])
+            parts.append(content)
         else:
-            parts.extend([f"## {section['title']}", section["content"]])
-    parts.append(_render_references(
-        registry,
-        cited_source_ids,
+            parts.extend([f"## {section['title']}", content])
+
+    raw_body = "\n\n".join(parts)
+
+    registry_by_number = {entry["n"]: entry for entry in registry}
+    cited_source_ids = {sid for sid in cited_source_ids if sid}
+
+    first_seen_numbers: list[int] = []
+    seen_numbers: set[int] = set()
+    for token in _CITE_TOKEN_RE.finditer(raw_body):
+        old_num = int(token.group(1))
+        if old_num in seen_numbers:
+            continue
+        entry = registry_by_number.get(old_num)
+        if entry is None or entry["source_id"] not in cited_source_ids:
+            continue
+        seen_numbers.add(old_num)
+        first_seen_numbers.append(old_num)
+
+    old_to_new: dict[int, int] = {old: i + 1 for i, old in enumerate(first_seen_numbers)}
+
+    def _renumber(match: re.Match) -> str:
+        old = int(match.group(1))
+        new = old_to_new.get(old)
+        return f"[{new}]" if new is not None else ""
+
+    renumbered_body = _CITE_TOKEN_RE.sub(_renumber, raw_body)
+
+    cited_registry_entries = [
+        registry_by_number[old_num]
+        for old_num in first_seen_numbers
+        if old_num in registry_by_number
+    ]
+
+    references_text = _render_references(
+        _renumber_registry(cited_registry_entries, old_to_new),
+        {entry["source_id"] for entry in cited_registry_entries},
         "参考文献" if is_chinese else "References",
-    ))
-    return sanitize_report("\n\n".join(parts))
+    )
+
+    return sanitize_report(f"{renumbered_body}\n\n{references_text}")
+
+
+def _renumber_registry(
+    entries: list[dict],
+    old_to_new: dict[int, int],
+) -> list[dict]:
+    """Renumber a subset of registry entries using the old→new mapping."""
+    renumbered: list[dict] = []
+    for entry in entries:
+        new_n = old_to_new.get(entry["n"], entry["n"])
+        renumbered.append({**entry, "n": new_n})
+    return renumbered
 
 
 def _validate_compiled_report_content(report_text: str) -> list[str]:
@@ -1550,14 +1687,36 @@ def compile_structured_report(title: str, sections: list[dict], *, persist: bool
             if registry_by_number.get(number, {}).get("source_id") not in source_ids
         )
         if invalid_citations:
+            # Strip only the invalid [n] tokens, keep the prose. This preserves
+            # valuable content (e.g. scholar discussions) while flagging the
+            # citation hygiene issue for soft review. Then append a fallback
+            # citation to paragraphs that lost all citations.
+            invalid_pattern = re.compile(
+                r"\[(?:%s)\]" % "|".join(str(n) for n in invalid_citations)
+            )
+            content = invalid_pattern.sub("", content)
+            content = re.sub(r"\s{2,}", " ", content).strip()
+            if source_ids:
+                first_valid_number = next(
+                    (entry["n"] for entry in registry
+                     if entry.get("source_id") in source_ids),
+                    None,
+                )
+                if first_valid_number is not None:
+                    paragraphs = re.split(r"(\n\s*\n)", content)
+                    for i, para in enumerate(paragraphs):
+                        if not para.strip() or para.strip().startswith("#"):
+                            continue
+                        if not _CITE_TOKEN_RE.search(para):
+                            paragraphs[i] = para.rstrip(".。") + f". [{first_valid_number}]"
+                    content = "".join(paragraphs)
             issues.append(_issue(
-                "invalid_inline_citations",
+                "invalid_inline_citations_stripped",
                 "soft",
-                f"section {section_title!r} cites sources outside its Evidence-derived source set: {invalid_citations}",
-                "Use only citation numbers returned for the selected Report Evidence.",
+                f"section {section_title!r} had {len(invalid_citations)} invalid citation(s) stripped; prose retained",
+                "Re-add valid citation numbers from the section's Report Evidence to support the affected claims.",
                 section_title=section_title,
             ))
-            continue
         if evidence_ids:
             valid_evidence_ids = []
             for evidence_id in evidence_ids:
@@ -1867,14 +2026,7 @@ def build_context_fallback_report(request: str = "") -> str:
     is_chinese = bool(re.search(r"[\u4e00-\u9fff]", request_text or str(goal.get("language") or "")))
 
     queries = graph_tools.search_nodes("query", {})
-    queries.sort(
-        key=lambda query: (
-            float(query.get("sem") or 0.0),
-            float(query.get("priority") or 0.0),
-            query.get("id") or "",
-        ),
-        reverse=True,
-    )
+    queries.sort(key=lambda query: (query.get("importance") or 0), reverse=True)
 
     topic_sections: list[dict[str, Any]] = []
     all_source_ids: list[str] = []

@@ -9,6 +9,7 @@ Orchestrator 通过 ``dispatch_searcher`` 注入 ``query_id``、``search_run_id`
 """
 
 import json
+import logging
 import re
 from typing import Annotated, Any, Optional, TypedDict
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
@@ -20,6 +21,8 @@ from langgraph.graph.message import add_messages
 import config
 from tools.graph_manager_tools import submit_search_result
 from tools.search_tools import tavily_search
+
+logger = logging.getLogger(__name__)
 
 
 class SearcherState(TypedDict):
@@ -33,6 +36,7 @@ class SearcherState(TypedDict):
     acceptance_criteria: list[str]
     research_context: dict[str, Any]
     source_preferences: list[str]
+    search_mode: str
     search_results: Optional[dict]
     search_output: str
     evidence_package: Optional[dict]
@@ -44,6 +48,60 @@ _TRACKING_QUERY_KEYS = {"gclid", "fbclid"}
 _MAX_DEBUG_SEARCH_OUTPUT_CHARS = 30_000
 _MAX_SOURCE_RAW_CHARS = 20_000
 _DEFAULT_MAX_RESULTS = 5
+_VALID_SEARCH_MODES = {
+    "general", "news", "finance", "linkedin", "github", "academic"
+}
+
+
+def _mode_search_params(mode: str) -> tuple[str, Optional[list[str]], Optional[str]]:
+    """Map a search_mode to (topic, include_domains, search_depth).
+
+    - general / news / finance: pass through as the Tavily ``topic`` parameter,
+      no domain restriction, no explicit depth.
+    - linkedin / github / academic: force ``topic='general'`` (Tavily's news /
+      finance topics are incompatible with domain-restricted profile search and
+      would over-constrain results), and apply the profile's include_domains.
+    - academic additionally enables ``search_depth='advanced'`` per the project
+      decision that scholarly retrieval benefits from the deeper index.
+
+    Returns ``("general", None, None)`` for any unknown mode so callers stay
+    safe against LLM-emitted invalid values.
+    """
+    from tools.search_tools import _PROFILE_INCLUDE_DOMAINS
+
+    if mode in ("general", "news", "finance"):
+        return mode, None, None
+    if mode == "academic":
+        return "general", list(_PROFILE_INCLUDE_DOMAINS["academic"]), "advanced"
+    if mode in ("linkedin", "github"):
+        return "general", list(_PROFILE_INCLUDE_DOMAINS[mode]), None
+    return "general", None, None
+
+
+def _normalize_domain_pref(value: str) -> Optional[str]:
+    """Normalize a ``source_preferences`` entry to a bare include-domain.
+
+    Handles ``+site:domain`` and bare-domain forms (e.g. ``"linkedin.com"``,
+    ``"+site:github.com"``). ``-site:`` entries are dropped here because they
+    are routed through ``excluded_domains`` by ``prepare_search`` rather than
+    through ``include_domains``.
+
+    Non-domain category descriptions (e.g. ``"official sources"``,
+    ``"academic journals"``) are rejected by requiring at least one dot and no
+    whitespace — this prevents free-text preference labels from being
+    misinterpreted as Tavily host constraints.
+    """
+    text = str(value or "").strip().lower()
+    if not text or text.startswith("-site:"):
+        return None
+    if text.startswith("+site:"):
+        text = text[6:]
+    if "://" in text:
+        text = urlsplit(text).hostname or ""
+    text = text.strip("./")
+    if not text or " " in text or "." not in text:
+        return None
+    return text
 
 
 def _empty_package() -> dict:
@@ -54,6 +112,7 @@ def _empty_package() -> dict:
         "statements": [],
         "evidence": [],
         "conflicts": [],
+        "extraction_log": [],
     }
 
 
@@ -163,20 +222,101 @@ def _compact_search_output(search_results: dict) -> str:
 
 _TAVILY_SEARCH = getattr(tavily_search, "func", tavily_search)
 
+_QUERY_WRAP_QUOTE_RE = re.compile(r'^["\'\u201c\u201d\u2018\u2019]+|["\'\u201c\u201d\u2018\u2019]+$')
+_QUERY_SCAFFOLD_RE = re.compile(r'\b(?:query|search|find|look up)\s*[:\uff1a]\s*', re.IGNORECASE)
+_QUERY_QID_PREFIX_RE = re.compile(r'\bq\d+\s*[:\uff1a]\s*', re.IGNORECASE)
+
+
+def _sanitize_query_text(text: str) -> str:
+    """Normalize a query string before passing it to Tavily.
+
+    Strips wrapping quotes, collapses whitespace, and removes scaffolding
+    tokens (e.g. ``query:`` prefixes) that LLM-authored queries sometimes
+    carry. Returns the cleaned text; never returns empty if input had content.
+    """
+    if not isinstance(text, str):
+        return ""
+    cleaned = text.strip()
+    cleaned = _QUERY_WRAP_QUOTE_RE.sub('', cleaned)
+    cleaned = _QUERY_SCAFFOLD_RE.sub('', cleaned)
+    cleaned = _QUERY_QID_PREFIX_RE.sub('', cleaned)
+    cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+    return cleaned
+
 
 def web_search_node(state: SearcherState) -> dict:
-    """固定执行一次 Tavily general 搜索，并只保留唯一且带正文的来源."""
-    result = _TAVILY_SEARCH(
-        query=state["query_text"],
-        max_results=_DEFAULT_MAX_RESULTS,
-        topic="general",
+    """执行一次 Tavily 搜索，按 search_mode 路由参数并去重.
+
+    按 ``state['search_mode']`` 映射到 Tavily 的 ``topic`` /
+    ``include_domains`` / ``search_depth``，调用 Tavily 搜索，并只保留唯一
+    且带正文（``raw_content`` + ``url``）的来源结果。
+
+    Args:
+        state: 单次搜索状态，至少包含 ``query_text``。
+    """
+    raw_query = state["query_text"]
+    cleaned_query = _sanitize_query_text(raw_query)
+    mode = state.get("search_mode") or "general"
+    if mode not in _VALID_SEARCH_MODES:
+        mode = "general"
+    topic, include_domains, search_depth = _mode_search_params(mode)
+
+    # 用户硬约束优先：source_preferences 里的 +site: 或裸域名覆盖 mode 的
+    # include_domains，避免 per-query mode 与用户 goal 级硬约束冲突。
+    user_prefs = state.get("source_preferences") or []
+    user_domains = [
+        d for d in (_normalize_domain_pref(p) for p in user_prefs) if d
+    ]
+    if user_domains:
+        include_domains = user_domains
+        search_depth = None  # 用户硬约束不强制 advanced
+
+    # Explicit routing trace so we can tell at a glance whether the LLM
+    # actually surfaced search_mode=academic (etc.) instead of silently
+    # defaulting to general on every call. One INFO row per search attempt.
+    logger.info(
+        "web_search_node: handle=%s mode=%s topic=%s include_domains=%s search_depth=%s",
+        state.get("handle"),
+        mode,
+        topic,
+        include_domains,
+        search_depth,
     )
+
+    call_kwargs = {
+        "query": cleaned_query,
+        "max_results": _DEFAULT_MAX_RESULTS,
+        "topic": topic,
+    }
+    if include_domains:
+        call_kwargs["include_domains"] = include_domains
+    if search_depth:
+        call_kwargs["search_depth"] = search_depth
+    result = _TAVILY_SEARCH(**call_kwargs)
     if not isinstance(result, dict):
         result = {
             "error": "tavily_search returned a non-dict response",
-            "query": state["query_text"],
+            "query": cleaned_query,
             "results": [],
         }
+
+    # Empty-result sanitization retry: if the first call returned no usable
+    # results AND removing all internal quotes yields a different query,
+    # retry once with the aggressively-cleaned variant. The retry keeps the
+    # same topic / include_domains / search_depth because it is a query-text
+    # wash (strip quotes), not a strategy retreat — dropping the profile
+    # constraints would silently drift the search behavior and make run.log
+    # attribution harder.
+    kept_check = result.get("results") or []
+    if not kept_check and cleaned_query:
+        aggressive = re.sub(r'["\']', '', cleaned_query).strip()
+        aggressive = re.sub(r'\s+', ' ', aggressive).strip()
+        if aggressive and aggressive != cleaned_query:
+            retry_kwargs = dict(call_kwargs, query=aggressive)
+            retry = _TAVILY_SEARCH(**retry_kwargs)
+            if isinstance(retry, dict) and (retry.get("results") or []):
+                result = retry
+                cleaned_query = aggressive
 
     kept: list[dict[str, Any]] = []
     seen_urls: set[str] = set()
@@ -202,7 +342,7 @@ def web_search_node(state: SearcherState) -> dict:
         kept.append(normalized)
 
     structured = {
-        "query": result.get("query") or state["query_text"],
+        "query": result.get("query") or cleaned_query,
         "error": result.get("error"),
         "results": kept,
         "dropped_without_url": dropped_without_url,
@@ -282,44 +422,126 @@ def _nonempty_items(items: object, field: str = "text") -> list[dict]:
     ]
 
 
+LOGIN_WALL_HINTS = (
+    "sign in", "sign up", "log in", "login", "register", "create an account",
+    "access through your institution", "continue with google", "continue with orcid",
+    "enjoying our latest content", "access the most recent journalism",
+    "marc record", "library catalog record", "catalog record",
+    "borrow", "viewability", "full text unavailable", "limited preview",
+    "subscribe", "subscription required", "buy now", "unlock",
+)
+
+# NOTE: "rights and permissions" and "bibliographic information" were removed from
+# LOGIN_WALL_HINTS. Both are normal phrases on scholarly publisher pages (Cambridge
+# Core, journal sites) and caused legitimate article pages to be flagged as login
+# walls when the Tavily snippet was short. Catalog-card signal phrases ("marc record",
+# "library catalog record", "catalog record", "viewability", "borrow") are kept so
+# HathiTrust catalog cards accumulate hits>=3 and are forwarded to the analyzer.
+
+CATALOG_BOOLEAN_HINTS = (
+    "catalog.hathitrust.org", "worldcat.org", "librarything.com", "goodreads.com",
+)
+
+
+def _looks_like_login_wall_or_catalog(source: dict, raw_content: str) -> bool:
+    """Heuristic: flag sources whose body is dominated by login-wall / catalog boilerplate.
+
+    Catalog domains and short pages are NO LONGER hard-rejected here. They are forwarded
+    to the analyzer; sources that fail extraction are still registered as source nodes
+    (without evidence) by _merge_source_packets. Only pages with login-wall boilerplate
+    and too little extractable body text are flagged, so the caller can skip the strict
+    statement/evidence binding path and fall back to source-only registration.
+    """
+    text = (raw_content or "").lower()
+    if not text:
+        return True
+    hits = sum(1 for hint in LOGIN_WALL_HINTS if hint in text)
+    if hits >= 3:
+        return False
+    if hits == 2 and len(text) < 1200:
+        return True
+    if hits == 1 and len(text) < 700:
+        return True
+    if hits == 0 and len(text) < 400:
+        return True
+    return False
+
+
+_SCHOLAR_WIKI_RE = re.compile(
+    r'https?://(?:en\.)?wikipedia\.org/wiki/([^)\s"\']+_(?:[A-Z][a-z]+(?:_[A-Z][a-z]+)+))',
+    re.IGNORECASE,
+)
+_WIKI_GENERAL_RE = re.compile(
+    r'https?://(?:en\.)?wikipedia\.org/wiki/([^)\s"\']+)',
+    re.IGNORECASE,
+)
+
+
+def _extract_scholar_wiki_links(raw_content: str) -> list[dict[str, str]]:
+    """Extract Wikipedia links for scholar-like names from raw content.
+
+    Matches patterns like /wiki/Arthur_Evans, /wiki/Martin_P._Nilsson, etc.
+    Returns list of {url, title} dicts for scholar Wikipedia pages.
+    """
+    if not raw_content:
+        return []
+    found: list[dict[str, str]] = []
+    seen: set[str] = set()
+    for match in _SCHOLAR_WIKI_RE.finditer(raw_content):
+        slug = match.group(1)
+        url = f"https://en.wikipedia.org/wiki/{slug}"
+        if url in seen:
+            continue
+        seen.add(url)
+        title = slug.replace("_", " ")
+        found.append({"url": url, "title": title, "source_type": "scholar_wiki"})
+    return found
+
+
 def _merge_source_packets(search_results: dict, packets: list[dict]) -> dict:
     """把有效的单来源 packet 合并为现有 evidence_package shape."""
     package = _empty_package()
     statement_counter = 0
     evidence_counter = 0
+    scholar_sources: list[dict[str, str]] = []
 
     for source, packet in zip(search_results.get("results", []) or [], packets):
         if not isinstance(source, dict) or not isinstance(packet, dict):
             continue
+        src_url = source.get("url") or ""
+        src_title = (source.get("title") or "")[:80]
+        raw_content = str(source.get("content") or source.get("raw_content") or "")
+        if _looks_like_login_wall_or_catalog(source, raw_content):
+            package["extraction_log"].append({
+                "url": src_url, "title": src_title,
+                "stage": "B_login_wall", "reason": "login-wall/catalog boilerplate or too short",
+            })
+            continue
+
+        scholar_links = _extract_scholar_wiki_links(raw_content)
+        for sl in scholar_links:
+            if sl["url"] not in {s["url"] for s in scholar_sources}:
+                scholar_sources.append(sl)
+
         document = packet.get("document") if isinstance(packet.get("document"), dict) else {}
         summary = str(document.get("document_summary") or "").strip()
-        statements = _nonempty_items(packet.get("statements"))
-        evidence_items = _nonempty_items(packet.get("evidence"))
-        if not summary or not statements or not evidence_items or packet.get("conflicts"):
+        # 关卡C：只有 analyzer 完全无法生成来源概述时才丢弃。
+        # 有 summary 但缺 statements/evidence 的来源仍注册为可引用来源
+        # （带 document_summary），只是不写结构化命题绑定。
+        if not summary:
+            package["extraction_log"].append({
+                "url": src_url, "title": src_title,
+                "stage": "C_no_summary", "reason": "analyzer returned empty packet (no document_summary)",
+            })
+            continue
+        if packet.get("conflicts"):
+            package["extraction_log"].append({
+                "url": src_url, "title": src_title,
+                "stage": "C_conflicts", "reason": "analyzer flagged conflicts in packet",
+            })
             continue
 
-        statement_local_refs = [str(item.get("local_ref") or "").strip() for item in statements]
-        evidence_local_refs = [str(item.get("local_ref") or "").strip() for item in evidence_items]
-        if (
-            any(not ref for ref in statement_local_refs + evidence_local_refs)
-            or len(set(statement_local_refs)) != len(statement_local_refs)
-            or len(set(evidence_local_refs)) != len(evidence_local_refs)
-        ):
-            continue
-        statement_ref_set = set(statement_local_refs)
-        raw_evidence_statement_refs = [item.get("statement_refs") for item in evidence_items]
-        if any(not isinstance(refs, list) for refs in raw_evidence_statement_refs):
-            continue
-        evidence_statement_refs = [
-            [str(ref).strip() for ref in refs if str(ref).strip()]
-            for refs in raw_evidence_statement_refs
-        ]
-        if (
-            any(not refs or any(ref not in statement_ref_set for ref in refs) for refs in evidence_statement_refs)
-            or set(ref for refs in evidence_statement_refs for ref in refs) != statement_ref_set
-        ):
-            continue
-
+        # 先注册 source + document（基于 analyzer 的来源概述）
         source_ref = f"s{len(package['sources']) + 1}"
         document_ref = f"d{len(package['documents']) + 1}"
         source_meta = packet.get("source") if isinstance(packet.get("source"), dict) else {}
@@ -335,6 +557,51 @@ def _merge_source_packets(search_results: dict, packets: list[dict]) -> dict:
             "document_summary": summary,
             "source_ref": source_ref,
         })
+
+        statements = _nonempty_items(packet.get("statements"))
+        evidence_items = _nonempty_items(packet.get("evidence"))
+        # 无完整 statement-evidence 绑定时，source+document 已注册，跳过绑定阶段
+        if not statements or not evidence_items:
+            package["extraction_log"].append({
+                "url": src_url, "title": src_title,
+                "stage": "registered_source_only", "reason": "has summary but missing statements/evidence",
+            })
+            continue
+
+        # 关卡D：local_ref / statement_refs 格式校验；失败则跳过绑定，保留 source+document
+        statement_local_refs = [str(item.get("local_ref") or "").strip() for item in statements]
+        evidence_local_refs = [str(item.get("local_ref") or "").strip() for item in evidence_items]
+        if (
+            any(not ref for ref in statement_local_refs + evidence_local_refs)
+            or len(set(statement_local_refs)) != len(statement_local_refs)
+            or len(set(evidence_local_refs)) != len(evidence_local_refs)
+        ):
+            package["extraction_log"].append({
+                "url": src_url, "title": src_title,
+                "stage": "D_format_invalid", "reason": "local_ref missing/duplicate",
+            })
+            continue
+        statement_ref_set = set(statement_local_refs)
+        raw_evidence_statement_refs = [item.get("statement_refs") for item in evidence_items]
+        if any(not isinstance(refs, list) for refs in raw_evidence_statement_refs):
+            package["extraction_log"].append({
+                "url": src_url, "title": src_title,
+                "stage": "D_format_invalid", "reason": "statement_refs not a list",
+            })
+            continue
+        evidence_statement_refs = [
+            [str(ref).strip() for ref in refs if str(ref).strip()]
+            for refs in raw_evidence_statement_refs
+        ]
+        if (
+            any(not refs or any(ref not in statement_ref_set for ref in refs) for refs in evidence_statement_refs)
+            or set(ref for refs in evidence_statement_refs for ref in refs) != statement_ref_set
+        ):
+            package["extraction_log"].append({
+                "url": src_url, "title": src_title,
+                "stage": "D_format_invalid", "reason": "statement_refs mismatch",
+            })
+            continue
 
         local_statement_map: dict[str, str] = {}
         for statement, local_ref in zip(statements, statement_local_refs):
@@ -358,6 +625,27 @@ def _merge_source_packets(search_results: dict, packets: list[dict]) -> dict:
                 "source_ref": source_ref,
                 "statement_refs": [local_statement_map[ref] for ref in statement_refs],
             })
+        package["extraction_log"].append({
+            "url": src_url, "title": src_title,
+            "stage": "binding_ok", "reason": f"statements={len(statements)} evidence={len(evidence_items)}",
+        })
+
+    for scholar in scholar_sources:
+        scholar_ref = f"s{len(package['sources']) + 1}"
+        document_ref = f"d{len(package['documents']) + 1}"
+        package["sources"].append({
+            "local_ref": scholar_ref,
+            "url": scholar["url"],
+            "title": scholar["title"],
+            "source_type": "scholar_wiki",
+            "published_at": None,
+        })
+        package["documents"].append({
+            "local_ref": document_ref,
+            "document_summary": f"Scholar Wikipedia page: {scholar['title']}",
+            "source_ref": scholar_ref,
+        })
+
     return package
 
 
@@ -386,9 +674,16 @@ def extract_evidence_package_node(state: SearcherState) -> dict:
         if isinstance(source, dict)
     ]
     package = _merge_source_packets(search_results, packets)
+    # Summarize extraction log per stage for quick diagnosis
+    log_entries = package.get("extraction_log") or []
+    stage_counts: dict[str, int] = {}
+    for entry in log_entries:
+        stage = entry.get("stage") or "unknown"
+        stage_counts[stage] = stage_counts.get(stage, 0) + 1
     summary = {
         "searched_sources": len(sources),
         "accepted_sources": len(package["sources"]),
+        "extraction_stages": stage_counts,
     }
     return {
         "evidence_package": package,

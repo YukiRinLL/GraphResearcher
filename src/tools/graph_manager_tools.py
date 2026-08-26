@@ -28,6 +28,37 @@ _report_model_call_count = 0
 logger = logging.getLogger(__name__)
 
 
+def _normalize_run_context(output_dir: Optional[str]) -> str:
+    """Normalize output_dir into a stable run-context string for Neo4j scoping.
+
+    Historical behavior (V32..V35): always a windows relative form like
+    ``outputs\\V33``. Newer callers may pass an absolute path (e.g. from
+    Path.resolve()) or posix-style separators. Normalize them so that
+    ``WHERE n.context = "outputs\\V36"`` keeps working consistently
+    regardless of how the script passes ``-o``.
+    """
+    if not output_dir:
+        return "default"
+    p = Path(output_dir)
+    try:
+        # Prefer a path relative to graphresearcher project root (folder that
+        # contains main.py, run_benchmark.ps1, and outputs/).
+        from __main__ import __file__ as _entry  # type: ignore[attr-defined]
+
+        project_root = Path(_entry).resolve().parent
+    except Exception:
+        project_root = Path.cwd()
+    try:
+        rel = p.resolve().relative_to(project_root.resolve())
+    except ValueError:
+        # Fall back to the final path components if outside project tree.
+        parts = list(p.parts)
+        if len(parts) >= 2:
+            return "\\".join(parts[-2:]).replace("/", "\\")
+        return str(p).replace("/", "\\")
+    return str(rel).replace("/", "\\")
+
+
 def configure(output_dir: Optional[str] = None, user_request: Optional[str] = None) -> None:
     """Clear and scope graph storage, then rebuild the shared manager for a run."""
     global _best_report, _cache_dir, _compiled_report, _last_report_attempt, _manager, _report_model_call_count, _report_review_completed, _report_review_had_issues, _report_submit_count, _salvaged_report, _user_request
@@ -64,7 +95,7 @@ def configure(output_dir: Optional[str] = None, user_request: Optional[str] = No
             chapter_dir.rmdir()
     from tools import convergence, graph_tools
 
-    run_context = output_dir or "default"
+    run_context = _normalize_run_context(output_dir)
     graph_tools.set_context(run_context)
     graph_tools.clear_current_context()
     convergence.reset()
@@ -453,18 +484,38 @@ def submit_final_report() -> dict:
             }
             for issue in review_issues
         ]
+        # Critical review patterns that must trigger revision even when
+        # labeled soft by the reviewer. Pure soft issues (placeholder prose,
+        # low retention, single-source reliance, etc.) are recorded but do
+        # not consume the single revision slot.
+        CRITICAL_REVIEW_PATTERNS = (
+            "uncited factual",
+            "citation has no URL-backed reference",
+            "forbidden internal-process",
+            "no valid cited sections",
+            "missing_substantive_uncertainty",
+        )
+        hard_issues = [
+            issue for issue in combined_issues
+            if issue.get("severity") == "hard"
+        ]
+        critical_review_issues = [
+            issue for issue in combined_issues
+            if any(p in str(issue.get("message") or "") for p in CRITICAL_REVIEW_PATTERNS)
+        ]
+        should_revise = bool(hard_issues or critical_review_issues)
         if combined_issues:
-            _report_review_had_issues = True
+            _report_review_had_issues = should_revise
             result = dict(candidate)
             result.update({
-                "revision_requested": True,
-                "severity": "hard" if any(
-                    issue.get("severity") == "hard" for issue in combined_issues
-                ) else "soft",
-                "review_status": "issues",
+                "revision_requested": should_revise,
+                "severity": "hard" if hard_issues else (
+                    "soft" if combined_issues else "clean"
+                ),
+                "review_status": "issues" if should_revise else "soft_only_no_revise",
                 "issues": combined_issues,
             })
-            _record_report_result(result, finalized=False)
+            _record_report_result(result, finalized=not should_revise)
             return result
 
     final = report_tools.submit_committed_report(_cache_dir, persist=True)
