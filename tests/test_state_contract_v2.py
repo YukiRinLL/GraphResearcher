@@ -350,6 +350,7 @@ def test_agent_prompts_enforce_report_visibility_contract():
     assert "unmet_objectives" not in reporter + outline
     assert "原始 User Request" in outline
     assert "Report Context.user_request" in outline
+    assert "supported_topics" in outline
     assert "disclosed_conflicts" in outline
     assert "不单独创建“局限性”章节" in outline
     assert "graph_manager_tools.submit_final_report()" in workflow

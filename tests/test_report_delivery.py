@@ -32,6 +32,8 @@ def main():
             "text": "机器人公司的产品与融资",
             "status": "sufficient",
             "importance": "core",
+            "successful_search_runs": 1,
+            "covered": ["仓储机器人", "融资进展", "仓储机器人", ""],
         },
         "empty-query": {
             "id": "empty-query",
@@ -40,6 +42,8 @@ def main():
             "text": "没有证据的查询",
             "status": "blocked",
             "importance": "supporting",
+            "successful_search_runs": 0,
+            "covered": [],
         },
         "s1": {
             "id": "s1",
@@ -156,13 +160,22 @@ def main():
             "disclosed_conflicts",
             "reference_registry",
         }
-        assert set(context["queries"][0]) == {"ref", "text", "importance"}
+        assert context["queries"] == [
+            {
+                "ref": "q1",
+                "text": "机器人公司的产品与融资",
+                "supported_topics": ["仓储机器人", "融资进展"],
+            }
+        ]
         assert all(
             set(entry) == {"n", "title", "url"}
             for entry in context["reference_registry"]
         )
         assert "status" not in context["queries"][0]
-        assert not any(key in str(context) for key in ("unmet_objectives", "budget", "analysis"))
+        assert not any(
+            key in str(context)
+            for key in ("importance", "unmet_objectives", "budget", "analysis")
+        )
 
         evidence = report_tools.get_report_evidence("q1", limit=10)
         assert evidence["query"]["id"] == query_id

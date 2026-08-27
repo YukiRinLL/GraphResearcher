@@ -12,7 +12,6 @@ sys.path.insert(0, str(repo_dir / "src"))
 from agents.memory_manager import MemoryManager  # noqa: E402
 from tools import graph_tools, report_tools  # noqa: E402
 
-
 GRAPH_ID_RE = re.compile(r"\b\d{20}_[0-9a-f]{8}\b")
 
 
@@ -29,8 +28,24 @@ def main():
             "request": "请撰写机器人公司的 Wikipedia 条目。",
             "research_state": "REPORT_READY",
         },
-        q1: {"id": q1, "type": "Query", "handle": "q1", "text": "产品", "importance": "core"},
-        q2: {"id": q2, "type": "Query", "handle": "q2", "text": "融资", "importance": "core"},
+        q1: {
+            "id": q1,
+            "type": "Query",
+            "handle": "q1",
+            "text": "产品",
+            "importance": "core",
+            "successful_search_runs": 1,
+            "covered": ["产品与应用"],
+        },
+        q2: {
+            "id": q2,
+            "type": "Query",
+            "handle": "q2",
+            "text": "融资",
+            "importance": "core",
+            "successful_search_runs": 1,
+            "covered": ["融资进展"],
+        },
         e1: {"id": e1, "type": "Evidence", "claim": "公司开发仓储机器人。", "confidence": 0.9},
         e2: {"id": e2, "type": "Evidence", "claim": "公司未公开融资金额。", "confidence": 0.8},
         "source-product": {
@@ -82,6 +97,10 @@ def main():
     try:
         report_context = MemoryManager(model=object()).export_report_context()
         assert not GRAPH_ID_RE.search(json.dumps(report_context, ensure_ascii=False)), report_context
+        assert report_context["queries"] == [
+            {"ref": "q1", "text": "产品", "supported_topics": ["产品与应用"]},
+            {"ref": "q2", "text": "融资", "supported_topics": ["融资进展"]},
+        ]
         with TemporaryDirectory() as temp_dir:
             outline = report_tools.commit_report_outline(temp_dir, "机器人公司", [
                 {

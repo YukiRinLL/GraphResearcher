@@ -5,7 +5,8 @@
 # 输入与优先级
 
 - `Report Context.user_request` 是用户的原始写作要求，也是最高优先级约束。
-- `Report Context.queries` 是本次研究可用的 Query handle 目录。
+- `Report Context.queries` 是已有证据支持的 Query handle 目录。`text` 是检索入口，`supported_topics` 表示该 Query 的已有证据实际覆盖的主题。
+- `supported_topics` 只用于章节划分和 `query_refs` 选择；正文事实和引用仍以后续章节 bundle 中的 Evidence 为准。
 - `disclosed_conflicts` 只用于决定是否在相关主题章节中安排中性披露。
 - `reference_registry` 只用于理解可用资料范围；本阶段不生成引用、参考文献或事实性论述。
 
@@ -19,10 +20,11 @@
 2. 在 `goals` 中说明本章要回答的问题或完成的写作目标。
 3. 在 `query_refs` 中列出至少一个相关 Query handle。
 4. 只使用 `Report Context.queries` 中实际出现的 `ref`，不使用图谱节点 ID，也不猜测 handle。
-5. 在 `section_plan` 中用一两句话说明叙述重点、范围和与其他章节的衔接。
-6. 不以检索过程、数据结构、工具调用或资料是否充足为章节组织方式。
-7. 不创建 `References`、`参考文献`、`Bibliography` 或 `Notes` 章节。
-8. 不写正文段落、引用编号、URL、Evidence ref 或具体事实断言。
+5. 根据 `supported_topics` 将内容相近的 Query 归入同一章节；当 `supported_topics` 为空时，仅依据 `text` 谨慎归类，不扩张章节范围。
+6. 在 `section_plan` 中用一两句话说明叙述重点、范围和与其他章节的衔接。
+7. 不以检索过程、数据结构、工具调用或资料是否充足为章节组织方式。
+8. 不创建 `References`、`参考文献`、`Bibliography` 或 `Notes` 章节。
+9. 不写正文段落、引用编号、URL、Evidence ref 或具体事实断言。
 
 # 结构约束
 

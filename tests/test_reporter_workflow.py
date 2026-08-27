@@ -68,7 +68,9 @@ def _install_fakes(
     workflow_module.research_state.update_goal = update_goal
     workflow_module.graph_manager_tools.export_report_context = lambda: {
         "user_request": goal["request"],
-        "queries": [{"ref": "q1", "text": "Topic", "importance": "core"}],
+        "queries": [
+            {"ref": "q1", "text": "Topic", "supported_topics": ["Supported fact"]}
+        ],
         "disclosed_conflicts": [],
         "reference_registry": [
             {
@@ -193,7 +195,9 @@ def test_outline_prompt_is_limited_to_outline_planning():
     """大纲 prompt 不继承章节写作或工具调度职责。"""
     context = {
         "user_request": "Write a cited report.",
-        "queries": [{"ref": "q1", "text": "Topic", "importance": "core"}],
+        "queries": [
+            {"ref": "q1", "text": "Topic", "supported_topics": ["Supported fact"]}
+        ],
         "disclosed_conflicts": [],
         "reference_registry": [],
     }
@@ -208,6 +212,9 @@ def test_outline_prompt_is_limited_to_outline_planning():
     assert "commit_report_outline" not in prompt
     assert "submit_final_report" not in prompt
     assert '"ref": "q1"' in prompt
+    assert '"supported_topics": ["Supported fact"]' in prompt
+    assert "`supported_topics` 只用于章节划分" in prompt
+    assert "正文事实和引用仍以后续章节 bundle 中的 Evidence 为准" in prompt
     assert "上一版大纲未通过校验" in retry_prompt
 
 

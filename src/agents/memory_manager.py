@@ -259,6 +259,15 @@ def _string_list(value: Any) -> list[str]:
     return list(dict.fromkeys(item for item in strings if item))
 
 
+def _query_handle_sort_key(query: dict) -> tuple:
+    """按 Query handle 的数字树层级排序，非法 handle 稳定地排在末尾."""
+    handle = str(query.get("handle") or "")
+    parts = handle[1:].split(".") if handle.startswith("q") else []
+    if parts and all(part.isdigit() for part in parts):
+        return 0, tuple(int(part) for part in parts), "", ""
+    return 1, (), handle, str(query.get("id") or "")
+
+
 def _normalize_domain(value: str) -> Optional[str]:
     """规范化域名或 ``-site:`` 操作数."""
     text = str(value or "").strip().lower()
@@ -3324,14 +3333,13 @@ class MemoryManager:
         else:
             logger.warning("User Request is empty in export_report_context")
 
-        sorted_queries = sorted(
-            graph_tools.search_nodes("query", {}),
-            key=lambda query: (
-                float(query.get("sem") or 0.0),
-                float(query.get("priority") or 0.0),
-                query.get("id") or "",
+        report_queries = sorted(
+            (
+                query
+                for query in graph_tools.search_nodes("query", {})
+                if int(query.get("successful_search_runs") or 0) > 0
             ),
-            reverse=True,
+            key=_query_handle_sort_key,
         )
         disclosed_conflicts = report_tools.get_disclosed_conflicts()
         return {
@@ -3340,9 +3348,9 @@ class MemoryManager:
                 {
                     "ref": query.get("handle"),
                     "text": query.get("text"),
-                    "importance": query.get("importance"),
+                    "supported_topics": _string_list(query.get("covered")),
                 }
-                for query in sorted_queries
+                for query in report_queries
             ],
             "disclosed_conflicts": [
                 {
