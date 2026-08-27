@@ -169,7 +169,12 @@ def stage_reports_for_wlc(report_paths: list[Path], work_dir: Path) -> tuple[Pat
     return md_dir, json_dir, results_dir
 
 
-def run_command_tee(command: list[str], cwd: Path, log_path: Path) -> None:
+def run_command_tee(
+    command: list[str],
+    cwd: Path,
+    log_path: Path,
+    env: dict[str, str] | None = None,
+) -> None:
     """Run a command and mirror combined stdout/stderr to terminal and log file."""
     log_path.parent.mkdir(parents=True, exist_ok=True)
     header = "\n" + "=" * 80 + "\n"
@@ -185,7 +190,7 @@ def run_command_tee(command: list[str], cwd: Path, log_path: Path) -> None:
         process = subprocess.Popen(
             command,
             cwd=cwd,
-            env={**os.environ, "PYTHONUNBUFFERED": "1"},
+            env={**os.environ, **(env or {}), "PYTHONUNBUFFERED": "1"},
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
@@ -201,6 +206,16 @@ def run_command_tee(command: list[str], cwd: Path, log_path: Path) -> None:
         return_code = process.wait()
         if return_code != 0:
             raise RuntimeError(f"Command failed with exit code {return_code}: {' '.join(command)}")
+
+
+def wlc_subprocess_env(wlc_root: Path) -> dict[str, str]:
+    """Return WLC's environment without changing the batch runner's environment."""
+    env_file = wlc_root / ".env"
+    if not env_file.is_file():
+        raise FileNotFoundError(f"WLC environment file not found: {env_file}")
+
+    values = dotenv.dotenv_values(env_file)
+    return {key: value for key, value in values.items() if value is not None}
 
 
 def run_wlc_evaluation(
@@ -225,6 +240,8 @@ def run_wlc_evaluation(
     if not wlc_root.exists():
         raise FileNotFoundError(f"WLC root not found: {wlc_root}")
 
+    subprocess_env = wlc_subprocess_env(wlc_root)
+
     gt_dir = wlc_root / "data" / benchmark / "wiki_data" / "cleaned_data" / "article"
     if not gt_dir.exists():
         raise FileNotFoundError(f"WLC ground-truth article directory not found: {gt_dir}")
@@ -246,7 +263,7 @@ def run_wlc_evaluation(
     ]
     if json_concurrency is not None:
         generate_cmd.extend(["--concurrency", str(json_concurrency)])
-    run_command_tee(generate_cmd, wlc_root, log_path)
+    run_command_tee(generate_cmd, wlc_root, log_path, env=subprocess_env)
 
     eval_cmd = [
         python_bin,
@@ -267,7 +284,7 @@ def run_wlc_evaluation(
     ]
     if allow_tie:
         eval_cmd.append("--allow-tie")
-    run_command_tee(eval_cmd, wlc_root, log_path)
+    run_command_tee(eval_cmd, wlc_root, log_path, env=subprocess_env)
     print(f"WLC official result files: {results_dir}")
 
 
