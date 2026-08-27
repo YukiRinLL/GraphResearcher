@@ -349,8 +349,9 @@ def test_agent_prompts_enforce_report_visibility_contract():
     assert "Prepared chapter bundles" in reporter
     assert "unmet_objectives" not in reporter + outline
     assert "原始 User Request" in outline
-    assert "substantive_uncertainties" in outline
-    assert "不自动产生“局限性”章节" in outline
+    assert "Report Context.user_request" in outline
+    assert "disclosed_conflicts" in outline
+    assert "不单独创建“局限性”章节" in outline
     assert "graph_manager_tools.submit_final_report()" in workflow
     assert ".invoke(" not in workflow
     assert "create_agent" not in workflow

@@ -3316,7 +3316,7 @@ class MemoryManager:
             if requests:
                 goal = requests[0]
                 goal_id = goal["id"]
-        from tools import report_tools, research_state
+        from tools import report_tools
 
         request_text = goal.get("request", "")
         if request_text:
@@ -3324,17 +3324,6 @@ class MemoryManager:
         else:
             logger.warning("User Request is empty in export_report_context")
 
-        authorization_state = goal.get("reporting_from_state") or goal.get("research_state")
-        delivery_mode = (
-            "complete"
-            if authorization_state == research_state.REPORT_READY
-            else "limited"
-            if authorization_state in {
-                research_state.LIMITED_REPORT_READY,
-                research_state.BUDGET_EXHAUSTED,
-            }
-            else None
-        )
         sorted_queries = sorted(
             graph_tools.search_nodes("query", {}),
             key=lambda query: (
@@ -3345,22 +3334,8 @@ class MemoryManager:
             reverse=True,
         )
         disclosed_conflicts = report_tools.get_disclosed_conflicts()
-        substantive_uncertainties = [
-            {
-                "reader_facing_topic": conflict.get("conflict_type") or "source disagreement",
-                "neutral_description": conflict.get("description"),
-            }
-            for conflict in disclosed_conflicts
-            if conflict.get("description")
-            and conflict.get("evidence_ids")
-            and conflict.get("source_ids")
-        ]
         return {
-            "delivery_mode": delivery_mode,
-            "goal": {
-                key: goal.get(key)
-                for key in ("request",)
-            } if goal else {},
+            "user_request": request_text,
             "queries": [
                 {
                     "ref": query.get("handle"),
@@ -3369,7 +3344,6 @@ class MemoryManager:
                 }
                 for query in sorted_queries
             ],
-            "substantive_uncertainties": substantive_uncertainties,
             "disclosed_conflicts": [
                 {
                     "description": conflict.get("description"),
@@ -3378,7 +3352,7 @@ class MemoryManager:
                 for conflict in disclosed_conflicts
             ],
             "reference_registry": [
-                {key: entry.get(key) for key in ("n", "title", "url", "source_type", "published_at")}
+                {key: entry.get(key) for key in ("n", "title", "url")}
                 for entry in report_tools.build_reference_registry()
             ],
         }

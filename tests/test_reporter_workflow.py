@@ -67,10 +67,8 @@ def _install_fakes(
 
     workflow_module.research_state.update_goal = update_goal
     workflow_module.graph_manager_tools.export_report_context = lambda: {
-        "delivery_mode": "complete",
-        "goal": {"request": goal["request"]},
+        "user_request": goal["request"],
         "queries": [{"ref": "q1", "text": "Topic", "importance": "core"}],
-        "substantive_uncertainties": [],
         "disclosed_conflicts": [],
         "reference_registry": [
             {
@@ -194,10 +192,8 @@ def test_workflow_commits_ordered_report_without_model_tool_calls():
 def test_outline_prompt_is_limited_to_outline_planning():
     """大纲 prompt 不继承章节写作或工具调度职责。"""
     context = {
-        "delivery_mode": "complete",
-        "goal": {"request": "Write a cited report."},
+        "user_request": "Write a cited report.",
         "queries": [{"ref": "q1", "text": "Topic", "importance": "core"}],
-        "substantive_uncertainties": [],
         "disclosed_conflicts": [],
         "reference_registry": [],
     }

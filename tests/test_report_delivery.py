@@ -149,17 +149,18 @@ def main():
 
     try:
         context = MemoryManager(model=object(), user_request=request).export_report_context()
-        assert context["goal"]["request"] == request
+        assert context["user_request"] == request
         assert set(context) == {
-            "delivery_mode",
-            "goal",
+            "user_request",
             "queries",
-            "substantive_uncertainties",
             "disclosed_conflicts",
             "reference_registry",
         }
-        assert "id" not in context["goal"]
         assert set(context["queries"][0]) == {"ref", "text", "importance"}
+        assert all(
+            set(entry) == {"n", "title", "url"}
+            for entry in context["reference_registry"]
+        )
         assert "status" not in context["queries"][0]
         assert not any(key in str(context) for key in ("unmet_objectives", "budget", "analysis"))
 

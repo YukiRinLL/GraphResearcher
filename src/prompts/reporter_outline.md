@@ -4,9 +4,9 @@
 
 # 输入与优先级
 
-- `Report Context.goal.request` 是用户的原始写作要求，也是最高优先级约束。
+- `Report Context.user_request` 是用户的原始写作要求，也是最高优先级约束。
 - `Report Context.queries` 是本次研究可用的 Query handle 目录。
-- `substantive_uncertainties` 和 `disclosed_conflicts` 只用于决定是否在相关主题章节中安排中性披露。
+- `disclosed_conflicts` 只用于决定是否在相关主题章节中安排中性披露。
 - `reference_registry` 只用于理解可用资料范围；本阶段不生成引用、参考文献或事实性论述。
 
 # 大纲要求
@@ -31,7 +31,7 @@
 - 只有正文确实同时覆盖两个平级子主题时才使用“X and Y”式标题。章节之间不得出现父子范围重叠或同一主题重复展开。
 - User Request 点名的每个子主题、场景和比较维度都必须映射到至少一个章节的 `goals` 或 `section_plan`。
 - 几乎完全依赖单一 Query 或资料明显过薄的相邻维度应合并，不单独凑章。
-- `delivery_mode=limited` 不自动产生“局限性”章节。只有与主题直接相关且已出现在 `substantive_uncertainties` 或 `disclosed_conflicts` 中的不确定性，才安排到对应主题章节。
+- 不单独创建“局限性”章节。只有与主题直接相关且已出现在 `disclosed_conflicts` 中的分歧，才安排到对应主题章节。
 
 # Wikipedia 风格任务
 

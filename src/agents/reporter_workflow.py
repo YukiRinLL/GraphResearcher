@@ -206,10 +206,8 @@ def export_context_node(state: ReporterWorkflowState) -> dict[str, Any]:
         context = graph_manager_tools.export_report_context()
     except Exception as exc:  # noqa: BLE001 - 交给确定性终止路径处理
         return {"error": f"Could not export Reporter context: {exc}"}
-    if not context.get("goal", {}).get("request") or not context.get("delivery_mode"):
-        return {
-            "error": "Reporter context is missing an authorized request or delivery mode"
-        }
+    if not context.get("user_request"):
+        return {"error": "Reporter context is missing the user request"}
     return {"report_context": context, "error": ""}
 
 
