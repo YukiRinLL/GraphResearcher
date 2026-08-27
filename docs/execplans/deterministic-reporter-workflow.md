@@ -2,7 +2,7 @@
 
 ## 目标
 
-把 Reporter 从由通用 Agent 自行选择工具和执行顺序，改为由独立的 LangGraph 状态图依次完成授权、上下文导出、大纲规划、章节取证、章节写作、草稿组装、一次审校和最多一次修订。模型只生成受 schema 约束的 JSON 候选内容，不参与工具调度。
+Reporter 由独立的 LangGraph 状态图依次完成授权、上下文导出、大纲规划、章节取证、章节写作、一次审校和最多一次修订。模型只生成受 schema 约束的 JSON 候选内容，不参与调度。
 
 ## 已确认决策
 
@@ -13,6 +13,8 @@
 - 大纲和每个章节批次最多尝试三次；每批最多处理三章。
 - 首次最终提交继续执行一次独立 Review。只有 `revision_requested=true` 时才进行一轮章节修订，第二次提交不再 Review。
 - Query tree 校验失败继续记录 warning，不改变当前 Reporter 放行语义。
+- Reporter workflow 直接调用普通 Python 服务函数，不提供旧 Reporter Agent mapping 或 Reporter tool 集合。
+- 章节提交成功时同步推进章节游标；最终提交直接消费已保存的章节候选，不生成中间草稿文件。
 
 ## Proposed shape
 
@@ -29,21 +31,21 @@
 }
 ```
 
-内部状态只存在于 Reporter StateGraph，包含原始请求、报告上下文、大纲、章节游标、当前证据包、重试次数、修订反馈和最终结果。它不写入 Neo4j，也不改变 agent-facing 工具 schema。
+内部状态只存在于 Reporter StateGraph，包含原始请求、报告上下文、大纲、章节游标、当前证据包、重试次数、修订反馈和最终结果。它不写入 Neo4j。
 
 状态图拓扑：
 
 ```text
 authorize -> export_context -> plan_outline
-    -> prepare_chapter_batch -> draft_chapter_batch -> advance_chapter_batch
+    -> prepare_chapter_batch -> draft_chapter_batch
     -> ...下一批...
-    -> assemble -> submit
+    -> submit
                     | revision_requested
                     v
-              prepare_chapter_batch -> ... -> assemble -> submit
+              prepare_chapter_batch -> ... -> submit
                     |
                     v
-                 success
+                   END
 ```
 
 ## 行为不变量
@@ -52,7 +54,7 @@ authorize -> export_context -> plan_outline
 - Reporter 只能使用 `export_report_context` 和章节 bundle 暴露的材料，不拥有搜索工具。
 - Query 只通过可读 handle 进入 Reporter-facing context。
 - Evidence、Claim 和 Conflict 继续使用章节局部 `e*`、`c*`、`x*` 引用，并由 `bundle_token` 约束加载版本。
-- `commit_report_outline`、`prepare_report_chapter_batch`、`commit_report_chapter_batch`、`assemble_report_draft` 和 `submit_final_report` 的 payload shape 不变。
+- `commit_report_outline`、`prepare_report_chapter_batch`、`commit_report_chapter_batch` 和 `submit_final_report` 的参数与返回 shape 保持稳定。
 - 正文候选仍先保存再校验；校验失败不能丢弃 Reporter 已写正文。
 - 最终 Markdown 仍由现有确定性编译器生成唯一参考文献区。
 - 只有严格验证通过的报告才把 `ReportSection` 及证据、来源绑定写入 Neo4j。
@@ -64,7 +66,8 @@ authorize -> export_context -> plan_outline
 - 不修改报告章节 schema、引用绑定规则或图谱迁移策略。
 - 不改变 Review 模型、Review 输出 JSON 或 `submit_final_report` 的一次审校/一次修订契约。
 - 不把参考提交中的 strict/fail-closed `main.py` 交付逻辑带入当前主线。
-- 不清理与本次运行时切换无关的旧 Agent 或 middleware 兼容代码。
+- 不优化 Reporter 的图谱读取次数，不引入 run-scoped 图谱快照。
+- 不精简 `ReporterWorkflowState` 字段。
 
 ## 里程碑
 
@@ -91,42 +94,48 @@ authorize -> export_context -> plan_outline
 - 验证大纲和章节有界重试、分批顺序、一次修订、fail-open 收敛以及未授权失败。
 - 运行 Reporter、v4 契约、报告交付和相关 Ruff 检查。
 
-## 兼容策略
+### 里程碑 4：运行时收敛
 
-- 保留现有 Reporter 工具和落盘产物名称，因此 `.report_outline.*`、`.report_chapters/`、`.report_draft.md`、compiled/salvaged/best/attempt 文件不迁移。
-- 旧 `ReporterWorkflowMiddleware` 可以继续存在供兼容调用和历史测试使用，但当前主运行时不再依赖它控制工具顺序。
-- 当前 `src/agents/reporter.py` 不再是主运行时入口；本里程碑不删除其公开 mapping，避免破坏仓库外部调用者。
-- 发生模型或 provider 重复失败时，工作流调用现有最终提交路径生成最佳可交付产物；只有最终提交本身无法产生任何报告时才把运行标记为 `FAILED`。
+- 删除仅传递状态的 `advance_chapter_batch`、`assemble` 和 `success` 节点。
+- Reporter workflow 直接调用 `graph_manager_tools` 中的普通函数。
+- 删除旧 Reporter Agent mapping、Reporter tools、Agent middleware 和 `.report_draft.md` 中间产物。
+- 将仍有效的 Reporter prose 检查迁移到报告模块。
+
+验收：Reporter StateGraph 只保留运行时需要的八个节点，生产路径中没有 Reporter `StructuredTool.invoke()` 调用。
+
+## 运行时接口
+
+- `.report_outline.*`、`.report_chapters/`、compiled/salvaged/best/attempt 文件保持不变。
+- `graph_manager_tools` 继续持有 run-scoped 缓存目录、Review 状态和报告结果缓存。
+- 模型或 provider 重复失败时，工作流调用最终提交服务生成最佳可交付产物；只有最终提交本身无法产生任何报告时才把运行标记为 `FAILED`。
 
 ## 验收命令
 
 ```bash
 uv run python tests/test_reporter_workflow.py
-uv run python tests/test_reporter_revision_middleware.py
-uv run python tests/test_contract_v4.py
-uv run python tests/test_report_delivery.py
-uv run python tests/test_contract_v3.py
-uv run ruff check src/agents/reporter_workflow.py src/workflow.py src/config.py tests/test_reporter_workflow.py
+uv run python tests/test_reporter_replay.py
+uv run ruff check src/agents/reporter_workflow.py src/tools/graph_manager_tools.py src/tools/report_tools.py src/tools/middleware.py tests/test_reporter_workflow.py
+uv run python -m py_compile src/agents/reporter_workflow.py src/tools/graph_manager_tools.py src/tools/report_tools.py src/tools/middleware.py
+git diff --check
 ```
 
 不运行真实 Neo4j CRUD 或模型端到端任务，避免污染现有 context 和消耗 API 配额。
 
 ## 实施结果
 
-三个里程碑均已完成。当前主路径由 `src/workflow.py` 直接调用
-`run_report_workflow()`；旧 Reporter Agent mapping 和 middleware 仍保留为兼容入口，
-但不再控制主运行时的报告顺序。大纲与章节写作拆成两个独立 prompt，模型没有报告工具，
-章节按最多三章一批推进，审校后最多重写全部章节一次。
+四个里程碑均已完成。当前主路径由 `src/workflow.py` 直接调用
+`run_report_workflow()`。大纲与章节写作拆成两个独立 prompt，章节按最多三章一批推进，
+审校后最多重写全部章节一次。Reporter 的报告服务是普通 Python 函数，旧 Agent mapping、
+Reporter tool 集合和专用 middleware 已删除。
 
-新增回归脚本覆盖正常顺序、阶段 prompt、当前批次重试、三章分批、一次修订、重试耗尽后的
-fail-open 交付、未授权失败和顶层 workflow 接入。以下检查通过：
+回归脚本覆盖正常顺序、精简后的节点集合、阶段 prompt、当前批次重试、三章分批、一次修订、
+重试耗尽后的 fail-open 交付、未授权失败、质量检查迁移和顶层 workflow 接入。以下检查通过：
 
 ```bash
 uv run python tests/test_reporter_workflow.py
-uv run python tests/test_reporter_revision_middleware.py
-uv run ruff check src/agents/reporter_workflow.py src/agents/reporter.py src/workflow.py src/config.py tests/test_reporter_workflow.py tests/test_state_contract_v2.py
-uv run ruff format --check src/agents/reporter_workflow.py tests/test_reporter_workflow.py
-uv run python -m py_compile src/agents/reporter_workflow.py src/workflow.py src/config.py
+uv run python tests/test_reporter_replay.py
+uv run ruff format --check src/agents/reporter_workflow.py src/tools/graph_manager_tools.py src/tools/report_tools.py src/tools/middleware.py tests/test_reporter_workflow.py
+uv run python -m py_compile src/agents/reporter_workflow.py src/tools/graph_manager_tools.py src/tools/report_tools.py src/tools/middleware.py
 git diff --check
 ```
 

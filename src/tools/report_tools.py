@@ -122,7 +122,6 @@ _RESERVED_SECTION_TITLES = {
 _OUTLINE_FILE = ".report_outline.json"
 _OUTLINE_MARKDOWN_FILE = ".report_outline.md"
 _CHAPTER_DIR = ".report_chapters"
-_DRAFT_FILE = ".report_draft.md"
 _CHAPTER_META_SUFFIX = ".meta.json"
 
 
@@ -153,10 +152,6 @@ def _chapter_path(output_dir: Optional[str], chapter_id: int) -> Path:
 
 def _chapter_meta_path(output_dir: Optional[str], chapter_id: int) -> Path:
     return _chapter_dir(output_dir) / f"chapter_{int(chapter_id):02d}{_CHAPTER_META_SUFFIX}"
-
-
-def _draft_path(output_dir: Optional[str]) -> Path:
-    return _artifact_root(output_dir) / _DRAFT_FILE
 
 
 def _read_json_file(path: Path) -> dict[str, Any]:
@@ -989,23 +984,6 @@ def _best_effort_report(title: str, sections: list[dict[str, Any]]) -> tuple[str
     return report, issues
 
 
-def assemble_report_draft(output_dir: Optional[str]) -> dict[str, Any]:
-    """Assemble the latest chapter candidates into one draft markdown report."""
-    result = submit_committed_report(output_dir)
-    if not result.get("delivered"):
-        return {"status": "error", "message": "Report outline not found."}
-    draft_text = str(result.get("report") or "")
-    path = _draft_path(output_dir)
-    path.write_text(draft_text, encoding="utf-8")
-    return {
-        "status": "ok",
-        "draft_path": str(path),
-        "draft": draft_text,
-        "issues": result.get("issues", []),
-        "validated": bool(result.get("validated")),
-    }
-
-
 def submit_committed_report(output_dir: Optional[str], *, persist: bool = False) -> dict[str, Any]:
     """Compile and always deliver the latest chapter candidates."""
     generated_issues = _ensure_candidate_chapters(output_dir)
@@ -1228,6 +1206,89 @@ def validate_report_quality(report_text: str) -> list[str]:
     if len(headings) > 1 or _REFERENCE_VARIANT_RE.search(text):
         issues.append("report contains multiple or variant references sections")
     return list(dict.fromkeys(issues))
+
+
+_INFOBOX_RE = re.compile(r"^\s*\|.*\|\s*\n\s*\|[\s-]+\|\s*\n", re.MULTILINE)
+_REPORTER_META_NARRATIVE_TERMS = (
+    r"supplied\s+(?:material|evidence|data)", r"the\s+supplied",
+    r"provided\s+(?:material|evidence)", r"available\s+(?:material|evidence)",
+    r"本研究", r"本次检索", r"本轮", r"研究图谱", r"摘要线索", r"未读取正文",
+    r"source\s+节点", r"evidence\s+节点",
+    r"should\s+not\s+be\s+(?:treated|taken|regarded|considered|used)\s+as",
+    r"should\s+not\s+be\s+used\s+to", r"do\s+not\s+amount\s+to\s+a\s+\w+",
+    r"rather\s+than\s+a\s+(?:definitive|secure|reliable|forensic)\s+\w+",
+    r"not\s+a\s+(?:securely|reliably)\s+documented", r"concern\s+reported\s+\w+",
+    r"reported\s+reconstructions", r"further\s+(?:catalogue|catalog)\s+verification",
+    r"so-called\s+", r"(?:purported|alleged)\s+(?:Ring|Nestor|the\s+\w+\s+ring)",
+    r"some\s+(?:interpretations?|scholars?|researchers?|experts?)\s+(?:regard|argue|believe|suggest|state|note|consider|claim)",
+    r"a\s+(?:discussion|study|paper)\s+(?:reports|states|notes|suggests|claims)",
+    r"a\s+\d{4}\s+discussion\s+(?:reports|states|notes|suggests)",
+    r"it\s+has\s+been\s+(?:argued|suggested|noted|proposed)",
+    r"scholars\s+have\s+(?:discussed|noted|argued|suggested)",
+    r"many\s+scholars\s+(?:believe|argue|consider|regard)",
+    r"one\s+(?:position|view)\s+(?:treats|holds|regards|considers)",
+    r"the\s+other\s+position\s+(?:treats|holds|regards|considers)",
+    r"arguments\s+(?:advanced|have\s+been\s+advanced)\s+in\s+the\s+debate",
+    r"some\s+(?:argue|contend)\s+that", r"the\s+debate\s+involves",
+    r"are\s+best\s+presented\s+as\s+\w+\s+rather\s+than",
+    r"rather\s+than\s+as\s+an?\s+uncontested",
+    r"do\s+not,?\s+(?:by\s+themselves|alone|on\s+their\s+own),?\s+(?:establish|demonstrate|prove)",
+    r"do\s+not\s+(?:establish|demonstrate|prove)\s+that",
+    r"the\s+evidence\s+does\s+not\s+(?:reconcile|establish|support|demonstrate)",
+    r"remains\s+(?:contested|unresolved|undetermined)\s+rather\s+than",
+    r"parts\s+of\s+the\s+recorded\s+history\s+of\s+the\s+object\s+rather\s+than",
+    r"reportedly\s+(?:discovered|found|excavated|dated|uncovered)",
+    r"reports\s+that\s+(?:the\s+(?:ring|object)\s+(?:was|is)\s+(?:discovered|found))",
+)
+
+
+def check_report_quality(report_text: str) -> list[str]:
+    """Return the Reporter prose checks used during the single revision round."""
+    text = report_text or ""
+    if not text.strip():
+        return ["报告为空"]
+
+    request_text = ""
+    evidence_count = 0
+    try:
+        requests = graph_tools.search_nodes("user_request", {})
+        if requests:
+            request_text = str(requests[0].get("request") or "").casefold()
+        evidence_count = len(graph_tools.search_nodes("evidence", {}))
+    except Exception:  # noqa: BLE001 - quality checks remain fail-open
+        pass
+
+    issues: list[str] = []
+    is_wikipedia = "wikipedia" in request_text or "维基百科" in request_text
+    has_infobox = bool(_INFOBOX_RE.search(text))
+    if is_wikipedia and not has_infobox:
+        issues.append("Wikipedia 风格报告缺少 Infobox（Markdown pipe table），必须在 Lead 之后插入")
+    if is_wikipedia and has_infobox:
+        lines = text.splitlines()
+        title_idx = next((i for i, line in enumerate(lines) if line.strip().startswith("#")), -1)
+        first_line = next((line.strip() for line in lines[title_idx + 1 if title_idx >= 0 else 0:] if line.strip()), "")
+        if first_line.startswith("|"):
+            issues.append(
+                "Lead 散文必须在 Infobox 之前：当前标题后第一行是表格，应先写概括主题的散文导言，"
+                "Infobox 放在 Lead 段落之后"
+            )
+
+    meta_found = []
+    for term_re in _REPORTER_META_NARRATIVE_TERMS:
+        matches = re.findall(term_re, text, re.IGNORECASE)
+        if matches:
+            meta_found.append(f"'{matches[0]}'")
+    if meta_found:
+        issues.append(f"报告中包含元叙述/模糊归因短语：{', '.join(meta_found[:5])}")
+
+    heading_count = len(re.findall(r"^##\s+", text, re.MULTILINE))
+    min_headings = 5 if evidence_count >= 30 else 3
+    if is_wikipedia and heading_count < min_headings:
+        issues.append(
+            f"Wikipedia 风格报告章节数不足（当前 {heading_count} 个 ## 标题，"
+            f"证据 {evidence_count} 条，建议至少 {min_headings} 个主体章节，按维度独立分节）"
+        )
+    return issues
 
 
 def _conflict_evidence_ids(conflict_id: str, edges: list[dict]) -> list[str]:

@@ -10,7 +10,6 @@ sys.path.insert(0, str(src_dir))
 from agents.memory_manager import MemoryManager  # noqa: E402
 from memory.graph import EdgeType  # noqa: E402
 from tools import graph_tools, research_state  # noqa: E402
-from tools.middleware import ResearchStateMiddleware  # noqa: E402
 
 NODES = {
     "goal": {
@@ -357,15 +356,6 @@ def main():
     ])
     assert research_state.is_required_path("qoptc") is False
 
-    blocked = ResearchStateMiddleware()._gate_reporter({
-        "name": "task", "id": "call1", "args": {"subagent_type": "reporter"},
-    })
-    assert blocked is not None
-    general_blocked = ResearchStateMiddleware()._gate_reporter({
-        "name": "task", "id": "general1", "args": {"subagent_type": "general-purpose"},
-    })
-    assert general_blocked is not None and general_blocked.status == "error"
-
     NODES["orecover"] = {
         "id": "orecover", "type": "Analysis", "analysis_type": "objective",
         "objective_key": "recover-answer", "description": "recover missing answer",
@@ -423,27 +413,6 @@ def main():
     NODES["goal"]["evaluated_portfolio_revision"] = NODES["goal"]["portfolio_revision"]
     converged = mm.assess_convergence("goal")
     assert converged["research_state"] == "REPORT_READY", converged
-    original_validate_query_tree = graph_tools.validate_query_tree
-    graph_tools.validate_query_tree = lambda: {"valid": False, "orphans": ["q1"]}
-    allowed = ResearchStateMiddleware()._gate_reporter({
-        "name": "task", "id": "call2", "args": {"subagent_type": "reporter"},
-    })
-    assert allowed is None and NODES["goal"]["research_state"] == "REPORTING"
-    assert NODES["goal"]["reporter_warnings"] == [
-        "Query tree validation failed before Reporter authorization"
-    ]
-    graph_tools.validate_query_tree = original_validate_query_tree
-    loop_guard = ResearchStateMiddleware(max_repeated_failures=3)
-    repeated_call = {
-        "name": "task",
-        "id": "general-loop",
-        "args": {"subagent_type": "general-purpose"},
-    }
-    for _ in range(3):
-        blocked_result = loop_guard._gate_reporter(repeated_call)
-        loop_guard._record_tool_result(repeated_call, blocked_result)
-    assert NODES["goal"]["research_state"] == "FAILED"
-    assert "Repeated identical failed tool action" in NODES["goal"]["last_error"]
     print("ALL TREE STATE-MACHINE CHECKS PASSED")
 
 

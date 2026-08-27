@@ -173,15 +173,15 @@ def main():
         assert by_id["e1"]["claim_relations"] == [{"claim_id": "c1", "stance": "supports"}]
         assert by_id["c1"]["evidence_relations"] == [{"evidence_id": "e1", "stance": "supports"}]
 
-        chapter_fields = graph_manager_tools.commit_report_chapter_batch.args_schema.model_fields
-        assert set(chapter_fields) == {"chapters"}
-        assert graph_manager_tools.submit_final_report.args_schema.model_fields == {}
+        assert callable(graph_manager_tools.commit_report_chapter_batch)
+        assert not hasattr(graph_manager_tools.commit_report_chapter_batch, "invoke")
+        assert callable(graph_manager_tools.submit_final_report)
 
         with TemporaryDirectory() as temp_dir:
             graph_manager_tools.configure(temp_dir, user_request=request)
-            outline = graph_manager_tools.commit_report_outline.invoke({
-                "title": "机器人公司",
-                "chapters": [
+            outline = graph_manager_tools.commit_report_outline(
+                title="机器人公司",
+                chapters=[
                     {
                         "chapter_id": 1,
                         "title": "导言",
@@ -199,21 +199,21 @@ def main():
                         "section_type": "body",
                     },
                 ],
-            })
+            )
             assert outline["status"] == "ok"
             stored_outline = json.loads(Path(temp_dir, ".report_outline.json").read_text())
             assert stored_outline["chapters"][0]["query_refs"] == ["q1"]
 
-            prepared = graph_manager_tools.prepare_report_chapter_batch.invoke({
-                "chapters": [{"chapter_id": 1}, {"chapter_id": 2}],
-            })
+            prepared = graph_manager_tools.prepare_report_chapter_batch(
+                chapters=[{"chapter_id": 1}, {"chapter_id": 2}],
+            )
             assert prepared["status"] == "ok", prepared
             lead_bundle, body_bundle = prepared["chapters"]
             assert lead_bundle["query_refs"] == ["q1"]
             assert {item["ref"] for item in lead_bundle["evidence_items"]} == {"e1", "e2", "c1"}
 
-            rejected = graph_manager_tools.commit_report_chapter_batch.invoke({
-                "chapters": [{
+            rejected = graph_manager_tools.commit_report_chapter_batch(
+                chapters=[{
                     "chapter_id": 1,
                     "bundle_token": lead_bundle["bundle_token"],
                     "title": "导言",
@@ -221,12 +221,12 @@ def main():
                     "evidence_refs": ["missing"],
                     "section_type": "lead",
                 }],
-            })
+            )
             assert rejected["chapters"][0]["candidate_saved"]
             assert not rejected["chapters"][0]["validated"]
 
-            committed = graph_manager_tools.commit_report_chapter_batch.invoke({
-                "chapters": [
+            committed = graph_manager_tools.commit_report_chapter_batch(
+                chapters=[
                     {
                         "chapter_id": 1,
                         "bundle_token": lead_bundle["bundle_token"],
@@ -244,25 +244,21 @@ def main():
                         "section_type": "body",
                     },
                 ],
-            })
+            )
             assert committed["validated"], committed
             lead_meta = json.loads(Path(temp_dir, ".report_chapters", "chapter_01.meta.json").read_text())
             assert lead_meta["source_ids"] == ["s1"]
 
-            draft = graph_manager_tools.assemble_report_draft.invoke({})
-            assert draft["status"] == "ok", draft
-            assert "该公司开发仓储机器人。[1]" in draft["draft"]
-            assert "该公司未公开具体融资金额。[2]" in draft["draft"]
-            assert "## Lead" not in draft["draft"] and "## 导言" not in draft["draft"]
-            assert draft["draft"].index("该公司开发") < draft["draft"].index("## 融资")
-            assert draft["draft"].count("## 参考文献") == 1
-            assert not created_sections
-
             reviews = []
             graph_manager_tools._review_report_once = lambda report: reviews.append(report) or []
-            final = graph_manager_tools.submit_final_report.invoke({})
+            final = graph_manager_tools.submit_final_report()
             assert final["delivered"] and final["validated"] and not final["revision_requested"], final
             assert final["review_status"] == "passed" and len(reviews) == 1
+            assert "该公司开发仓储机器人。[1]" in final["report"]
+            assert "该公司未公开具体融资金额。[2]" in final["report"]
+            assert "## Lead" not in final["report"] and "## 导言" not in final["report"]
+            assert final["report"].index("该公司开发") < final["report"].index("## 融资")
+            assert final["report"].count("## 参考文献") == 1
             assert len(created_sections) == 2
             assert created_sections[0]["content"] == "该公司开发仓储机器人。[1]"
             assert final["report"].rstrip().endswith("https://example.com/funding")

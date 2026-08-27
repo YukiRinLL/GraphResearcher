@@ -15,8 +15,7 @@ from langgraph.graph import END, StateGraph
 from pydantic import BaseModel, Field, ValidationError
 
 import config
-from tools import graph_manager_tools, research_state
-from tools.middleware import ReporterWorkflowMiddleware
+from tools import graph_manager_tools, report_tools, research_state
 
 logger = logging.getLogger(__name__)
 
@@ -204,7 +203,7 @@ def export_context_node(state: ReporterWorkflowState) -> dict[str, Any]:
     """在授权后读取固定的报告上下文."""
     del state
     try:
-        context = graph_manager_tools.export_report_context.invoke({})
+        context = graph_manager_tools.export_report_context()
     except Exception as exc:  # noqa: BLE001 - 交给确定性终止路径处理
         return {"error": f"Could not export Reporter context: {exc}"}
     if not context.get("goal", {}).get("request") or not context.get("delivery_mode"):
@@ -239,11 +238,9 @@ def plan_outline_node(state: ReporterWorkflowState) -> dict[str, Any]:
             }
             for index, chapter in enumerate(candidate.chapters, start=1)
         ]
-        committed = graph_manager_tools.commit_report_outline.invoke(
-            {
-                "title": candidate.title,
-                "chapters": chapters,
-            }
+        committed = graph_manager_tools.commit_report_outline(
+            title=candidate.title,
+            chapters=chapters,
         )
         if committed.get("status") != "ok":
             raise ValueError(str(committed.get("message") or "Outline was rejected"))
@@ -280,10 +277,8 @@ def prepare_chapter_batch_node(state: ReporterWorkflowState) -> dict[str, Any]:
     start = int(state.get("next_chapter_index", 0))
     selected = state["chapter_ids"][start : start + 3]
     try:
-        prepared = graph_manager_tools.prepare_report_chapter_batch.invoke(
-            {
-                "chapters": [{"chapter_id": chapter_id} for chapter_id in selected],
-            }
+        prepared = graph_manager_tools.prepare_report_chapter_batch(
+            chapters=[{"chapter_id": chapter_id} for chapter_id in selected],
         )
     except Exception as exc:  # noqa: BLE001 - 准备失败不能由模型修复
         return {"error": f"Could not prepare report chapter batch: {exc}"}
@@ -327,19 +322,17 @@ def draft_chapter_batch_node(state: ReporterWorkflowState) -> dict[str, Any]:
         tokens = {
             int(bundle["chapter_id"]): str(bundle["bundle_token"]) for bundle in bundles
         }
-        committed = graph_manager_tools.commit_report_chapter_batch.invoke(
-            {
-                "chapters": [
-                    {
-                        "chapter_id": chapter.chapter_id,
-                        "bundle_token": tokens[chapter.chapter_id],
-                        "content": chapter.content,
-                        "evidence_refs": chapter.evidence_refs,
-                        "disclosed_conflict_refs": chapter.disclosed_conflict_refs,
-                    }
-                    for chapter in candidate.chapters
-                ],
-            }
+        committed = graph_manager_tools.commit_report_chapter_batch(
+            chapters=[
+                {
+                    "chapter_id": chapter.chapter_id,
+                    "bundle_token": tokens[chapter.chapter_id],
+                    "content": chapter.content,
+                    "evidence_refs": chapter.evidence_refs,
+                    "disclosed_conflict_refs": chapter.disclosed_conflict_refs,
+                }
+                for chapter in candidate.chapters
+            ],
         )
         if not committed.get("validated"):
             raise ValueError(
@@ -355,46 +348,26 @@ def draft_chapter_batch_node(state: ReporterWorkflowState) -> dict[str, Any]:
             "chapter_attempts": attempt,
             "error": f"Chapter attempt {attempt} failed: {exc}",
         }
-    return {"chapter_attempts": attempt, "error": ""}
-
-
-def route_chapter_batch(state: ReporterWorkflowState) -> str:
-    """合格后推进，否则重试当前批次."""
-    if not state.get("error"):
-        return "advance_chapter_batch"
-    if int(state.get("chapter_attempts", 0)) < _MAX_CHAPTER_ATTEMPTS:
-        return "draft_chapter_batch"
-    return "finalize_best_effort"
-
-
-def advance_chapter_batch_node(state: ReporterWorkflowState) -> dict[str, Any]:
-    """成功提交后推进章节游标."""
     return {
-        "next_chapter_index": (
-            int(state.get("next_chapter_index", 0)) + len(state["current_bundles"])
-        ),
+        "chapter_attempts": attempt,
+        "next_chapter_index": (int(state.get("next_chapter_index", 0)) + len(bundles)),
         "current_bundles": [],
         "error": "",
     }
 
 
-def route_chapter_progress(state: ReporterWorkflowState) -> str:
-    """选择下一批章节或组装完整草稿."""
+def route_chapter_batch(state: ReporterWorkflowState) -> str:
+    """合格后继续下一批或提交，否则重试当前批次."""
+    if (
+        state.get("error")
+        and int(state.get("chapter_attempts", 0)) < _MAX_CHAPTER_ATTEMPTS
+    ):
+        return "draft_chapter_batch"
+    if state.get("error"):
+        return "finalize_best_effort"
     if int(state["next_chapter_index"]) < len(state["chapter_ids"]):
         return "prepare_chapter_batch"
-    return "assemble"
-
-
-def assemble_node(state: ReporterWorkflowState) -> dict[str, Any]:
-    """在最终提交前组装已保存的章节候选."""
-    del state
-    try:
-        assembled = graph_manager_tools.assemble_report_draft.invoke({})
-    except Exception as exc:  # noqa: BLE001 - 最终提交仍可能生成保底产物
-        return {"error": f"Could not assemble report draft: {exc}"}
-    if assembled.get("status") != "ok":
-        return {"error": f"Could not assemble report draft: {assembled.get('message')}"}
-    return {"error": ""}
+    return "submit"
 
 
 def _quality_feedback(result: dict[str, Any]) -> list[dict[str, Any]]:
@@ -409,14 +382,14 @@ def _quality_feedback(result: dict[str, Any]) -> list[dict[str, Any]]:
             "message": issue,
             "repair_hint": "在受影响章节中修复该问题。",
         }
-        for issue in ReporterWorkflowMiddleware._check_report_quality(report)
+        for issue in report_tools.check_report_quality(report)
     ]
 
 
 def submit_node(state: ReporterWorkflowState) -> dict[str, Any]:
     """执行现有的一次 Review、一次修订提交契约."""
     try:
-        result = graph_manager_tools.submit_final_report.invoke({})
+        result = graph_manager_tools.submit_final_report()
     except Exception as exc:  # noqa: BLE001 - 交由失败节点记录
         return {"error": f"Final report submission failed: {exc}"}
 
@@ -446,7 +419,7 @@ def submit_node(state: ReporterWorkflowState) -> dict[str, Any]:
 def route_submit(state: ReporterWorkflowState) -> str:
     """需要修订时返回章节循环，否则结束."""
     if state.get("final_result", {}).get("success"):
-        return "success"
+        return END
     if state.get("revision_started") and not state.get("error"):
         return "prepare_chapter_batch"
     return "fail"
@@ -456,9 +429,9 @@ def finalize_best_effort_node(state: ReporterWorkflowState) -> dict[str, Any]:
     """重试耗尽后通过现有提交工具确定性地产生最佳完整报告."""
     reason = state.get("error") or "Reporter workflow exhausted its retry budget"
     try:
-        result = graph_manager_tools.submit_final_report.invoke({})
+        result = graph_manager_tools.submit_final_report()
         if result.get("revision_requested"):
-            result = graph_manager_tools.submit_final_report.invoke({})
+            result = graph_manager_tools.submit_final_report()
     except Exception as exc:  # noqa: BLE001 - 只有此时才无法交付
         return _mark_failed(f"{reason}; best-effort submission failed: {exc}")
     if not result.get("delivered"):
@@ -484,11 +457,6 @@ def fail_node(state: ReporterWorkflowState) -> dict[str, Any]:
     return _mark_failed(state.get("error") or "Reporter workflow failed")
 
 
-def success_node(state: ReporterWorkflowState) -> dict[str, Any]:
-    """保留最终结果；CLI 在成功写入 report.md 后完成状态迁移."""
-    return state
-
-
 def _build_reporter_workflow() -> StateGraph:
     """构建确定性的 Reporter 状态图."""
     graph = StateGraph(ReporterWorkflowState)
@@ -497,11 +465,8 @@ def _build_reporter_workflow() -> StateGraph:
     graph.add_node("plan_outline", plan_outline_node)
     graph.add_node("prepare_chapter_batch", prepare_chapter_batch_node)
     graph.add_node("draft_chapter_batch", draft_chapter_batch_node)
-    graph.add_node("advance_chapter_batch", advance_chapter_batch_node)
-    graph.add_node("assemble", assemble_node)
     graph.add_node("submit", submit_node)
     graph.add_node("finalize_best_effort", finalize_best_effort_node)
-    graph.add_node("success", success_node)
     graph.add_node("fail", fail_node)
     graph.set_entry_point("authorize")
     graph.add_conditional_edges(
@@ -518,14 +483,8 @@ def _build_reporter_workflow() -> StateGraph:
         lambda state: route_after_guard(state, "draft_chapter_batch"),
     )
     graph.add_conditional_edges("draft_chapter_batch", route_chapter_batch)
-    graph.add_conditional_edges("advance_chapter_batch", route_chapter_progress)
-    graph.add_conditional_edges(
-        "assemble",
-        lambda state: route_after_guard(state, "submit"),
-    )
     graph.add_conditional_edges("submit", route_submit)
-    graph.add_edge("finalize_best_effort", "success")
-    graph.add_edge("success", END)
+    graph.add_edge("finalize_best_effort", END)
     graph.add_edge("fail", END)
     return graph
 

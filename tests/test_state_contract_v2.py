@@ -14,7 +14,6 @@ repo_dir = src_dir.parent
 
 from agents.memory_manager import MemoryManager  # noqa: E402
 from tools import graph_tools, research_state  # noqa: E402
-from tools.middleware import ResearchStateMiddleware  # noqa: E402
 
 
 class VerdictModel:
@@ -342,34 +341,6 @@ def test_completed_failed_recovery_fails_exhaustive_run():
     assert nodes["goal"]["research_state"] == research_state.FAILED, nodes["goal"]
 
 
-def test_limited_report_ready_authorizes_reporter():
-    call = {
-        "name": "task",
-        "id": "reporter",
-        "args": {
-            "subagent_type": "reporter",
-            "description": "错误事实摘要和章节建议",
-        },
-    }
-    with (
-        patch.object(
-            research_state,
-            "get_status",
-            return_value={"research_state": research_state.LIMITED_REPORT_READY},
-        ),
-        patch.object(research_state, "update_goal") as update_goal,
-        patch.object(graph_tools, "validate_query_tree", return_value={"valid": True}),
-    ):
-        blocked = ResearchStateMiddleware()._gate_reporter(call)
-    assert blocked is None, blocked
-    assert call["args"]["description"] == ResearchStateMiddleware._REPORTER_HANDOFF
-    assert "错误事实摘要" not in call["args"]["description"]
-    update_goal.assert_called_once_with({
-        "research_state": research_state.REPORTING,
-        "reporting_from_state": research_state.LIMITED_REPORT_READY,
-    })
-
-
 def test_agent_prompts_enforce_report_visibility_contract():
     reporter = (repo_dir / "src/prompts/reporter.md").read_text(encoding="utf-8")
     outline = (repo_dir / "src/prompts/reporter_outline.md").read_text(encoding="utf-8")
@@ -380,7 +351,8 @@ def test_agent_prompts_enforce_report_visibility_contract():
     assert "原始 User Request" in outline
     assert "substantive_uncertainties" in outline
     assert "不自动产生“局限性”章节" in outline
-    assert "submit_final_report.invoke({})" in workflow
+    assert "graph_manager_tools.submit_final_report()" in workflow
+    assert ".invoke(" not in workflow
     assert "create_agent" not in workflow
 
 
@@ -413,6 +385,5 @@ if __name__ == "__main__":
     test_fatal_conflict_blocks_report_authorization()
     test_recovery_gap_without_completed_query_does_not_fail_exhaustive_run()
     test_completed_failed_recovery_fails_exhaustive_run()
-    test_limited_report_ready_authorizes_reporter()
     test_agent_prompts_enforce_report_visibility_contract()
     test_idle_should_objective_is_deferred_before_complete_report()

@@ -1,8 +1,8 @@
 """Central configuration for GraphResearcher agents.
 
 Provides the model factory, prompt loader, and the `system_prompt` / model
-constants that the agent modules (`workflow.py`,
-`agents/searcher.py`, `agents/reporter.py`) reference as `config.*`.
+constants that the workflow modules (`workflow.py`, `agents/searcher.py`,
+`agents/reporter_workflow.py`) reference as `config.*`.
 
 Follows the repo import convention: `src/` is on `sys.path`, so this module
 imports sibling packages with bare names (`prompts.`, not `deep_research.`).

@@ -1,13 +1,12 @@
-"""State-machine Graph Manager tools exposed to GraphResearcher agents."""
+"""Run-scoped Graph Manager services and agent-facing research tools."""
 
 import json
 import logging
 from pathlib import Path
 from threading import Lock
-from typing import Annotated, Any, Optional
+from typing import Any, Optional
 
 from langchain_core.tools import tool
-from pydantic import Field
 
 from agents.memory_manager import MemoryManager
 from tools.graph_tools import AmbiguousQueryReference
@@ -83,7 +82,7 @@ def configure(output_dir: Optional[str] = None, user_request: Optional[str] = No
             path = path_getter()
             if path and path.exists():
                 path.unlink()
-        for relative in (".report_outline.json", ".report_outline.md", ".report_draft.md"):
+        for relative in (".report_outline.json", ".report_outline.md"):
             path = Path(_cache_dir) / relative if _cache_dir else None
             if path and path.exists():
                 path.unlink()
@@ -360,13 +359,11 @@ def submit_search_result(search_run_id: str, query_id: str, evidence_package: di
     return _mm().submit_search_result(search_run_id, query_id, evidence_package)
 
 
-@tool
 def export_report_context(goal_id: Optional[str] = None) -> dict:
     """Export compact report metadata after the reporter gate authorizes writing."""
     return _mm().export_report_context(goal_id)
 
 
-@tool
 def commit_report_outline(title: str, chapters: list[dict]) -> dict:
     """Persist the reporter's chapter-level outline for the current run.
     
@@ -391,9 +388,8 @@ def commit_report_outline(title: str, chapters: list[dict]) -> dict:
     return report_tools.commit_report_outline(_cache_dir, title, chapters)
 
 
-@tool
 def prepare_report_chapter_batch(
-    chapters: Annotated[list[dict], Field(min_length=1, max_length=3)],
+    chapters: list[dict],
 ) -> dict:
     """Load one to three chapter plans with chapter-local evidence references.
     
@@ -415,9 +411,8 @@ def prepare_report_chapter_batch(
     return report_tools.prepare_report_chapter_batch(_cache_dir, chapters)
 
 
-@tool
 def commit_report_chapter_batch(
-    chapters: Annotated[list[dict], Field(min_length=1, max_length=3)],
+    chapters: list[dict],
 ) -> dict:
     """Save and validate one to three complete chapter candidates.
     
@@ -445,15 +440,6 @@ def commit_report_chapter_batch(
     return report_tools.commit_report_chapter_batch(_cache_dir, chapters)
 
 
-@tool
-def assemble_report_draft() -> dict:
-    """Assemble completed chapter drafts into one provisional report draft."""
-    from tools import report_tools
-
-    return report_tools.assemble_report_draft(_cache_dir)
-
-
-@tool
 def submit_final_report() -> dict:
     """Review once, revise once, and always deliver the latest complete report."""
     global _report_review_completed, _report_review_had_issues, _report_submit_count
@@ -561,12 +547,3 @@ ORCHESTRATOR_TOOLS: list[Any] = [
 ]
 
 SEARCHER_TOOLS: list[Any] = [submit_search_result]
-
-REPORTER_TOOLS: list[Any] = [
-    export_report_context,
-    commit_report_outline,
-    prepare_report_chapter_batch,
-    commit_report_chapter_batch,
-    assemble_report_draft,
-    submit_final_report,
-]

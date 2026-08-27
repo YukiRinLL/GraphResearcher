@@ -10,16 +10,6 @@ import workflow as root_workflow  # noqa: E402
 from agents import reporter_workflow as workflow_module  # noqa: E402
 
 
-class _Tool:
-    """供 workflow 测试使用的最小 StructuredTool 替身。"""
-
-    def __init__(self, handler):
-        self.handler = handler
-
-    def invoke(self, payload):
-        return self.handler(payload)
-
-
 def _install_fakes(
     model_outputs,
     *,
@@ -55,7 +45,6 @@ def _install_fakes(
         "outline": workflow_module.graph_manager_tools.commit_report_outline,
         "prepare": workflow_module.graph_manager_tools.prepare_report_chapter_batch,
         "commit": workflow_module.graph_manager_tools.commit_report_chapter_batch,
-        "assemble": workflow_module.graph_manager_tools.assemble_report_draft,
         "submit": workflow_module.graph_manager_tools.submit_final_report,
         "invoke": workflow_module._invoke_reporter_json,
     }
@@ -77,28 +66,27 @@ def _install_fakes(
         return dict(goal)
 
     workflow_module.research_state.update_goal = update_goal
-    workflow_module.graph_manager_tools.export_report_context = _Tool(
-        lambda _payload: {
-            "delivery_mode": "complete",
-            "goal": {"request": goal["request"]},
-            "queries": [{"ref": "q1", "text": "Topic", "importance": "core"}],
-            "substantive_uncertainties": [],
-            "disclosed_conflicts": [],
-            "reference_registry": [
-                {
-                    "n": 1,
-                    "title": "Source",
-                    "url": "https://example.com",
-                }
-            ],
-        }
-    )
+    workflow_module.graph_manager_tools.export_report_context = lambda: {
+        "delivery_mode": "complete",
+        "goal": {"request": goal["request"]},
+        "queries": [{"ref": "q1", "text": "Topic", "importance": "core"}],
+        "substantive_uncertainties": [],
+        "disclosed_conflicts": [],
+        "reference_registry": [
+            {
+                "n": 1,
+                "title": "Source",
+                "url": "https://example.com",
+            }
+        ],
+    }
 
-    def commit_outline(payload):
+    def commit_outline(*, title, chapters):
+        del title
         observations["calls"].append("commit_outline")
-        return {"status": "ok", "chapters_count": len(payload["chapters"])}
+        return {"status": "ok", "chapters_count": len(chapters)}
 
-    def prepare(payload):
+    def prepare(*, chapters):
         observations["calls"].append("prepare")
         return {
             "status": "ok",
@@ -126,28 +114,23 @@ def _install_fakes(
                     ],
                     "disclosed_conflicts": [],
                 }
-                for chapter in payload["chapters"]
+                for chapter in chapters
             ],
         }
 
-    def commit_chapters(payload):
+    def commit_chapters(*, chapters):
         observations["calls"].append("commit_chapters")
-        observations["committed_chapters"].append(payload["chapters"])
+        observations["committed_chapters"].append(chapters)
         return next(chapter_results)
 
-    def submit(_payload):
+    def submit():
         observations["calls"].append("submit")
         return next(final_results)
 
-    workflow_module.graph_manager_tools.commit_report_outline = _Tool(commit_outline)
-    workflow_module.graph_manager_tools.prepare_report_chapter_batch = _Tool(prepare)
-    workflow_module.graph_manager_tools.commit_report_chapter_batch = _Tool(
-        commit_chapters
-    )
-    workflow_module.graph_manager_tools.assemble_report_draft = _Tool(
-        lambda _payload: observations["calls"].append("assemble") or {"status": "ok"}
-    )
-    workflow_module.graph_manager_tools.submit_final_report = _Tool(submit)
+    workflow_module.graph_manager_tools.commit_report_outline = commit_outline
+    workflow_module.graph_manager_tools.prepare_report_chapter_batch = prepare
+    workflow_module.graph_manager_tools.commit_report_chapter_batch = commit_chapters
+    workflow_module.graph_manager_tools.submit_final_report = submit
 
     def invoke(prompt):
         observations["model_prompts"].append(prompt)
@@ -166,9 +149,6 @@ def _install_fakes(
         ]
         workflow_module.graph_manager_tools.commit_report_chapter_batch = originals[
             "commit"
-        ]
-        workflow_module.graph_manager_tools.assemble_report_draft = originals[
-            "assemble"
         ]
         workflow_module.graph_manager_tools.submit_final_report = originals["submit"]
         workflow_module._invoke_reporter_json = originals["invoke"]
@@ -205,7 +185,6 @@ def test_workflow_commits_ordered_report_without_model_tool_calls():
         "commit_outline",
         "prepare",
         "commit_chapters",
-        "assemble",
         "submit",
     ]
     assert observations["state_updates"][0]["research_state"] == "REPORTING"
@@ -322,7 +301,6 @@ def test_workflow_prepares_at_most_three_chapters_per_batch():
         "commit_chapters",
         "prepare",
         "commit_chapters",
-        "assemble",
         "submit",
     ]
     assert [
@@ -394,11 +372,9 @@ def test_workflow_rewrites_chapters_once_after_review_feedback():
         "commit_outline",
         "prepare",
         "commit_chapters",
-        "assemble",
         "submit",
         "prepare",
         "commit_chapters",
-        "assemble",
         "submit",
     ]
     assert "Clarify attribution." in observations["model_prompts"][-1]
@@ -444,6 +420,46 @@ def test_unauthorized_workflow_fails_without_report_tools():
         update.get("research_state") == "FAILED"
         for update in observations["state_updates"]
     )
+
+
+def test_workflow_contains_only_runtime_nodes():
+    """Reporter 状态图不保留旧的推进、组装或成功中转节点。"""
+    nodes = set(workflow_module.reporter_workflow.get_graph().nodes)
+    assert nodes == {
+        "__start__",
+        "authorize",
+        "export_context",
+        "plan_outline",
+        "prepare_chapter_batch",
+        "draft_chapter_batch",
+        "submit",
+        "finalize_best_effort",
+        "fail",
+        "__end__",
+    }
+
+
+def test_report_quality_checks_survive_middleware_removal():
+    """旧 Reporter middleware 中仍有效的修订检查由报告模块保留。"""
+    original_search = workflow_module.report_tools.graph_tools.search_nodes
+
+    def search_nodes(node_type, _filters):
+        if node_type == "user_request":
+            return [{"request": "Write a Wikipedia article"}]
+        if node_type == "evidence":
+            return []
+        return []
+
+    workflow_module.report_tools.graph_tools.search_nodes = search_nodes
+    try:
+        issues = workflow_module.report_tools.check_report_quality(
+            "# Topic\n\n| Key |\n| --- |\n| Value |\n\n## Body"
+        )
+    finally:
+        workflow_module.report_tools.graph_tools.search_nodes = original_search
+
+    assert any("Lead 散文必须在 Infobox 之前" in issue for issue in issues)
+    assert any("章节数不足" in issue for issue in issues)
 
 
 def test_top_level_report_node_calls_deterministic_workflow():
@@ -523,6 +539,8 @@ if __name__ == "__main__":
     test_workflow_rewrites_chapters_once_after_review_feedback()
     test_retry_exhaustion_uses_existing_fail_open_submission()
     test_unauthorized_workflow_fails_without_report_tools()
+    test_workflow_contains_only_runtime_nodes()
+    test_report_quality_checks_survive_middleware_removal()
     test_top_level_report_node_calls_deterministic_workflow()
     test_run_report_workflow_forwards_runnable_config()
     print("ALL REPORTER WORKFLOW CHECKS PASSED")  # noqa: T201

@@ -229,9 +229,9 @@ def test_single_review_and_fail_open():
                 reviews.append(report) or ["导言缺少范围说明"]
             )
 
-            first = graph_manager_tools.submit_final_report.invoke({})
+            first = graph_manager_tools.submit_final_report()
             assert first["revision_requested"] and first["review_status"] == "issues"
-            second = graph_manager_tools.submit_final_report.invoke({})
+            second = graph_manager_tools.submit_final_report()
             assert second["accepted"] and second["review_status"] == "revised_once"
             assert len(reviews) == 1
             assert calls == [False, False, True], calls
@@ -241,7 +241,7 @@ def test_single_review_and_fail_open():
             graph_manager_tools._review_report_once = lambda _report: (_ for _ in ()).throw(
                 TimeoutError("review timed out")
             )
-            failed_open = graph_manager_tools.submit_final_report.invoke({})
+            failed_open = graph_manager_tools.submit_final_report()
             assert failed_open["accepted"] and failed_open["review_status"] == "failed_open"
             artifact = json.loads(Path(temp_dir, ".report_attempt.json").read_text())
             assert artifact["review_status"] == "failed_open"
@@ -265,8 +265,8 @@ def test_single_review_and_fail_open():
             report_tools.submit_committed_report = lambda _output, persist=False: dict(invalid)
             invalid_reviews = []
             graph_manager_tools._review_report_once = lambda report: invalid_reviews.append(report) or []
-            first_invalid = graph_manager_tools.submit_final_report.invoke({})
-            second_invalid = graph_manager_tools.submit_final_report.invoke({})
+            first_invalid = graph_manager_tools.submit_final_report()
+            second_invalid = graph_manager_tools.submit_final_report()
             assert first_invalid["report"] and first_invalid["revision_requested"]
             assert second_invalid["delivered"] and second_invalid["report"]
             assert not second_invalid["validated"] and not second_invalid["accepted"]

@@ -9,7 +9,6 @@ sys.path.insert(0, str(src_dir))
 from agents.memory_manager import MemoryManager  # noqa: E402
 from memory.graph import EdgeType  # noqa: E402
 from tools import graph_tools, research_state  # noqa: E402
-from tools.middleware import ResearchStateMiddleware  # noqa: E402
 
 NODES = {
     "goal": {
@@ -303,13 +302,6 @@ def main():
         pass
     else:
         raise AssertionError("BUDGET_EXHAUSTED -> RESEARCHING must be rejected")
-    allowed = ResearchStateMiddleware()._gate_reporter({
-        "name": "task",
-        "id": "budget-report",
-        "args": {"subagent_type": "reporter"},
-    })
-    assert allowed is None and NODES["goal"]["reporting_from_state"] == "BUDGET_EXHAUSTED"
-
     print("ALL SEARCH LIFECYCLE CHECKS PASSED")
 
 

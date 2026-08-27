@@ -59,14 +59,13 @@ Query 自己还有 `pending`、`searching`、`assessing`、`needs_expansion`、`
 | [`src/agents/searcher.py`](src/agents/searcher.py) | LangGraph 固定搜索管线：Tavily、来源筛选、证据抽取、提交。 | Searcher 不负责规划 Query，也不应自行扩展搜索。 |
 | [`src/agents/memory_manager.py`](src/agents/memory_manager.py) | 研究初始化、Query 评估、Objective portfolio、Gap 扩展、搜索生命周期和报告上下文。 | 该文件同时包含模型调用和状态副作用，是排查状态问题的首要位置。 |
 | [`src/agents/reporter_workflow.py`](src/agents/reporter_workflow.py) | Reporter 的确定性 LangGraph 编排，包括授权、大纲、章节批次、审校、修订和 fail-open 收敛。 | 模型只生成 JSON 候选，所有报告工具调用由状态图执行。 |
-| [`src/agents/reporter.py`](src/agents/reporter.py) | 为仓库外部旧调用保留的 Reporter Agent mapping。 | 当前主运行时不再通过该 mapping 生成报告。 |
-| [`src/tools/graph_manager_tools.py`](src/tools/graph_manager_tools.py) | 面向 Agent 暴露的 typed tools，包括研究状态工具、Searcher 工具和 Reporter 工具。 | 这是 Agent 的主要能力边界，不要让 Agent 直接调用 Neo4j。 |
+| [`src/tools/graph_manager_tools.py`](src/tools/graph_manager_tools.py) | 研究状态和 Searcher 的 typed tools，以及 Reporter workflow 使用的运行级服务。 | Reporter 服务负责当前 run 的缓存目录、审校状态和最终产物记录。 |
 | [`src/tools/graph_tools.py`](src/tools/graph_tools.py) | Neo4j async GraphManager 的同步包装、context 隔离、Query 状态和图谱投影。 | `GraphManager` 方法是 async；普通运行路径使用这里的同步包装。 |
 | [`src/memory/graph.py`](src/memory/graph.py) | Neo4j 图存储、节点/边 CRUD、SearchRun claim 和 context 清理。 | Neo4j 是事实来源，JSONL 只是导出和 viewer 格式。 |
 | [`src/tools/research_state.py`](src/tools/research_state.py) | UserRequest 根状态、状态迁移、预算、报告授权和状态摘要。 | 高风险状态语义集中在这里，修改前应先确认 plan。 |
 | [`src/tools/convergence.py`](src/tools/convergence.py) | 无模型的优先级、结构收敛、证据新颖度指标。 | 每个 run 由 `graph_manager_tools.configure()` 清理 novelty 状态。 |
-| [`src/tools/report_tools.py`](src/tools/report_tools.py) | 报告大纲、章节 bundle、局部引用、章节校验、审查上下文、草稿和最终 Markdown。 | 章节候选即使校验失败也会保存；只有通过确定性校验的内容才写入报告图谱。 |
-| [`src/tools/middleware.py`](src/tools/middleware.py) | 研究状态门禁、空回复/敏感词重试，以及旧 Reporter Agent 的兼容 guard。 | 当前 Reporter 主路径的顺序和重试上限由 `reporter_workflow.py` 控制。 |
+| [`src/tools/report_tools.py`](src/tools/report_tools.py) | 报告大纲、章节 bundle、局部引用、章节校验、审查上下文和最终 Markdown。 | 章节候选即使校验失败也会保存；只有通过确定性校验的内容才写入报告图谱。 |
+| [`src/tools/middleware.py`](src/tools/middleware.py) | 通用模型空回复和敏感词重试。 | Reporter 的顺序、重试和质量反馈由确定性 workflow 与报告模块负责。 |
 | [`src/prompts/`](src/prompts/) | Orchestrator、Searcher、Reporter 大纲与章节、Reviewer 和 MemoryManager 的提示词。 | Reporter prompt 只约束阶段内容和 JSON，不承担工具调度。 |
 | [`evaluation_dashboard.html`](evaluation_dashboard.html) | 浏览器端运行产物查看器，展示图谱、搜索轨迹、写作尝试和诊断。 | 默认页面有内置演示数据；加载本地 run 后才显示实际运行。 |
 | [`graph_viewer.html`](graph_viewer.html) | 较轻量的 JSONL 图谱查看器。 | 只适合看导出的节点和边，不包含 dashboard 的报告诊断。 |
