@@ -10,6 +10,7 @@ import json
 import logging
 from typing import Any, Literal, TypedDict
 
+from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END, StateGraph
 from pydantic import BaseModel, Field, ValidationError
 
@@ -102,6 +103,7 @@ def _parse_json_object(text: str) -> dict[str, Any]:
 
 def _invoke_reporter_json(prompt: str) -> dict[str, Any]:
     """调用低温 Reporter 模型并解析 JSON 响应."""
+    graph_manager_tools.increment_reporter_model_call_count()
     return _parse_json_object(_response_text(config.reporter_model.invoke(prompt)))
 
 
@@ -531,11 +533,17 @@ def _build_reporter_workflow() -> StateGraph:
 reporter_workflow = _build_reporter_workflow().compile()
 
 
-def run_report_workflow() -> dict[str, Any]:
+def run_report_workflow(
+    *, runnable_config: RunnableConfig | None = None
+) -> dict[str, Any]:
     """运行 Reporter workflow，并返回精简的编排结果."""
+    invoke_config = {
+        **dict(runnable_config or {}),
+        "recursion_limit": _REPORTER_RECURSION_LIMIT,
+    }
     result = reporter_workflow.invoke(
         {},
-        config={"recursion_limit": _REPORTER_RECURSION_LIMIT},
+        config=invoke_config,
     )
     final = result.get("final_result") or {}
     if final.get("success"):

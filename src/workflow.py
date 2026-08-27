@@ -27,6 +27,7 @@ import logging
 from typing import Annotated, Optional, TypedDict
 
 from langchain_core.messages import AIMessage, HumanMessage
+from langgraph.config import get_config
 from langgraph.graph import END, StateGraph
 from langgraph.graph.message import add_messages
 
@@ -450,7 +451,7 @@ def report_node(state: dict) -> dict:
     """执行嵌套的确定性 Reporter workflow."""
     del state
     try:
-        result = run_report_workflow()
+        result = run_report_workflow(runnable_config=get_config())
     except Exception as exc:  # noqa: BLE001 — Reporter 异常不应导致无输出
         logger.exception("Reporter workflow invocation failed")
         return {

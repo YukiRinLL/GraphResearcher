@@ -450,9 +450,11 @@ def test_top_level_report_node_calls_deterministic_workflow():
     """顶层 report 节点不再构建通用 Reporter Agent。"""
     original_run = root_workflow.run_report_workflow
     original_report = root_workflow.gmt.get_compiled_report
+    original_get_config = root_workflow.get_config
     calls = []
-    root_workflow.run_report_workflow = lambda: (
-        calls.append(True)
+    runnable_config = {"callbacks": ["trace"], "metadata": {"run": "test"}}
+    root_workflow.run_report_workflow = lambda **kwargs: (
+        calls.append(kwargs)
         or {
             "success": True,
             "delivered": True,
@@ -462,17 +464,55 @@ def test_top_level_report_node_calls_deterministic_workflow():
         }
     )
     root_workflow.gmt.get_compiled_report = lambda: "# Report"
+    root_workflow.get_config = lambda: runnable_config
     try:
         result = root_workflow.report_node({})
     finally:
         root_workflow.run_report_workflow = original_run
         root_workflow.gmt.get_compiled_report = original_report
+        root_workflow.get_config = original_get_config
 
-    assert calls == [True]
+    assert calls == [{"runnable_config": runnable_config}]
     summary = result["messages"][0].content
     assert "workflow submitted" in summary
     assert "validated=False" in summary
     assert "fallback=bounded retry exhausted" in summary
+
+
+def test_run_report_workflow_forwards_runnable_config():
+    """Reporter 子图保留顶层 tracing config 和自己的递归上限。"""
+    original_workflow = workflow_module.reporter_workflow
+    observed = {}
+
+    class _Workflow:
+        def invoke(self, state, config):
+            observed["state"] = state
+            observed["config"] = config
+            return {
+                "final_result": {
+                    "success": True,
+                    "delivered": True,
+                    "validated": True,
+                    "review_status": "passed",
+                }
+            }
+
+    workflow_module.reporter_workflow = _Workflow()
+    runnable_config = {
+        "callbacks": ["trace"],
+        "metadata": {"run": "reporter-replay"},
+        "recursion_limit": 999,
+    }
+    try:
+        result = workflow_module.run_report_workflow(runnable_config=runnable_config)
+    finally:
+        workflow_module.reporter_workflow = original_workflow
+
+    assert result["success"], result
+    assert observed["state"] == {}
+    assert observed["config"]["callbacks"] == ["trace"]
+    assert observed["config"]["metadata"] == {"run": "reporter-replay"}
+    assert observed["config"]["recursion_limit"] == 200
 
 
 if __name__ == "__main__":
@@ -484,4 +524,5 @@ if __name__ == "__main__":
     test_retry_exhaustion_uses_existing_fail_open_submission()
     test_unauthorized_workflow_fails_without_report_tools()
     test_top_level_report_node_calls_deterministic_workflow()
+    test_run_report_workflow_forwards_runnable_config()
     print("ALL REPORTER WORKFLOW CHECKS PASSED")  # noqa: T201
