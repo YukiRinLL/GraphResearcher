@@ -83,6 +83,7 @@ def load_prompt(name: str) -> str:
 
 # System prompts (loaded lazily-at-import; cheap file reads).
 reporter_system_prompt = load_prompt("reporter")
+reporter_outline_prompt = load_prompt("reporter_outline")
 report_reviewer_system_prompt = load_prompt("report_reviewer")
 analyzer_system_prompt = load_prompt("analyzer")
 

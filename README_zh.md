@@ -35,7 +35,7 @@ uv run python test_wlc.py \
 5. `assess_query()` 只评估当前 Query 拥有的证据，检查验收标准，生成 Gap，并推进 Query 状态。`evaluate_research_portfolio()` 再按 Objective 和边际效用选择需要继续处理的 Gap。
 6. `expand_gaps()` 将选中的 Gap 转换为新的严格 Query 子树。预算、父子关系和 Query 状态由工具层校验。
 7. `assess_convergence()` 判断是否进入 `REPORT_READY`、`LIMITED_REPORT_READY` 或 `BUDGET_EXHAUSTED`。若尚未满足终止条件，继续返回下一动作。
-8. 研究状态允许交付后，middleware 才放行 `task(subagent_type="reporter")`。Reporter 读取原始请求和报告证据，提交大纲、章节候选、草稿和无参数的 `submit_final_report()`。
+8. 研究状态允许交付后，顶层 `report` 节点启动独立的 Reporter StateGraph。状态图确定性地读取上下文、规划大纲、分批准备证据、生成章节候选、组装草稿，并执行一次审校和最多一次修订；模型只生成受 schema 约束的 JSON，不参与工具调度。
 9. `main.py` 从已提交的报告工件中选择最终正文，执行交付校验，写入 `report.md`，并把 Neo4j 图导出为 `research_graph.jsonl`。
 
 核心状态通常沿着下面的路径变化：
@@ -54,18 +54,20 @@ Query 自己还有 `pending`、`searching`、`assessing`、`needs_expansion`、`
 | --- | --- | --- |
 | [`main.py`](main.py) | 单次研究入口、日志 Tee、Orchestrator streaming、报告交付和 JSONL 导出。 | `uv run python main.py "问题"` 会调用真实模型、搜索和 Neo4j。 |
 | [`test_wlc.py`](test_wlc.py) | WLC 风格数据的批量运行器，并可调用官方 JSON 生成和评测脚本。 | 默认只抽样 5 条、每条最多 1 个 Searcher 轮次、debug 日志；默认不执行官方评测。 |
-| [`src/agents/orchestrator.py`](src/agents/orchestrator.py) | 组装顶层 Deep Agent、Orchestrator 工具、Searcher dispatch 和 Reporter 子代理。 | Prompt 约束目前仍是软约束，不能代替确定性调度。 |
+| [`src/workflow.py`](src/workflow.py) | 顶层 LangGraph 研究状态图，负责初始化、调度、检索、评估、收敛和 Reporter workflow 接入。 | 研究动作和报告入口都由确定性节点路由。 |
+| [`src/agents/orchestrator.py`](src/agents/orchestrator.py) | 为旧版 Deep Agent 入口保留的 Orchestrator 组装代码。 | `main.py` 当前使用 `src/workflow.py`，不经过该入口。 |
 | [`src/agents/searcher.py`](src/agents/searcher.py) | LangGraph 固定搜索管线：Tavily、来源筛选、证据抽取、提交。 | Searcher 不负责规划 Query，也不应自行扩展搜索。 |
 | [`src/agents/memory_manager.py`](src/agents/memory_manager.py) | 研究初始化、Query 评估、Objective portfolio、Gap 扩展、搜索生命周期和报告上下文。 | 该文件同时包含模型调用和状态副作用，是排查状态问题的首要位置。 |
-| [`src/agents/reporter.py`](src/agents/reporter.py) | Reporter 子代理配置及 `ReporterWorkflowMiddleware`。 | Reporter 只能在状态机授权后运行。 |
+| [`src/agents/reporter_workflow.py`](src/agents/reporter_workflow.py) | Reporter 的确定性 LangGraph 编排，包括授权、大纲、章节批次、审校、修订和 fail-open 收敛。 | 模型只生成 JSON 候选，所有报告工具调用由状态图执行。 |
+| [`src/agents/reporter.py`](src/agents/reporter.py) | 为仓库外部旧调用保留的 Reporter Agent mapping。 | 当前主运行时不再通过该 mapping 生成报告。 |
 | [`src/tools/graph_manager_tools.py`](src/tools/graph_manager_tools.py) | 面向 Agent 暴露的 typed tools，包括研究状态工具、Searcher 工具和 Reporter 工具。 | 这是 Agent 的主要能力边界，不要让 Agent 直接调用 Neo4j。 |
 | [`src/tools/graph_tools.py`](src/tools/graph_tools.py) | Neo4j async GraphManager 的同步包装、context 隔离、Query 状态和图谱投影。 | `GraphManager` 方法是 async；普通运行路径使用这里的同步包装。 |
 | [`src/memory/graph.py`](src/memory/graph.py) | Neo4j 图存储、节点/边 CRUD、SearchRun claim 和 context 清理。 | Neo4j 是事实来源，JSONL 只是导出和 viewer 格式。 |
 | [`src/tools/research_state.py`](src/tools/research_state.py) | UserRequest 根状态、状态迁移、预算、报告授权和状态摘要。 | 高风险状态语义集中在这里，修改前应先确认 plan。 |
 | [`src/tools/convergence.py`](src/tools/convergence.py) | 无模型的优先级、结构收敛、证据新颖度指标。 | 每个 run 由 `graph_manager_tools.configure()` 清理 novelty 状态。 |
 | [`src/tools/report_tools.py`](src/tools/report_tools.py) | 报告大纲、章节 bundle、局部引用、章节校验、审查上下文、草稿和最终 Markdown。 | 章节候选即使校验失败也会保存；只有通过确定性校验的内容才写入报告图谱。 |
-| [`src/tools/middleware.py`](src/tools/middleware.py) | Reporter 门禁、研究中止提示、空回复/敏感词重试、Reporter 运行上限。 | 当前重复失败保护主要针对带 `error` 的工具结果，不能覆盖所有无进展循环。 |
-| [`src/prompts/`](src/prompts/) | Orchestrator、Searcher、Reporter、Reviewer 和 MemoryManager 的提示词。 | Prompt 影响模型行为，但不应承担状态机的硬约束。 |
+| [`src/tools/middleware.py`](src/tools/middleware.py) | 研究状态门禁、空回复/敏感词重试，以及旧 Reporter Agent 的兼容 guard。 | 当前 Reporter 主路径的顺序和重试上限由 `reporter_workflow.py` 控制。 |
+| [`src/prompts/`](src/prompts/) | Orchestrator、Searcher、Reporter 大纲与章节、Reviewer 和 MemoryManager 的提示词。 | Reporter prompt 只约束阶段内容和 JSON，不承担工具调度。 |
 | [`evaluation_dashboard.html`](evaluation_dashboard.html) | 浏览器端运行产物查看器，展示图谱、搜索轨迹、写作尝试和诊断。 | 默认页面有内置演示数据；加载本地 run 后才显示实际运行。 |
 | [`graph_viewer.html`](graph_viewer.html) | 较轻量的 JSONL 图谱查看器。 | 只适合看导出的节点和边，不包含 dashboard 的报告诊断。 |
 | [`tests/`](tests/) | 独立回归脚本和可被 pytest 收集的测试。 | 很多文件会 monkeypatch `graph_tools`；`test_graph_tools.py` 需要真实 Neo4j。 |

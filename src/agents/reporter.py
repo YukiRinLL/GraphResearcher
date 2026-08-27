@@ -1,9 +1,9 @@
-"""Reporter agent — a subagent that writes the report from the graph only.
+"""Legacy Reporter Agent mapping retained for compatibility.
 
-The Reporter is defined purely by `prompts/reporter.md`. It is a plain
-`SubAgent` spec (no model override; it inherits the workflow's default model)
-with the Reporter-facing Graph Manager tools, and is invoked by the workflow's
-``report_node`` via ``langchain.agents.create_agent``.
+The active runtime is ``agents.reporter_workflow``: a deterministic LangGraph
+that invokes report tools itself and limits the model to JSON candidates. This
+mapping remains available for callers that still import ``reporter`` directly,
+but ``workflow.report_node`` no longer uses it.
 """
 
 import config

@@ -372,12 +372,16 @@ def test_limited_report_ready_authorizes_reporter():
 
 def test_agent_prompts_enforce_report_visibility_contract():
     reporter = (repo_dir / "src/prompts/reporter.md").read_text(encoding="utf-8")
-    assert "LIMITED_REPORT_READY" in reporter
-    assert "unmet_objectives" not in reporter
-    assert "原始 User Request" in reporter
-    assert "无参数的 `submit_final_report()`" in reporter
-    assert "substantive_uncertainties" in reporter
-    assert "不自动创建局限章节" in reporter
+    outline = (repo_dir / "src/prompts/reporter_outline.md").read_text(encoding="utf-8")
+    workflow = (repo_dir / "src/agents/reporter_workflow.py").read_text(encoding="utf-8")
+    assert "不调用工具" in reporter
+    assert "Prepared chapter bundles" in reporter
+    assert "unmet_objectives" not in reporter + outline
+    assert "原始 User Request" in outline
+    assert "substantive_uncertainties" in outline
+    assert "不自动产生“局限性”章节" in outline
+    assert "submit_final_report.invoke({})" in workflow
+    assert "create_agent" not in workflow
 
 
 def test_idle_should_objective_is_deferred_before_complete_report():

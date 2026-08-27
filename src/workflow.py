@@ -17,31 +17,23 @@ MemoryManager 的对应方法，无需 LLM 参与调度决策——调度优先�
   兼容（``stream_mode="values"`` 逐 superstep 快照打印新消息）。
 - 每个节点 append 一条 ``AIMessage`` 摘要，便于 CLI 侧观察进度。
 - ``current_action`` 由 ``scheduler_node`` 写入，各动作节点消费后清空。
-- ``report_node`` 用 ``langchain.agents.create_agent`` 构建 reporter 子图，
-  挂载 ``ReporterWorkflowMiddleware`` 等 guardrail，行为与原 deepagents
-  SubAgent 一致但省去了 ``task`` 工具的 LLM 间接调度。
+- ``report_node`` 调用嵌套的确定性 Reporter StateGraph。模型只生成受 schema
+  约束的大纲和章节候选，不参与报告工具调度。
 """
 
 from __future__ import annotations
 
 import logging
-from typing import Annotated, Any, Optional, TypedDict
+from typing import Annotated, Optional, TypedDict
 
-from langchain.agents import create_agent
 from langchain_core.messages import AIMessage, HumanMessage
 from langgraph.graph import END, StateGraph
 from langgraph.graph.message import add_messages
 
-import config
-from agents.reporter import reporter as _reporter_spec
+from agents.reporter_workflow import run_report_workflow
 from agents.searcher import searcher
 from tools import graph_manager_tools as gmt
 from tools.graph_manager_tools import fail_search, prepare_search
-from tools.middleware import (
-    EmptyResponseRetryMiddleware,
-    ReporterWorkflowMiddleware,
-    SensitiveWordsRetryMiddleware,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -454,120 +446,30 @@ def convergence_node(state: dict) -> dict:
     }
 
 
-# ---------------------------------------------------------------------------
-# Reporter agent 构建（延迟初始化，避免 import 时需要 API credentials）
-# ---------------------------------------------------------------------------
-
-_reporter_agent: Any = None
-
-
-def _get_reporter_agent() -> Any:
-    """构建并缓存 reporter agent.
-
-    使用 ``langchain.agents.create_agent`` 构建，与 deepagents 对 SubAgent 的
-    编译方式一致（``create_agent(model, system_prompt, tools, middleware)``）。
-    reporter 继承默认 model（与原 SubAgent spec 行为一致）。
-    """
-    global _reporter_agent
-    if _reporter_agent is not None:
-        return _reporter_agent
-
-    _reporter_agent = create_agent(
-        model=config.default_model,
-        system_prompt=config.reporter_system_prompt,
-        tools=list(_reporter_spec["tools"]),
-        middleware=[
-            ReporterWorkflowMiddleware(),
-            SensitiveWordsRetryMiddleware(),
-            EmptyResponseRetryMiddleware(),
-        ],
-    )
-    return _reporter_agent
-
-
 def report_node(state: dict) -> dict:
-    """授权并执行 Reporter 子图，从研究图谱生成结构化报告.
-
-    复刻 ``ResearchStateMiddleware._gate_reporter`` 的前置检查：
-    1. 确认研究状态允许报告（REPORT_READY / LIMITED_REPORT_READY / BUDGET_EXHAUSTED）
-    2. 验证 Query 树完整性
-    3. 注入 User Request handoff 文本
-    4. 状态迁移至 REPORTING
-    """
-    from tools import graph_tools, research_state
-
-    status = research_state.get_status()
-    current_state = status.get("research_state")
-
-    # FAILED 状态直接结束，不进入 Reporter
-    if current_state == research_state.FAILED:
-        return {
-            "messages": [AIMessage(
-                content=f"[reporter] skipped: research FAILED — {status.get('last_error', '')}"
-            )],
-        }
-
-    # 不在允许报告的状态——标记异常并结束
-    if current_state not in {
-        research_state.REPORT_READY,
-        research_state.LIMITED_REPORT_READY,
-        research_state.BUDGET_EXHAUSTED,
-    }:
-        return {
-            "messages": [AIMessage(
-                content=f"[reporter] skipped: state={current_state} not in REPORT_ALLOWED"
-            )],
-        }
-
-    # 验证 Query 树
-    tree = graph_tools.validate_query_tree()
-    if not tree.get("valid"):
-        research_state.update_goal({
-            "reporter_warnings": ["Query tree validation failed before Reporter authorization"],
-        })
-
-    # 注入 User Request handoff（与 ResearchStateMiddleware._REPORTER_HANDOFF 一致）
-    requests = graph_tools.search_nodes("user_request", {})
-    user_request_text = requests[0].get("request", "") if requests else ""
-    handoff = (
-        "以下是原始 User Request（逐字保存），你必须严格遵循其中的所有写作规范和要求：\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        f"{user_request_text}\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        "请基于上述 User Request 和 export_report_context 中的报告材料，按 Reporter 工作流完成报告。"
-    )
-
-    # 状态迁移至 REPORTING
-    research_state.update_goal({
-        "research_state": research_state.REPORTING,
-        "reporting_from_state": current_state,
-    })
-
-    # 执行 Reporter agent
-    agent = _get_reporter_agent()
+    """执行嵌套的确定性 Reporter workflow."""
+    del state
     try:
-        result = agent.invoke({"messages": [HumanMessage(content=handoff)]})
+        result = run_report_workflow()
     except Exception as exc:  # noqa: BLE001 — Reporter 异常不应导致无输出
-        logger.exception("Reporter agent invocation failed")
+        logger.exception("Reporter workflow invocation failed")
         return {
             "messages": [AIMessage(content=f"[reporter] FAILED: {exc}")],
         }
 
-    # 提取最终报告摘要
     compiled_report = gmt.get_compiled_report()
-    attempt = gmt.get_last_report_attempt()
     report_len = len(compiled_report) if compiled_report else 0
-    review_status = attempt.get("review_status", "?")
-    revision = attempt.get("revision_requested", False)
+    status = "submitted" if result.get("success") else "failed"
     summary = (
-        f"[reporter] report submitted: {report_len} chars, "
-        f"review={review_status}, revision_requested={revision}"
+        f"[reporter] workflow {status}: {report_len} chars, "
+        f"validated={result.get('validated', False)}, "
+        f"review={result.get('review_status') or '?'}"
     )
-    # 把 reporter 的消息也追加到工作流状态，保持流式输出连续性
-    reporter_messages = result.get("messages", []) if isinstance(result, dict) else []
-    return {
-        "messages": [AIMessage(content=summary), *reporter_messages],
-    }
+    if result.get("error"):
+        summary += f", error={result['error']}"
+    if result.get("fallback_reason"):
+        summary += f", fallback={result['fallback_reason']}"
+    return {"messages": [AIMessage(content=summary)]}
 
 
 # ---------------------------------------------------------------------------
