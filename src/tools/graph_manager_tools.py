@@ -360,7 +360,7 @@ def submit_search_result(search_run_id: str, query_id: str, evidence_package: di
 
 
 def export_report_context(goal_id: Optional[str] = None) -> dict:
-    """Export compact report metadata after the reporter gate authorizes writing."""
+    """Export compact outline metadata after the reporter gate authorizes writing."""
     return _mm().export_report_context(goal_id)
 
 

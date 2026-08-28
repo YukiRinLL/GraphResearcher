@@ -81,10 +81,15 @@ def main() -> None:
         else []
     )
     report_tools.get_disclosed_conflicts = lambda: []
-    report_tools.build_reference_registry = lambda: []
+
+    def unexpected_registry_build():
+        raise AssertionError("Outline context must not build the reference registry")
+
+    report_tools.build_reference_registry = unexpected_registry_build
 
     context = MemoryManager(model=object()).export_report_context()
 
+    assert set(context) == {"user_request", "queries", "disclosed_conflicts"}
     assert context["queries"] == [
         {"ref": "q1", "text": "Root topic", "supported_topics": []},
         {

@@ -21,13 +21,6 @@
       "description": "需要中性披露的分歧描述",
       "conflict_type": "分歧类型"
     }
-  ],
-  "reference_registry": [
-    {
-      "n": 1,
-      "title": "来源标题",
-      "url": "来源 URL"
-    }
   ]
 }
 ```
@@ -55,7 +48,6 @@ q2
 `queries` 中的每个 Query 分别归集由该研究问题产生的 Evidence 和 Claim；树形父子或兄弟关系只表示研究问题之间的分解关系，不会合并各节点持有的材料。程序为章节准备写作材料时，只读取该章 `query_refs` 明确列出的 Query。因此，大纲阶段虽然不读取 Query 下的证据节点，仍需根据 `text` 和 `supported_topics` 判断本章会用到哪些 Query，并把这些 Query 在 `queries` 中出现的 `ref` 全部列入 `query_refs`。例如某章同时需要 `q1` 和 `q1.2` 覆盖的主题时，只列出 `q1` 不会带入 `q1.2` 的材料，必须同时列出两个 handle。
 
 - `disclosed_conflicts`：需要在报告中中性呈现的分歧目录。`description` 概括分歧内容，`conflict_type` 标明分歧类型；这里不提供章节写作阶段使用的 Conflict ref。
-- `reference_registry`：本次报告可用来源的全局登记。`n` 是稳定的数字引用编号，`title` 和 `url` 标识来源；本阶段只用它理解资料范围，不据此生成事实、引用或参考文献。
 
 数组可能为空，但程序只会在 `queries` 至少包含一个可用 `ref` 时调用本阶段。不得从空数组、字段名或 URL 推断未提供的信息。
 

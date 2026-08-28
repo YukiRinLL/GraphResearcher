@@ -361,7 +361,7 @@ def test_agent_prompts_enforce_report_visibility_contract():
     assert "Query 数量不作为拆章或合章依据" in outline
     assert "没有相关 Query 支持的维度不纳入章节范围" in outline
     assert "disclosed_conflicts" in outline
-    assert '"reference_registry"' in outline
+    assert '"reference_registry"' not in outline
     assert '"conflict_type"' in outline
     assert "<retry_feedback>" in outline
     assert "# Retry Feedback" not in outline

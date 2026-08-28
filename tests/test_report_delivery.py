@@ -158,7 +158,6 @@ def main():
             "user_request",
             "queries",
             "disclosed_conflicts",
-            "reference_registry",
         }
         assert context["queries"] == [
             {
@@ -167,10 +166,6 @@ def main():
                 "supported_topics": ["仓储机器人", "融资进展"],
             }
         ]
-        assert all(
-            set(entry) == {"n", "title", "url"}
-            for entry in context["reference_registry"]
-        )
         assert "status" not in context["queries"][0]
         assert not any(
             key in str(context)

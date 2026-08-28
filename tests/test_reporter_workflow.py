@@ -83,13 +83,6 @@ def _install_fakes(
             {"ref": "q1", "text": "Topic", "supported_topics": ["Supported fact"]}
         ],
         "disclosed_conflicts": [],
-        "reference_registry": [
-            {
-                "n": 1,
-                "title": "Source",
-                "url": "https://example.com",
-            }
-        ],
     }
 
     def commit_outline(*, title, chapters):
@@ -210,7 +203,6 @@ def test_outline_prompt_is_limited_to_outline_planning():
             {"ref": "q1", "text": "Topic", "supported_topics": ["Supported fact"]}
         ],
         "disclosed_conflicts": [],
-        "reference_registry": [],
     }
 
     prompt = workflow_module._outline_prompt(context)
@@ -238,7 +230,7 @@ def test_outline_prompt_is_limited_to_outline_planning():
     assert "没有相关 Query 支持的维度不纳入章节范围" in prompt
     assert "研究对象本身的局限、风险或适用边界" in prompt
     assert '"conflict_type": "分歧类型"' in prompt
-    assert '"n": 1' in prompt
+    assert '"reference_registry"' not in prompt
     assert "Retry Feedback" not in prompt
     assert "# Retry Feedback" in retry_prompt
     assert "上一版大纲未通过校验" in retry_prompt
@@ -296,7 +288,6 @@ def test_empty_query_context_skips_outline_model_and_uses_fallback():
         "user_request": "Write a cited report.",
         "queries": [],
         "disclosed_conflicts": [],
-        "reference_registry": [],
     }
     try:
         result = workflow_module.run_report_workflow()

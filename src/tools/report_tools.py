@@ -197,9 +197,9 @@ def build_reference_registry() -> list[dict]:
     URL (first node in id order wins), and sorts by node id.  Assigns 1-based
     numbers.
 
-    Both ``export_report_context`` (what the Reporter cites from) and
-    :func:`finalize_report` build the registry through this one function, so the
-    ``n``→source mapping is identical on both sides.
+    Chapter bundles, review contexts, and final report compilation build the
+    registry through this one function, so the ``n``→source mapping remains
+    identical throughout citation validation and rendering.
 
     Returns:
         A list of ``{"n", "source_id", "title", "url"}`` dicts.

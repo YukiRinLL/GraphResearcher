@@ -3318,7 +3318,7 @@ class MemoryManager:
     # Reporter-facing
     # -----------------------------
     def export_report_context(self, goal_id: Optional[str] = None) -> dict:
-        """Export compact report metadata; evidence is fetched page by page."""
+        """Export compact outline-planning metadata; evidence is fetched per chapter."""
         goal = graph_tools.get_node(goal_id) if goal_id else {}
         if not goal:
             requests = graph_tools.search_nodes("user_request", {})
@@ -3358,10 +3358,6 @@ class MemoryManager:
                     "conflict_type": conflict.get("conflict_type"),
                 }
                 for conflict in disclosed_conflicts
-            ],
-            "reference_registry": [
-                {key: entry.get(key) for key in ("n", "title", "url")}
-                for entry in report_tools.build_reference_registry()
             ],
         }
 
