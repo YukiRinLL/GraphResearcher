@@ -351,12 +351,21 @@ def test_agent_prompts_enforce_report_visibility_contract():
     assert "原始 User Request" in outline
     assert '`user_request`' in outline
     assert "supported_topics" in outline
+    assert "`q1.2.1` 是 `q1.2` 的子 Query" in outline
+    assert "同一层级的 Query 是并列研究分支" in outline
+    assert "实际列表可能不连续" in outline
+    assert "材料不会沿父子或兄弟关系自动合并" in outline
+    assert "必须在 `query_refs` 中逐一列出对应 handle" in outline
+    assert "识别报告的任务类型、目标读者和核心问题" in outline
+    assert "不按 Query 编号或树形顺序排列章节" in outline
+    assert "Query 数量不作为拆章或合章依据" in outline
+    assert "没有相关 Query 支持的维度不纳入章节范围" in outline
     assert "disclosed_conflicts" in outline
     assert '"reference_registry"' in outline
     assert '"conflict_type"' in outline
     assert "<retry_feedback>" in outline
     assert "# Retry Feedback" not in outline
-    assert "不单独创建“局限性”章节" in outline
+    assert "不为检索过程或资料充足性创建“局限性”章节" in outline
     assert "交付模式" not in reporter
     assert "Report Context：包含" not in reporter
     assert "graph_manager_tools.submit_final_report()" in workflow

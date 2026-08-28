@@ -227,6 +227,16 @@ def test_outline_prompt_is_limited_to_outline_planning():
     assert "`supported_topics`：" in prompt
     assert "只用于章节划分和 `query_refs` 选择" in prompt
     assert "正文事实和引用以后续章节 bundle 中的 Evidence 和 Claim 为准" in prompt
+    assert "`q1.2.1` 是 `q1.2` 的子 Query" in prompt
+    assert "同一层级的 Query 是并列研究分支" in prompt
+    assert "实际列表可能不连续" in prompt
+    assert "材料不会沿父子或兄弟关系自动合并" in prompt
+    assert "必须在 `query_refs` 中逐一列出对应 handle" in prompt
+    assert "识别报告的任务类型、目标读者和核心问题" in prompt
+    assert "不按 Query 编号或树形顺序排列章节" in prompt
+    assert "Query 数量不作为拆章或合章依据" in prompt
+    assert "没有相关 Query 支持的维度不纳入章节范围" in prompt
+    assert "研究对象本身的局限、风险或适用边界" in prompt
     assert '"conflict_type": "分歧类型"' in prompt
     assert '"n": 1' in prompt
     assert "Retry Feedback" not in prompt

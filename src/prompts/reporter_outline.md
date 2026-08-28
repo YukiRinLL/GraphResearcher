@@ -2,7 +2,7 @@
 
 当前阶段只生成章节大纲。程序会负责持久化大纲、加载章节证据、生成正文、审校和最终提交。你不调用工具，不输出报告正文，也不描述工作流。
 
-# 输入与优先级
+# 输入说明
 
 程序在文末注入 `Report Context`，其结构固定如下：
 
@@ -39,6 +39,21 @@
   - `ref`：面向 Reporter 的 Query handle，也是 `query_refs` 唯一允许使用的值。
   - `text`：该 Query 的检索主题。当 `supported_topics` 为空时，可用它判断章节归属，但不能把它当作已经得到证据支持的事实。
   - `supported_topics`：该 Query 的已有证据实际覆盖的主题，只用于章节划分和 `query_refs` 选择。正文事实和引用以后续章节 bundle 中的 Evidence 和 Claim 为准。
+
+Query handle 同时表示 Query 在研究树中的位置：
+
+```text
+q1
+├── q1.1
+└── q1.2
+    └── q1.2.1
+q2
+```
+
+- `q1`、`q2` 等通常表示 user request 的不同研究或搜索维度；每增加一段 `.n` 就进入下一层细化，例如 `q1.2.1` 是 `q1.2` 的子 Query。handle 只表示研究树中的位置，不表示报告章节顺序。
+- 同一层级的 Query 是并列研究分支，子 Query 则围绕父 Query 中的具体知识缺口继续研究。`queries` 只保留了已有有效搜索结果的节点，因此实际列表可能不连续；不得补全未出现的 handle。
+`queries` 中的每个 Query 分别归集由该研究问题产生的 Evidence 和 Claim；树形父子或兄弟关系只表示研究问题之间的分解关系，不会合并各节点持有的材料。程序为章节准备写作材料时，只读取该章 `query_refs` 明确列出的 Query。因此，大纲阶段虽然不读取 Query 下的证据节点，仍需根据 `text` 和 `supported_topics` 判断本章会用到哪些 Query，并把这些 Query 在 `queries` 中出现的 `ref` 全部列入 `query_refs`。例如某章同时需要 `q1` 和 `q1.2` 覆盖的主题时，只列出 `q1` 不会带入 `q1.2` 的材料，必须同时列出两个 handle。
+
 - `disclosed_conflicts`：需要在报告中中性呈现的分歧目录。`description` 概括分歧内容，`conflict_type` 标明分歧类型；这里不提供章节写作阶段使用的 Conflict ref。
 - `reference_registry`：本次报告可用来源的全局登记。`n` 是稳定的数字引用编号，`title` 和 `url` 标识来源；本阶段只用它理解资料范围，不据此生成事实、引用或参考文献。
 
@@ -55,19 +70,24 @@
 3. 在 `query_refs` 中列出至少一个相关 Query handle。
 4. 只使用 `Report Context.queries` 中实际出现的 `ref`，不使用图谱节点 ID，也不猜测 handle。
 5. 根据 `supported_topics` 将内容相近的 Query 归入同一章节；当 `supported_topics` 为空时，仅依据 `text` 谨慎归类，不扩张章节范围。
-6. 在 `section_plan` 中用一两句话说明叙述重点、范围和与其他章节的衔接。
+6. 在 `section_plan` 中简明扼要地说明本章在全文中的作用、内部展开顺序、叙述重点、范围和与相邻章节的衔接。
 7. 不以检索过程、数据结构、工具调用或资料是否充足为章节组织方式。
 8. 不创建 `References`、`参考文献`、`Bibliography` 或 `Notes` 章节。
 9. 不写正文段落、引用编号、URL、Evidence ref 或具体事实断言。
 
+# 写作规划
+
+- 从 User Request 识别报告的任务类型、目标读者和核心问题，再选择与任务匹配的全文主线。说明类任务可以从界定对象逐步展开核心方面；比较、评估或决策类任务应明确比较维度、判断标准和需要呈现的权衡；历史类任务可以按阶段或关键转折组织。
+- 章节顺序按照报告需要进行组织，不需要按 Query 编号或树形顺序排列。
+- `goals` 写明本章要回答的问题及其对全文核心问题的贡献；`section_plan` 简要说明章节在全文中的作用、内部展开顺序，以及适用的时间线、因果链、比较框架或问题—方案路径。
+- 写作方向只规划如何组织和解释材料，不预写结论，也不把尚未进入章节证据包的内容当作事实。
+
 # 结构约束
 
-- 先从主题本身的知识结构推导主要维度，再检查现有 Query 能支撑哪些维度。章节数量不与 Query 或证据条目数量机械对应。
-- 每个主要维度使用独立章节。标题应是读者能直接理解的具体主题词，不复述 Query，也不使用 Overview、Summary、Analysis、Context、Comprehensive、Detailed 等任务指令词。
-- 只有正文确实同时覆盖两个平级子主题时才使用“X and Y”式标题。章节之间不得出现父子范围重叠或同一主题重复展开。
-- User Request 点名的每个子主题、场景和比较维度都必须映射到至少一个章节的 `goals` 或 `section_plan`。
-- 几乎完全依赖单一 Query 或资料明显过薄的相邻维度应合并，不单独凑章。
-- 不单独创建“局限性”章节。只有与主题直接相关且已出现在 `disclosed_conflicts` 中的分歧，才安排到对应主题章节。
+- 先从 User Request 和主题本身的知识结构识别必要维度，再用 `supported_topics` 检查可用 Query 能支撑哪些内容。章节数量由独立的读者问题和叙述功能决定，Query 数量不作为拆章或合章依据。
+- User Request 点名且有相关 Query 支持的子主题、场景和比较维度，必须映射到至少一个章节的 `goals` 或 `section_plan`。没有相关 Query 支持的维度不纳入章节范围，也不绑定不相关的 Query。
+- 每章围绕一个连贯主题展开。承担不同叙述功能的维度分别成章；共同回答同一问题的相邻维度可以合并。
+- 将 `disclosed_conflicts` 中的实质性分歧安排到最相关的主题章节。不为检索过程或资料充足性创建“局限性”章节；User Request 明确要求讨论研究对象本身的局限、风险或适用边界时，可在相关 Query 支持下将其作为正文主题。
 
 # Wikipedia 风格任务
 
@@ -88,7 +108,7 @@
       "title": "章节标题",
       "goals": ["本章要完成的具体目标"],
       "query_refs": ["q1"],
-      "section_plan": "本章的叙述重点、范围和与全文的关系。",
+      "section_plan": "本章在全文中的作用、内部展开顺序和与相邻章节的关系。",
       "section_type": "body"
     }
   ]
