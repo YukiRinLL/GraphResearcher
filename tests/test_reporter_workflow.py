@@ -110,12 +110,6 @@ def _install_fakes(
                             "source_numbers": [1],
                         }
                     ],
-                    "reference_registry_subset": [
-                        {
-                            "n": 1,
-                            "url": "https://example.com",
-                        }
-                    ],
                     "disclosed_conflicts": [],
                 }
                 for chapter in chapters
@@ -311,9 +305,8 @@ def test_chapter_prompt_receives_only_request_and_local_bundles():
                 "chapter_id": 1,
                 "chapter_title": "Finding",
                 "query_refs": ["q1"],
-                "evidence_items": [{"ref": "e1", "text": "Supported fact"}],
-                "reference_registry_subset": [
-                    {"n": 1, "title": "Local source", "url": "https://local.example"}
+                "evidence_items": [
+                    {"ref": "e1", "text": "Supported fact", "source_numbers": [1]}
                 ],
             }
         ],
@@ -323,6 +316,9 @@ def test_chapter_prompt_receives_only_request_and_local_bundles():
 
     assert "User Request:\nWrite a cited report." in prompt
     assert "Prepared chapter bundles:" in prompt
+    assert '"source_numbers": [1]' in prompt
+    assert "reference_registry_subset" not in prompt
+    assert '"sources"' not in prompt
     assert "Report Context:" not in prompt
     assert "supported_topics" not in prompt
     assert "交付模式" not in prompt

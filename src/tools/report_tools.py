@@ -482,10 +482,6 @@ def _public_evidence_items(
                 if id_to_ref.get(str(relation.get("evidence_id")))
             ],
             "source_numbers": item.get("citations") or [],
-            "sources": [
-                {key: source.get(key) for key in ("title", "url", "source_type", "published_at")}
-                for source in item.get("sources") or []
-            ],
         })
     return projected, {ref: item_id for item_id, ref in id_to_ref.items()}
 
@@ -573,11 +569,6 @@ def _prepare_report_chapter_bundle(
         "section_plan": chapter.get("section_plan") or "",
         "query_refs": query_refs,
         "evidence_items": public_items,
-        "reference_registry_subset": [
-            {key: entry.get(key) for key in ("n", "title", "url", "source_type", "published_at")}
-            for entry in build_reference_registry()
-            if entry.get("source_id") in source_ids
-        ],
         "disclosed_conflicts": [
             {
                 "ref": ref,

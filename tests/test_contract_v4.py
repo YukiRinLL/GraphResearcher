@@ -127,6 +127,14 @@ def main():
             bundles = {item["chapter_id"]: item for item in prepared["chapters"]}
             assert bundles[1]["evidence_items"][0]["ref"] == "e1"
             assert bundles[2]["evidence_items"][0]["ref"] == "e1"
+            assert all(
+                "reference_registry_subset" not in bundle
+                and all(
+                    item.get("source_numbers") and "sources" not in item
+                    for item in bundle["evidence_items"]
+                )
+                for bundle in bundles.values()
+            )
             too_many = report_tools.prepare_report_chapter_batch(
                 temp_dir,
                 [{"chapter_id": 1}] * 4,

@@ -220,6 +220,11 @@ def main():
             lead_bundle, body_bundle = prepared["chapters"]
             assert lead_bundle["query_refs"] == ["q1"]
             assert {item["ref"] for item in lead_bundle["evidence_items"]} == {"e1", "e2", "c1"}
+            assert "reference_registry_subset" not in lead_bundle
+            assert all(
+                item.get("source_numbers") and "sources" not in item
+                for item in lead_bundle["evidence_items"]
+            )
 
             rejected = graph_manager_tools.commit_report_chapter_batch(
                 chapters=[{

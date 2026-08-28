@@ -347,6 +347,9 @@ def test_agent_prompts_enforce_report_visibility_contract():
     workflow = (repo_dir / "src/agents/reporter_workflow.py").read_text(encoding="utf-8")
     assert "不调用工具" in reporter
     assert "Prepared chapter bundles" in reporter
+    assert "来源标题和 URL 由程序在最终参考文献中补充" in reporter
+    assert "来源权威性" not in reporter
+    assert "Wikipedia 页面" not in reporter
     assert "unmet_objectives" not in reporter + outline
     assert "原始 User Request" in outline
     assert '`user_request`' in outline
