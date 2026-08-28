@@ -28,10 +28,10 @@ class OutlineChapter(BaseModel):
     """模型为大纲规划的一章."""
 
     title: str = Field(min_length=1)
-    goals: list[str] = Field(default_factory=list)
+    goals: list[str] = Field(min_length=1)
     query_refs: list[str] = Field(min_length=1)
-    section_plan: str = ""
-    section_type: Literal["lead", "body"] | None = None
+    section_plan: str = Field(min_length=1)
+    section_type: Literal["lead", "body"]
 
 
 class OutlineCandidate(BaseModel):
@@ -109,7 +109,9 @@ def _invoke_reporter_json(prompt: str) -> dict[str, Any]:
 def _outline_prompt(context: dict[str, Any], feedback: str = "") -> str:
     """构造只承担大纲规划的 prompt."""
     retry_feedback = (
-        "上一版大纲未通过校验。请仅修复以下问题后重新输出完整 JSON：\n" + feedback
+        "# Retry Feedback\n\n"
+        "上一版大纲未通过校验。请仅修复以下问题后重新输出完整 JSON：\n"
+        + feedback
         if feedback
         else ""
     )
@@ -118,8 +120,72 @@ def _outline_prompt(context: dict[str, Any], feedback: str = "") -> str:
     ).replace("<retry_feedback>", retry_feedback)
 
 
-def _chapter_prompt(
+def _available_query_refs(context: dict[str, Any]) -> set[str]:
+    """返回当前报告上下文公开的非空 Query handle."""
+    return {
+        str(query.get("ref") or "").strip()
+        for query in context.get("queries") or []
+        if isinstance(query, dict) and str(query.get("ref") or "").strip()
+    }
+
+
+def _validated_outline(
+    candidate: OutlineCandidate,
     context: dict[str, Any],
+) -> tuple[str, list[dict[str, Any]]]:
+    """规范化模型大纲并校验只引用本次上下文公开的 Query."""
+    title = candidate.title.strip()
+    if not title:
+        raise ValueError("Report title must not be blank")
+
+    available_refs = _available_query_refs(context)
+    chapters: list[dict[str, Any]] = []
+    for index, chapter in enumerate(candidate.chapters, start=1):
+        chapter_title = chapter.title.strip()
+        goals = [goal.strip() for goal in chapter.goals if goal.strip()]
+        query_refs = list(
+            dict.fromkeys(ref.strip() for ref in chapter.query_refs if ref.strip())
+        )
+        section_plan = chapter.section_plan.strip()
+        if not chapter_title:
+            raise ValueError(f"Chapter {index} title must not be blank")
+        if not goals:
+            raise ValueError(f"Chapter {index} goals must not be empty")
+        if not query_refs:
+            raise ValueError(f"Chapter {index} query_refs must not be empty")
+        if not section_plan:
+            raise ValueError(f"Chapter {index} section_plan must not be blank")
+        unavailable_refs = sorted(set(query_refs) - available_refs)
+        if unavailable_refs:
+            raise ValueError(
+                f"Chapter {index} query_refs are not available in Report Context: "
+                f"{unavailable_refs}; available refs: {sorted(available_refs)}"
+            )
+        chapters.append(
+            {
+                "chapter_id": index,
+                "title": chapter_title,
+                "goals": goals,
+                "query_refs": query_refs,
+                "section_plan": section_plan,
+                "section_type": chapter.section_type,
+            }
+        )
+
+    lead_ids = [
+        chapter["chapter_id"]
+        for chapter in chapters
+        if chapter["section_type"] == "lead"
+    ]
+    if len(lead_ids) > 1:
+        raise ValueError("Outline may contain at most one lead chapter")
+    if lead_ids and lead_ids[0] != 1:
+        raise ValueError("The lead chapter must be the first chapter")
+    return title, chapters
+
+
+def _chapter_prompt(
+    user_request: str,
     bundles: list[dict[str, Any]],
     feedback: list[dict[str, Any]],
     revision_started: bool,
@@ -140,7 +206,7 @@ def _chapter_prompt(
         [
             config.reporter_system_prompt,
             instruction,
-            "Report Context:\n" + json.dumps(context, ensure_ascii=False),
+            "User Request:\n" + user_request.strip(),
             "Prepared chapter bundles:\n" + json.dumps(bundles, ensure_ascii=False),
             "Revision feedback:\n" + json.dumps(feedback, ensure_ascii=False),
             retry_feedback,
@@ -208,6 +274,8 @@ def export_context_node(state: ReporterWorkflowState) -> dict[str, Any]:
         return {"error": f"Could not export Reporter context: {exc}"}
     if not context.get("user_request"):
         return {"error": "Reporter context is missing the user request"}
+    if not _available_query_refs(context):
+        return {"error": "Reporter context has no evidence-backed Query handles"}
     return {"report_context": context, "error": ""}
 
 
@@ -225,19 +293,9 @@ def plan_outline_node(state: ReporterWorkflowState) -> dict[str, Any]:
                 _outline_prompt(state["report_context"], state.get("error", ""))
             )
         )
-        chapters = [
-            {
-                "chapter_id": index,
-                "title": chapter.title,
-                "goals": chapter.goals,
-                "query_refs": list(dict.fromkeys(chapter.query_refs)),
-                "section_plan": chapter.section_plan,
-                "section_type": chapter.section_type,
-            }
-            for index, chapter in enumerate(candidate.chapters, start=1)
-        ]
+        title, chapters = _validated_outline(candidate, state["report_context"])
         committed = graph_manager_tools.commit_report_outline(
-            title=candidate.title,
+            title=title,
             chapters=chapters,
         )
         if committed.get("status") != "ok":
@@ -254,7 +312,7 @@ def plan_outline_node(state: ReporterWorkflowState) -> dict[str, Any]:
         }
     return {
         "outline_attempts": attempt,
-        "outline": {"title": candidate.title, "chapters": chapters},
+        "outline": {"title": title, "chapters": chapters},
         "chapter_ids": [chapter["chapter_id"] for chapter in chapters],
         "next_chapter_index": 0,
         "error": "",
@@ -304,7 +362,7 @@ def draft_chapter_batch_node(state: ReporterWorkflowState) -> dict[str, Any]:
         candidate = ChapterBatchCandidate.model_validate(
             _invoke_reporter_json(
                 _chapter_prompt(
-                    state["report_context"],
+                    str(state["report_context"]["user_request"]),
                     bundles,
                     state.get("revision_feedback", []),
                     bool(state.get("revision_started")),

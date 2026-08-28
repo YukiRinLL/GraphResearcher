@@ -4,11 +4,45 @@
 
 # 输入与优先级
 
-- `Report Context.user_request` 是用户的原始写作要求，也是最高优先级约束。
-- `Report Context.queries` 是已有证据支持的 Query handle 目录。`text` 是检索入口，`supported_topics` 表示该 Query 的已有证据实际覆盖的主题。
-- `supported_topics` 只用于章节划分和 `query_refs` 选择；正文事实和引用仍以后续章节 bundle 中的 Evidence 为准。
-- `disclosed_conflicts` 只用于决定是否在相关主题章节中安排中性披露。
-- `reference_registry` 只用于理解可用资料范围；本阶段不生成引用、参考文献或事实性论述。
+程序在文末注入 `Report Context`，其结构固定如下：
+
+```json
+{
+  "user_request": "用户的原始写作要求",
+  "queries": [
+    {
+      "ref": "q1",
+      "text": "该 Query 的检索主题",
+      "supported_topics": ["已有证据实际覆盖的主题"]
+    }
+  ],
+  "disclosed_conflicts": [
+    {
+      "description": "需要中性披露的分歧描述",
+      "conflict_type": "分歧类型"
+    }
+  ],
+  "reference_registry": [
+    {
+      "n": 1,
+      "title": "来源标题",
+      "url": "来源 URL"
+    }
+  ]
+}
+```
+
+各字段的含义和用途如下：
+
+- `user_request`：用户的原始写作要求，也是报告标题、语言、范围、受众、格式和指定子主题的最高优先级约束。
+- `queries`：已有有效搜索结果的 Query 目录。每项包含以下字段：
+  - `ref`：面向 Reporter 的 Query handle，也是 `query_refs` 唯一允许使用的值。
+  - `text`：该 Query 的检索主题。当 `supported_topics` 为空时，可用它判断章节归属，但不能把它当作已经得到证据支持的事实。
+  - `supported_topics`：该 Query 的已有证据实际覆盖的主题，只用于章节划分和 `query_refs` 选择。正文事实和引用以后续章节 bundle 中的 Evidence 和 Claim 为准。
+- `disclosed_conflicts`：需要在报告中中性呈现的分歧目录。`description` 概括分歧内容，`conflict_type` 标明分歧类型；这里不提供章节写作阶段使用的 Conflict ref。
+- `reference_registry`：本次报告可用来源的全局登记。`n` 是稳定的数字引用编号，`title` 和 `url` 标识来源；本阶段只用它理解资料范围，不据此生成事实、引用或参考文献。
+
+数组可能为空，但程序只会在 `queries` 至少包含一个可用 `ref` 时调用本阶段。不得从空数组、字段名或 URL 推断未提供的信息。
 
 # 大纲要求
 
@@ -62,7 +96,7 @@
 ```
 
 - 不输出 `chapter_id`；程序按章节顺序从 1 自动编号。
-- 报告标题、章节标题和 `query_refs` 均不能为空。
+- 报告标题以及每章的 `title`、`goals`、`query_refs`、`section_plan` 和 `section_type` 均为必填字段。字符串字段去除首尾空白后不得为空；`goals` 和 `query_refs` 至少各包含一个非空值。
 - `query_refs` 去重，并且只包含可用 Query handle。
 - `section_type` 只能是 `lead` 或 `body`。
 

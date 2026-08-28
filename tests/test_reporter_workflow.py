@@ -10,6 +10,17 @@ import workflow as root_workflow  # noqa: E402
 from agents import reporter_workflow as workflow_module  # noqa: E402
 
 
+def _outline_chapter(title="Finding", query_refs=None, section_type="body"):
+    """构造满足 Reporter 大纲契约的测试章节."""
+    return {
+        "title": title,
+        "goals": [f"Explain {title}"],
+        "query_refs": list(query_refs or ["q1"]),
+        "section_plan": f"Develop {title} from the bound Query evidence.",
+        "section_type": section_type,
+    }
+
+
 def _install_fakes(
     model_outputs,
     *,
@@ -162,7 +173,7 @@ def test_workflow_commits_ordered_report_without_model_tool_calls():
         [
             {
                 "title": "Report",
-                "chapters": [{"title": "Finding", "query_refs": ["q1"]}],
+                "chapters": [_outline_chapter()],
             },
             {
                 "chapters": [
@@ -213,9 +224,141 @@ def test_outline_prompt_is_limited_to_outline_planning():
     assert "submit_final_report" not in prompt
     assert '"ref": "q1"' in prompt
     assert '"supported_topics": ["Supported fact"]' in prompt
-    assert "`supported_topics` 只用于章节划分" in prompt
-    assert "正文事实和引用仍以后续章节 bundle 中的 Evidence 为准" in prompt
+    assert "`supported_topics`：" in prompt
+    assert "只用于章节划分和 `query_refs` 选择" in prompt
+    assert "正文事实和引用以后续章节 bundle 中的 Evidence 和 Claim 为准" in prompt
+    assert '"conflict_type": "分歧类型"' in prompt
+    assert '"n": 1' in prompt
+    assert "Retry Feedback" not in prompt
+    assert "# Retry Feedback" in retry_prompt
     assert "上一版大纲未通过校验" in retry_prompt
+
+
+def test_workflow_retries_query_refs_outside_report_context():
+    """大纲只能绑定本次 Report Context 公开的 Query handle."""
+    observations, restore = _install_fakes(
+        [
+            {
+                "title": "Report",
+                "chapters": [_outline_chapter(query_refs=["q2"])],
+            },
+            {
+                "title": "Report",
+                "chapters": [_outline_chapter()],
+            },
+            {
+                "chapters": [
+                    {
+                        "chapter_id": 1,
+                        "content": "Supported fact.[1]",
+                        "evidence_refs": ["e1"],
+                    }
+                ]
+            },
+        ]
+    )
+    try:
+        result = workflow_module.run_report_workflow()
+    finally:
+        restore()
+
+    assert result["success"], result
+    assert observations["calls"].count("commit_outline") == 1
+    assert len(observations["model_prompts"]) == 3
+    assert "not available in Report Context" in observations["model_prompts"][1]
+
+
+def test_empty_query_context_skips_outline_model_and_uses_fallback():
+    """没有证据支持的 Query 时直接进入既有确定性降级路径."""
+    observations, restore = _install_fakes(
+        [],
+        submit_results=[
+            {
+                "delivered": True,
+                "validated": False,
+                "revision_requested": False,
+                "review_status": "soft_only_no_revise",
+                "report": "# Evidence fallback",
+            }
+        ],
+    )
+    workflow_module.graph_manager_tools.export_report_context = lambda: {
+        "user_request": "Write a cited report.",
+        "queries": [],
+        "disclosed_conflicts": [],
+        "reference_registry": [],
+    }
+    try:
+        result = workflow_module.run_report_workflow()
+    finally:
+        restore()
+
+    assert result["success"] and result["delivered"], result
+    assert result["fallback_reason"] == (
+        "Reporter context has no evidence-backed Query handles"
+    )
+    assert observations["calls"] == ["submit"]
+    assert observations["model_prompts"] == []
+
+
+def test_chapter_prompt_receives_only_request_and_local_bundles():
+    """章节写作阶段不继承大纲阶段的全局 Report Context."""
+    prompt = workflow_module._chapter_prompt(
+        "Write a cited report.",
+        [
+            {
+                "chapter_id": 1,
+                "chapter_title": "Finding",
+                "query_refs": ["q1"],
+                "evidence_items": [{"ref": "e1", "text": "Supported fact"}],
+                "reference_registry_subset": [
+                    {"n": 1, "title": "Local source", "url": "https://local.example"}
+                ],
+            }
+        ],
+        [],
+        False,
+    )
+
+    assert "User Request:\nWrite a cited report." in prompt
+    assert "Prepared chapter bundles:" in prompt
+    assert "Report Context:" not in prompt
+    assert "supported_topics" not in prompt
+    assert "交付模式" not in prompt
+
+
+def test_outline_contract_requires_complete_chapters_and_first_lead():
+    """大纲字段完整性和 lead 位置由程序校验."""
+    try:
+        workflow_module.OutlineCandidate.model_validate(
+            {
+                "title": "Report",
+                "chapters": [{"title": "Incomplete", "query_refs": ["q1"]}],
+            }
+        )
+    except workflow_module.ValidationError:
+        pass
+    else:
+        raise AssertionError("Incomplete outline chapter should be rejected")
+
+    candidate = workflow_module.OutlineCandidate.model_validate(
+        {
+            "title": "Report",
+            "chapters": [
+                _outline_chapter(title="Body"),
+                _outline_chapter(title="Late lead", section_type="lead"),
+            ],
+        }
+    )
+    try:
+        workflow_module._validated_outline(
+            candidate,
+            {"queries": [{"ref": "q1"}]},
+        )
+    except ValueError as exc:
+        assert "lead chapter must be the first" in str(exc)
+    else:
+        raise AssertionError("A lead chapter after chapter 1 should be rejected")
 
 
 def test_workflow_retries_invalid_chapter_json_then_commits():
@@ -224,7 +367,7 @@ def test_workflow_retries_invalid_chapter_json_then_commits():
         [
             {
                 "title": "Report",
-                "chapters": [{"title": "Finding", "query_refs": ["q1"]}],
+                "chapters": [_outline_chapter()],
             },
             {
                 "chapters": [
@@ -261,7 +404,7 @@ def test_workflow_retries_invalid_chapter_json_then_commits():
 def test_workflow_prepares_at_most_three_chapters_per_batch():
     """四章大纲被确定性地拆成三章和一章两个批次。"""
     outline_chapters = [
-        {"title": f"Finding {chapter_id}", "query_refs": ["q1"]}
+        _outline_chapter(title=f"Finding {chapter_id}")
         for chapter_id in range(1, 5)
     ]
     observations, restore = _install_fakes(
@@ -318,7 +461,7 @@ def test_workflow_rewrites_chapters_once_after_review_feedback():
         [
             {
                 "title": "Report",
-                "chapters": [{"title": "Finding", "query_refs": ["q1"]}],
+                "chapters": [_outline_chapter()],
             },
             {
                 "chapters": [
@@ -537,6 +680,10 @@ def test_run_report_workflow_forwards_runnable_config():
 if __name__ == "__main__":
     test_workflow_commits_ordered_report_without_model_tool_calls()
     test_outline_prompt_is_limited_to_outline_planning()
+    test_workflow_retries_query_refs_outside_report_context()
+    test_empty_query_context_skips_outline_model_and_uses_fallback()
+    test_chapter_prompt_receives_only_request_and_local_bundles()
+    test_outline_contract_requires_complete_chapters_and_first_lead()
     test_workflow_retries_invalid_chapter_json_then_commits()
     test_workflow_prepares_at_most_three_chapters_per_batch()
     test_workflow_rewrites_chapters_once_after_review_feedback()

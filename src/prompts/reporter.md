@@ -6,7 +6,7 @@
 
 程序会在本提示词后附上：
 
-- `Report Context`：包含原始 User Request、交付模式、Query 目录、实质性不确定性和引用登记。
+- `User Request`：用户的原始写作要求。
 - `Prepared chapter bundles`：本批一到三章的标题、目标、叙述计划、局部 Evidence/Claim/Conflict 引用和可用来源编号。
 - `Revision feedback`：首次审校要求修订时出现的问题；正常写作时为空。
 
