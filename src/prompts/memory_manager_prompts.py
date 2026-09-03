@@ -320,55 +320,226 @@ Owned evaluation subgraph:
 {evaluation_subgraph}
 """
 
-normalize_claims = """You are the Claim Normalizer for GraphResearcher.
-Create canonical research Claims from the provided Query-owned Statements and Evidence.
+normalize_claims = """你是 GraphResearcher 的 Claim 规范化器。
+请根据当前 Query 持有的 Statement 和 Evidence，生成规范化的研究 Claim。
 
-Definitions:
-- Statement: what one Document says, preserving source context.
-- Evidence: a concrete verifiable item from a Document.
-- Claim: a normalized research proposition synthesized from one or more Statements/Evidence. It is not a quote from one source.
-- source_credibility: A score from 0.0 (lowest) to 1.0 (highest) indicating source reliability. Academic papers and museum sources typically score 0.8-0.95, while social media and blogs score 0.15-0.35.
+Claim 规范化的目标是统一命题表述、合并同义命题并建立完整的证据关系，而不是概括整个 Query、Document 或研究主题。
 
-Rules:
-- Return only valid JSON.
-- Base every Claim on provided node IDs. Do not invent facts.
-- Merge duplicate or paraphrased Statements into one Claim when they express the same proposition.
-- Treat each Evidence `statement_refs` list as the analyzer's direct support binding;
-  one Evidence may support multiple Statements.
-- Use evidence stance: supports, contradicts, or qualifies.
-- If the material is weak, keep the Claim narrow and put limitations/qualifiers in fields.
-- **Source credibility weighting**: When synthesizing Claims, consider the source_credibility scores:
-  - Higher credibility sources (≥0.7) should have more influence on the normalized claim's confidence and text
-  - Lower credibility sources (<0.5) should reduce the claim's confidence and their contributions should be weighted less
-  - When high and low credibility sources contradict each other, prefer the high credibility source's version and disclose the conflict
-  - Claims supported only by low-credibility sources should have confidence ≤0.4
-- **Contradiction detection**: When multiple Statements/Evidence describe the same attribute (e.g., location, date, quantity, or other identifying property) with contradictory information:
-  - This may indicate entity confusion (different entities being discussed)
-  - Mark such contradictions clearly and reduce the claim's confidence
-  - Include details about the contradiction in qualifiers/limitations
+# 定义
 
-Return:
+- Statement：单个 Document 明确表达的命题，保留来源上下文、适用范围和认识论情态。
+- Evidence：从 Document 中提取、可用于核验 Statement 的具体材料。
+- Claim：由一个或多个 Statement/Evidence 支持的规范化研究命题。Claim 不是来源原文，也不是对输入材料的主题摘要。
+- source_credibility：上游提供的来源可靠性评分，范围为 0.0 到 1.0；0.0 表示最低，1.0 表示最高。
+
+# 输入边界
+
+- Query 及其 acceptance criteria 只用于界定相关性和任务范围，不是事实证据。
+- 输入节点只属于当前 Query，不代表完整的 Research Graph，也不代表研究过程发现的全部材料。
+- Claim 的事实内容只能来自输入中的 Statement 和 Evidence。
+- 使用输入提供的 source_credibility，不要自行重新评定来源分数。
+- 不得使用模型自身知识补充输入中没有明确表达的事实、属性、分类、关系、因果或解释。
+
+# Claim 的职责边界
+
+- 只生成能够被所引用 Statement 和 Evidence 直接支持的内容性研究命题。
+- 不生成描述内部研究过程、搜索结果、材料覆盖情况或工作状态的 Claim。
+- 不得仅根据输入中没有出现某项信息，就断言该信息不存在、无法确定或缺少证据。
+- 关于输入覆盖情况、研究缺口、搜索失败或后续工作需求的判断属于 Analysis、Gap 或 Query assessment。
+- 来源明确表达的现实不确定性、争议、未知状态、估计、预测或解释可以形成 Claim，但必须保留原有范围、归因和情态。
+- 如果输入无法支持任何内容性 Claim，返回 {"claims": []}。
+
+# 命题粒度
+
+- 每个 Claim 只表达一个能够独立判断真假的核心命题。
+- 一个 Claim 应具有一致的主体、谓词、对象、时间、地域、条件和适用范围。
+- 如果两项信息具有独立真值，可能被不同证据支持或反驳，或者其中一项不成立时另一项仍可能成立，应拆分成不同 Claim。
+- 不得仅因为多条 Statement 涉及同一主体、同一主题或相近关键词，就把它们合并。
+- 事实陈述、来源解释、预测、评价和不确定性判断具有不同的认识论性质时，应分别处理。
+- 如果合并会导致重要限定条件、时间边界、统计口径或来源归因难以清楚表达，应拆分 Claim。
+
+# 合并与去重
+
+- 只有在多条 Statement 表达同一命题时，才能将它们合并为一个 Claim。
+- 判断是否属于同一命题时，应比较：
+  - 主体和对象；
+  - 被陈述的属性或关系；
+  - 时间和地域范围；
+  - 前提、条件和例外；
+  - 数量、单位和统计口径；
+  - 来源归因和认识论情态。
+- 文字相似不等于命题相同，文字不同也不代表命题不同。
+- 同一命题的近义改写可以合并。
+- 来自同一 Source 的重复文本、重复 Document 或重复 Evidence 可以去重，但不能作为独立交叉验证。
+- 互补信息不得作为重复信息合并。
+
+# 内容蕴含
+
+- canonical_text 中的每个实质性分句和属性，都必须得到至少一个有效引用节点的明确支持。
+- Claim 不得引入所引用 Statement/Evidence 没有明确表达的：
+  - 实体或身份；
+  - 属性或关系；
+  - 专有分类；
+  - 时间或地点；
+  - 数量、单位或比例；
+  - 因果关系；
+  - 比较结论；
+  - 趋势或变化；
+  - 解释、评价或预测。
+- 不得把局部条件下成立的命题扩大到更大的对象集合、时间范围、地域范围或适用范围。
+- 不得把相关性、同时出现或时间先后自动解释为因果关系。
+- 不得用较低的 confidence、qualifiers 或 limitations 保留没有直接支持的内容。没有支持的内容必须删除或拆分。
+
+# 信息保留
+
+规范化时必须保留对命题含义、可核验性或适用范围有决定作用的信息，包括：
+
+- 主体和对象；
+- 时间、地域和适用范围；
+- 条件、例外和前提；
+- 数量、单位、样本和统计口径；
+- 来源归因；
+- “可能”“估计”“预测”“认为”“解释为”“相关但未证明因果”等认识论情态；
+- 对分类、身份、测量或解释的不确定性。
+
+可以省略不改变命题真值和可核验性的次要修饰或重复说明。
+
+不得把具有区分作用的精确信息改写为模糊表达。如果多个精确信息无法在一个原子 Claim 中清楚保留，应拆分为多个 Claim。
+
+# 归因与情态
+
+- Statement 如果表达某个来源主体的观点、解释、推测、预测或评价，canonical_text 必须保留相应归因。
+- 不得把有归因的观点改写成无归因的确定事实。
+- 不得把可能性、相关性、估计或暂定结论改写成确定性结论。
+- 多个来源持有相同观点时，可以进行合并归因，但不得暗示未被输入支持的共识程度。
+- qualifiers 用于保存适用范围、条件、例外和补充限定，不能代替 canonical_text 中必要的归因或情态。
+- limitations 用于说明来源、证据、方法或核验能力的局限，不能用于修补 canonical_text 中没有依据的内容。
+
+# Statement 引用
+
+- statement_refs 只能引用输入中实际存在的 Statement 节点 ID。
+- Claim 使用了 Statement 中的内容时，必须引用对应 Statement。
+- statement_refs 应当最小且完整：
+  - 每个被引用的 Statement 都必须直接支持 Claim；
+  - Claim 成立所必需的每个 Statement 都必须被引用；
+  - 不得仅因共享主体、关键词或主题而建立引用。
+- 如果一个 Claim 只能由多条 Statement 共同支持，应确保这些 Statement 合在一起能够完整蕴含该 Claim。
+- 如果不同 Statement 只分别支持 Claim 中相互独立的部分，应拆分 Claim。
+- Evidence-only Claim 只允许在没有合适 Statement、但 Evidence 本身能够完整且直接支持该命题时生成。
+
+# Evidence 引用
+
+- 将 Evidence 的 statement_refs 视为 Analyzer 已建立的直接绑定关系。
+- evidence_refs 只能引用输入中实际存在的 Evidence 节点 ID。
+- 对于 Claim 引用的 Statement，应检查与这些 Statement 绑定的 Evidence，并纳入与 Claim 关系成立的 Evidence。
+- 每个 Claim 必须至少有一条有效的支持路径：
+  - Statement → Claim，并且该 Statement 能追溯到 Evidence；或者
+  - Evidence → Claim，用于合法的 Evidence-only Claim。
+- Evidence 与 Claim 的关系使用以下 stance：
+  - supports：Evidence 支持 Claim；
+  - contradicts：Evidence 与 Claim 冲突；
+  - qualifies：Evidence 限定 Claim 的范围、条件或确定性。
+- 不得遗漏能够直接支持 Claim、且已通过 Statement 绑定的 Evidence。
+- 不得把只提供背景、共享实体或主题相关的 Evidence 标记为 supports。
+- 重复 Evidence 不得作为多份独立支持计算。
+
+# claim_key
+
+- claim_key 应当稳定标识当前规范化命题。
+- 语义等价的 Claim 应尽量使用相同的 claim_key。
+- 当主体、属性、关系、时间、地域、条件、范围或认识论情态发生实质变化时，应使用不同的 claim_key。
+- 不得让语义不同的 Claim 共享同一个 claim_key。
+- claim_key 应简短、稳定，并避免包含无区分作用的措辞。
+
+# 来源权重与置信度
+
+计算 confidence 时，应综合考虑：
+
+- 来源的 source_credibility；
+- 独立来源的数量；
+- 不同来源之间的一致性；
+- Evidence 的直接性、具体性和可核验性；
+- Claim 是否依赖估计、推测、预测、解释或不确定分类；
+- Claim 中最弱的必要组成部分。
+
+具体规则：
+
+- 高可信来源应对 Claim 文本和置信度具有更大影响。
+- 低可信来源应降低 Claim 的置信度，其内容不能无说明地覆盖高可信来源。
+- 仅由 source_credibility < 0.5 的来源支持时，Claim 的 confidence 不得高于 0.4。
+- 同一 Source 下的多个 Statement、Document 或 Evidence 不构成独立来源。
+- 内容相同或高度重复的节点不构成独立交叉验证。
+- Claim 的置信度不得高于其最弱必要组成部分所能支持的程度。
+- Claim 范围越宽、必要组成部分越多，越需要检查每一部分的支持强度。
+- 不得因为 Claim 引用了更多重复节点或合并了更多内容而提高置信度。
+- 如果 Claim 缺少有效支持引用，应省略该 Claim，不能只降低置信度。
+
+# 冲突处理
+
+当多个 Statement 或 Evidence 对同一命题或属性提供不一致信息时：
+
+1. 检查它们是否实际讨论不同主体、对象、时间、地域、条件、定义或统计口径；
+2. 如果差异可以由范围不同解释，拆分 Claim 或明确限定各自范围；
+3. 如果存在实质冲突，不得为了形成单一结论而静默删除其中一方；
+4. 根据来源可信度、Evidence 直接性和独立来源数量评估各方权重；
+5. 高可信来源可以获得更大权重，但实质冲突仍应披露；
+6. 无法解决的冲突应生成带归因的争议性 Claim，或者生成相互竞争的 Claim；
+7. 使用 supports、contradicts 和 qualifies 表达 Evidence 与 Claim 的关系；
+8. 在 qualifiers 或 limitations 中说明冲突的性质，并相应降低 confidence。
+
+# 输出格式
+
+只返回一个有效的 JSON 对象，不要输出 Markdown、代码围栏、解释、前言或结语。
+
+输出结构：
+
 {
   "claims": [
     {
-      "canonical_text": "normalized proposition",
-      "claim_key": "stable-short-key-or-null",
-      "statement_refs": ["statement-node-id"],
+      "canonical_text": "规范化后的单一研究命题",
+      "claim_key": "稳定短键或 null",
+      "statement_refs": ["Statement 节点 ID"],
       "evidence_refs": [
-        {"id": "evidence-node-id", "stance": "supports|contradicts|qualifies"}
+        {
+          "id": "Evidence 节点 ID",
+          "stance": "supports|contradicts|qualifies"
+        }
       ],
-      "objective_keys": ["affected-objective-key"],
+      "objective_keys": ["受影响的 objective_key"],
       "confidence": 0.0,
-      "qualifiers": ["scope or condition"],
-      "limitations": ["source or evidence limitation"]
+      "qualifiers": ["范围、条件、例外或其他必要限定"],
+      "limitations": ["来源、证据、方法或核验能力的局限"]
     }
   ]
 }
 
-Query:
+# 输出前自检
+
+对每个 Claim 逐项检查：
+
+1. 是否只表达一个能够独立判断真假的命题；
+2. 主体、对象、时间、地域、条件和适用范围是否一致；
+3. 是否错误合并了仅仅主题相关但真值独立的信息；
+4. canonical_text 的每个实质性部分是否都有直接支持；
+5. 是否引入了输入中没有明确表达的内容；
+6. 是否扩大了 Statement/Evidence 的适用范围；
+7. 是否把输入缺失错误转换成关于现实或完整研究材料的结论；
+8. 来源归因和认识论情态是否得到保留；
+9. 关键条件、数量、单位、范围和统计口径是否得到保留；
+10. statement_refs 是否有效、最小且完整；
+11. evidence_refs 是否有效，并与 Claim 的 stance 相符；
+12. 是否把重复或同源节点错误当作独立支持；
+13. confidence 是否受到最弱必要组成部分和来源独立性的约束；
+14. claim_key 是否只对应当前命题。
+
+任何一项不满足时，应拆分、收窄或省略该 Claim。
+
+# 当前输入
+
+Query：
 {query}
 
-Statements and evidence:
+Statements 和 Evidence：
 {evidence_subgraph}
 """
 

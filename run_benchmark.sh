@@ -14,10 +14,16 @@ article_name="${4:-Ring_of_Nestor}"
 
 project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 wlc_root="$(cd "$project_root/../Wiki_Live_Challenge" && pwd)"
+project_python="$project_root/.venv/bin/python"
 report_md="$project_root/outputs/$version/report.md"
 wlc_md_dir="$wlc_root/data/$benchmark_name/test_data/$agency/md_data"
 wlc_json_dir="$wlc_root/data/$benchmark_name/test_data/$agency/json_data"
 bench_out="$project_root/outputs/$version/benchmark"
+
+if [[ ! -x "$project_python" ]]; then
+    echo "Project Python not found or not executable: $project_python" >&2
+    exit 1
+fi
 
 if [[ ! -f "$report_md" ]]; then
     echo "Report not found: $report_md" >&2
@@ -37,7 +43,7 @@ echo
 echo "=== Step 2: Generate JSON ==="
 (
     cd "$wlc_root"
-    uv run python scripts/generate_json.py \
+    "$project_python" scripts/generate_json.py \
         -i "data/$benchmark_name/test_data/$agency/md_data/$article_name.md" \
         -o "data/$benchmark_name/test_data/$agency/json_data/$article_name.json" \
         --steps extract,fetch 2>&1 | tee "$bench_out/preprocess.log"
@@ -49,7 +55,7 @@ echo "=== Step 3: Run evaluation ==="
 mkdir -p "$wlc_root/results/$benchmark_name/$agency"
 (
     cd "$wlc_root"
-    uv run python scripts/run_evaluation.py all \
+    "$project_python" scripts/run_evaluation.py all \
         --benchmark "$benchmark_name" \
         --agency "$agency" \
         -o "results/$benchmark_name/$agency" 2>&1 | tee "$bench_out/benchmark_run.log"
