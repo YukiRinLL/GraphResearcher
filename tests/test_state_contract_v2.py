@@ -371,7 +371,8 @@ def test_agent_prompts_enforce_report_visibility_contract():
     assert "不为检索过程或资料充足性创建“局限性”章节" in outline
     assert "交付模式" not in reporter
     assert "Report Context：包含" not in reporter
-    assert "graph_manager_tools.submit_final_report()" in workflow
+    assert "graph_manager_tools.deliver_final_report()" in workflow
+    assert "graph_manager_tools.submit_final_report()" not in workflow
     assert ".invoke(" not in workflow
     assert "create_agent" not in workflow
 

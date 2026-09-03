@@ -1049,6 +1049,46 @@ def submit_committed_report(output_dir: Optional[str], *, persist: bool = False)
     }
 
 
+def deliver_committed_report(output_dir: Optional[str]) -> dict[str, Any]:
+    """Assemble and deliver the latest chapter candidates without validation."""
+    generated_issues = _ensure_candidate_chapters(output_dir)
+    title, sections, missing = _load_committed_report(output_dir)
+    if not sections and not missing:
+        request_text = " ".join(
+            str(goal.get("request") or goal.get("research_goal") or "")
+            for goal in graph_tools.search_nodes("user_request", {})
+        )
+        report = build_cited_evidence_report(request_text)
+        issues = [
+            _issue(
+                "missing_report_outline",
+                "hard",
+                "Reporter created no outline; delivered the deterministic evidence report",
+                "Create an outline and chapter candidates in a future run.",
+            )
+        ]
+    else:
+        report, assembly_issues = _best_effort_report(title, sections)
+        issues = [*generated_issues, *assembly_issues]
+    severity = (
+        "hard"
+        if any(item.get("severity") == "hard" for item in issues)
+        else ("soft" if issues else "clean")
+    )
+    return {
+        "delivered": bool(report.strip()),
+        "validated": False,
+        "accepted": False,
+        "revision_requested": False,
+        "review_status": "skipped",
+        "severity": severity,
+        "report": report,
+        "salvaged_report": report,
+        "graph_persisted": False,
+        "issues": issues,
+    }
+
+
 def get_committed_review_context(output_dir: Optional[str]) -> dict[str, Any]:
     """Return only the evidence and references used by committed chapters."""
     _, sections, missing = _load_committed_report(output_dir)

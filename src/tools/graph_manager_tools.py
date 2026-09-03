@@ -511,6 +511,17 @@ def submit_final_report() -> dict:
     return final
 
 
+def deliver_final_report() -> dict:
+    """Deliver the latest complete report once, without review or persistence."""
+    global _report_submit_count
+    from tools import report_tools
+
+    _report_submit_count += 1
+    final = report_tools.deliver_committed_report(_cache_dir)
+    _record_report_result(final, finalized=True)
+    return final
+
+
 def get_report_submit_count() -> int:
     """Return the run-scoped number of final report submissions."""
     return _report_submit_count

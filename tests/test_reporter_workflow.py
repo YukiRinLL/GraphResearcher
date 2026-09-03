@@ -25,7 +25,7 @@ def _install_fakes(
     model_outputs,
     *,
     commit_results=None,
-    submit_results=None,
+    delivery_results=None,
     research_state="REPORT_READY",
 ):
     """安装隔离运行时，并返回观测记录和恢复函数。"""
@@ -38,13 +38,13 @@ def _install_fakes(
     outputs = iter(model_outputs)
     chapter_results = iter(commit_results or [{"status": "ok", "validated": True}])
     final_results = iter(
-        submit_results
+        delivery_results
         or [
             {
                 "delivered": True,
-                "validated": True,
+                "validated": False,
                 "revision_requested": False,
-                "review_status": "passed",
+                "review_status": "skipped",
                 "report": "# Report\n\nSupported fact.[1]",
             }
         ]
@@ -56,7 +56,7 @@ def _install_fakes(
         "outline": workflow_module.graph_manager_tools.commit_report_outline,
         "prepare": workflow_module.graph_manager_tools.prepare_report_chapter_batch,
         "commit": workflow_module.graph_manager_tools.commit_report_chapter_batch,
-        "submit": workflow_module.graph_manager_tools.submit_final_report,
+        "deliver": workflow_module.graph_manager_tools.deliver_final_report,
         "invoke": workflow_module._invoke_reporter_json,
     }
     from tools import graph_tools
@@ -119,16 +119,28 @@ def _install_fakes(
     def commit_chapters(*, chapters):
         observations["calls"].append("commit_chapters")
         observations["committed_chapters"].append(chapters)
-        return next(chapter_results)
+        result = dict(next(chapter_results))
+        result.setdefault(
+            "chapters",
+            [
+                {
+                    "chapter_id": chapter["chapter_id"],
+                    "candidate_saved": True,
+                    "validated": bool(result.get("validated")),
+                }
+                for chapter in chapters
+            ],
+        )
+        return result
 
-    def submit():
-        observations["calls"].append("submit")
+    def deliver():
+        observations["calls"].append("deliver")
         return next(final_results)
 
     workflow_module.graph_manager_tools.commit_report_outline = commit_outline
     workflow_module.graph_manager_tools.prepare_report_chapter_batch = prepare
     workflow_module.graph_manager_tools.commit_report_chapter_batch = commit_chapters
-    workflow_module.graph_manager_tools.submit_final_report = submit
+    workflow_module.graph_manager_tools.deliver_final_report = deliver
 
     def invoke(prompt):
         observations["model_prompts"].append(prompt)
@@ -148,7 +160,7 @@ def _install_fakes(
         workflow_module.graph_manager_tools.commit_report_chapter_batch = originals[
             "commit"
         ]
-        workflow_module.graph_manager_tools.submit_final_report = originals["submit"]
+        workflow_module.graph_manager_tools.deliver_final_report = originals["deliver"]
         workflow_module._invoke_reporter_json = originals["invoke"]
 
     return observations, restore
@@ -178,12 +190,13 @@ def test_workflow_commits_ordered_report_without_model_tool_calls():
     finally:
         restore()
 
-    assert result["success"] and result["validated"], result
+    assert result["success"] and not result["validated"], result
+    assert result["review_status"] == "skipped", result
     assert observations["calls"] == [
         "commit_outline",
         "prepare",
         "commit_chapters",
-        "submit",
+        "deliver",
     ]
     assert observations["state_updates"][0]["research_state"] == "REPORTING"
     assert observations["committed_chapters"][0][0]["bundle_token"] == "b1"
@@ -268,12 +281,12 @@ def test_empty_query_context_skips_outline_model_and_uses_fallback():
     """没有证据支持的 Query 时直接进入既有确定性降级路径."""
     observations, restore = _install_fakes(
         [],
-        submit_results=[
+        delivery_results=[
             {
                 "delivered": True,
                 "validated": False,
                 "revision_requested": False,
-                "review_status": "soft_only_no_revise",
+                "review_status": "skipped",
                 "report": "# Evidence fallback",
             }
         ],
@@ -292,7 +305,7 @@ def test_empty_query_context_skips_outline_model_and_uses_fallback():
     assert result["fallback_reason"] == (
         "Reporter context has no evidence-backed Query handles"
     )
-    assert observations["calls"] == ["submit"]
+    assert observations["calls"] == ["deliver"]
     assert observations["model_prompts"] == []
 
 
@@ -310,8 +323,6 @@ def test_chapter_prompt_receives_only_request_and_local_bundles():
                 ],
             }
         ],
-        [],
-        False,
     )
 
     assert "User Request:\nWrite a cited report." in prompt
@@ -444,7 +455,7 @@ def test_workflow_prepares_at_most_three_chapters_per_batch():
         "commit_chapters",
         "prepare",
         "commit_chapters",
-        "submit",
+        "deliver",
     ]
     assert [
         [chapter["chapter_id"] for chapter in batch]
@@ -452,56 +463,49 @@ def test_workflow_prepares_at_most_three_chapters_per_batch():
     ] == [[1, 2, 3], [4]]
 
 
-def test_workflow_rewrites_chapters_once_after_review_feedback():
-    """状态图掌控 Review 后唯一一轮章节修订。"""
+def test_workflow_ignores_chapter_validation_and_skips_review():
+    """章节语义校验失败不阻断后续批次，完成后直接交付。"""
+    outline_chapters = [
+        _outline_chapter(title=f"Finding {chapter_id}")
+        for chapter_id in range(1, 5)
+    ]
     observations, restore = _install_fakes(
         [
             {
                 "title": "Report",
-                "chapters": [_outline_chapter()],
+                "chapters": outline_chapters,
             },
             {
                 "chapters": [
                     {
-                        "chapter_id": 1,
-                        "content": "Initial fact.[1]",
+                        "chapter_id": chapter_id,
+                        "content": f"Initial fact {chapter_id}.[1]",
                         "evidence_refs": ["e1"],
                     }
+                    for chapter_id in range(1, 4)
                 ]
             },
             {
                 "chapters": [
                     {
-                        "chapter_id": 1,
-                        "content": "Revised fact.[1]",
+                        "chapter_id": 4,
+                        "content": "Initial fact 4.[1]",
                         "evidence_refs": ["e1"],
                     }
                 ]
             },
         ],
         commit_results=[
-            {"status": "ok", "validated": True},
-            {"status": "ok", "validated": True},
+            {"status": "ok", "validated": False},
+            {"status": "ok", "validated": False},
         ],
-        submit_results=[
+        delivery_results=[
             {
                 "delivered": True,
                 "validated": False,
-                "revision_requested": True,
-                "report": "# Report\n\nInitial fact.[1]",
-                "issues": [
-                    {
-                        "section_title": "Finding",
-                        "message": "Clarify attribution.",
-                    }
-                ],
-            },
-            {
-                "delivered": True,
-                "validated": True,
                 "revision_requested": False,
-                "review_status": "revised_once",
-                "report": "# Report\n\nRevised fact.[1]",
+                "review_status": "skipped",
+                "report": "# Report\n\nInitial facts.[1]",
             },
         ],
     )
@@ -510,29 +514,67 @@ def test_workflow_rewrites_chapters_once_after_review_feedback():
     finally:
         restore()
 
-    assert result["success"] and result["review_status"] == "revised_once", result
+    assert result["success"] and result["review_status"] == "skipped", result
+    assert not result["validated"], result
     assert observations["calls"] == [
         "commit_outline",
         "prepare",
         "commit_chapters",
-        "submit",
         "prepare",
         "commit_chapters",
-        "submit",
+        "deliver",
     ]
-    assert "Clarify attribution." in observations["model_prompts"][-1]
+    assert len(observations["model_prompts"]) == 3
 
 
-def test_retry_exhaustion_uses_existing_fail_open_submission():
-    """大纲重试耗尽后仍通过既有提交契约交付最佳报告。"""
+def test_direct_report_assembly_skips_validation():
+    """直接组装不进入严格校验或图谱持久化路径。"""
+    from tools import report_tools
+
+    originals = {
+        "ensure": report_tools._ensure_candidate_chapters,
+        "load": report_tools._load_committed_report,
+        "best_effort": report_tools._best_effort_report,
+        "compile": report_tools.compile_structured_report,
+    }
+    calls = []
+    try:
+        report_tools._ensure_candidate_chapters = lambda _output_dir: []
+        report_tools._load_committed_report = lambda _output_dir: (
+            "Report",
+            [{"title": "Finding", "content": "Draft"}],
+            [],
+        )
+        report_tools._best_effort_report = lambda title, sections: (
+            calls.append((title, sections)) or ("# Report\n\n## Finding\n\nDraft", [])
+        )
+        report_tools.compile_structured_report = lambda *_args, **_kwargs: (
+            _ for _ in ()
+        ).throw(AssertionError("Strict validation must not be called"))
+
+        result = report_tools.deliver_committed_report(None)
+    finally:
+        report_tools._ensure_candidate_chapters = originals["ensure"]
+        report_tools._load_committed_report = originals["load"]
+        report_tools._best_effort_report = originals["best_effort"]
+        report_tools.compile_structured_report = originals["compile"]
+
+    assert len(calls) == 1
+    assert result["delivered"] and not result["validated"]
+    assert not result["accepted"] and not result["graph_persisted"]
+    assert result["review_status"] == "skipped"
+
+
+def test_retry_exhaustion_uses_direct_delivery():
+    """大纲重试耗尽后仍直接交付当前最佳报告。"""
     observations, restore = _install_fakes(
         [{}, {}, {}],
-        submit_results=[
+        delivery_results=[
             {
                 "delivered": True,
                 "validated": False,
                 "revision_requested": False,
-                "review_status": "soft_only_no_revise",
+                "review_status": "skipped",
                 "report": "# Evidence fallback",
             }
         ],
@@ -545,7 +587,7 @@ def test_retry_exhaustion_uses_existing_fail_open_submission():
     assert result["success"] and result["delivered"], result
     assert not result["validated"]
     assert result["fallback_reason"].startswith("Outline attempt 3 failed")
-    assert observations["calls"] == ["submit"]
+    assert observations["calls"] == ["deliver"]
     assert len(observations["model_prompts"]) == 3
 
 
@@ -584,7 +626,9 @@ def test_workflow_contains_only_runtime_nodes():
 
 def test_report_quality_checks_survive_middleware_removal():
     """旧 Reporter middleware 中仍有效的修订检查由报告模块保留。"""
-    original_search = workflow_module.report_tools.graph_tools.search_nodes
+    from tools import report_tools
+
+    original_search = report_tools.graph_tools.search_nodes
 
     def search_nodes(node_type, _filters):
         if node_type == "user_request":
@@ -593,13 +637,13 @@ def test_report_quality_checks_survive_middleware_removal():
             return []
         return []
 
-    workflow_module.report_tools.graph_tools.search_nodes = search_nodes
+    report_tools.graph_tools.search_nodes = search_nodes
     try:
-        issues = workflow_module.report_tools.check_report_quality(
+        issues = report_tools.check_report_quality(
             "# Topic\n\n| Key |\n| --- |\n| Value |\n\n## Body"
         )
     finally:
-        workflow_module.report_tools.graph_tools.search_nodes = original_search
+        report_tools.graph_tools.search_nodes = original_search
 
     assert any("Lead 散文必须在 Infobox 之前" in issue for issue in issues)
     assert any("章节数不足" in issue for issue in issues)
@@ -683,8 +727,9 @@ if __name__ == "__main__":
     test_outline_contract_requires_complete_chapters_and_first_lead()
     test_workflow_retries_invalid_chapter_json_then_commits()
     test_workflow_prepares_at_most_three_chapters_per_batch()
-    test_workflow_rewrites_chapters_once_after_review_feedback()
-    test_retry_exhaustion_uses_existing_fail_open_submission()
+    test_workflow_ignores_chapter_validation_and_skips_review()
+    test_direct_report_assembly_skips_validation()
+    test_retry_exhaustion_uses_direct_delivery()
     test_unauthorized_workflow_fails_without_report_tools()
     test_workflow_contains_only_runtime_nodes()
     test_report_quality_checks_survive_middleware_removal()

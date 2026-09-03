@@ -1,7 +1,7 @@
 """以证据绑定为前提的确定性 LangGraph 报告工作流.
 
 模型只生成大纲和章节 JSON 候选。本模块负责报告授权、工具调用顺序、
-有界重试、一次审校与最多一次修订，因此模型不参与流程调度。
+结构错误的有界重试和生成后的直接交付，因此模型不参与流程调度。
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ from langgraph.graph import END, StateGraph
 from pydantic import BaseModel, Field, ValidationError
 
 import config
-from tools import graph_manager_tools, report_tools, research_state
+from tools import graph_manager_tools, research_state
 
 logger = logging.getLogger(__name__)
 
@@ -67,8 +67,6 @@ class ReporterWorkflowState(TypedDict, total=False):
     current_bundles: list[dict[str, Any]]
     outline_attempts: int
     chapter_attempts: int
-    revision_started: bool
-    revision_feedback: list[dict[str, Any]]
     final_result: dict[str, Any]
     error: str
 
@@ -187,28 +185,20 @@ def _validated_outline(
 def _chapter_prompt(
     user_request: str,
     bundles: list[dict[str, Any]],
-    feedback: list[dict[str, Any]],
-    revision_started: bool,
     retry_error: str = "",
 ) -> str:
     """构造只承担一个已准备章节批次的写作 prompt."""
-    instruction = (
-        "这是唯一一轮定点修订。根据审校问题重写本批章节，并继续遵守各章节 bundle 的局部引用范围。"
-        if revision_started
-        else "为本批每个章节撰写完整候选正文。"
-    )
     retry_feedback = (
-        "上一版章节 JSON 或引用绑定未通过校验。请修复以下问题：\n" + retry_error
+        "上一版章节 JSON 或批次结构无法保存。请修复以下问题：\n" + retry_error
         if retry_error
         else ""
     )
     return "\n\n".join(
         [
             config.reporter_system_prompt,
-            instruction,
+            "为本批每个章节撰写完整候选正文。",
             "User Request:\n" + user_request.strip(),
             "Prepared chapter bundles:\n" + json.dumps(bundles, ensure_ascii=False),
-            "Revision feedback:\n" + json.dumps(feedback, ensure_ascii=False),
             retry_feedback,
         ]
     ).strip()
@@ -354,7 +344,7 @@ def prepare_chapter_batch_node(state: ReporterWorkflowState) -> dict[str, Any]:
 
 
 def draft_chapter_batch_node(state: ReporterWorkflowState) -> dict[str, Any]:
-    """生成并提交一个已准备章节批次."""
+    """生成并保存一个已准备章节批次."""
     attempt = int(state.get("chapter_attempts", 0)) + 1
     bundles = state["current_bundles"]
     expected_ids = {int(bundle["chapter_id"]) for bundle in bundles}
@@ -364,8 +354,6 @@ def draft_chapter_batch_node(state: ReporterWorkflowState) -> dict[str, Any]:
                 _chapter_prompt(
                     str(state["report_context"]["user_request"]),
                     bundles,
-                    state.get("revision_feedback", []),
-                    bool(state.get("revision_started")),
                     state.get("error", ""),
                 )
             )
@@ -390,9 +378,15 @@ def draft_chapter_batch_node(state: ReporterWorkflowState) -> dict[str, Any]:
                 for chapter in candidate.chapters
             ],
         )
-        if not committed.get("validated"):
+        committed_chapters = committed.get("chapters") or []
+        saved_ids = {
+            int(item.get("chapter_id") or 0)
+            for item in committed_chapters
+            if item.get("candidate_saved")
+        }
+        if committed.get("status") != "ok" or saved_ids != expected_ids:
             raise ValueError(
-                json.dumps(committed.get("chapters") or committed, ensure_ascii=False)
+                json.dumps(committed_chapters or committed, ensure_ascii=False)
             )
     except (ValidationError, ValueError, TypeError) as exc:
         return {
@@ -413,7 +407,7 @@ def draft_chapter_batch_node(state: ReporterWorkflowState) -> dict[str, Any]:
 
 
 def route_chapter_batch(state: ReporterWorkflowState) -> str:
-    """合格后继续下一批或提交，否则重试当前批次."""
+    """保存后继续下一批或直接交付，结构失败时重试当前批次."""
     if (
         state.get("error")
         and int(state.get("chapter_attempts", 0)) < _MAX_CHAPTER_ATTEMPTS
@@ -426,38 +420,14 @@ def route_chapter_batch(state: ReporterWorkflowState) -> str:
     return "submit"
 
 
-def _quality_feedback(result: dict[str, Any]) -> list[dict[str, Any]]:
-    """把现有全文质量检查结果转换为章节修订反馈."""
-    report = str(result.get("report") or result.get("salvaged_report") or "")
-    return [
-        {
-            "code": "report_workflow_quality_issue",
-            "severity": "soft",
-            "section_title": "",
-            "block_index": None,
-            "message": issue,
-            "repair_hint": "在受影响章节中修复该问题。",
-        }
-        for issue in report_tools.check_report_quality(report)
-    ]
-
-
 def submit_node(state: ReporterWorkflowState) -> dict[str, Any]:
-    """执行现有的一次 Review、一次修订提交契约."""
+    """生成完成后直接交付最新章节，不执行审校或修订."""
+    del state
     try:
-        result = graph_manager_tools.submit_final_report()
+        result = graph_manager_tools.deliver_final_report()
     except Exception as exc:  # noqa: BLE001 - 交由失败节点记录
         return {"error": f"Final report submission failed: {exc}"}
 
-    if result.get("revision_requested") and not state.get("revision_started"):
-        feedback = [*list(result.get("issues") or []), *_quality_feedback(result)]
-        return {
-            "revision_started": True,
-            "revision_feedback": feedback,
-            "next_chapter_index": 0,
-            "current_bundles": [],
-            "error": "",
-        }
     if result.get("delivered"):
         return {
             "final_result": {
@@ -473,21 +443,17 @@ def submit_node(state: ReporterWorkflowState) -> dict[str, Any]:
 
 
 def route_submit(state: ReporterWorkflowState) -> str:
-    """需要修订时返回章节循环，否则结束."""
+    """直接交付成功后结束，否则进入失败节点."""
     if state.get("final_result", {}).get("success"):
         return END
-    if state.get("revision_started") and not state.get("error"):
-        return "prepare_chapter_batch"
     return "fail"
 
 
 def finalize_best_effort_node(state: ReporterWorkflowState) -> dict[str, Any]:
-    """重试耗尽后通过现有提交工具确定性地产生最佳完整报告."""
+    """重试耗尽后直接交付当前最佳完整报告."""
     reason = state.get("error") or "Reporter workflow exhausted its retry budget"
     try:
-        result = graph_manager_tools.submit_final_report()
-        if result.get("revision_requested"):
-            result = graph_manager_tools.submit_final_report()
+        result = graph_manager_tools.deliver_final_report()
     except Exception as exc:  # noqa: BLE001 - 只有此时才无法交付
         return _mark_failed(f"{reason}; best-effort submission failed: {exc}")
     if not result.get("delivered"):
