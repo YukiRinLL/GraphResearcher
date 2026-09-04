@@ -219,6 +219,8 @@ def main():
             assert prepared["status"] == "ok", prepared
             lead_bundle, body_bundle = prepared["chapters"]
             assert lead_bundle["query_refs"] == ["q1"]
+            assert lead_bundle["section_type"] == "lead"
+            assert body_bundle["section_type"] == "body"
             assert {item["ref"] for item in lead_bundle["evidence_items"]} == {"e1", "e2", "c1"}
             assert "reference_registry_subset" not in lead_bundle
             assert all(

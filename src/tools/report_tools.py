@@ -558,6 +558,7 @@ def _prepare_report_chapter_bundle(
         for conflict in get_disclosed_conflicts()
         if set(conflict.get("source_ids") or []).intersection(source_ids)
     ]
+    conflict_by_id = {str(conflict["id"]): conflict for conflict in conflicts}
     conflict_ref_map = {f"x{index}": str(conflict["id"]) for index, conflict in enumerate(conflicts, start=1)}
     token = _bundle_token(int(chapter_id), resolved_query_ids, [item["id"] for item in evidence_items])
     bundle = {
@@ -567,21 +568,19 @@ def _prepare_report_chapter_bundle(
         "chapter_title": chapter.get("title"),
         "chapter_goals": chapter.get("goals") or [],
         "section_plan": chapter.get("section_plan") or "",
+        "section_type": chapter.get("section_type"),
         "query_refs": query_refs,
         "evidence_items": public_items,
         "disclosed_conflicts": [
             {
                 "ref": ref,
-                "description": next(
-                    conflict.get("description")
-                    for conflict in conflicts
-                    if str(conflict.get("id")) == conflict_id
-                ),
-                "conflict_type": next(
-                    conflict.get("conflict_type")
-                    for conflict in conflicts
-                    if str(conflict.get("id")) == conflict_id
-                ),
+                "description": conflict_by_id[conflict_id].get("description"),
+                "conflict_type": conflict_by_id[conflict_id].get("conflict_type"),
+                "evidence_refs": [
+                    evidence_ref_map[evidence_id]
+                    for evidence_id in conflict_by_id[conflict_id].get("evidence_ids") or []
+                    if evidence_id in evidence_ref_map
+                ],
             }
             for ref, conflict_id in conflict_ref_map.items()
         ],

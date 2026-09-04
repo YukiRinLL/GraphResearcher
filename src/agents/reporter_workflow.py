@@ -189,19 +189,89 @@ def _chapter_prompt(
 ) -> str:
     """构造只承担一个已准备章节批次的写作 prompt."""
     retry_feedback = (
-        "上一版章节 JSON 或批次结构无法保存。请修复以下问题：\n" + retry_error
+        "# Retry Feedback\n\n"
+        "上一版章节 JSON 或批次结构无法保存。请仅修复以下问题后重新输出本批完整 JSON：\n"
+        + retry_error
+        + "\n修订时仍输出本批所有章节的完整候选正文，不输出补丁、解释或问题清单。"
         if retry_error
         else ""
     )
-    return "\n\n".join(
-        [
-            config.reporter_system_prompt,
-            "为本批每个章节撰写完整候选正文。",
-            "User Request:\n" + user_request.strip(),
-            "Prepared chapter bundles:\n" + json.dumps(bundles, ensure_ascii=False),
-            retry_feedback,
-        ]
+    writer_bundles = [_writer_chapter_bundle(bundle) for bundle in bundles]
+    return (
+        config.reporter_system_prompt
+        .replace("<retry_feedback>", retry_feedback)
+        .replace(
+            "<prepared_chapter_bundles>",
+            json.dumps(writer_bundles, ensure_ascii=False),
+        )
+        .replace("<user_request>", user_request.strip())
     ).strip()
+
+
+def _writer_chapter_bundle(bundle: dict[str, Any]) -> dict[str, Any]:
+    """将内部章节证据包投影为 Reporter 所需的最小写作视图."""
+    items = bundle.get("evidence_items") or []
+    evidence = [
+        {
+            "ref": item.get("ref"),
+            "text": item.get("text"),
+            "source_numbers": item.get("source_numbers") or [],
+        }
+        for item in items
+        if str(item.get("type") or "Evidence").casefold() == "evidence"
+    ]
+    available_evidence_refs = {
+        str(item.get("ref")) for item in evidence if item.get("ref")
+    }
+
+    claims = []
+    for item in items:
+        if str(item.get("type") or "").casefold() != "claim":
+            continue
+        evidence_refs = [
+            {
+                "ref": relation.get("target_ref"),
+                "stance": relation.get("stance"),
+            }
+            for relation in item.get("evidence_relations") or []
+            if relation.get("target_ref") in available_evidence_refs
+        ]
+        if not evidence_refs:
+            continue
+        claims.append(
+            {
+                "ref": item.get("ref"),
+                "text": item.get("text"),
+                "confidence": item.get("confidence"),
+                "qualifiers": item.get("qualifiers") or [],
+                "limitations": item.get("limitations") or [],
+                "evidence_refs": evidence_refs,
+            }
+        )
+
+    conflicts = [
+        {
+            "ref": conflict.get("ref"),
+            "description": conflict.get("description"),
+            "conflict_type": conflict.get("conflict_type"),
+            "evidence_refs": [
+                ref
+                for ref in conflict.get("evidence_refs") or []
+                if ref in available_evidence_refs
+            ],
+        }
+        for conflict in bundle.get("disclosed_conflicts") or []
+    ]
+    return {
+        "chapter_id": bundle.get("chapter_id"),
+        "chapter_title": bundle.get("chapter_title"),
+        "chapter_goals": bundle.get("chapter_goals") or [],
+        "section_plan": bundle.get("section_plan") or "",
+        "section_type": bundle.get("section_type"),
+        "evidence": evidence,
+        "claims": claims,
+        "disclosed_conflicts": conflicts,
+    }
 
 
 def _mark_failed(message: str) -> dict[str, Any]:

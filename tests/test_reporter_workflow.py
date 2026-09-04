@@ -102,10 +102,12 @@ def _install_fakes(
                     "chapter_title": "Finding",
                     "chapter_goals": ["Explain the evidence"],
                     "section_plan": "Use the evidence.",
+                    "section_type": "body",
                     "query_refs": ["q1"],
                     "evidence_items": [
                         {
                             "ref": "e1",
+                            "type": "Evidence",
                             "text": "Supported fact",
                             "source_numbers": [1],
                         }
@@ -315,24 +317,85 @@ def test_chapter_prompt_receives_only_request_and_local_bundles():
         "Write a cited report.",
         [
             {
+                "status": "ok",
                 "chapter_id": 1,
+                "bundle_token": "b1-internal",
                 "chapter_title": "Finding",
+                "chapter_goals": ["Explain the evidence"],
+                "section_plan": "Use the claim and its supporting evidence.",
+                "section_type": "body",
                 "query_refs": ["q1"],
                 "evidence_items": [
-                    {"ref": "e1", "text": "Supported fact", "source_numbers": [1]}
+                    {
+                        "ref": "e1",
+                        "type": "Evidence",
+                        "text": "Specific supporting evidence",
+                        "confidence": 0.9,
+                        "qualifiers": ["internal evidence qualifier"],
+                        "limitations": ["internal evidence limitation"],
+                        "locator": "paragraph 2",
+                        "claim_relations": [
+                            {"target_ref": "c1", "stance": "supports"}
+                        ],
+                        "evidence_relations": [],
+                        "source_numbers": [1],
+                    },
+                    {
+                        "ref": "c1",
+                        "type": "Claim",
+                        "text": "Normalized claim",
+                        "confidence": 0.8,
+                        "qualifiers": ["for this case"],
+                        "limitations": ["single source"],
+                        "claim_relations": [],
+                        "evidence_relations": [
+                            {"target_ref": "e1", "stance": "supports"}
+                        ],
+                        "source_numbers": [1],
+                    },
+                ],
+                "disclosed_conflicts": [
+                    {
+                        "ref": "x1",
+                        "description": "A disclosed disagreement",
+                        "conflict_type": "factual",
+                        "evidence_refs": ["e1"],
+                    }
                 ],
             }
         ],
     )
 
-    assert "User Request:\nWrite a cited report." in prompt
-    assert "Prepared chapter bundles:" in prompt
-    assert '"source_numbers": [1]' in prompt
+    assert "# User Request\n\nWrite a cited report." in prompt
+    assert "# Prepared chapter bundles" in prompt
+    assert '"section_type": "body"' in prompt
+    assert '"text": "Specific supporting evidence"' in prompt
+    assert '"text": "Normalized claim"' in prompt
+    assert '"evidence_refs": [{"ref": "e1", "stance": "supports"}]' in prompt
+    assert '"description": "A disclosed disagreement"' in prompt
+    assert '"evidence_items"' not in prompt
+    assert '"bundle_token"' not in prompt
+    assert '"query_refs"' not in prompt
+    assert "internal evidence qualifier" not in prompt
+    assert "internal evidence limitation" not in prompt
+    assert "paragraph 2" not in prompt
     assert "reference_registry_subset" not in prompt
     assert '"sources"' not in prompt
-    assert "Report Context:" not in prompt
+    assert "Report Context" not in prompt
     assert "supported_topics" not in prompt
     assert "交付模式" not in prompt
+    assert "Retry Feedback" not in prompt
+    assert "<retry_feedback>" not in prompt
+
+    retry_prompt = workflow_module._chapter_prompt(
+        "Write a cited report.",
+        [],
+        "Chapter IDs do not match.",
+    )
+    assert retry_prompt.count("# Retry Feedback") == 1
+    assert "Chapter IDs do not match." in retry_prompt
+    assert "仍输出本批所有章节的完整候选正文" in retry_prompt
+    assert "<retry_feedback>" not in retry_prompt
 
 
 def test_outline_contract_requires_complete_chapters_and_first_lead():
