@@ -108,7 +108,7 @@ def _install_fakes(
                         {
                             "ref": "e1",
                             "type": "Evidence",
-                            "text": "Supported fact",
+                            "text": f"Supported fact {chapter['chapter_id']}",
                             "source_numbers": [1],
                         }
                     ],
@@ -311,63 +311,94 @@ def test_empty_query_context_skips_outline_model_and_uses_fallback():
     assert observations["model_prompts"] == []
 
 
-def test_chapter_prompt_receives_only_request_and_local_bundles():
-    """章节写作阶段不继承大纲阶段的全局 Report Context."""
-    prompt = workflow_module._chapter_prompt(
-        "Write a cited report.",
-        [
+def test_chapter_prompt_receives_full_outline_and_one_local_bundle():
+    """章节写作阶段接收完整写作大纲和一个章节局部证据包."""
+    outline = {
+        "title": "Complete Report",
+        "chapters": [
             {
-                "status": "ok",
                 "chapter_id": 1,
-                "bundle_token": "b1-internal",
-                "chapter_title": "Finding",
-                "chapter_goals": ["Explain the evidence"],
+                "title": "Finding",
+                "goals": ["Explain the evidence"],
+                "query_refs": ["q1"],
                 "section_plan": "Use the claim and its supporting evidence.",
                 "section_type": "body",
-                "query_refs": ["q1"],
-                "evidence_items": [
-                    {
-                        "ref": "e1",
-                        "type": "Evidence",
-                        "text": "Specific supporting evidence",
-                        "confidence": 0.9,
-                        "qualifiers": ["internal evidence qualifier"],
-                        "limitations": ["internal evidence limitation"],
-                        "locator": "paragraph 2",
-                        "claim_relations": [
-                            {"target_ref": "c1", "stance": "supports"}
-                        ],
-                        "evidence_relations": [],
-                        "source_numbers": [1],
-                    },
-                    {
-                        "ref": "c1",
-                        "type": "Claim",
-                        "text": "Normalized claim",
-                        "confidence": 0.8,
-                        "qualifiers": ["for this case"],
-                        "limitations": ["single source"],
-                        "claim_relations": [],
-                        "evidence_relations": [
-                            {"target_ref": "e1", "stance": "supports"}
-                        ],
-                        "source_numbers": [1],
-                    },
+                "status": "pending",
+            },
+            {
+                "chapter_id": 2,
+                "title": "Later Analysis",
+                "goals": ["Interpret the implications"],
+                "query_refs": ["q2"],
+                "section_plan": "Develop the implications after the finding.",
+                "section_type": "body",
+                "status": "pending",
+            },
+        ],
+    }
+    bundle = {
+        "status": "ok",
+        "chapter_id": 1,
+        "bundle_token": "b1-internal",
+        "chapter_title": "Finding",
+        "chapter_goals": ["Explain the evidence"],
+        "section_plan": "Use the claim and its supporting evidence.",
+        "section_type": "body",
+        "query_refs": ["q1"],
+        "evidence_items": [
+            {
+                "ref": "e1",
+                "type": "Evidence",
+                "text": "Specific supporting evidence",
+                "confidence": 0.9,
+                "qualifiers": ["internal evidence qualifier"],
+                "limitations": ["internal evidence limitation"],
+                "locator": "paragraph 2",
+                "claim_relations": [
+                    {"target_ref": "c1", "stance": "supports"}
                 ],
-                "disclosed_conflicts": [
-                    {
-                        "ref": "x1",
-                        "description": "A disclosed disagreement",
-                        "conflict_type": "factual",
-                        "evidence_refs": ["e1"],
-                    }
+                "evidence_relations": [],
+                "source_numbers": [1],
+            },
+            {
+                "ref": "c1",
+                "type": "Claim",
+                "text": "Normalized claim",
+                "confidence": 0.8,
+                "qualifiers": ["for this case"],
+                "limitations": ["single source"],
+                "claim_relations": [],
+                "evidence_relations": [
+                    {"target_ref": "e1", "stance": "supports"}
                 ],
+                "source_numbers": [1],
+            },
+        ],
+        "disclosed_conflicts": [
+            {
+                "ref": "x1",
+                "description": "A disclosed disagreement",
+                "conflict_type": "factual",
+                "evidence_refs": ["e1"],
             }
         ],
+    }
+    prompt = workflow_module._chapter_prompt(
+        "Write a cited report.",
+        outline,
+        bundle,
     )
 
     assert "# User Request\n\nWrite a cited report." in prompt
-    assert "# Prepared chapter bundles" in prompt
+    assert "# Report Outline" in prompt
+    assert '"title": "Complete Report"' in prompt
+    assert '"title": "Finding"' in prompt
+    assert '"title": "Later Analysis"' in prompt
+    assert "# Current Chapter Bundle" in prompt
+    assert "本次调用的唯一写作目标由 `Current Chapter Bundle` 直接给出" in prompt
+    assert '"chapter_title": "Finding"' in prompt
+    assert '"chapter_goals": ["Explain the evidence"]' in prompt
+    assert '"section_plan": "Use the claim and its supporting evidence."' in prompt
     assert '"section_type": "body"' in prompt
     assert '"text": "Specific supporting evidence"' in prompt
     assert '"text": "Normalized claim"' in prompt
@@ -376,6 +407,7 @@ def test_chapter_prompt_receives_only_request_and_local_bundles():
     assert '"evidence_items"' not in prompt
     assert '"bundle_token"' not in prompt
     assert '"query_refs"' not in prompt
+    assert '"status": "pending"' not in prompt
     assert "internal evidence qualifier" not in prompt
     assert "internal evidence limitation" not in prompt
     assert "paragraph 2" not in prompt
@@ -386,16 +418,21 @@ def test_chapter_prompt_receives_only_request_and_local_bundles():
     assert "交付模式" not in prompt
     assert "Retry Feedback" not in prompt
     assert "<retry_feedback>" not in prompt
+    assert "<report_outline>" not in prompt
+    assert "<current_chapter_bundle>" not in prompt
 
     retry_prompt = workflow_module._chapter_prompt(
         "Write a cited report.",
-        [],
+        outline,
+        bundle,
         "Chapter IDs do not match.",
     )
     assert retry_prompt.count("# Retry Feedback") == 1
     assert "Chapter IDs do not match." in retry_prompt
-    assert "仍输出本批所有章节的完整候选正文" in retry_prompt
+    assert "仍输出当前章节的完整候选正文" in retry_prompt
     assert "<retry_feedback>" not in retry_prompt
+    assert "<report_outline>" not in retry_prompt
+    assert "<current_chapter_bundle>" not in retry_prompt
 
 
 def test_outline_contract_requires_complete_chapters_and_first_lead():
@@ -432,6 +469,24 @@ def test_outline_contract_requires_complete_chapters_and_first_lead():
         raise AssertionError("A lead chapter after chapter 1 should be rejected")
 
 
+def test_chapter_contract_accepts_exactly_one_chapter():
+    """章节写作响应不能同时提交多个章节."""
+    chapter = {
+        "chapter_id": 1,
+        "content": "Supported fact.[1]",
+        "evidence_refs": ["e1"],
+    }
+    workflow_module.ChapterDraftCandidate.model_validate({"chapters": [chapter]})
+    try:
+        workflow_module.ChapterDraftCandidate.model_validate(
+            {"chapters": [chapter, {**chapter, "chapter_id": 2}]}
+        )
+    except workflow_module.ValidationError:
+        pass
+    else:
+        raise AssertionError("A chapter response must contain exactly one chapter")
+
+
 def test_workflow_retries_invalid_chapter_json_then_commits():
     """模型输出不合格时只重试当前证据包。"""
     observations, restore = _install_fakes(
@@ -444,7 +499,7 @@ def test_workflow_retries_invalid_chapter_json_then_commits():
                 "chapters": [
                     {
                         "chapter_id": 2,
-                        "content": "Wrong batch.[1]",
+                        "content": "Wrong chapter.[1]",
                         "evidence_refs": ["e1"],
                     }
                 ]
@@ -469,11 +524,11 @@ def test_workflow_retries_invalid_chapter_json_then_commits():
     assert observations["calls"].count("prepare") == 1
     assert observations["calls"].count("commit_chapters") == 1
     assert len(observations["model_prompts"]) == 3
-    assert "Chapter IDs must exactly match" in observations["model_prompts"][-1]
+    assert "Chapter ID must match the current chapter" in observations["model_prompts"][-1]
 
 
-def test_workflow_prepares_at_most_three_chapters_per_batch():
-    """四章大纲被确定性地拆成三章和一章两个批次。"""
+def test_workflow_writes_one_chapter_per_model_call():
+    """四章大纲逐章准备、生成和提交，并在每次写作时提供完整大纲."""
     outline_chapters = [
         _outline_chapter(title=f"Finding {chapter_id}")
         for chapter_id in range(1, 5)
@@ -481,30 +536,20 @@ def test_workflow_prepares_at_most_three_chapters_per_batch():
     observations, restore = _install_fakes(
         [
             {"title": "Report", "chapters": outline_chapters},
-            {
-                "chapters": [
-                    {
-                        "chapter_id": chapter_id,
-                        "content": f"Supported fact {chapter_id}.[1]",
-                        "evidence_refs": ["e1"],
-                    }
-                    for chapter_id in range(1, 4)
-                ],
-            },
-            {
-                "chapters": [
-                    {
-                        "chapter_id": 4,
-                        "content": "Supported fact 4.[1]",
-                        "evidence_refs": ["e1"],
-                    }
-                ]
-            },
+            *[
+                {
+                    "chapters": [
+                        {
+                            "chapter_id": chapter_id,
+                            "content": f"Supported fact {chapter_id}.[1]",
+                            "evidence_refs": ["e1"],
+                        }
+                    ]
+                }
+                for chapter_id in range(1, 5)
+            ],
         ],
-        commit_results=[
-            {"status": "ok", "validated": True},
-            {"status": "ok", "validated": True},
-        ],
+        commit_results=[{"status": "ok", "validated": True}] * 4,
     )
     try:
         result = workflow_module.run_report_workflow()
@@ -518,16 +563,34 @@ def test_workflow_prepares_at_most_three_chapters_per_batch():
         "commit_chapters",
         "prepare",
         "commit_chapters",
+        "prepare",
+        "commit_chapters",
+        "prepare",
+        "commit_chapters",
         "deliver",
     ]
     assert [
         [chapter["chapter_id"] for chapter in batch]
         for batch in observations["committed_chapters"]
-    ] == [[1, 2, 3], [4]]
+    ] == [[1], [2], [3], [4]]
+    chapter_prompts = observations["model_prompts"][1:]
+    assert len(chapter_prompts) == 4
+    assert all(
+        all(f'"title": "Finding {chapter_id}"' in prompt for chapter_id in range(1, 5))
+        for prompt in chapter_prompts
+    )
+    assert all(prompt.count("# Current Chapter Bundle") == 1 for prompt in chapter_prompts)
+    for current_id, prompt in enumerate(chapter_prompts, start=1):
+        assert f'"text": "Supported fact {current_id}"' in prompt
+        assert all(
+            f'"text": "Supported fact {other_id}"' not in prompt
+            for other_id in range(1, 5)
+            if other_id != current_id
+        )
 
 
 def test_workflow_ignores_chapter_validation_and_skips_review():
-    """章节语义校验失败不阻断后续批次，完成后直接交付。"""
+    """章节语义校验失败不阻断后续章节，完成后直接交付。"""
     outline_chapters = [
         _outline_chapter(title=f"Finding {chapter_id}")
         for chapter_id in range(1, 5)
@@ -538,30 +601,20 @@ def test_workflow_ignores_chapter_validation_and_skips_review():
                 "title": "Report",
                 "chapters": outline_chapters,
             },
-            {
-                "chapters": [
-                    {
-                        "chapter_id": chapter_id,
-                        "content": f"Initial fact {chapter_id}.[1]",
-                        "evidence_refs": ["e1"],
-                    }
-                    for chapter_id in range(1, 4)
-                ]
-            },
-            {
-                "chapters": [
-                    {
-                        "chapter_id": 4,
-                        "content": "Initial fact 4.[1]",
-                        "evidence_refs": ["e1"],
-                    }
-                ]
-            },
+            *[
+                {
+                    "chapters": [
+                        {
+                            "chapter_id": chapter_id,
+                            "content": f"Initial fact {chapter_id}.[1]",
+                            "evidence_refs": ["e1"],
+                        }
+                    ]
+                }
+                for chapter_id in range(1, 5)
+            ],
         ],
-        commit_results=[
-            {"status": "ok", "validated": False},
-            {"status": "ok", "validated": False},
-        ],
+        commit_results=[{"status": "ok", "validated": False}] * 4,
         delivery_results=[
             {
                 "delivered": True,
@@ -585,9 +638,13 @@ def test_workflow_ignores_chapter_validation_and_skips_review():
         "commit_chapters",
         "prepare",
         "commit_chapters",
+        "prepare",
+        "commit_chapters",
+        "prepare",
+        "commit_chapters",
         "deliver",
     ]
-    assert len(observations["model_prompts"]) == 3
+    assert len(observations["model_prompts"]) == 5
 
 
 def test_direct_report_assembly_skips_validation():
@@ -786,10 +843,11 @@ if __name__ == "__main__":
     test_outline_prompt_is_limited_to_outline_planning()
     test_workflow_retries_query_refs_outside_report_context()
     test_empty_query_context_skips_outline_model_and_uses_fallback()
-    test_chapter_prompt_receives_only_request_and_local_bundles()
+    test_chapter_prompt_receives_full_outline_and_one_local_bundle()
     test_outline_contract_requires_complete_chapters_and_first_lead()
+    test_chapter_contract_accepts_exactly_one_chapter()
     test_workflow_retries_invalid_chapter_json_then_commits()
-    test_workflow_prepares_at_most_three_chapters_per_batch()
+    test_workflow_writes_one_chapter_per_model_call()
     test_workflow_ignores_chapter_validation_and_skips_review()
     test_direct_report_assembly_skips_validation()
     test_retry_exhaustion_uses_direct_delivery()

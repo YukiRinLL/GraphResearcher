@@ -346,7 +346,8 @@ def test_agent_prompts_enforce_report_visibility_contract():
     outline = (repo_dir / "src/prompts/reporter_outline.md").read_text(encoding="utf-8")
     workflow = (repo_dir / "src/agents/reporter_workflow.py").read_text(encoding="utf-8")
     assert "不调用工具" in reporter
-    assert "Prepared chapter bundles" in reporter
+    assert "Report Outline" in reporter
+    assert "Current Chapter Bundle" in reporter
     assert "来源标题和 URL 由程序在最终参考文献中补充" in reporter
     assert "来源权威性" not in reporter
     assert "Wikipedia 页面" not in reporter

@@ -50,10 +50,10 @@ class ChapterCandidate(BaseModel):
     disclosed_conflict_refs: list[str] = Field(default_factory=list)
 
 
-class ChapterBatchCandidate(BaseModel):
-    """章节写作阶段接受的模型输出."""
+class ChapterDraftCandidate(BaseModel):
+    """章节写作阶段接受的单章模型输出."""
 
-    chapters: list[ChapterCandidate] = Field(min_length=1, max_length=3)
+    chapters: list[ChapterCandidate] = Field(min_length=1, max_length=1)
 
 
 class ReporterWorkflowState(TypedDict, total=False):
@@ -184,28 +184,49 @@ def _validated_outline(
 
 def _chapter_prompt(
     user_request: str,
-    bundles: list[dict[str, Any]],
+    outline: dict[str, Any],
+    bundle: dict[str, Any],
     retry_error: str = "",
 ) -> str:
-    """构造只承担一个已准备章节批次的写作 prompt."""
+    """构造只承担一个已准备章节的写作 prompt."""
     retry_feedback = (
         "# Retry Feedback\n\n"
-        "上一版章节 JSON 或批次结构无法保存。请仅修复以下问题后重新输出本批完整 JSON：\n"
+        "上一版章节 JSON 无法保存。请仅修复以下问题后重新输出当前章节的完整 JSON：\n"
         + retry_error
-        + "\n修订时仍输出本批所有章节的完整候选正文，不输出补丁、解释或问题清单。"
+        + "\n修订时仍输出当前章节的完整候选正文，不输出补丁、解释或问题清单。"
         if retry_error
         else ""
     )
-    writer_bundles = [_writer_chapter_bundle(bundle) for bundle in bundles]
     return (
         config.reporter_system_prompt
         .replace("<retry_feedback>", retry_feedback)
         .replace(
-            "<prepared_chapter_bundles>",
-            json.dumps(writer_bundles, ensure_ascii=False),
+            "<current_chapter_bundle>",
+            json.dumps(_writer_chapter_bundle(bundle), ensure_ascii=False),
+        )
+        .replace(
+            "<report_outline>",
+            json.dumps(_writer_report_outline(outline), ensure_ascii=False),
         )
         .replace("<user_request>", user_request.strip())
     ).strip()
+
+
+def _writer_report_outline(outline: dict[str, Any]) -> dict[str, Any]:
+    """将持久化大纲投影为每次章节写作共用的全文结构."""
+    return {
+        "title": outline.get("title"),
+        "chapters": [
+            {
+                "chapter_id": chapter.get("chapter_id"),
+                "title": chapter.get("title"),
+                "goals": chapter.get("goals") or [],
+                "section_plan": chapter.get("section_plan") or "",
+                "section_type": chapter.get("section_type"),
+            }
+            for chapter in outline.get("chapters") or []
+        ],
+    }
 
 
 def _writer_chapter_bundle(bundle: dict[str, Any]) -> dict[str, Any]:
@@ -389,19 +410,19 @@ def route_outline(state: ReporterWorkflowState) -> str:
 
 
 def prepare_chapter_batch_node(state: ReporterWorkflowState) -> dict[str, Any]:
-    """加载下一批一到三章的章节局部证据包."""
+    """加载下一章的章节局部证据包."""
     start = int(state.get("next_chapter_index", 0))
-    selected = state["chapter_ids"][start : start + 3]
+    selected = state["chapter_ids"][start : start + 1]
     try:
         prepared = graph_manager_tools.prepare_report_chapter_batch(
             chapters=[{"chapter_id": chapter_id} for chapter_id in selected],
         )
     except Exception as exc:  # noqa: BLE001 - 准备失败不能由模型修复
-        return {"error": f"Could not prepare report chapter batch: {exc}"}
+        return {"error": f"Could not prepare report chapter: {exc}"}
     if prepared.get("status") != "ok":
         return {
             "error": (
-                "Could not prepare report chapter batch: "
+                "Could not prepare report chapter: "
                 f"{prepared.get('errors') or prepared.get('message')}"
             ),
         }
@@ -409,43 +430,40 @@ def prepare_chapter_batch_node(state: ReporterWorkflowState) -> dict[str, Any]:
     if len(bundles) != len(selected) or any(
         bundle.get("status") != "ok" for bundle in bundles
     ):
-        return {"error": "Prepared report chapter batch is incomplete"}
+        return {"error": "Prepared report chapter is incomplete"}
     return {"current_bundles": bundles, "chapter_attempts": 0, "error": ""}
 
 
 def draft_chapter_batch_node(state: ReporterWorkflowState) -> dict[str, Any]:
-    """生成并保存一个已准备章节批次."""
+    """生成并保存一个已准备章节."""
     attempt = int(state.get("chapter_attempts", 0)) + 1
-    bundles = state["current_bundles"]
-    expected_ids = {int(bundle["chapter_id"]) for bundle in bundles}
+    bundle = state["current_bundles"][0]
+    expected_id = int(bundle["chapter_id"])
     try:
-        candidate = ChapterBatchCandidate.model_validate(
+        candidate = ChapterDraftCandidate.model_validate(
             _invoke_reporter_json(
                 _chapter_prompt(
                     str(state["report_context"]["user_request"]),
-                    bundles,
+                    state["outline"],
+                    bundle,
                     state.get("error", ""),
                 )
             )
         )
-        by_id = {chapter.chapter_id: chapter for chapter in candidate.chapters}
-        if set(by_id) != expected_ids or len(by_id) != len(candidate.chapters):
+        chapter = candidate.chapters[0]
+        if chapter.chapter_id != expected_id:
             raise ValueError(
-                f"Chapter IDs must exactly match the prepared batch: {sorted(expected_ids)}"
+                f"Chapter ID must match the current chapter: {expected_id}"
             )
-        tokens = {
-            int(bundle["chapter_id"]): str(bundle["bundle_token"]) for bundle in bundles
-        }
         committed = graph_manager_tools.commit_report_chapter_batch(
             chapters=[
                 {
                     "chapter_id": chapter.chapter_id,
-                    "bundle_token": tokens[chapter.chapter_id],
+                    "bundle_token": str(bundle["bundle_token"]),
                     "content": chapter.content,
                     "evidence_refs": chapter.evidence_refs,
                     "disclosed_conflict_refs": chapter.disclosed_conflict_refs,
                 }
-                for chapter in candidate.chapters
             ],
         )
         committed_chapters = committed.get("chapters") or []
@@ -454,7 +472,7 @@ def draft_chapter_batch_node(state: ReporterWorkflowState) -> dict[str, Any]:
             for item in committed_chapters
             if item.get("candidate_saved")
         }
-        if committed.get("status") != "ok" or saved_ids != expected_ids:
+        if committed.get("status") != "ok" or saved_ids != {expected_id}:
             raise ValueError(
                 json.dumps(committed_chapters or committed, ensure_ascii=False)
             )
@@ -470,14 +488,14 @@ def draft_chapter_batch_node(state: ReporterWorkflowState) -> dict[str, Any]:
         }
     return {
         "chapter_attempts": attempt,
-        "next_chapter_index": (int(state.get("next_chapter_index", 0)) + len(bundles)),
+        "next_chapter_index": int(state.get("next_chapter_index", 0)) + 1,
         "current_bundles": [],
         "error": "",
     }
 
 
 def route_chapter_batch(state: ReporterWorkflowState) -> str:
-    """保存后继续下一批或直接交付，结构失败时重试当前批次."""
+    """保存后继续下一章或直接交付，结构失败时重试当前章节."""
     if (
         state.get("error")
         and int(state.get("chapter_attempts", 0)) < _MAX_CHAPTER_ATTEMPTS
