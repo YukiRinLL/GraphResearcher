@@ -34,6 +34,7 @@ def _install_fakes(
     research_state="REPORT_READY",
     model_delay=0.0,
     prepare_fail_ids=None,
+    language="English",
 ):
     """安装隔离运行时，并返回观测记录和恢复函数。"""
     observations = {
@@ -83,6 +84,7 @@ def _install_fakes(
     goal = {
         "id": "goal",
         "request": "Write a cited report.",
+        "language": language,
         "research_state": research_state,
     }
 
@@ -97,6 +99,7 @@ def _install_fakes(
     workflow_module.research_state.update_goal = update_goal
     workflow_module.graph_manager_tools.export_report_context = lambda: {
         "user_request": goal["request"],
+        "language": goal["language"],
         "queries": [
             {"ref": "q1", "text": "Topic", "supported_topics": ["Supported fact"]}
         ],
@@ -289,12 +292,18 @@ def test_workflow_commits_ordered_report_without_model_tool_calls():
         "# Polished Report\n\nSupported fact.[1]"
     ]
     assert observations["model_phases"][-1] == "polish"
+    assert len(observations["model_prompts"]) == 3
+    assert all(
+        "Output language: English" in prompt
+        for prompt in observations["model_prompts"]
+    )
 
 
 def test_outline_prompt_is_limited_to_outline_planning():
     """大纲 prompt 不继承章节写作或工具调度职责。"""
     context = {
         "user_request": "Write a cited report.",
+        "language": "English",
         "queries": [
             {"ref": "q1", "text": "Topic", "supported_topics": ["Supported fact"]}
         ],
@@ -474,6 +483,7 @@ def test_chapter_prompt_receives_full_outline_and_one_local_bundle():
         "Write a cited report.",
         outline,
         bundle,
+        language="English",
     )
 
     assert "# User Request\n\nWrite a cited report." in prompt
@@ -513,6 +523,7 @@ def test_chapter_prompt_receives_full_outline_and_one_local_bundle():
         outline,
         bundle,
         "Chapter IDs do not match.",
+        language="English",
     )
     assert retry_prompt.count("# Retry Feedback") == 1
     assert "Chapter IDs do not match." in retry_prompt
@@ -523,21 +534,57 @@ def test_chapter_prompt_receives_full_outline_and_one_local_bundle():
 
 
 def test_polish_prompt_receives_complete_draft_and_preserves_contract():
-    """全文润色接收完整草稿，并在保留结构和引用的前提下允许语言转换。"""
+    """全文编辑接收完整草稿，允许内容重组并保留事实与引用边界。"""
     draft = "# Report\n\n## Finding\n\nFact 42.[1]\n\n## References\n\n1. Source"
 
-    prompt = workflow_module._polish_prompt("Write a cited report.", draft)
+    prompt = workflow_module._polish_prompt(
+        "Write a cited report.", draft, language="English"
+    )
 
     assert "Write a cited report." in prompt
     assert draft in prompt
-    assert "保留章节主题、数量、顺序和标题层级" in prompt
-    assert "不新增、删除、拆分或合并章节" in prompt
-    assert "标题翻译不得改变章节主题" in prompt
-    assert "事实、数值、单位、日期、名称、归因、限定条件" in prompt
-    assert "不新增、删除、替换或重新编号引用" in prompt
+    assert "可以删除、合并或拆分章节和段落，并修改标题" in prompt
+    assert "Output language: English" in prompt
+    assert "数值、单位、日期、名称、归因、限定条件" in prompt
+    assert "不引入草稿之外的信息、来源或结论" in prompt
+    assert "数字引用 `[n]` 随其支持的事实一起移动" in prompt
+    assert "不替换或重新编号引用" in prompt
     assert '"report": "完整的 Markdown 报告"' in prompt
     assert "<user_request>" not in prompt
     assert "<complete_draft>" not in prompt
+
+
+def test_report_language_is_independent_of_material_language():
+    """写作阶段使用初始化语言，保留原请求与不同语言的材料."""
+    request = "Write an article using the supplied sources."
+    outline = {"title": "中文大纲", "chapters": []}
+    bundle = {
+        "chapter_id": 1,
+        "chapter_title": "中文章节",
+        "evidence_items": [
+            {"ref": "e1", "type": "Evidence", "text": "English evidence", "source_numbers": [1]},
+            {
+                "ref": "c1", "type": "Claim", "text": "中文研究命题",
+                "evidence_relations": [{"target_ref": "e1", "stance": "supports"}],
+            },
+        ],
+    }
+    draft = "# 中文标题\n\n中文草稿。[1]"
+    for language in ("English", "简体中文", "日本語"):
+        context = {"user_request": request, "language": language, "queries": []}
+        prompts = [
+            workflow_module._outline_prompt(context),
+            workflow_module._chapter_prompt(request, outline, bundle, language=language),
+            workflow_module._polish_prompt(request, draft, language=language),
+        ]
+        for prompt in prompts:
+            assert f"Output language: {language}" in prompt
+            assert request in prompt
+            assert "<language>" not in prompt
+            assert "从 User Request 确定报告的目标语言" not in prompt
+        assert "中文研究命题" in prompts[1]
+        assert "English evidence" in prompts[1]
+        assert draft in prompts[2]
 
 
 def test_outline_contract_requires_complete_chapters_and_first_lead():
@@ -1137,6 +1184,7 @@ if __name__ == "__main__":
     test_empty_query_context_skips_outline_model_and_uses_fallback()
     test_chapter_prompt_receives_full_outline_and_one_local_bundle()
     test_polish_prompt_receives_complete_draft_and_preserves_contract()
+    test_report_language_is_independent_of_material_language()
     test_outline_contract_requires_complete_chapters_and_first_lead()
     test_chapter_contract_accepts_exactly_one_chapter()
     test_workflow_retries_invalid_chapter_json_then_commits()

@@ -22,6 +22,7 @@ def main():
             "id": "goal",
             "type": "UserRequest",
             "request": request,
+            "language": "简体中文",
             "research_state": "REPORTING",
             "reporting_from_state": "REPORT_READY",
         },
@@ -154,8 +155,10 @@ def main():
     try:
         context = MemoryManager(model=object(), user_request=request).export_report_context()
         assert context["user_request"] == request
+        assert context["language"] == "简体中文"
         assert set(context) == {
             "user_request",
+            "language",
             "queries",
             "disclosed_conflicts",
         }

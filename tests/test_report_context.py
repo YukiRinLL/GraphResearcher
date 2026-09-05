@@ -15,6 +15,7 @@ def main() -> None:
         "id": "request-1",
         "type": "UserRequest",
         "request": "Write a cited report.",
+        "language": "English",
     }
     queries = [
         {
@@ -89,7 +90,9 @@ def main() -> None:
 
     context = MemoryManager(model=object()).export_report_context()
 
-    assert set(context) == {"user_request", "queries", "disclosed_conflicts"}
+    assert set(context) == {"user_request", "language", "queries", "disclosed_conflicts"}
+    assert context["language"] == goal["language"]
+    assert context["user_request"] == goal["request"]
     assert context["queries"] == [
         {"ref": "q1", "text": "Root topic", "supported_topics": []},
         {

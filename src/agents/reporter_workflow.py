@@ -150,8 +150,10 @@ def _outline_prompt(context: dict[str, Any], feedback: str = "") -> str:
         else ""
     )
     return config.reporter_outline_prompt.replace(
-        "<report_context>", json.dumps(context, ensure_ascii=False)
-    ).replace("<retry_feedback>", retry_feedback)
+        "<language>", str(context.get("language") or "")
+    ).replace("<report_context>", json.dumps(context, ensure_ascii=False)).replace(
+        "<retry_feedback>", retry_feedback
+    )
 
 
 def _available_query_refs(context: dict[str, Any]) -> set[str]:
@@ -223,6 +225,8 @@ def _chapter_prompt(
     outline: dict[str, Any],
     bundle: dict[str, Any],
     retry_error: str = "",
+    *,
+    language: str | None,
 ) -> str:
     """构造只承担一个已准备章节的写作 prompt."""
     retry_feedback = (
@@ -235,6 +239,7 @@ def _chapter_prompt(
     )
     return (
         config.reporter_system_prompt
+        .replace("<language>", str(language or ""))
         .replace("<retry_feedback>", retry_feedback)
         .replace(
             "<current_chapter_bundle>",
@@ -248,11 +253,15 @@ def _chapter_prompt(
     ).strip()
 
 
-def _polish_prompt(user_request: str, draft_report: str) -> str:
+def _polish_prompt(
+    user_request: str, draft_report: str, *, language: str | None
+) -> str:
     """构造只承担全文行文润色的 prompt."""
     return config.reporter_polish_prompt.replace(
-        "<user_request>", user_request
-    ).replace("<complete_draft>", draft_report)
+        "<language>", str(language or "")
+    ).replace("<user_request>", user_request).replace(
+        "<complete_draft>", draft_report
+    )
 
 
 def _writer_report_outline(outline: dict[str, Any]) -> dict[str, Any]:
@@ -530,6 +539,7 @@ def draft_chapter_node(state: ChapterTaskState) -> dict[str, Any]:
                         state["outline"],
                         bundle,
                         retry_error,
+                        language=state["report_context"].get("language"),
                     )
                 )
             )
@@ -626,6 +636,7 @@ def polish_report_node(state: ReporterWorkflowState) -> dict[str, Any]:
                 _polish_prompt(
                     str(state["report_context"]["user_request"]),
                     state["draft_report"],
+                    language=state["report_context"].get("language"),
                 ),
                 phase="polish",
             )

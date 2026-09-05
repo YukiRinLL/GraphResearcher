@@ -81,6 +81,8 @@ def test_verbatim_request_initialization():
         result = manager.init_research()
     assert result["goal_id"] == "goal", result
     assert captured["request"] == request
+    assert captured["language"] == parsed["language"]
+    assert result["language"] == parsed["language"]
     assert captured["state_contract_version"] == 4
     assert "request_complexity" not in captured
     assert nodes["query"]["importance"] == "core"
