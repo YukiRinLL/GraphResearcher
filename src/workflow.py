@@ -122,32 +122,68 @@ def init_node(state: dict) -> dict:
     }
 
 
-# 连续无进展动作的熔断阈值：超过此值后强制路由到 convergence。
-# 正常流程中两次 dispatch_searcher 之间最多有 ~4 次非搜索动作
-# (assess + portfolio + expand + portfolio)，阈值 6 容容一轮半空转。
-_MAX_CONSECUTIVE_IDLE = 6
-
 # 递归预算安全阈值：当 scheduler 调用次数（step_count）达到此值时，
-# 无论 consecutive_idle 是否达标，强制路由到 convergence。
+# 无论可操作路径检查结果如何，强制路由到 convergence。
 # 每个 scheduler→action 周期消耗 ~2-6 递归步；recursion_limit=400 时，
 # 阈值 150 消耗 ~300 递归步，为 convergence + report 子图保留 ~100 步。
-# 这防止系统在"成功"搜索/gap 扩展之间循环而始终不收敛——
-# consecutive_idle 被每次成功搜索重置，无法触发原有的空转熔断。
+# 这防止系统在"成功"搜索之间循环而始终不收敛——
+# 这是系统层保留的硬界限，不再承载"打破乒乓"语义。
 _STEP_BUDGET_FOR_CONVERGENCE = 150
+
+
+def _has_actionable_paths() -> bool:
+    """检查图谱中是否还有可操作的搜索/扩展路径。
+
+    返回 True 如果存在以下任一情况：
+    - pending 查询（可以被 dispatch_searcher 搜索）
+    - selected gaps（可以被 expand_gaps 扩展）
+    - candidate gaps 且 parent 状态为 needs_expansion（可被 portfolio 选中）
+    - assessing / waiting_children 查询（评估后可能产生新 gap）
+
+    返回 False 表示所有搜索路径已穷尽，应正常收敛。
+    """
+    from tools import graph_tools
+
+    # 1. Pending 查询（待搜索）
+    if graph_tools.get_pending_queries():
+        return True
+
+    # 2. Selected gaps（待扩展）
+    selected = graph_tools.search_nodes("analysis", {"analysis_type": "gap", "status": "selected"})
+    if selected:
+        return True
+
+    # 3. Candidate gaps 且 parent 是 needs_expansion（可被 portfolio 选中）
+    candidates = graph_tools.search_nodes("analysis", {"analysis_type": "gap", "status": "candidate"})
+    for gap in candidates:
+        parent_id = gap.get("expansion_parent_id")
+        if parent_id:
+            parent = graph_tools.get_node(parent_id)
+            if parent and parent.get("status") == "needs_expansion":
+                return True
+
+    # 4. Assessing / waiting_children 查询（评估后可能产生新 gap）
+    assessing = graph_tools.search_nodes("query", {"status": "assessing"})
+    if assessing:
+        return True
+    waiting = graph_tools.search_nodes("query", {"status": "waiting_children"})
+    if waiting:
+        return True
+
+    return False
 
 
 def scheduler_node(state: dict) -> dict:
     """从状态机获取最高优先级动作，写入 ``current_action`` 供下游节点消费.
 
-    连续无进展熔断：当连续 ``_MAX_CONSECUTIVE_IDLE`` 次动作既不是成功的
-    dispatch_searcher 也不是产生子查询的 expand_gaps 时，跳过正常调度
-    直接路由到 convergence，避免 expand_gaps(created=0) /
-    evaluate_portfolio(selected=0) 之间的空转循环。
+    可操作路径检查：当图谱中没有 pending 查询、selected gaps、candidate gaps
+    （parent=needs_expansion）或 assessing/waiting_children 查询时，直接路由到
+    convergence，不再等待空转计数。这比固定阈值更精确——只在真正没有可操作
+    路径时才收敛，而不会在有活可干时因阈值到期而强制停机。
 
     递归预算安全熔断：当 ``step_count`` 达到 ``_STEP_BUDGET_FOR_CONVERGENCE``
-    时，无论 consecutive_idle 是否达标，强制路由到 convergence。这防止系统
-    在"成功"搜索之间循环而始终不收敛——每次成功搜索都重置 consecutive_idle，
-    导致原空转熔断无法触发，最终耗尽 LangGraph 递归预算。
+    时，无论路径检查结果如何，强制路由到 convergence。这是系统层保留的硬界限，
+    防止意外情况下耗尽 LangGraph 递归预算。
     """
     step_count = int(state.get("step_count") or 0) + 1
     consecutive_idle = int(state.get("consecutive_idle") or 0)
@@ -165,8 +201,6 @@ def scheduler_node(state: dict) -> dict:
     action = actions[0]
 
     # 递归预算安全熔断：step_count 接近递归限制时强制收敛。
-    # 此检查必须在 consecutive_idle 熔断之前——consecutive_idle 被成功
-    # 搜索不断重置，无法在预算耗尽前触发收敛。
     if step_count >= _STEP_BUDGET_FOR_CONVERGENCE:
         summary = (
             f"[scheduler] FORCED CONVERGENCE "
@@ -179,7 +213,7 @@ def scheduler_node(state: dict) -> dict:
                 "query_id": None,
                 "goal_id": action.get("goal_id"),
                 "query_handle": None,
-                "reason": f"forced convergence: step budget near limit (step={step_count})",
+                "reason": "forced convergence: step budget near limit",
             },
             "step_count": step_count,
             "consecutive_idle": consecutive_idle,
@@ -187,20 +221,18 @@ def scheduler_node(state: dict) -> dict:
             "messages": [AIMessage(content=summary)],
         }
 
-    # 熔断：连续无进展超过阈值时，将 expand_gaps/evaluate_research_portfolio
-    # 替换为 assess_convergence，强制进入收敛裁决。
-    if consecutive_idle >= _MAX_CONSECUTIVE_IDLE and action.get("action") in {
-        "expand_gaps",
-        "evaluate_research_portfolio",
-    }:
+    # 可操作路径检查：当图谱中没有 pending/selected/candidate/assessing 路径时，
+    # 直接路由到 convergence，不再等待空转计数。expand_gaps hard-brake 会把
+    # gap 标为 blocked，所以路径检查会在 1-2 轮内正确收敛。
+    if not _has_actionable_paths():
         action = {
             "action": "assess_convergence",
             "query_id": None,
             "goal_id": action.get("goal_id"),
             "query_handle": None,
-            "reason": f"forced convergence after {consecutive_idle} consecutive idle actions",
+            "reason": "no actionable paths remain",
         }
-        summary = f"[scheduler] FORCED CONVERGENCE (idle={consecutive_idle}, forced_count={forced_count + 1}): {_action_summary(action)}"
+        summary = f"[scheduler] PATH EXHAUSTED: no actionable search/expansion paths remain, routing to convergence"
         return {
             "current_action": action,
             "step_count": step_count,
@@ -392,18 +424,19 @@ def convergence_node(state: dict) -> dict:
 
     正常的收敛裁决完全委托 ``memory_manager.assess_convergence``，后者基于
     ``get_next_actions`` 的"单源 actionability 定义"判断是否还有可推进的
-    工作。只要 ``get_next_actions`` 能排出任何非 assess_convergence 的动
-    作就 ``continue``，否则 ``LIMITED_REPORT_READY``。
+    工作。
 
-    ``forced_convergence_count`` 和 LangGraph ``_STEP_BUDGET_FOR_CONVERGENCE``
-    仅在 assess_convergence 被异常
-    绕过、或发生了不可预期调度故障时，作为最后一道系统级界限。
+    可操作路径穷尽时使用 ``REPORT_READY``（正常交付），不降级为 limited。
+    步预算安全网触发时（不可预期的调度故障）使用 ``LIMITED_REPORT_READY``。
     """
     from tools import research_state
 
     action = state.get("current_action") or {}
     goal_id = action.get("goal_id")
-    is_forced = "forced convergence" in (action.get("reason") or "")
+    reason = action.get("reason") or ""
+    is_path_exhausted = "no actionable paths" in reason
+    is_step_budget = "step budget" in reason
+    is_forced = is_path_exhausted or is_step_budget
     forced_count = int(state.get("forced_convergence_count") or 0)
 
     result = gmt.assess_convergence.func(goal_id)
@@ -418,26 +451,32 @@ def convergence_node(state: dict) -> dict:
             f"[assess_convergence] recommendation={recommendation}, "
             f"converged={converged}, fatal_conflicts={fatal}, active_queries={active}"
         )
-        # 递归预算安全网：step 熔断触发时 assess_convergence 仍 say continue，
-        # 说明调度/收敛逻辑出现了未覆盖的异常分支。此时仍要从 RESEARCHING 迁
-        # 移到 LIMITED_REPORT_READY，避免 LangGraph 直接把整个 graph 抛
-        # RecursionError。这是系统层保留的硬界限，不再承载"打破乒乓"语义。
+        # 当路径检查或步预算触发时 assess_convergence 仍 say continue，
+        # 说明 assess_convergence 看到了 evaluate_research_portfolio 等
+        # 非直接搜索动作。路径穷尽时正常交付（REPORT_READY），
+        # 步预算耗尽时降级交付（LIMITED_REPORT_READY）作为安全网。
         if is_forced and recommendation == "continue":
+            target_state = (
+                research_state.REPORT_READY
+                if is_path_exhausted
+                else research_state.LIMITED_REPORT_READY
+            )
+            label = (
+                "PATH EXHAUSTED -> REPORT_READY"
+                if is_path_exhausted
+                else "RECURSION BUDGET GUARD -> LIMITED_REPORT_READY"
+            )
             try:
                 research_state.update_goal({
-                    "research_state": research_state.LIMITED_REPORT_READY,
+                    "research_state": target_state,
                 })
                 summary += (
-                    f" -> RECURSION BUDGET GUARD: step budget forced "
-                    f"convergence override to LIMITED_REPORT_READY "
+                    f" -> {label} "
                     f"(forced_count={forced_count})"
                 )
-            except ValueError as exc:  # 状态迁移不合法——说明已进入可报告状态
-                summary += f" -> recursion guard override skipped (transition invalid: {exc})"
+            except ValueError as exc:
+                summary += f" -> override skipped (transition invalid: {exc})"
 
-    # 收敛节点始终重置 consecutive_idle，避免 scheduler 立即再次触发
-    # consecutive_idle 分支。forced_convergence_count 同理：正常裁决重置，
-    # 递归熔断时保留计数以方便事后统计故障频次。
     new_forced_count = forced_count if is_forced else 0
     return {
         "current_action": None,
