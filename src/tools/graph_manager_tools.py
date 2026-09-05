@@ -522,6 +522,46 @@ def deliver_final_report() -> dict:
     return final
 
 
+def assemble_report_draft() -> dict:
+    """组装完整报告草稿，但不将其登记为最终交付物."""
+    from tools import report_tools
+
+    return report_tools.assemble_committed_report(_cache_dir)
+
+
+def deliver_polished_report(
+    report: str,
+    *,
+    issues: Optional[list[dict[str, Any]]] = None,
+) -> dict:
+    """将润色后的完整 Markdown 登记为当前运行的最终报告."""
+    global _report_submit_count
+
+    _report_submit_count += 1
+    report_text = str(report or "").strip()
+    report_text = f"{report_text}\n" if report_text else ""
+    report_issues = list(issues or [])
+    severity = (
+        "hard"
+        if any(item.get("severity") == "hard" for item in report_issues)
+        else ("soft" if report_issues else "clean")
+    )
+    final = {
+        "delivered": bool(report_text),
+        "validated": False,
+        "accepted": False,
+        "revision_requested": False,
+        "review_status": "skipped",
+        "severity": severity,
+        "report": report_text,
+        "salvaged_report": report_text,
+        "graph_persisted": False,
+        "issues": report_issues,
+    }
+    _record_report_result(final, finalized=True)
+    return final
+
+
 def get_report_submit_count() -> int:
     """Return the run-scoped number of final report submissions."""
     return _report_submit_count

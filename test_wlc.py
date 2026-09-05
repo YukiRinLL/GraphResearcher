@@ -102,6 +102,24 @@ def sample_items(items: list[dict[str, Any]], sample_size: int, seed: int | None
     return rng.sample(items, sample_size)
 
 
+def select_items(
+    items: list[dict[str, Any]],
+    article_title: str | None,
+    sample_size: int,
+    seed: int | None,
+) -> list[dict[str, Any]]:
+    """Select one exact article title or fall back to random sampling."""
+    if article_title is None:
+        return sample_items(items, sample_size, seed)
+
+    matches = [item for item in items if item.get("title") == article_title]
+    if not matches:
+        raise ValueError(f"Article title not found: {article_title}")
+    if len(matches) > 1:
+        raise ValueError(f"Article title is not unique: {article_title}")
+    return matches
+
+
 def run_one(item: dict[str, Any], output_dir: Path, max_rounds: int, opts: dict[str, Any]) -> Path | None:
     """Run one item and copy its final report to ``{title}.md``."""
     id_ = str(item["id"])
@@ -295,6 +313,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-path", type=Path, default=OUTPUT_PATH, help="Directory for markdown reports.")
     parser.add_argument("--sample-size", type=int, default=SAMPLE_SIZE, help="Random sample size; <=0 means all.")
     parser.add_argument("--seed", type=int, default=RANDOM_SEED, help="Optional random seed for sampling.")
+    parser.add_argument("--article-title", help="Run only the item whose title exactly matches this value.")
     parser.add_argument("--evaluate", action="store_true", help="Run official Wiki Live Challenge evaluation after generation.")
     parser.add_argument("--wlc-root", type=Path, default=WLC_ROOT, help="Wiki Live Challenge project root.")
     parser.add_argument("--benchmark", default=WLC_BENCHMARK, help="WLC benchmark id.")
@@ -336,7 +355,7 @@ def main() -> None:
     args = parse_args()
     args.output_path.mkdir(parents=True, exist_ok=True)
 
-    items = sample_items(load_items(args.prompt_path), args.sample_size, args.seed)
+    items = select_items(load_items(args.prompt_path), args.article_title, args.sample_size, args.seed)
     opts = resolve_log_options(args)
     report_paths: list[Path] = []
 

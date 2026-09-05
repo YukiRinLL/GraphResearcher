@@ -22,6 +22,24 @@ PROMPTS_DIR = Path(__file__).parent / "prompts"
 # the GR_MODEL environment variable.
 DEFAULT_MODEL = os.environ.get("GR_MODEL", "gpt-5.1")
 
+
+def _positive_int_from_env(name: str, default: int) -> int:
+    """读取必须为正整数的环境变量配置."""
+    raw_value = os.environ.get(name, str(default))
+    try:
+        value = int(raw_value)
+    except ValueError as exc:
+        raise ValueError(f"{name} must be a positive integer") from exc
+    if value < 1:
+        raise ValueError(f"{name} must be a positive integer")
+    return value
+
+
+REPORTER_CHAPTER_CONCURRENCY = _positive_int_from_env(
+    "GR_REPORTER_CHAPTER_CONCURRENCY",
+    3,
+)
+
 # Neo4j config
 NEO4J_URI = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
 NEO4J_USERNAME = os.environ.get("NEO4J_USERNAME", "neo4j")
@@ -84,6 +102,7 @@ def load_prompt(name: str) -> str:
 # System prompts (loaded lazily-at-import; cheap file reads).
 reporter_system_prompt = load_prompt("reporter")
 reporter_outline_prompt = load_prompt("reporter_outline")
+reporter_polish_prompt = load_prompt("reporter_polish")
 report_reviewer_system_prompt = load_prompt("report_reviewer")
 analyzer_system_prompt = load_prompt("analyzer")
 
@@ -104,6 +123,18 @@ def _reporter_model() -> ChatOpenAI:
     return _model_cache["reporter"]
 
 
+def _reporter_polish_model() -> ChatOpenAI:
+    if "reporter_polish" not in _model_cache:
+        timeout = float(os.environ.get("GR_REPORTER_POLISH_TIMEOUT", "600"))
+        if timeout <= 0:
+            raise ValueError("GR_REPORTER_POLISH_TIMEOUT must be positive")
+        _model_cache["reporter_polish"] = build_model(
+            temperature=0.2,
+            timeout=timeout,
+        )
+    return _model_cache["reporter_polish"]
+
+
 def _report_reviewer_model() -> ChatOpenAI:
     if "report_reviewer" not in _model_cache:
         _model_cache["report_reviewer"] = build_model(temperature=0.0)
@@ -111,7 +142,7 @@ def _report_reviewer_model() -> ChatOpenAI:
 
 
 def __getattr__(name: str) -> ChatOpenAI:
-    """Lazily provide ``default_model`` / ``searcher_model`` / ``reporter_model``.
+    """Lazily provide the configured workflow model handles.
 
     Building the model is deferred until first access so that importing
     ``config`` (for prompt loading or assembly checks) does not require API
@@ -121,6 +152,8 @@ def __getattr__(name: str) -> ChatOpenAI:
         return _shared_model()
     if name == "reporter_model":
         return _reporter_model()
+    if name == "reporter_polish_model":
+        return _reporter_polish_model()
     if name == "report_reviewer_model":
         return _report_reviewer_model()
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

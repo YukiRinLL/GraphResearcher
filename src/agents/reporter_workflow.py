@@ -1,17 +1,19 @@
 """以证据绑定为前提的确定性 LangGraph 报告工作流.
 
-模型只生成大纲和章节 JSON 候选。本模块负责报告授权、工具调用顺序、
-结构错误的有界重试和生成后的直接交付，因此模型不参与流程调度。
+模型生成大纲、章节 JSON 候选和一次全文润色候选。本模块负责报告授权、
+工具调用顺序、章节结构错误的有界重试和最终交付，因此模型不参与流程调度。
 """
 
 from __future__ import annotations
 
 import json
 import logging
-from typing import Any, Literal, TypedDict
+import operator
+from typing import Annotated, Any, Literal, TypedDict
 
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END, StateGraph
+from langgraph.types import Send
 from pydantic import BaseModel, Field, ValidationError
 
 import config
@@ -56,6 +58,29 @@ class ChapterDraftCandidate(BaseModel):
     chapters: list[ChapterCandidate] = Field(min_length=1, max_length=1)
 
 
+class PolishedReportCandidate(BaseModel):
+    """全文润色阶段接受的模型输出."""
+
+    report: str = Field(min_length=1)
+
+
+class ChapterResult(TypedDict):
+    """一个章节分支结束时写回主图的运行时结果."""
+
+    chapter_id: int
+    success: bool
+    attempts: int
+    error: str
+
+
+class ChapterTaskState(TypedDict):
+    """通过 Send 传给一个章节写作分支的隔离输入."""
+
+    report_context: dict[str, Any]
+    outline: dict[str, Any]
+    chapter_bundle: dict[str, Any]
+
+
 class ReporterWorkflowState(TypedDict, total=False):
     """Reporter 的临时编排状态；报告事实仍由现有存储负责."""
 
@@ -63,10 +88,12 @@ class ReporterWorkflowState(TypedDict, total=False):
     report_context: dict[str, Any]
     outline: dict[str, Any]
     chapter_ids: list[int]
-    next_chapter_index: int
-    current_bundles: list[dict[str, Any]]
+    chapter_bundles: list[dict[str, Any]]
+    chapter_results: Annotated[list[ChapterResult], operator.add]
     outline_attempts: int
-    chapter_attempts: int
+    draft_report: str
+    draft_issues: list[dict[str, Any]]
+    polished_report: str
     final_result: dict[str, Any]
     error: str
 
@@ -98,10 +125,19 @@ def _parse_json_object(text: str) -> dict[str, Any]:
     return value
 
 
-def _invoke_reporter_json(prompt: str) -> dict[str, Any]:
+def _invoke_reporter_json(
+    prompt: str,
+    *,
+    phase: Literal["draft", "polish"] = "draft",
+) -> dict[str, Any]:
     """调用低温 Reporter 模型并解析 JSON 响应."""
     graph_manager_tools.increment_reporter_model_call_count()
-    return _parse_json_object(_response_text(config.reporter_model.invoke(prompt)))
+    model = (
+        config.reporter_polish_model
+        if phase == "polish"
+        else config.reporter_model
+    )
+    return _parse_json_object(_response_text(model.invoke(prompt)))
 
 
 def _outline_prompt(context: dict[str, Any], feedback: str = "") -> str:
@@ -210,6 +246,13 @@ def _chapter_prompt(
         )
         .replace("<user_request>", user_request.strip())
     ).strip()
+
+
+def _polish_prompt(user_request: str, draft_report: str) -> str:
+    """构造只承担全文行文润色的 prompt."""
+    return config.reporter_polish_prompt.replace(
+        "<user_request>", user_request
+    ).replace("<complete_draft>", draft_report)
 
 
 def _writer_report_outline(outline: dict[str, Any]) -> dict[str, Any]:
@@ -395,7 +438,6 @@ def plan_outline_node(state: ReporterWorkflowState) -> dict[str, Any]:
         "outline_attempts": attempt,
         "outline": {"title": title, "chapters": chapters},
         "chapter_ids": [chapter["chapter_id"] for chapter in chapters],
-        "next_chapter_index": 0,
         "error": "",
     }
 
@@ -403,116 +445,206 @@ def plan_outline_node(state: ReporterWorkflowState) -> dict[str, Any]:
 def route_outline(state: ReporterWorkflowState) -> str:
     """在有限次数内重试不合格的大纲."""
     if state.get("chapter_ids"):
-        return "prepare_chapter_batch"
+        return "prepare_chapters"
     if int(state.get("outline_attempts", 0)) < _MAX_OUTLINE_ATTEMPTS:
         return "plan_outline"
     return "finalize_best_effort"
 
 
-def prepare_chapter_batch_node(state: ReporterWorkflowState) -> dict[str, Any]:
-    """加载下一章的章节局部证据包."""
-    start = int(state.get("next_chapter_index", 0))
-    selected = state["chapter_ids"][start : start + 1]
-    try:
-        prepared = graph_manager_tools.prepare_report_chapter_batch(
-            chapters=[{"chapter_id": chapter_id} for chapter_id in selected],
-        )
-    except Exception as exc:  # noqa: BLE001 - 准备失败不能由模型修复
-        return {"error": f"Could not prepare report chapter: {exc}"}
-    if prepared.get("status") != "ok":
-        return {
-            "error": (
-                "Could not prepare report chapter: "
-                f"{prepared.get('errors') or prepared.get('message')}"
-            ),
+def prepare_chapters_node(state: ReporterWorkflowState) -> dict[str, Any]:
+    """按工具批量上限顺序加载全部章节证据包."""
+    bundles: list[dict[str, Any]] = []
+    chapter_ids = state["chapter_ids"]
+    for start in range(0, len(chapter_ids), 3):
+        selected = chapter_ids[start : start + 3]
+        try:
+            prepared = graph_manager_tools.prepare_report_chapter_batch(
+                chapters=[{"chapter_id": chapter_id} for chapter_id in selected],
+            )
+        except Exception as exc:  # noqa: BLE001 - 单章准备失败留给汇总阶段补齐
+            bundles.extend(
+                {
+                    "status": "error",
+                    "chapter_id": chapter_id,
+                    "message": f"Could not prepare report chapter: {exc}",
+                }
+                for chapter_id in selected
+            )
+            continue
+
+        prepared_by_id = {
+            int(bundle.get("chapter_id") or 0): bundle
+            for bundle in prepared.get("chapters") or []
         }
-    bundles = prepared.get("chapters") or []
-    if len(bundles) != len(selected) or any(
-        bundle.get("status") != "ok" for bundle in bundles
-    ):
-        return {"error": "Prepared report chapter is incomplete"}
-    return {"current_bundles": bundles, "chapter_attempts": 0, "error": ""}
+        for chapter_id in selected:
+            bundle = prepared_by_id.get(chapter_id)
+            bundles.append(
+                bundle
+                or {
+                    "status": "error",
+                    "chapter_id": chapter_id,
+                    "message": "Prepared report chapter is incomplete",
+                }
+            )
+    return {"chapter_bundles": bundles, "error": ""}
 
 
-def draft_chapter_batch_node(state: ReporterWorkflowState) -> dict[str, Any]:
-    """生成并保存一个已准备章节."""
-    attempt = int(state.get("chapter_attempts", 0)) + 1
-    bundle = state["current_bundles"][0]
-    expected_id = int(bundle["chapter_id"])
-    try:
-        candidate = ChapterDraftCandidate.model_validate(
-            _invoke_reporter_json(
-                _chapter_prompt(
-                    str(state["report_context"]["user_request"]),
-                    state["outline"],
-                    bundle,
-                    state.get("error", ""),
+def dispatch_chapters(state: ReporterWorkflowState) -> list[Send]:
+    """为每个章节创建一个隔离的并行写作任务."""
+    return [
+        Send(
+            "draft_chapter",
+            {
+                "report_context": state["report_context"],
+                "outline": state["outline"],
+                "chapter_bundle": bundle,
+            },
+        )
+        for bundle in state["chapter_bundles"]
+    ]
+
+
+def draft_chapter_node(state: ChapterTaskState) -> dict[str, Any]:
+    """独立生成、重试并保存一个已准备章节."""
+    bundle = state["chapter_bundle"]
+    expected_id = int(bundle.get("chapter_id") or 0)
+    if bundle.get("status") != "ok":
+        return {
+            "chapter_results": [
+                {
+                    "chapter_id": expected_id,
+                    "success": False,
+                    "attempts": 0,
+                    "error": str(bundle.get("message") or "Chapter preparation failed"),
+                }
+            ]
+        }
+
+    retry_error = ""
+    for attempt in range(1, _MAX_CHAPTER_ATTEMPTS + 1):
+        try:
+            candidate = ChapterDraftCandidate.model_validate(
+                _invoke_reporter_json(
+                    _chapter_prompt(
+                        str(state["report_context"]["user_request"]),
+                        state["outline"],
+                        bundle,
+                        retry_error,
+                    )
                 )
             )
-        )
-        chapter = candidate.chapters[0]
-        if chapter.chapter_id != expected_id:
-            raise ValueError(
-                f"Chapter ID must match the current chapter: {expected_id}"
+            chapter = candidate.chapters[0]
+            if chapter.chapter_id != expected_id:
+                raise ValueError(
+                    f"Chapter ID must match the current chapter: {expected_id}"
+                )
+            committed = graph_manager_tools.commit_report_chapter_batch(
+                chapters=[
+                    {
+                        "chapter_id": chapter.chapter_id,
+                        "bundle_token": str(bundle["bundle_token"]),
+                        "content": chapter.content,
+                        "evidence_refs": chapter.evidence_refs,
+                        "disclosed_conflict_refs": chapter.disclosed_conflict_refs,
+                    }
+                ],
             )
-        committed = graph_manager_tools.commit_report_chapter_batch(
-            chapters=[
+            committed_chapters = committed.get("chapters") or []
+            saved_ids = {
+                int(item.get("chapter_id") or 0)
+                for item in committed_chapters
+                if item.get("candidate_saved")
+            }
+            if committed.get("status") != "ok" or saved_ids != {expected_id}:
+                raise ValueError(
+                    json.dumps(committed_chapters or committed, ensure_ascii=False)
+                )
+        except Exception as exc:  # noqa: BLE001 - 结构与 provider 失败共享有界重试
+            retry_error = f"Chapter attempt {attempt} failed: {exc}"
+            continue
+        return {
+            "chapter_results": [
                 {
-                    "chapter_id": chapter.chapter_id,
-                    "bundle_token": str(bundle["bundle_token"]),
-                    "content": chapter.content,
-                    "evidence_refs": chapter.evidence_refs,
-                    "disclosed_conflict_refs": chapter.disclosed_conflict_refs,
+                    "chapter_id": expected_id,
+                    "success": True,
+                    "attempts": attempt,
+                    "error": "",
                 }
-            ],
-        )
-        committed_chapters = committed.get("chapters") or []
-        saved_ids = {
-            int(item.get("chapter_id") or 0)
-            for item in committed_chapters
-            if item.get("candidate_saved")
+            ]
         }
-        if committed.get("status") != "ok" or saved_ids != {expected_id}:
-            raise ValueError(
-                json.dumps(committed_chapters or committed, ensure_ascii=False)
-            )
-    except (ValidationError, ValueError, TypeError) as exc:
-        return {
-            "chapter_attempts": attempt,
-            "error": f"Chapter attempt {attempt} failed: {exc}",
-        }
-    except Exception as exc:  # noqa: BLE001 - provider 失败使用相同的有界重试
-        return {
-            "chapter_attempts": attempt,
-            "error": f"Chapter attempt {attempt} failed: {exc}",
-        }
+
     return {
-        "chapter_attempts": attempt,
-        "next_chapter_index": int(state.get("next_chapter_index", 0)) + 1,
-        "current_bundles": [],
+        "chapter_results": [
+            {
+                "chapter_id": expected_id,
+                "success": False,
+                "attempts": _MAX_CHAPTER_ATTEMPTS,
+                "error": retry_error,
+            }
+        ]
+    }
+
+
+def _chapter_fallback_reason(state: ReporterWorkflowState) -> str | None:
+    """汇总失败章节，供最终交付结果说明降级原因."""
+    failed = sorted(
+        (
+            result
+            for result in state.get("chapter_results", [])
+            if not result["success"]
+        ),
+        key=lambda result: result["chapter_id"],
+    )
+    if not failed:
+        return None
+    chapter_ids = ", ".join(str(result["chapter_id"]) for result in failed)
+    return f"Reporter failed to draft chapters {chapter_ids}; deterministic fallbacks were used"
+
+
+def assemble_draft_node(state: ReporterWorkflowState) -> dict[str, Any]:
+    """在全部章节分支结束后补齐缺章并组装完整草稿."""
+    del state
+    try:
+        result = graph_manager_tools.assemble_report_draft()
+    except Exception as exc:  # noqa: BLE001 - 无完整草稿时不能进入润色
+        return {"error": f"Report draft assembly failed: {exc}"}
+    draft_report = str(result.get("report") or "").strip()
+    if not result.get("delivered") or not draft_report:
+        return {"error": f"Report draft assembly failed: {result.get('issues') or result}"}
+    return {
+        "draft_report": draft_report,
+        "draft_issues": list(result.get("issues") or []),
         "error": "",
     }
 
 
-def route_chapter_batch(state: ReporterWorkflowState) -> str:
-    """保存后继续下一章或直接交付，结构失败时重试当前章节."""
-    if (
-        state.get("error")
-        and int(state.get("chapter_attempts", 0)) < _MAX_CHAPTER_ATTEMPTS
-    ):
-        return "draft_chapter_batch"
-    if state.get("error"):
-        return "finalize_best_effort"
-    if int(state["next_chapter_index"]) < len(state["chapter_ids"]):
-        return "prepare_chapter_batch"
-    return "submit"
+def polish_report_node(state: ReporterWorkflowState) -> dict[str, Any]:
+    """恰好调用一次模型润色完整报告草稿."""
+    try:
+        candidate = PolishedReportCandidate.model_validate(
+            _invoke_reporter_json(
+                _polish_prompt(
+                    str(state["report_context"]["user_request"]),
+                    state["draft_report"],
+                ),
+                phase="polish",
+            )
+        )
+        polished_report = candidate.report.strip()
+        if not polished_report:
+            raise ValueError("Polished report must not be blank")
+    except Exception as exc:  # noqa: BLE001 - 状态图会交付已组装的章节草稿
+        return {"error": f"Report polishing failed: {exc}"}
+    return {"polished_report": polished_report, "error": ""}
 
 
 def submit_node(state: ReporterWorkflowState) -> dict[str, Any]:
-    """生成完成后直接交付最新章节，不执行审校或修订."""
-    del state
+    """将润色后的完整报告写入现有最终交付缓存."""
     try:
-        result = graph_manager_tools.deliver_final_report()
+        result = graph_manager_tools.deliver_polished_report(
+            state["polished_report"],
+            issues=state.get("draft_issues") or [],
+        )
     except Exception as exc:  # noqa: BLE001 - 交由失败节点记录
         return {"error": f"Final report submission failed: {exc}"}
 
@@ -523,6 +655,7 @@ def submit_node(state: ReporterWorkflowState) -> dict[str, Any]:
                 "delivered": True,
                 "validated": bool(result.get("validated")),
                 "review_status": result.get("review_status"),
+                "fallback_reason": _chapter_fallback_reason(state),
                 "result": result,
             },
             "error": "",
@@ -573,8 +706,10 @@ def _build_reporter_workflow() -> StateGraph:
     graph.add_node("authorize", authorize_node)
     graph.add_node("export_context", export_context_node)
     graph.add_node("plan_outline", plan_outline_node)
-    graph.add_node("prepare_chapter_batch", prepare_chapter_batch_node)
-    graph.add_node("draft_chapter_batch", draft_chapter_batch_node)
+    graph.add_node("prepare_chapters", prepare_chapters_node)
+    graph.add_node("draft_chapter", draft_chapter_node)
+    graph.add_node("assemble_draft", assemble_draft_node)
+    graph.add_node("polish_report", polish_report_node)
     graph.add_node("submit", submit_node)
     graph.add_node("finalize_best_effort", finalize_best_effort_node)
     graph.add_node("fail", fail_node)
@@ -588,11 +723,16 @@ def _build_reporter_workflow() -> StateGraph:
         lambda state: route_after_guard(state, "plan_outline"),
     )
     graph.add_conditional_edges("plan_outline", route_outline)
+    graph.add_conditional_edges("prepare_chapters", dispatch_chapters)
+    graph.add_edge("draft_chapter", "assemble_draft")
     graph.add_conditional_edges(
-        "prepare_chapter_batch",
-        lambda state: route_after_guard(state, "draft_chapter_batch"),
+        "assemble_draft",
+        lambda state: "fail" if state.get("error") else "polish_report",
     )
-    graph.add_conditional_edges("draft_chapter_batch", route_chapter_batch)
+    graph.add_conditional_edges(
+        "polish_report",
+        lambda state: "finalize_best_effort" if state.get("error") else "submit",
+    )
     graph.add_conditional_edges("submit", route_submit)
     graph.add_edge("finalize_best_effort", END)
     graph.add_edge("fail", END)
@@ -609,6 +749,7 @@ def run_report_workflow(
     invoke_config = {
         **dict(runnable_config or {}),
         "recursion_limit": _REPORTER_RECURSION_LIMIT,
+        "max_concurrency": config.REPORTER_CHAPTER_CONCURRENCY,
     }
     result = reporter_workflow.invoke(
         {},

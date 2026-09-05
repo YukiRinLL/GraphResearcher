@@ -169,6 +169,16 @@ def _write_json_file(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+def _chapter_dynamic_value(
+    meta: dict[str, Any],
+    legacy_outline_chapter: dict[str, Any],
+    key: str,
+    default: Any,
+) -> Any:
+    """优先从 meta 读取章节动态数据，并兼容旧版 outline."""
+    return meta[key] if key in meta else legacy_outline_chapter.get(key, default)
+
+
 def _render_outline_markdown(title: str, chapters: list[dict[str, Any]]) -> str:
     """Render a concise markdown view of the current report outline."""
     lines = [f"# {title}", ""]
@@ -427,7 +437,6 @@ def commit_report_outline(output_dir: Optional[str], title: str, chapters: list[
             "query_refs": list(dict.fromkeys(query_refs)),
             "section_plan": str(chapter.get("section_plan") or "").strip(),
             "section_type": chapter.get("section_type"),
-            "status": str(chapter.get("status") or "pending"),
         })
     outline = {"title": str(title).strip() or "Research Report", "chapters": normalized}
     _write_json_file(_outline_path(output_dir), outline)
@@ -647,7 +656,7 @@ def prepare_report_chapter_batch(
         if chapter_id <= 0:
             prepared.append({
                 "status": "error",
-                "message": f"Cannot resolve chapter_id from outline. Provide chapter_id explicitly.",
+                "message": "Cannot resolve chapter_id from outline. Provide chapter_id explicitly.",
             })
         else:
             prepared.append(
@@ -752,8 +761,7 @@ def commit_report_chapter_batch(
     """Save and validate up to three chapter candidates."""
     if not chapters or len(chapters) > 3:
         return {"status": "error", "message": "Commit between one and three chapters per batch."}
-    outline_path = _outline_path(output_dir)
-    outline = _read_json_file(outline_path)
+    outline = _read_json_file(_outline_path(output_dir))
     outline_by_id = {
         int(item.get("chapter_id") or 0): item
         for item in outline.get("chapters") or []
@@ -779,20 +787,18 @@ def commit_report_chapter_batch(
         content = str(candidate.get("content") or "").strip()
         _chapter_path(output_dir, chapter_id).write_text(content + "\n", encoding="utf-8")
         validation = _chapter_candidate_validation(output_dir, candidate)
-        outline_chapter.update({
-            "title": str(candidate.get("title") or outline_chapter.get("title") or f"Section {chapter_id}"),
-            "status": "completed",
-            "section_type": candidate.get("section_type") or outline_chapter.get("section_type"),
-            "validated": validation["validated"],
-            "source_ids": validation["source_ids"],
-            "evidence_ids": validation["evidence_ids"],
-            "disclosed_conflict_ids": validation["disclosed_conflict_ids"],
-            "validation_issues": validation["issues"],
-        })
+        title = str(
+            candidate.get("title")
+            or outline_chapter.get("title")
+            or f"Section {chapter_id}"
+        )
+        section_type = candidate.get("section_type") or outline_chapter.get(
+            "section_type"
+        )
         meta = _read_json_file(_chapter_meta_path(output_dir, chapter_id))
         meta.update({
-            "title": outline_chapter["title"],
-            "section_type": outline_chapter["section_type"],
+            "title": title,
+            "section_type": section_type,
             "validated": validation["validated"],
             "source_ids": validation["source_ids"],
             "evidence_ids": validation["evidence_ids"],
@@ -809,11 +815,6 @@ def commit_report_chapter_batch(
             "unknown_conflict_refs": validation["unknown_conflict_refs"],
         })
 
-    _write_json_file(outline_path, outline)
-    _outline_markdown_path(output_dir).write_text(
-        _render_outline_markdown(outline.get("title") or "Research Report", outline.get("chapters") or []),
-        encoding="utf-8",
-    )
     return {
         "status": "ok",
         "chapters": results,
@@ -822,7 +823,7 @@ def commit_report_chapter_batch(
 
 
 def _load_committed_report(output_dir: Optional[str]) -> tuple[str, list[dict], list[int]]:
-    """Load the outline title and every committed chapter in outline order."""
+    """按大纲顺序加载静态章节字段和各章元数据."""
     outline = _read_json_file(_outline_path(output_dir))
     chapters = outline.get("chapters") or []
     sections: list[dict[str, Any]] = []
@@ -834,13 +835,32 @@ def _load_committed_report(output_dir: Optional[str]) -> tuple[str, list[dict], 
             missing.append(chapter_id)
             continue
         content = content_path.read_text(encoding="utf-8").strip()
+        meta = _read_json_file(_chapter_meta_path(output_dir, chapter_id))
         sections.append({
-            "title": str(chapter.get("title") or "").strip() or f"Section {chapter_id}",
+            "title": str(chapter.get("title") or meta.get("title") or "").strip()
+            or f"Section {chapter_id}",
             "content": content,
-            "source_ids": list(dict.fromkeys(chapter.get("source_ids") or [])),
-            "evidence_ids": list(dict.fromkeys(chapter.get("evidence_ids") or [])),
-            "disclosed_conflict_ids": list(dict.fromkeys(chapter.get("disclosed_conflict_ids") or [])),
-            "section_type": chapter.get("section_type"),
+            "source_ids": list(dict.fromkeys(
+                _chapter_dynamic_value(meta, chapter, "source_ids", []) or []
+            )),
+            "evidence_ids": list(dict.fromkeys(
+                _chapter_dynamic_value(meta, chapter, "evidence_ids", []) or []
+            )),
+            "disclosed_conflict_ids": list(dict.fromkeys(
+                _chapter_dynamic_value(
+                    meta,
+                    chapter,
+                    "disclosed_conflict_ids",
+                    [],
+                ) or []
+            )),
+            "section_type": chapter.get("section_type") or meta.get("section_type"),
+            "validated": bool(
+                _chapter_dynamic_value(meta, chapter, "validated", False)
+            ),
+            "validation_issues": list(
+                _chapter_dynamic_value(meta, chapter, "validation_issues", []) or []
+            ),
         })
     return str(outline.get("title") or "Research Report"), sections, missing
 
@@ -871,8 +891,7 @@ def _fallback_chapter_content(bundle: dict[str, Any], *, lead: bool) -> str:
 
 def _ensure_candidate_chapters(output_dir: Optional[str]) -> list[dict[str, Any]]:
     """Create deterministic candidate files for any outlined chapter the Reporter omitted."""
-    outline_path = _outline_path(output_dir)
-    outline = _read_json_file(outline_path)
+    outline = _read_json_file(_outline_path(output_dir))
     generated_issues = []
     for chapter in sorted(outline.get("chapters") or [], key=lambda item: int(item.get("chapter_id") or 0)):
         chapter_id = int(chapter.get("chapter_id") or 0)
@@ -891,20 +910,14 @@ def _ensure_candidate_chapters(output_dir: Optional[str]) -> list[dict[str, Any]
             "Provide a Reporter-authored chapter in a future run.",
             section_title=str(chapter.get("title") or ""),
         )
-        chapter.update({
-            "status": "completed",
-            "section_type": chapter.get("section_type") or ("lead" if chapter_id == 1 else "body"),
-            "validated": False,
-            "source_ids": [],
-            "evidence_ids": [],
-            "disclosed_conflict_ids": [],
-            "validation_issues": [issue],
-        })
+        section_type = chapter.get("section_type") or (
+            "lead" if chapter_id == 1 else "body"
+        )
         meta = _read_json_file(_chapter_meta_path(output_dir, chapter_id))
         meta.update({
             "chapter_id": chapter_id,
             "title": chapter.get("title"),
-            "section_type": chapter.get("section_type"),
+            "section_type": section_type,
             "validated": False,
             "source_ids": [],
             "evidence_ids": [],
@@ -913,8 +926,6 @@ def _ensure_candidate_chapters(output_dir: Optional[str]) -> list[dict[str, Any]
         })
         _write_json_file(_chapter_meta_path(output_dir, chapter_id), meta)
         generated_issues.append(issue)
-    if outline:
-        _write_json_file(outline_path, outline)
     return generated_issues
 
 
@@ -1003,12 +1014,11 @@ def submit_committed_report(output_dir: Optional[str], *, persist: bool = False)
         }
     chapter_issues = [
         issue
-        for chapter in _read_json_file(_outline_path(output_dir)).get("chapters") or []
-        for issue in chapter.get("validation_issues") or []
+        for section in sections
+        for issue in section.get("validation_issues") or []
     ]
     chapters_validated = bool(sections) and not missing and all(
-        bool(chapter.get("validated"))
-        for chapter in _read_json_file(_outline_path(output_dir)).get("chapters") or []
+        bool(section.get("validated")) for section in sections
     )
     strict = compile_structured_report(
         title,
@@ -1048,8 +1058,8 @@ def submit_committed_report(output_dir: Optional[str], *, persist: bool = False)
     }
 
 
-def deliver_committed_report(output_dir: Optional[str]) -> dict[str, Any]:
-    """Assemble and deliver the latest chapter candidates without validation."""
+def assemble_committed_report(output_dir: Optional[str]) -> dict[str, Any]:
+    """组装最新章节候选，不执行报告校验或持久化."""
     generated_issues = _ensure_candidate_chapters(output_dir)
     title, sections, missing = _load_committed_report(output_dir)
     if not sections and not missing:
@@ -1086,6 +1096,11 @@ def deliver_committed_report(output_dir: Optional[str]) -> dict[str, Any]:
         "graph_persisted": False,
         "issues": issues,
     }
+
+
+def deliver_committed_report(output_dir: Optional[str]) -> dict[str, Any]:
+    """组装并交付最新章节候选，不执行报告校验."""
+    return assemble_committed_report(output_dir)
 
 
 def get_committed_review_context(output_dir: Optional[str]) -> dict[str, Any]:

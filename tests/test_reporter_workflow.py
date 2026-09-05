@@ -1,6 +1,9 @@
 """确定性 LangGraph Reporter workflow 的独立回归检查。"""
 
+import os
 import sys
+import threading
+import time
 from pathlib import Path
 
 repo_dir = Path(__file__).parent.parent
@@ -26,17 +29,30 @@ def _install_fakes(
     *,
     commit_results=None,
     delivery_results=None,
+    polish_output=None,
+    polish_error=None,
     research_state="REPORT_READY",
+    model_delay=0.0,
+    prepare_fail_ids=None,
 ):
     """安装隔离运行时，并返回观测记录和恢复函数。"""
     observations = {
         "calls": [],
         "state_updates": [],
         "model_prompts": [],
+        "model_phases": [],
         "committed_chapters": [],
+        "prepared_chapters": [],
+        "polished_reports": [],
+        "peak_model_concurrency": 0,
     }
     outputs = iter(model_outputs)
     chapter_results = iter(commit_results or [{"status": "ok", "validated": True}])
+    output_lock = threading.Lock()
+    chapter_result_lock = threading.Lock()
+    observation_lock = threading.Lock()
+    active_model_calls = 0
+    failed_preparations = set(prepare_fail_ids or [])
     final_results = iter(
         delivery_results
         or [
@@ -56,7 +72,9 @@ def _install_fakes(
         "outline": workflow_module.graph_manager_tools.commit_report_outline,
         "prepare": workflow_module.graph_manager_tools.prepare_report_chapter_batch,
         "commit": workflow_module.graph_manager_tools.commit_report_chapter_batch,
+        "assemble": workflow_module.graph_manager_tools.assemble_report_draft,
         "deliver": workflow_module.graph_manager_tools.deliver_final_report,
+        "deliver_polished": workflow_module.graph_manager_tools.deliver_polished_report,
         "invoke": workflow_module._invoke_reporter_json,
     }
     from tools import graph_tools
@@ -92,10 +110,16 @@ def _install_fakes(
 
     def prepare(*, chapters):
         observations["calls"].append("prepare")
-        return {
-            "status": "ok",
-            "chapters": [
+        observations["prepared_chapters"].append(chapters)
+        prepared_chapters = [
+            (
                 {
+                    "status": "error",
+                    "chapter_id": chapter["chapter_id"],
+                    "message": "Prepared chapter failed",
+                }
+                if chapter["chapter_id"] in failed_preparations
+                else {
                     "status": "ok",
                     "chapter_id": chapter["chapter_id"],
                     "bundle_token": f"b{chapter['chapter_id']}",
@@ -114,14 +138,24 @@ def _install_fakes(
                     ],
                     "disclosed_conflicts": [],
                 }
-                for chapter in chapters
-            ],
+            )
+            for chapter in chapters
+        ]
+        return {
+            "status": (
+                "error"
+                if any(item["status"] != "ok" for item in prepared_chapters)
+                else "ok"
+            ),
+            "chapters": prepared_chapters,
         }
 
     def commit_chapters(*, chapters):
-        observations["calls"].append("commit_chapters")
-        observations["committed_chapters"].append(chapters)
-        result = dict(next(chapter_results))
+        with observation_lock:
+            observations["calls"].append("commit_chapters")
+            observations["committed_chapters"].append(chapters)
+        with chapter_result_lock:
+            result = dict(next(chapter_results))
         result.setdefault(
             "chapters",
             [
@@ -139,14 +173,58 @@ def _install_fakes(
         observations["calls"].append("deliver")
         return next(final_results)
 
+    def assemble():
+        observations["calls"].append("assemble")
+        return next(final_results)
+
+    def deliver_polished(report, *, issues):
+        observations["calls"].append("deliver_polished")
+        observations["polished_reports"].append(report)
+        return {
+            "delivered": bool(report.strip()),
+            "validated": False,
+            "revision_requested": False,
+            "review_status": "skipped",
+            "report": report,
+            "issues": issues,
+        }
+
     workflow_module.graph_manager_tools.commit_report_outline = commit_outline
     workflow_module.graph_manager_tools.prepare_report_chapter_batch = prepare
     workflow_module.graph_manager_tools.commit_report_chapter_batch = commit_chapters
+    workflow_module.graph_manager_tools.assemble_report_draft = assemble
     workflow_module.graph_manager_tools.deliver_final_report = deliver
+    workflow_module.graph_manager_tools.deliver_polished_report = deliver_polished
 
-    def invoke(prompt):
-        observations["model_prompts"].append(prompt)
-        return next(outputs)
+    def invoke(prompt, *, phase="draft"):
+        nonlocal active_model_calls
+        is_polish = "# Complete Draft" in prompt
+        if is_polish:
+            output = (
+                polish_output
+                if polish_output is not None
+                else {"report": "# Polished Report\n\nSupported fact.[1]"}
+            )
+        else:
+            with output_lock:
+                output = next(outputs)
+        with observation_lock:
+            observations["model_prompts"].append(prompt)
+            observations["model_phases"].append(phase)
+            active_model_calls += 1
+            observations["peak_model_concurrency"] = max(
+                observations["peak_model_concurrency"],
+                active_model_calls,
+            )
+        try:
+            if model_delay:
+                time.sleep(model_delay)
+            if is_polish and polish_error is not None:
+                raise polish_error
+            return output
+        finally:
+            with observation_lock:
+                active_model_calls -= 1
 
     workflow_module._invoke_reporter_json = invoke
 
@@ -162,7 +240,11 @@ def _install_fakes(
         workflow_module.graph_manager_tools.commit_report_chapter_batch = originals[
             "commit"
         ]
+        workflow_module.graph_manager_tools.assemble_report_draft = originals["assemble"]
         workflow_module.graph_manager_tools.deliver_final_report = originals["deliver"]
+        workflow_module.graph_manager_tools.deliver_polished_report = originals[
+            "deliver_polished"
+        ]
         workflow_module._invoke_reporter_json = originals["invoke"]
 
     return observations, restore
@@ -198,10 +280,15 @@ def test_workflow_commits_ordered_report_without_model_tool_calls():
         "commit_outline",
         "prepare",
         "commit_chapters",
-        "deliver",
+        "assemble",
+        "deliver_polished",
     ]
     assert observations["state_updates"][0]["research_state"] == "REPORTING"
     assert observations["committed_chapters"][0][0]["bundle_token"] == "b1"
+    assert observations["polished_reports"] == [
+        "# Polished Report\n\nSupported fact.[1]"
+    ]
+    assert observations["model_phases"][-1] == "polish"
 
 
 def test_outline_prompt_is_limited_to_outline_planning():
@@ -275,7 +362,7 @@ def test_workflow_retries_query_refs_outside_report_context():
 
     assert result["success"], result
     assert observations["calls"].count("commit_outline") == 1
-    assert len(observations["model_prompts"]) == 3
+    assert len(observations["model_prompts"]) == 4
     assert "not available in Report Context" in observations["model_prompts"][1]
 
 
@@ -435,6 +522,22 @@ def test_chapter_prompt_receives_full_outline_and_one_local_bundle():
     assert "<current_chapter_bundle>" not in retry_prompt
 
 
+def test_polish_prompt_receives_complete_draft_and_preserves_contract():
+    """全文润色 prompt 只要求行文调整，并接收完整草稿。"""
+    draft = "# Report\n\n## Finding\n\nFact 42.[1]\n\n## References\n\n1. Source"
+
+    prompt = workflow_module._polish_prompt("Write a cited report.", draft)
+
+    assert "Write a cited report." in prompt
+    assert draft in prompt
+    assert "不新增、删除、拆分、合并或重命名标题" in prompt
+    assert "事实、数值、单位、日期、名称、归因、限定条件" in prompt
+    assert "不新增、删除、替换或重新编号引用" in prompt
+    assert '"report": "完整的 Markdown 报告"' in prompt
+    assert "<user_request>" not in prompt
+    assert "<complete_draft>" not in prompt
+
+
 def test_outline_contract_requires_complete_chapters_and_first_lead():
     """大纲字段完整性和 lead 位置由程序校验."""
     try:
@@ -523,12 +626,12 @@ def test_workflow_retries_invalid_chapter_json_then_commits():
     assert result["success"], result
     assert observations["calls"].count("prepare") == 1
     assert observations["calls"].count("commit_chapters") == 1
-    assert len(observations["model_prompts"]) == 3
-    assert "Chapter ID must match the current chapter" in observations["model_prompts"][-1]
+    assert len(observations["model_prompts"]) == 4
+    assert "Chapter ID must match the current chapter" in observations["model_prompts"][-2]
 
 
-def test_workflow_writes_one_chapter_per_model_call():
-    """四章大纲逐章准备、生成和提交，并在每次写作时提供完整大纲."""
+def test_workflow_writes_one_chapter_per_parallel_model_call():
+    """四章分别生成和提交，并在每次写作时提供完整大纲."""
     outline_chapters = [
         _outline_chapter(title=f"Finding {chapter_id}")
         for chapter_id in range(1, 5)
@@ -550,37 +653,44 @@ def test_workflow_writes_one_chapter_per_model_call():
             ],
         ],
         commit_results=[{"status": "ok", "validated": True}] * 4,
+        model_delay=0.05,
     )
+    original_concurrency = workflow_module.config.REPORTER_CHAPTER_CONCURRENCY
     try:
+        workflow_module.config.REPORTER_CHAPTER_CONCURRENCY = 2
         result = workflow_module.run_report_workflow()
     finally:
+        workflow_module.config.REPORTER_CHAPTER_CONCURRENCY = original_concurrency
         restore()
 
     assert result["success"], result
-    assert observations["calls"] == [
-        "commit_outline",
-        "prepare",
-        "commit_chapters",
-        "prepare",
-        "commit_chapters",
-        "prepare",
-        "commit_chapters",
-        "prepare",
-        "commit_chapters",
-        "deliver",
-    ]
+    assert observations["calls"][0] == "commit_outline"
+    assert observations["calls"].count("prepare") == 2
+    assert observations["calls"].count("commit_chapters") == 4
+    assert observations["calls"][-2:] == ["assemble", "deliver_polished"]
+    assert sorted(
+        chapter["chapter_id"]
+        for batch in observations["committed_chapters"]
+        for chapter in batch
+    ) == [1, 2, 3, 4]
     assert [
         [chapter["chapter_id"] for chapter in batch]
-        for batch in observations["committed_chapters"]
-    ] == [[1], [2], [3], [4]]
-    chapter_prompts = observations["model_prompts"][1:]
+        for batch in observations["prepared_chapters"]
+    ] == [[1, 2, 3], [4]]
+    assert observations["peak_model_concurrency"] == 2
+    chapter_prompts = observations["model_prompts"][1:-1]
     assert len(chapter_prompts) == 4
     assert all(
         all(f'"title": "Finding {chapter_id}"' in prompt for chapter_id in range(1, 5))
         for prompt in chapter_prompts
     )
     assert all(prompt.count("# Current Chapter Bundle") == 1 for prompt in chapter_prompts)
-    for current_id, prompt in enumerate(chapter_prompts, start=1):
+    for current_id in range(1, 5):
+        prompt = next(
+            prompt
+            for prompt in chapter_prompts
+            if f'"text": "Supported fact {current_id}"' in prompt
+        )
         assert f'"text": "Supported fact {current_id}"' in prompt
         assert all(
             f'"text": "Supported fact {other_id}"' not in prompt
@@ -632,19 +742,174 @@ def test_workflow_ignores_chapter_validation_and_skips_review():
 
     assert result["success"] and result["review_status"] == "skipped", result
     assert not result["validated"], result
+    assert observations["calls"][0] == "commit_outline"
+    assert observations["calls"].count("prepare") == 2
+    assert observations["calls"].count("commit_chapters") == 4
+    assert observations["calls"][-2:] == ["assemble", "deliver_polished"]
+    assert len(observations["model_prompts"]) == 6
+
+
+def test_failed_chapter_does_not_block_parallel_siblings():
+    """单章准备失败时，其他章节仍写作并进入统一交付。"""
+    outline_chapters = [
+        _outline_chapter(title=f"Finding {chapter_id}")
+        for chapter_id in range(1, 4)
+    ]
+    observations, restore = _install_fakes(
+        [
+            {"title": "Report", "chapters": outline_chapters},
+            {
+                "chapters": [
+                    {
+                        "chapter_id": 2,
+                        "content": "Supported fact 2.[1]",
+                        "evidence_refs": ["e1"],
+                    }
+                ]
+            },
+            {
+                "chapters": [
+                    {
+                        "chapter_id": 3,
+                        "content": "Supported fact 3.[1]",
+                        "evidence_refs": ["e1"],
+                    }
+                ]
+            },
+        ],
+        commit_results=[{"status": "ok", "validated": True}] * 2,
+        prepare_fail_ids={1},
+    )
+    try:
+        result = workflow_module.run_report_workflow()
+    finally:
+        restore()
+
+    assert result["success"], result
+    assert result["fallback_reason"] == (
+        "Reporter failed to draft chapters 1; deterministic fallbacks were used"
+    )
+    assert observations["calls"].count("commit_chapters") == 2
+    assert observations["calls"][-2:] == ["assemble", "deliver_polished"]
+    assert len(observations["model_prompts"]) == 4
+    assert observations["model_prompts"][-1].count("# Complete Draft") == 1
+
+
+def test_exhausted_chapter_still_enters_polish():
+    """单章写作重试耗尽后先确定性补齐，再进入一次全文润色。"""
+    invalid_chapter = {
+        "chapters": [
+            {
+                "chapter_id": 2,
+                "content": "Wrong chapter.[1]",
+                "evidence_refs": ["e1"],
+            }
+        ]
+    }
+    observations, restore = _install_fakes(
+        [
+            {"title": "Report", "chapters": [_outline_chapter()]},
+            invalid_chapter,
+            invalid_chapter,
+            invalid_chapter,
+        ]
+    )
+    try:
+        result = workflow_module.run_report_workflow()
+    finally:
+        restore()
+
+    assert result["success"], result
+    assert result["fallback_reason"] == (
+        "Reporter failed to draft chapters 1; deterministic fallbacks were used"
+    )
     assert observations["calls"] == [
         "commit_outline",
         "prepare",
-        "commit_chapters",
-        "prepare",
-        "commit_chapters",
-        "prepare",
-        "commit_chapters",
-        "prepare",
-        "commit_chapters",
-        "deliver",
+        "assemble",
+        "deliver_polished",
     ]
-    assert len(observations["model_prompts"]) == 5
+    polish_prompts = [
+        prompt
+        for prompt in observations["model_prompts"]
+        if "# Complete Draft" in prompt
+    ]
+    assert len(polish_prompts) == 1
+
+
+def test_polish_timeout_delivers_assembled_draft():
+    """润色请求超时时交付按大纲组装完成的章节草稿。"""
+    assembled = {
+        "delivered": True,
+        "validated": False,
+        "revision_requested": False,
+        "review_status": "skipped",
+        "report": "# Report\n\nSupported fact.[1]",
+    }
+    observations, restore = _install_fakes(
+        [
+            {"title": "Report", "chapters": [_outline_chapter()]},
+            {
+                "chapters": [
+                    {
+                        "chapter_id": 1,
+                        "content": "Supported fact.[1]",
+                        "evidence_refs": ["e1"],
+                    }
+                ]
+            },
+        ],
+        delivery_results=[assembled, assembled],
+        polish_error=TimeoutError("Request timed out."),
+    )
+    try:
+        result = workflow_module.run_report_workflow()
+    finally:
+        restore()
+
+    assert result["success"] and result["delivered"], result
+    assert result["fallback_reason"] == (
+        "Report polishing failed: Request timed out."
+    )
+    assert observations["calls"][-2:] == ["assemble", "deliver"]
+    assert "deliver_polished" not in observations["calls"]
+    polish_prompts = [
+        prompt
+        for prompt in observations["model_prompts"]
+        if "# Complete Draft" in prompt
+    ]
+    assert len(polish_prompts) == 1
+
+
+def test_reporter_polish_timeout_defaults_to_600_seconds():
+    """全文润色使用独立的 600 秒请求超时。"""
+    config = workflow_module.config
+    name = "GR_REPORTER_POLISH_TIMEOUT"
+    original_value = os.environ.get(name)
+    original_build_model = config.build_model
+    original_cache = dict(config._model_cache)
+    observed = {}
+    sentinel = object()
+    try:
+        os.environ.pop(name, None)
+        config._model_cache.pop("reporter_polish", None)
+
+        def build_model(**kwargs):
+            observed.update(kwargs)
+            return sentinel
+
+        config.build_model = build_model
+        assert config._reporter_polish_model() is sentinel
+    finally:
+        config.build_model = original_build_model
+        config._model_cache.clear()
+        config._model_cache.update(original_cache)
+        if original_value is None:
+            os.environ.pop(name, None)
+        else:
+            os.environ[name] = original_value
+
+    assert observed["timeout"] == 600.0
 
 
 def test_direct_report_assembly_skips_validation():
@@ -735,8 +1000,10 @@ def test_workflow_contains_only_runtime_nodes():
         "authorize",
         "export_context",
         "plan_outline",
-        "prepare_chapter_batch",
-        "draft_chapter_batch",
+        "prepare_chapters",
+        "draft_chapter",
+        "assemble_draft",
+        "polish_report",
         "submit",
         "finalize_best_effort",
         "fail",
@@ -836,6 +1103,29 @@ def test_run_report_workflow_forwards_runnable_config():
     assert observed["config"]["callbacks"] == ["trace"]
     assert observed["config"]["metadata"] == {"run": "reporter-replay"}
     assert observed["config"]["recursion_limit"] == 200
+    assert observed["config"]["max_concurrency"] == 3
+
+
+def test_reporter_chapter_concurrency_config_requires_positive_integer():
+    """并发配置接受正整数，并尽早拒绝无效值。"""
+    name = "GR_REPORTER_CHAPTER_CONCURRENCY"
+    original_value = os.environ.get(name)
+    try:
+        os.environ[name] = "5"
+        assert workflow_module.config._positive_int_from_env(name, 3) == 5
+        for invalid_value in ("0", "-1", "not-an-integer"):
+            os.environ[name] = invalid_value
+            try:
+                workflow_module.config._positive_int_from_env(name, 3)
+            except ValueError:
+                pass
+            else:
+                raise AssertionError(f"Invalid concurrency was accepted: {invalid_value}")
+    finally:
+        if original_value is None:
+            os.environ.pop(name, None)
+        else:
+            os.environ[name] = original_value
 
 
 if __name__ == "__main__":
@@ -844,11 +1134,16 @@ if __name__ == "__main__":
     test_workflow_retries_query_refs_outside_report_context()
     test_empty_query_context_skips_outline_model_and_uses_fallback()
     test_chapter_prompt_receives_full_outline_and_one_local_bundle()
+    test_polish_prompt_receives_complete_draft_and_preserves_contract()
     test_outline_contract_requires_complete_chapters_and_first_lead()
     test_chapter_contract_accepts_exactly_one_chapter()
     test_workflow_retries_invalid_chapter_json_then_commits()
-    test_workflow_writes_one_chapter_per_model_call()
+    test_workflow_writes_one_chapter_per_parallel_model_call()
     test_workflow_ignores_chapter_validation_and_skips_review()
+    test_failed_chapter_does_not_block_parallel_siblings()
+    test_exhausted_chapter_still_enters_polish()
+    test_polish_timeout_delivers_assembled_draft()
+    test_reporter_polish_timeout_defaults_to_600_seconds()
     test_direct_report_assembly_skips_validation()
     test_retry_exhaustion_uses_direct_delivery()
     test_unauthorized_workflow_fails_without_report_tools()
@@ -856,4 +1151,5 @@ if __name__ == "__main__":
     test_report_quality_checks_survive_middleware_removal()
     test_top_level_report_node_calls_deterministic_workflow()
     test_run_report_workflow_forwards_runnable_config()
+    test_reporter_chapter_concurrency_config_requires_positive_integer()
     print("ALL REPORTER WORKFLOW CHECKS PASSED")  # noqa: T201
