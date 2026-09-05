@@ -10,7 +10,7 @@
 - `Report Outline`：完整报告的标题和全部章节规划。
 - `Current Chapter Bundle`：当前章节的 Evidence、Claim 和需要披露的 Conflict。
 
-User Request 是唯一且最高级别的写作要求。正文语言必须与 User Request 相同；其中的评分标准、指定子主题、受众、格式和篇幅要求都必须落实到相应章节。
+User Request 是唯一且最高级别的写作要求。其中的评分标准、指定子主题、受众、格式和篇幅要求都必须落实到相应章节。
 
 本次调用的唯一写作目标由 `Current Chapter Bundle` 直接给出。只生成其中 `chapter_id` 和 `chapter_title` 指定的章节，并按照同一对象中的 `chapter_goals`、`section_plan` 和 `section_type` 展开；`Report Outline` 中的其他章节只用于理解全文分工。
 
@@ -89,7 +89,7 @@ User Request 是唯一且最高级别的写作要求。正文语言必须与 Use
 - `Current Chapter Bundle.section_type`：本章的章节类型，只会是 `lead` 或 `body`。
 - `evidence`：本章可以直接核验和引用的来源材料。
   - `ref`：章节局部 Evidence 引用，格式为 `e*`。
-  - `text`：来源中的最小充分原文，或对表格、实验结果和数据所作的忠实整理。可以根据 User Request 的语言准确转述或翻译，但必须保留主体、数值、单位、日期、地点、条件、归因和认识论情态。
+  - `text`：来源中的最小充分原文，或对表格、实验结果和数据所作的忠实整理。可以根据目标语言准确转述或翻译，但必须保留主体、数值、单位、日期、地点、条件、归因和认识论情态。
   - `source_numbers`：该 Evidence 可用的数字来源编号。编号只用于生成 `[n]`，不表示来源类型、质量或先后次序。
 - `claims`：根据一个或多个来源材料规范化得到的研究命题，用于组织正文论述。
   - `ref`：章节局部 Claim 引用，格式为 `c*`。
@@ -104,7 +104,7 @@ User Request 是唯一且最高级别的写作要求。正文语言必须与 Use
     - `qualifies`：Evidence 限定 Claim 的范围、条件或确定性。
 - `disclosed_conflicts`：需要在本章中性呈现的实质性分歧。
   - `ref`：章节局部 Conflict 引用，格式为 `x*`。
-  - `description`：必须保留的中性分歧描述。
+  - `description`：需要用目标语言忠实呈现的中性分歧描述。
   - `conflict_type`：分歧类型。
   - `evidence_refs`：与该分歧直接相关的章节局部 Evidence。
 
@@ -113,6 +113,14 @@ User Request 是唯一且最高级别的写作要求。正文语言必须与 Use
 `Report Outline` 每次都包含完整报告结构，用于判断当前章节在全文中的位置和与前后章节的分工。它不包含事实证据，不能支撑正文断言。当前调用不提前撰写后续章节，也不把其他章节的目标扩写进当前正文。
 
 来源标题和 URL 由程序在最终参考文献中补充，不进入章节 bundle。不得从引用编号、字段顺序或缺失字段推断来源身份、质量或未提供的信息。
+
+# 写作语言
+
+从 User Request 确定报告的目标语言：用户明确指定输出语言时，遵循其指定；否则使用用户提出任务时的主要语言。混合语言请求以任务表达为准，其中引用的名称或材料不改变目标语言。提示词说明、示例、检索材料及已有草稿的语言不作为输出语言依据。
+
+`content` 中的正文、小标题、表格标题、表头、单元格内容和 Infobox 字段说明均使用目标语言。大纲中的标题、目标和章节规划用于确定写作范围，不改变目标语言。JSON 键名、枚举值、标识符、URL 和引用编号保持原样；专有名词、来源原题及必要的直接引语可以保留原文。
+
+Evidence、Claim 和 Conflict 可以忠实转述或翻译为目标语言。保留材料是指保留其含义、主体身份、数值、单位、日期、地点、条件、归因、认识论情态及引用对应关系，不要求照抄材料的语言。
 
 # Evidence 与 Claim 的使用方式
 
@@ -136,7 +144,7 @@ User Request 是唯一且最高级别的写作要求。正文语言必须与 Use
 - 不把全章来源批量附在每一段末尾，也不使用与当前表述只有主题关联的引用。
 - `evidence_refs` 列出本章实际使用的全部 `e*` 和 `c*`。没有进入 `evidence_refs` 的材料不能支撑正文。
 - `disclosed_conflict_refs` 只列出正文实际讨论的 `x*`。
-- 披露 Conflict 时，必须保留 bundle 给出的中性描述，并根据相关 Evidence 具名呈现可以识别的争议方、立场和适用范围。
+- 披露 Conflict 时，必须用目标语言忠实呈现 bundle 给出的中性描述，并根据相关 Evidence 具名呈现可以识别的争议方、立场和适用范围。
 - 不伪造 URL、来源、人物、数据、日期、地点、出处、引用编号或 Evidence—Claim 关系。
 - 不在章节中附加 References、参考文献、Bibliography 或 Notes。
 

@@ -523,14 +523,16 @@ def test_chapter_prompt_receives_full_outline_and_one_local_bundle():
 
 
 def test_polish_prompt_receives_complete_draft_and_preserves_contract():
-    """全文润色 prompt 只要求行文调整，并接收完整草稿。"""
+    """全文润色接收完整草稿，并在保留结构和引用的前提下允许语言转换。"""
     draft = "# Report\n\n## Finding\n\nFact 42.[1]\n\n## References\n\n1. Source"
 
     prompt = workflow_module._polish_prompt("Write a cited report.", draft)
 
     assert "Write a cited report." in prompt
     assert draft in prompt
-    assert "不新增、删除、拆分、合并或重命名标题" in prompt
+    assert "保留章节主题、数量、顺序和标题层级" in prompt
+    assert "不新增、删除、拆分或合并章节" in prompt
+    assert "标题翻译不得改变章节主题" in prompt
     assert "事实、数值、单位、日期、名称、归因、限定条件" in prompt
     assert "不新增、删除、替换或重新编号引用" in prompt
     assert '"report": "完整的 Markdown 报告"' in prompt
