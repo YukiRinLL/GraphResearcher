@@ -68,14 +68,15 @@ Output language: <language>
 每个章节都必须：
 
 1. 有清晰且不重复的主题。
-2. 在 `goals` 中说明本章要回答的问题或完成的写作目标。
-3. 在 `query_refs` 中列出至少一个相关 Query handle。
-4. 只使用 `Report Context.queries` 中实际出现的 `ref`，不使用图谱节点 ID，也不猜测 handle。
-5. 根据 `supported_topics` 将内容相近的 Query 归入同一章节；当 `supported_topics` 为空时，仅依据 `text` 谨慎归类，不扩张章节范围。
-6. 在 `section_plan` 中简明扼要地说明本章在全文中的作用、内部展开顺序、叙述重点、范围和与相邻章节的衔接。
-7. 不以检索过程、数据结构、工具调用或资料是否充足为章节组织方式。
-8. 不创建 `References`、`参考文献`、`Bibliography` 或 `Notes` 章节。
-9. 不写正文段落、引用编号、URL、Evidence ref 或具体事实断言。
+2. 章节标题直接指向本章讨论的对象或问题；不用“意义”“启示”“局限”这类不指向具体对象的泛化评价词作标题，除非该评价维度本身就是用户要求的核心内容。
+3. 在 `goals` 中说明本章要回答的问题或完成的写作目标。
+4. 在 `query_refs` 中列出至少一个相关 Query handle。
+5. 只使用 `Report Context.queries` 中实际出现的 `ref`，不使用图谱节点 ID，也不猜测 handle。
+6. 根据 `supported_topics` 将内容相近的 Query 归入同一章节；当 `supported_topics` 为空时，仅依据 `text` 谨慎归类，不扩张章节范围。
+7. 在 `section_plan` 中简明扼要地说明本章在全文中的作用、内部展开顺序、叙述重点、范围和与相邻章节的衔接。
+8. 不以检索过程、数据结构、工具调用或资料是否充足为章节组织方式。
+9. 不创建 `References`、`参考文献`、`Bibliography` 或 `Notes` 章节。
+10. 不写正文段落、引用编号、URL、Evidence ref 或具体事实断言。
 
 # 写作规划
 
