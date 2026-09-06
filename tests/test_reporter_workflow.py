@@ -138,6 +138,7 @@ def _install_fakes(
                             "type": "Evidence",
                             "text": f"Supported fact {chapter['chapter_id']}",
                             "source_numbers": [1],
+                            "source_titles": ["Source One"],
                         }
                     ],
                     "disclosed_conflicts": [],
@@ -456,12 +457,14 @@ def test_chapter_prompt_receives_full_outline_and_one_local_bundle():
                 ],
                 "evidence_relations": [],
                 "source_numbers": [2],
+                "source_titles": ["Example Org annual survey"],
             },
             {
                 "ref": "e21",
                 "type": "Evidence",
                 "text": "Evidence from multiple sources",
                 "source_numbers": [7, 9],
+                "source_titles": ["Seventh source title", "Ninth source title"],
             },
             {
                 "ref": "c1",
@@ -475,6 +478,7 @@ def test_chapter_prompt_receives_full_outline_and_one_local_bundle():
                     {"target_ref": "e10", "stance": "supports"}
                 ],
                 "source_numbers": [1],
+                "source_titles": ["Claim source title"],
             },
         ],
         "disclosed_conflicts": [
@@ -509,10 +513,22 @@ def test_chapter_prompt_receives_full_outline_and_one_local_bundle():
     assert '"evidence_refs": [{"ref": "e10", "stance": "supports"}]' in prompt
     writer_bundle = json.loads(prompt.split("# Current Chapter Bundle\n\n", 1)[1])
     assert writer_bundle["evidence"] == [
-        {"ref": "e10", "text": "Specific supporting evidence", "citation": "[2]"},
-        {"ref": "e21", "text": "Evidence from multiple sources", "citation": "[7][9]"},
+        {
+            "ref": "e10",
+            "text": "Specific supporting evidence",
+            "citation": "[2]",
+            "source_titles": ["Example Org annual survey"],
+        },
+        {
+            "ref": "e21",
+            "text": "Evidence from multiple sources",
+            "citation": "[7][9]",
+            "source_titles": ["Seventh source title", "Ninth source title"],
+        },
     ]
     assert "citation" not in writer_bundle["claims"][0]
+    assert "source_titles" not in writer_bundle["claims"][0]
+    assert "Example Org annual survey" in prompt
     assert '"source_numbers"' not in prompt
     assert '"description": "A disclosed disagreement"' in prompt
     assert '"evidence_items"' not in prompt

@@ -491,6 +491,10 @@ def _public_evidence_items(
                 if id_to_ref.get(str(relation.get("evidence_id")))
             ],
             "source_numbers": item.get("citations") or [],
+            "source_titles": [
+                str(source.get("title") or "")
+                for source in item.get("sources") or []
+            ],
         })
     return projected, {ref: item_id for item_id, ref in id_to_ref.items()}
 
