@@ -473,13 +473,17 @@ def submit_final_report() -> dict:
         # Critical review patterns that must trigger revision even when
         # labeled soft by the reviewer. Pure soft issues (placeholder prose,
         # low retention, single-source reliance, etc.) are recorded but do
-        # not consume the single revision slot.
+        # not consume the single revision slot. Reviewer issues tagged as
+        # vague language (imprecise attribution, non-specific statements)
+        # also consume the revision slot.
         CRITICAL_REVIEW_PATTERNS = (
             "uncited factual",
             "citation has no URL-backed reference",
             "forbidden internal-process",
             "no valid cited sections",
             "missing_substantive_uncertainty",
+            "vague_attribution",
+            "vague_specificity",
         )
         hard_issues = [
             issue for issue in combined_issues
