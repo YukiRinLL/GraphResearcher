@@ -561,6 +561,7 @@ Requirements:
 - Bad queries (AVOID) pile the entity name together with generic research filler words (words meaning "research/analysis/study/sources/evidence" or other non-dimensional vocabulary) instead of a single concrete dimension keyword from the gap.
 - Do NOT use generic filler words: "authoritative", "identification", "disambiguation", "museum", "scholarly", "sources", "principal facts", "evidence", "debate", "analysis", "summary", "overview", "context", "comprehensive", "detailed", "research", "study", "investigation"
 - Cover only the assigned related gaps; do not repeat any existing Query.
+- Sibling queries must not all draw from the same kind of source. When the assigned gaps allow, choose dimension keywords so that your queries, together with the existing queries, span different kinds of publishing origins instead of repeatedly surfacing one dominant source pool.
 - Preserve forbidden domains with `-site:domain`; do not print exact forbidden URLs into the query.
 - Author the query text in the language of the research goal.
 - Include concrete acceptance_criteria copied or refined from the assigned atomic gap.

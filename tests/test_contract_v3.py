@@ -228,7 +228,7 @@ def test_single_review_and_fail_open():
             )
             reviews = []
             graph_manager_tools._review_report_once = lambda report: (
-                reviews.append(report) or ["导言缺少范围说明"]
+                reviews.append(report) or ["导言缺少范围说明 (vague_specificity)"]
             )
 
             first = graph_manager_tools.submit_final_report()
