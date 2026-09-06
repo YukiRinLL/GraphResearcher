@@ -288,7 +288,7 @@ def _writer_chapter_bundle(bundle: dict[str, Any]) -> dict[str, Any]:
         {
             "ref": item.get("ref"),
             "text": item.get("text"),
-            "source_numbers": item.get("source_numbers") or [],
+            "citation": "".join(f"[{number}]" for number in item.get("source_numbers") or []),
         }
         for item in items
         if str(item.get("type") or "Evidence").casefold() == "evidence"

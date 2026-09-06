@@ -1,5 +1,6 @@
 """确定性 LangGraph Reporter workflow 的独立回归检查。"""
 
+import json
 import os
 import sys
 import threading
@@ -327,13 +328,13 @@ def test_outline_prompt_is_limited_to_outline_planning():
     assert "`q1.2.1` 是 `q1.2` 的子 Query" in prompt
     assert "同一层级的 Query 是并列研究分支" in prompt
     assert "实际列表可能不连续" in prompt
-    assert "材料不会沿父子或兄弟关系自动合并" in prompt
-    assert "必须在 `query_refs` 中逐一列出对应 handle" in prompt
-    assert "识别报告的任务类型、目标读者和核心问题" in prompt
-    assert "不按 Query 编号或树形顺序排列章节" in prompt
+    assert "不会合并各节点持有的材料" in prompt
+    assert "只读取该章 `query_refs` 明确列出的 Query" in prompt
+    assert "目标读者、阅读目的和需要回答的核心问题" in prompt
+    assert "按照读者理解问题所需的顺序排列" in prompt
     assert "Query 数量不作为拆章或合章依据" in prompt
     assert "没有相关 Query 支持的维度不纳入章节范围" in prompt
-    assert "研究对象本身的局限、风险或适用边界" in prompt
+    assert "方法评估、风险和适用边界作为独立主题时" in prompt
     assert '"conflict_type": "分歧类型"' in prompt
     assert '"reference_registry"' not in prompt
     assert "Retry Feedback" not in prompt
@@ -443,7 +444,7 @@ def test_chapter_prompt_receives_full_outline_and_one_local_bundle():
         "query_refs": ["q1"],
         "evidence_items": [
             {
-                "ref": "e1",
+                "ref": "e10",
                 "type": "Evidence",
                 "text": "Specific supporting evidence",
                 "confidence": 0.9,
@@ -454,7 +455,13 @@ def test_chapter_prompt_receives_full_outline_and_one_local_bundle():
                     {"target_ref": "c1", "stance": "supports"}
                 ],
                 "evidence_relations": [],
-                "source_numbers": [1],
+                "source_numbers": [2],
+            },
+            {
+                "ref": "e21",
+                "type": "Evidence",
+                "text": "Evidence from multiple sources",
+                "source_numbers": [7, 9],
             },
             {
                 "ref": "c1",
@@ -465,7 +472,7 @@ def test_chapter_prompt_receives_full_outline_and_one_local_bundle():
                 "limitations": ["single source"],
                 "claim_relations": [],
                 "evidence_relations": [
-                    {"target_ref": "e1", "stance": "supports"}
+                    {"target_ref": "e10", "stance": "supports"}
                 ],
                 "source_numbers": [1],
             },
@@ -475,7 +482,7 @@ def test_chapter_prompt_receives_full_outline_and_one_local_bundle():
                 "ref": "x1",
                 "description": "A disclosed disagreement",
                 "conflict_type": "factual",
-                "evidence_refs": ["e1"],
+                "evidence_refs": ["e10", "e21"],
             }
         ],
     }
@@ -499,7 +506,14 @@ def test_chapter_prompt_receives_full_outline_and_one_local_bundle():
     assert '"section_type": "body"' in prompt
     assert '"text": "Specific supporting evidence"' in prompt
     assert '"text": "Normalized claim"' in prompt
-    assert '"evidence_refs": [{"ref": "e1", "stance": "supports"}]' in prompt
+    assert '"evidence_refs": [{"ref": "e10", "stance": "supports"}]' in prompt
+    writer_bundle = json.loads(prompt.split("# Current Chapter Bundle\n\n", 1)[1])
+    assert writer_bundle["evidence"] == [
+        {"ref": "e10", "text": "Specific supporting evidence", "citation": "[2]"},
+        {"ref": "e21", "text": "Evidence from multiple sources", "citation": "[7][9]"},
+    ]
+    assert "citation" not in writer_bundle["claims"][0]
+    assert '"source_numbers"' not in prompt
     assert '"description": "A disclosed disagreement"' in prompt
     assert '"evidence_items"' not in prompt
     assert '"bundle_token"' not in prompt
