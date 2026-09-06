@@ -219,6 +219,28 @@ def scheduler_node(state: dict) -> dict:
     }
 
 
+_TRANSIENT_ATTEMPTS = 4
+
+
+def _research_call(fn, *args):
+    """Call a graph-manager tool with backoff retries for transient upstream errors (e.g. 5xx)."""
+    import time
+
+    for attempt in range(1, _TRANSIENT_ATTEMPTS + 1):
+        try:
+            return fn(*args)
+        except Exception as exc:  # noqa: BLE001 - transient upstream errors must not kill the research loop
+            if attempt == _TRANSIENT_ATTEMPTS:
+                raise
+            wait = 20 * attempt
+            print(
+                f"[research_call] transient error: {exc}; "
+                f"retry {attempt}/{_TRANSIENT_ATTEMPTS - 1} in {wait}s",
+                flush=True,
+            )
+            time.sleep(wait)
+
+
 def assess_node(state: dict) -> dict:
     """评估单个 Query 的证据充分性并推进其状态."""
     action = state.get("current_action") or {}
@@ -227,7 +249,7 @@ def assess_node(state: dict) -> dict:
     if not query_id:
         return {"current_action": None, "forced_convergence_count": forced_count, "messages": [AIMessage(content="[assess_query] no query_id")]}
 
-    result = gmt.assess_query.func(query_id)
+    result = _research_call(gmt.assess_query.func, query_id)
     idle = int(state.get("consecutive_idle") or 0) + 1  # assess 不直接产生搜索进展
     if result.get("error"):
         summary = f"[assess_query] {action.get('query_handle', query_id)} ERROR: {result['error']}"
@@ -255,7 +277,7 @@ def portfolio_node(state: dict) -> dict:
             prior_revision = int(prior_node.get("portfolio_revision") or 0)
         except Exception:
             prior_revision = 0
-    result = gmt.evaluate_research_portfolio.func(goal_id)
+    result = _research_call(gmt.evaluate_research_portfolio.func, goal_id)
     if result.get("error"):
         summary = f"[evaluate_portfolio] ERROR: {result['error']}"
         idle = int(state.get("consecutive_idle") or 0) + 1
@@ -294,7 +316,7 @@ def expand_node(state: dict) -> dict:
     if not parent_id:
         return {"current_action": None, "consecutive_idle": int(state.get("consecutive_idle") or 0) + 1, "forced_convergence_count": int(state.get("forced_convergence_count") or 0), "messages": [AIMessage(content="[expand_gaps] no parent_id")]}
 
-    result = gmt.expand_gaps.func(parent_id, gap_ids)
+    result = _research_call(gmt.expand_gaps.func, parent_id, gap_ids)
     if result.get("error"):
         summary = f"[expand_gaps] parent={action.get('query_handle', parent_id)} ERROR: {result['error']}"
         idle = int(state.get("consecutive_idle") or 0) + 1

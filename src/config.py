@@ -50,7 +50,7 @@ NEO4J_DATABASE = os.environ.get("NEO4J_DATABASE", "neo4j")
 def build_model(
     model_name: Optional[str] = None,
     temperature: float = 0.7,
-    max_retries: int = 3,
+    max_retries: int = 6,
     timeout: Optional[float] = None,
 ) -> ChatOpenAI:
     """Build a chat model bound to the configured OpenAI-compatible endpoint.
