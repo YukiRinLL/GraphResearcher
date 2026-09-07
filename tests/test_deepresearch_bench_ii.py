@@ -3,9 +3,11 @@
 # ruff: noqa: T201
 
 import json
+import os
 import sys
 import tempfile
 from pathlib import Path
+from unittest.mock import patch
 
 repo_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(repo_dir))
@@ -115,6 +117,7 @@ def _make_bench_root(root):
     (bench_root / "tasks_and_rubrics.jsonl").write_text("{}\n", encoding="utf-8")
     (bench_root / "run_evaluation.py").write_text("", encoding="utf-8")
     (bench_root / "aggregate_scores.py").write_text("", encoding="utf-8")
+    (bench_root / ".env").write_text("OPENAI_API_KEY=bench-key\nOPENAI_API_URL=https://bench.example/v1/chat/completions\n", encoding="utf-8")
     return bench_root
 
 
@@ -138,13 +141,15 @@ def _test_evaluation_commands_and_resume():
         calls = []
         original_runner = batch.run_command_tee
         try:
-            batch.run_command_tee = lambda command, cwd, log_path: calls.append((command, cwd, log_path))
+            batch.run_command_tee = lambda command, cwd, log_path, env=None: calls.append((command, cwd, log_path, env))
             batch.run_bench_evaluation(output_dir, bench_root, "GraphResearcher")
         finally:
             batch.run_command_tee = original_runner
 
         assert len(calls) == 2
-        evaluation_command, cwd, log_path = calls[0]
+        evaluation_command, cwd, log_path, env = calls[0]
+        assert env["OPENAI_API_KEY"] == "bench-key"
+        assert calls[1][3] == env
         assert evaluation_command[:6] == ["uv", "run", "--project", str(bench_root.resolve()), "--isolated", "python"]
         assert str(bench_root.resolve() / "run_evaluation.py") in evaluation_command
         assert evaluation_command[evaluation_command.index("--log_file") + 1] == ""
@@ -174,7 +179,7 @@ def _test_all_scored_skips_judge_but_aggregates():
         calls = []
         original_runner = batch.run_command_tee
         try:
-            batch.run_command_tee = lambda command, cwd, log_path: calls.append(command)
+            batch.run_command_tee = lambda command, cwd, log_path, env=None: calls.append(command)
             batch.run_bench_evaluation(output_dir, bench_root, "GraphResearcher")
         finally:
             batch.run_command_tee = original_runner
@@ -184,12 +189,68 @@ def _test_all_scored_skips_judge_but_aggregates():
         assert str(bench_root.resolve() / "run_evaluation.py") not in calls[0]
 
 
+def _test_env_and_subprocess_isolation():
+    with tempfile.TemporaryDirectory() as temp_dir:
+        root = Path(temp_dir)
+        bench_root = _make_bench_root(root)
+        with patch.dict(os.environ, {"OPENAI_API_KEY": "parent-key"}):
+            env = batch.bench_subprocess_env(bench_root)
+            assert env["OPENAI_API_KEY"] == "bench-key"
+            # 用真实的本地子进程检查传递结果，输出只含测试标记。
+            batch.run_command_tee([
+                sys.executable, "-c",
+                "import os; assert os.environ['OPENAI_API_KEY'] == 'bench-key'; print('env-ok')",
+            ], bench_root, root / "subprocess.log", env=env)
+            assert os.environ["OPENAI_API_KEY"] == "parent-key"
+            assert "env-ok" in (root / "subprocess.log").read_text()
+        (bench_root / ".env").unlink()
+        try:
+            batch.bench_subprocess_env(bench_root)
+        except FileNotFoundError:
+            pass
+        else:
+            raise AssertionError("Missing benchmark .env must fail")
+
+
+def _test_evaluate_only_and_custom_paths():
+    with tempfile.TemporaryDirectory() as temp_dir:
+        root = Path(temp_dir)
+        bench_root = _make_bench_root(root)
+        output_dir = root / "output"
+        model_dir = output_dir / "report" / "GraphResearcher"
+        model_dir.mkdir(parents=True)
+        (model_dir / "idx-1.md").write_text("report", encoding="utf-8")
+        tasks_path = root / "custom-tasks.jsonl"
+        tasks_path.write_text("{}\n", encoding="utf-8")
+        with (
+            patch.object(sys, "argv", [
+                "test_deepresearch_bench_ii.py", "--evaluate-only",
+                "--bench-root", str(bench_root), "--prompt-path", str(tasks_path),
+                "--output-path", str(output_dir), "--bench-python", sys.executable,
+            ]),
+            patch.object(batch, "run", side_effect=AssertionError("Agent must not run")),
+            patch.object(batch, "load_items", side_effect=AssertionError("Generation input must not load")),
+            patch.object(batch, "run_command_tee") as commands,
+        ):
+            batch.main()
+        assert commands.call_count == 2
+        for call in commands.call_args_list:
+            assert call.args[0][0] == sys.executable
+            assert str(tasks_path.resolve()) in call.args[0]
+            assert call.kwargs["env"]["OPENAI_API_KEY"] == "bench-key"
+        with patch.object(sys, "argv", ["batch", "--bench-root", str(bench_root)]):
+            args = batch.parse_args()
+            assert args.prompt_path == bench_root / "tasks_and_rubrics.jsonl"
+
+
 def main():
     _test_load_and_sample_items()
     _test_run_one_and_skip_existing()
     _test_successful_evaluations_and_staging()
     _test_evaluation_commands_and_resume()
     _test_all_scored_skips_judge_but_aggregates()
+    _test_env_and_subprocess_isolation()
+    _test_evaluate_only_and_custom_paths()
     print("DeepResearch Bench II batch regression checks passed.")
 
 

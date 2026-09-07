@@ -144,6 +144,75 @@ uv run python test_wlc.py \
 
 `test_wlc.py` 会捕获单条任务的异常并继续处理下一条，因此批量命令返回成功并不等于每条任务都有报告。应检查终端输出、各 run 的 `run.log` 和最终报告数量。
 
+## DeepResearch Bench I 与 II：批量运行和官方评测
+
+两个入口都复用 `main.run()`。生成阶段读取 GraphResearcher 的配置，每题保存输入快照、`run.log`、`report.md` 和 `research_graph.jsonl`。默认抽样 5 题；`--sample-size 0` 表示全部任务，`--seed` 控制可重复抽样。两个脚本都跳过已有报告，并可在生成后加 `--evaluate` 运行官方评测，或使用 `--evaluate-only` 只评测已有报告。
+
+以下命令应在 GraphResearcher 根目录执行。生成会消耗模型与搜索配额并访问 Neo4j；官方评分会额外消耗评测模型配额，Bench I 的 FACT 还会使用 Jina Reader。`--max-rounds 1` 适合确认流程，正式质量评测应设置足够的搜索预算。
+
+### Bench I
+
+[`test_deepresearch_bench.py`](test_deepresearch_bench.py) 默认读取相邻 `deep_research_bench` 仓库的 `data/prompt_data/query.jsonl`。输入保留官方整数 `id`、`prompt` 和 `language`，生成过程只把原始 `prompt` 传给 agent。
+
+```bash
+# 生成一题并运行 RACE 和 FACT。
+uv run python test_deepresearch_bench.py \
+  --sample-size 1 --seed 42 --max-rounds 1 \
+  --output-path outputs/drb_smoke --evaluate
+
+# 只对已有报告运行 RACE；FACT 使用 --eval-mode fact。
+uv run python test_deepresearch_bench.py \
+  --output-path outputs/drb_smoke --evaluate-only --eval-mode race
+```
+
+Bench I 的 `--eval-mode` 可选 `all`、`race`、`fact`，默认 `all`。`--eval-max-workers` 控制官方并发数，默认 5。`--bench-root` 可切换官方仓库位置，未指定 `--prompt-path` 时输入路径随仓库位置变化。
+
+输出结构如下，`--model-name` 默认是 `GraphResearcher`：
+
+```text
+outputs/drb_smoke/
+  report/GraphResearcher/id-<id>.md
+  _runs/GraphResearcher/id-<id>/
+  raw_data/GraphResearcher.jsonl
+  cleaned_data/GraphResearcher.jsonl
+  _evaluation/GraphResearcher/query.jsonl
+  _evaluation/GraphResearcher/official_output.log
+  results/race/GraphResearcher/race_result.txt
+  results/fact/GraphResearcher/fact_result.txt
+```
+
+`raw_data/GraphResearcher.jsonl` 每行只有 `{id, prompt, article}`，可直接用于官方提交。每次导出会收集当前输入清单中已有的全部非空报告，因此续跑抽样不会丢掉之前的成果。评测任务清单与这份导出逐题对齐，原始提示词和带引用的正文保持不变。没有生成正文的任务不会进入评测，零份有效报告会使脚本报错。RACE 另用 `race_query.jsonl` 排除已成功评分的任务，避免续跑重复追加结果。RACE 的清洗、FACT 的引用提取和验证均由官方代码执行，结果与中间文件保存在上述输出目录。
+
+### Bench II
+
+[`test_deepresearch_bench_ii.py`](test_deepresearch_bench_ii.py) 默认读取相邻 `DeepResearch-Bench-II` 仓库的 `tasks_and_rubrics.jsonl`。生成阶段使用顶层 `prompt`，其中的来源限制会原样保留；`content` 中的评分 rubric 仅供官方评测器读取。
+
+```bash
+uv run python test_deepresearch_bench_ii.py \
+  --sample-size 1 --seed 42 --max-rounds 1 \
+  --output-path outputs/drb_ii_smoke --evaluate
+
+uv run python test_deepresearch_bench_ii.py \
+  --output-path outputs/drb_ii_smoke --evaluate-only
+```
+
+报告位于 `report/GraphResearcher/idx-<n>.md`，每题产物位于 `_runs/idx-<n>-<id>/`。官方逐题结果保存在输出根目录的 `result.jsonl`，汇总为 `agg_scores_*.csv`，评测日志在 `_evaluation/run_evaluation.log`。评测会扫描所选模型目录内累计的报告，只提交尚无成功评分的任务，再汇总累计结果。`--evaluate-only` 不进行生成或随机抽样。设置 `--prompt-path` 时，生成和评分使用同一任务文件。
+
+### 评测配置
+
+两个入口在启动官方子进程前，读取各自 `--bench-root` 下的 `.env`；文件中的配置覆盖父进程同名变量，agent 进程保持原配置。切换评测服务时修改对应 benchmark 的 `.env`。真实 key 不应写入示例文件或版本控制。
+
+| 仓库 | 配置项 | URL 格式 |
+| --- | --- | --- |
+| `deep_research_bench` | `LLM_BACKEND=openai`、`OPENAI_API_KEY`、`OPENAI_BASE_URL`、`RACE_MODEL`、`FACT_MODEL`、`JINA_API_KEY` | `OPENAI_BASE_URL` 使用 API 根路径，例如 `https://api.openai.com/v1`。 |
+| `DeepResearch-Bench-II` | `OPENAI_API_KEY`、`OPENAI_API_URL`、`OPENAI_MODEL`、`OPENAI_REASONING_EFFORT` | `OPENAI_API_URL` 使用完整端点，例如 `https://api.openai.com/v1/chat/completions`。 |
+
+Bench I 的无凭据模板在其仓库 `.env.example`，Bench II 模板为 `.env_example`。Bench I 的 OpenAI 后端默认 RACE 模型是 `gpt-5.5`，FACT 模型是 `gpt-5.4-mini`。评测模型由 benchmark 配置决定，与生成模型 `GR_MODEL` 分开；使用不同评测模型得到的分数应注明配置。FACT 需要 Jina key，只运行 RACE 则无需该项。
+
+两个脚本均可通过 `--bench-python /absolute/path/to/python` 指定已经准备好的评测解释器。Bench I 默认使用启动当前脚本的 Python；Bench II 保留原有 `uv run --project <bench-root> --isolated python` 命令。脚本不负责安装或修改 Python 依赖环境。
+
+续跑会复用已有报告和官方评测缓存。更换生成模型、评测模型、任务文本或搜索预算进行新实验时，应使用新的输出目录，避免混合不同配置的产物。
+
 ## `evaluation_dashboard.html`：查看运行产物
 
 这是一个纯前端 HTML 页面，使用 CDN 提供的 `vis-network` 绘制图谱。可以直接在浏览器打开：

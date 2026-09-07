@@ -32,7 +32,6 @@ dotenv.load_dotenv(".env")
 # 测试运行配置
 # =========================
 BENCH_ROOT = Path("/Users/yindq/projects/DeepResearch/DeepResearch-Bench-II")
-PROMPT_PATH = BENCH_ROOT / "tasks_and_rubrics.jsonl"
 OUTPUT_PATH = Path("outputs/deepresearch_bench_ii")
 MODEL_NAME = "GraphResearcher"
 SAMPLE_SIZE = 5
@@ -216,7 +215,17 @@ def stage_pending_reports(
     return staged
 
 
-def run_command_tee(command: list[str], cwd: Path, log_path: Path) -> None:
+def bench_subprocess_env(bench_root: Path) -> dict[str, str]:
+    """读取评测仓库配置，供子进程覆盖同名环境变量。"""  # noqa: D415
+    env_file = bench_root / ".env"
+    if not env_file.is_file():
+        raise FileNotFoundError(f"Benchmark environment file not found: {env_file}")
+    return {key: value for key, value in dotenv.dotenv_values(env_file).items() if value is not None}
+
+
+def run_command_tee(
+    command: list[str], cwd: Path, log_path: Path, env: dict[str, str] | None = None,
+) -> None:
     """Run a command and mirror combined output to the terminal and a log."""
     log_path.parent.mkdir(parents=True, exist_ok=True)
     header = "\n" + "=" * 80 + "\n"
@@ -231,7 +240,7 @@ def run_command_tee(command: list[str], cwd: Path, log_path: Path) -> None:
         process = subprocess.Popen(
             command,
             cwd=cwd,
-            env={**os.environ, "PYTHONUNBUFFERED": "1"},
+            env={**os.environ, **(env or {}), "PYTHONUNBUFFERED": "1"},
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
@@ -254,16 +263,26 @@ def _bench_python_command(bench_root: Path) -> list[str]:
     return ["uv", "run", "--project", str(bench_root), "--isolated", "python"]
 
 
-def run_bench_evaluation(output_dir: Path, bench_root: Path, model_name: str) -> None:
+def run_bench_evaluation(
+    output_dir: Path,
+    bench_root: Path,
+    model_name: str,
+    tasks_path: Path | None = None,
+    python_bin: str | None = None,
+) -> None:
     """Evaluate unscored reports and aggregate all accumulated results."""
     bench_root = bench_root.resolve()
     output_dir = output_dir.resolve()
-    tasks_path = bench_root / "tasks_and_rubrics.jsonl"
+    tasks_path = (tasks_path or bench_root / "tasks_and_rubrics.jsonl").resolve()
     evaluation_script = bench_root / "run_evaluation.py"
     aggregate_script = bench_root / "aggregate_scores.py"
     for required in (tasks_path, evaluation_script, aggregate_script):
         if not required.exists():
             raise FileNotFoundError(f"Required DeepResearch Bench II file not found: {required}")
+
+    subprocess_env = bench_subprocess_env(bench_root)
+    if not subprocess_env.get("OPENAI_API_KEY"):
+        raise ValueError("Missing OPENAI_API_KEY in benchmark .env")
 
     reports = discover_reports(output_dir / "report" / model_name)
     if not reports:
@@ -278,7 +297,7 @@ def run_bench_evaluation(output_dir: Path, bench_root: Path, model_name: str) ->
 
     completed = load_successful_evaluations(result_path)
     staged = stage_pending_reports(reports, completed, model_name, staging_report_dir)
-    command_prefix = _bench_python_command(bench_root)
+    command_prefix = [python_bin] if python_bin else _bench_python_command(bench_root)
 
     if staged:
         print(f"Staged {len(staged)} pending report(s): {staging_report_dir}")
@@ -294,7 +313,7 @@ def run_bench_evaluation(output_dir: Path, bench_root: Path, model_name: str) ->
             "--log_file",
             "",
         ]
-        run_command_tee(evaluation_command, bench_root, log_path)
+        run_command_tee(evaluation_command, bench_root, log_path, env=subprocess_env)
     else:
         print(f"All {len(reports)} report(s) for {model_name} already have successful evaluations.")
 
@@ -308,7 +327,7 @@ def run_bench_evaluation(output_dir: Path, bench_root: Path, model_name: str) ->
         "--output-prefix",
         str(output_dir / "agg_scores"),
     ]
-    run_command_tee(aggregate_command, bench_root, log_path)
+    run_command_tee(aggregate_command, bench_root, log_path, env=subprocess_env)
     print(f"Evaluation results: {result_path}")
     print(f"Aggregated scores: {output_dir / 'agg_scores_*.csv'}")
 
@@ -316,13 +335,15 @@ def run_bench_evaluation(output_dir: Path, bench_root: Path, model_name: str) ->
 def parse_args() -> argparse.Namespace:
     """Parse generation and optional evaluation arguments."""
     parser = argparse.ArgumentParser(description="Batch-test GraphResearcher on DeepResearch Bench II.")
-    parser.add_argument("--prompt-path", type=Path, default=PROMPT_PATH, help="Benchmark tasks JSONL path.")
+    parser.add_argument("--prompt-path", type=Path, default=None, help="Tasks JSONL; defaults to tasks_and_rubrics.jsonl under --bench-root.")
     parser.add_argument("--output-path", type=Path, default=OUTPUT_PATH, help="Output root for reports and artifacts.")
     parser.add_argument("--sample-size", type=int, default=SAMPLE_SIZE, help="Random sample size; <=0 means all.")
     parser.add_argument("--seed", type=int, default=RANDOM_SEED, help="Optional random seed for sampling.")
     parser.add_argument("--model-name", default=MODEL_NAME, help="Official evaluator model directory name.")
     parser.add_argument("--bench-root", type=Path, default=BENCH_ROOT, help="DeepResearch Bench II repository root.")
     parser.add_argument("--evaluate", action="store_true", help="Run official scoring and aggregation after generation.")
+    parser.add_argument("--evaluate-only", action="store_true", help="Evaluate accumulated reports without running the agent.")
+    parser.add_argument("--bench-python", default=None, help="Existing Python executable for evaluation; defaults to the existing uv project command.")
     parser.add_argument(
         "-r",
         "--max-rounds",
@@ -338,6 +359,7 @@ def parse_args() -> argparse.Namespace:
         help="GraphResearcher verbosity preset.",
     )
     args = parser.parse_args()
+    args.prompt_path = args.prompt_path or args.bench_root / "tasks_and_rubrics.jsonl"
     args.show_tool_calls = None
     args.subgraphs = None
     args.log_level = None
@@ -351,16 +373,19 @@ def main() -> None:
     model_name = validate_model_name(args.model_name)
     args.output_path.mkdir(parents=True, exist_ok=True)
 
-    items = sample_items(load_items(args.prompt_path), args.sample_size, args.seed)
-    opts = resolve_log_options(args)
-    for item in tqdm(items, desc="Processing items"):
-        try:
-            run_one(item, args.output_path, model_name, args.max_rounds, opts)
-        except Exception as exc:  # noqa: BLE001 - keep long benchmark runs moving
-            print(f"Error processing idx={item.get('idx')}, id={item.get('id')}: {exc}")
+    if not args.evaluate_only:
+        items = sample_items(load_items(args.prompt_path), args.sample_size, args.seed)
+        opts = resolve_log_options(args)
+        for item in tqdm(items, desc="Processing items"):
+            try:
+                run_one(item, args.output_path, model_name, args.max_rounds, opts)
+            except Exception as exc:  # noqa: BLE001 - keep long benchmark runs moving
+                print(f"Error processing idx={item.get('idx')}, id={item.get('id')}: {exc}")
 
-    if args.evaluate:
-        run_bench_evaluation(args.output_path, args.bench_root, model_name)
+    if args.evaluate or args.evaluate_only:
+        run_bench_evaluation(
+            args.output_path, args.bench_root, model_name, args.prompt_path, args.bench_python,
+        )
 
 
 if __name__ == "__main__":

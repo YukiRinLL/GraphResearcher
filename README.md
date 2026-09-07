@@ -3,6 +3,8 @@ A structured deep research agent framework built on LangChain Deep Agents.Levera
 
 ## Usage
 
+DeepResearch Bench I 和 II 的批量生成、官方评分与配置说明见 [中文使用说明](README_zh.md#deepresearch-bench-i-与-ii批量运行和官方评测)。
+
 Run a research request end to end. The run streams progress to the console and
 saves the research graph, final report, and run log under the output directory.
 `run.log` mirrors **all** console output for the run — streamed progress, the
