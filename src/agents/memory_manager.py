@@ -1970,6 +1970,10 @@ class MemoryManager:
         candidates = active_gaps
         selected: list[dict] = []
         deferred: list[dict] = []
+        # Track must objectives already covered by a force-expand decision
+        # so that subsequent gaps targeting the same objective do not
+        # bypass the marginal-utility ordering as well.
+        force_expanded_must_keys: set[str] = set()
         existing_subjects = {
             str(query.get("search_subject_key"))
             for query in queries
@@ -2028,19 +2032,14 @@ class MemoryManager:
                 for owner_id in owner_ids
                 if owner_id
             ]
-            # Only force-expand when the gap impacts an unsatisfied must
-            # objective; otherwise respect marginal-utility ordering so that
-            # low-value gaps on needs_expansion branches do not jump the queue
-            # and starve higher-utility work on other branches.
-            gap_impacts_must = any(
-                item.get("status") not in {"satisfied", "blocked"}
-                for item in must_impacted
-            )
-            force_expand = any(
-                owner and owner.get("status") == "needs_expansion"
-                for owner in owners
-            ) and gap_impacts_must
-            choose = fatal or force_expand or (utility >= threshold)
+            # Group-level selection based solely on marginal utility (and
+            # fatal conflicts). Per-gap force-expand is evaluated inside
+            # the gap loop so that only the specific gaps whose own owner
+            # needs expansion AND that target an uncovered must objective
+            # bypass the utility ordering. This prevents a single
+            # needs_expansion owner from pulling an entire subject group
+            # past higher-utility work on other branches.
+            group_chosen_by_utility = fatal or (utility >= threshold)
             # Apply branch-level cool-down at per-gap granularity: each gap is
             # deferred iff its own owner is marked cool_down/pause (and the
             # group is not a fatal conflict). This prevents a cooled owner from
@@ -2053,12 +2052,12 @@ class MemoryManager:
             has_whitelist = branch_decisions_complete
             group_chosen_owner: Optional[str] = (
                 max(owners, key=lambda item: float(item.get("priority") or 0.0))["id"]
-                if choose and owners else None
+                if group_chosen_by_utility and owners else None
             )
             for gap in group:
                 gap_owner_id = self._gap_owner_id(gap["id"])
                 gap_cooled = (
-                    choose
+                    group_chosen_by_utility
                     and not fatal
                     and has_whitelist
                     and bool(gap_owner_id)
@@ -2073,12 +2072,53 @@ class MemoryManager:
                     )
                     gap_parent = None
                 else:
-                    gap_status = "selected" if choose else "deferred_low_value"
+                    # Evaluate force-expand at per-gap granularity: only
+                    # the gap whose own owner is marked needs_expansion AND
+                    # whose must objectives are not already covered by
+                    # another force-expanded gap may bypass the
+                    # marginal-utility ordering. This preserves portfolio
+                    # balancing while still guaranteeing that uncovered
+                    # must objectives get at least one expansion path.
+                    gap_owner = next(
+                        (o for o in owners if o and o.get("id") == gap_owner_id),
+                        None,
+                    )
+                    owner_needs_expansion = bool(
+                        gap_owner
+                        and gap_owner.get("status") == "needs_expansion"
+                    )
+                    gap_must_keys = {
+                        key
+                        for key in (gap.get("objective_keys") or [])
+                        if key in objective_by_key
+                        and objective_by_key[key].get("requirement") == "must"
+                        and objective_by_key[key].get("status")
+                        not in {"satisfied", "blocked"}
+                    }
+                    gap_impacts_uncovered_must = bool(
+                        gap_must_keys - force_expanded_must_keys
+                    )
+                    gap_force_expand = (
+                        owner_needs_expansion and gap_impacts_uncovered_must
+                    )
+                    gap_choose = group_chosen_by_utility or gap_force_expand
+                    gap_status = "selected" if gap_choose else "deferred_low_value"
                     gap_reason = (
-                        None if choose
+                        None if gap_choose
                         else "global marginal utility below expansion threshold"
                     )
-                    gap_parent = group_chosen_owner
+                    # A utility-selected gap expands under the group's
+                    # highest-priority owner; a force-expanded gap expands
+                    # under its own owner so the new query is grounded on
+                    # the branch that actually needs more evidence.
+                    if group_chosen_by_utility:
+                        gap_parent = group_chosen_owner
+                    elif gap_force_expand:
+                        gap_parent = gap_owner_id
+                    else:
+                        gap_parent = None
+                    if gap_force_expand:
+                        force_expanded_must_keys.update(gap_must_keys)
                 graph_tools.upsert_node(NodeType.ANALYSIS, {
                     "status": gap_status,
                     "marginal_utility": utility,
