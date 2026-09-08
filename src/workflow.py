@@ -171,6 +171,21 @@ def _has_actionable_paths() -> bool:
     if waiting:
         return True
 
+    # 5. portfolio 需要重新评估（evaluated 落后于当前 revision）
+    from tools import research_state
+    goal = research_state.get_goal()
+    if int(goal.get("evaluated_portfolio_revision") or 0) < int(goal.get("portfolio_revision") or 0):
+        return True
+
+    # 6. 有未满足的 must objective（不应提前收敛）
+    objectives = graph_tools.search_nodes("analysis", {"analysis_type": "objective"})
+    if any(
+        obj.get("requirement") == "must"
+        and obj.get("status") not in {"satisfied", "blocked"}
+        for obj in objectives
+    ):
+        return True
+
     return False
 
 

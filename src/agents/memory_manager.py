@@ -1640,7 +1640,13 @@ class MemoryManager:
 
     @staticmethod
     def _linked_criteria_complete(objective_key: str, queries: list[dict]) -> bool:
-        """Return whether every Query linked to an Objective passed all criteria."""
+        """Return whether any non-blocked Query linked to an Objective passed all criteria.
+
+        A single blocked Query must not veto the whole Objective: if any sibling
+        Query on the same objective already satisfied its criteria, the objective
+        is considered linked-criteria-complete. Blocked queries are excluded so
+        that a permanently-failed branch does not prevent convergence.
+        """
         linked_queries = [
             query for query in queries
             if objective_key in (query.get("objective_keys") or [])
@@ -1653,7 +1659,10 @@ class MemoryManager:
                 return False
             return all(result.get("status") == "satisfied" for result in results)
 
-        return bool(linked_queries) and all(complete(query) for query in linked_queries)
+        return any(
+            complete(query) for query in linked_queries
+            if query.get("status") != "blocked"
+        )
 
     def _build_branch_summary(self, candidates: list[dict]) -> str:
         """Compose the per-branch health summary fed to the portfolio evaluator.
@@ -2012,19 +2021,29 @@ class MemoryManager:
                 for owner_id in owner_ids
                 if owner_id
             ]
+            # Only force-expand when the gap impacts an unsatisfied must
+            # objective; otherwise respect marginal-utility ordering so that
+            # low-value gaps on needs_expansion branches do not jump the queue
+            # and starve higher-utility work on other branches.
+            gap_impacts_must = any(
+                item.get("status") not in {"satisfied", "blocked"}
+                for item in must_impacted
+            )
             force_expand = any(
                 owner and owner.get("status") == "needs_expansion"
                 for owner in owners
-            )
+            ) and gap_impacts_must
             choose = fatal or force_expand or (utility >= threshold)
             # Apply branch-level cool-down at per-gap granularity: each gap is
             # deferred iff its own owner is marked cool_down/pause (and the
             # group is not a fatal conflict). This prevents a cooled owner from
             # piggybacking on a non-cooled owner that shares the same subject.
             # Fatal conflicts bypass cool-down to protect report-level
-            # conclusions. When the LLM provided no whitelist
-            # (allowed_owners empty), fall back to pure marginal-utility logic.
-            has_whitelist = bool(allowed_owners)
+            # conclusions. Gate on branch_decisions_complete (not
+            # allowed_owners emptiness): when the LLM cooled down *every*
+            # active owner, allowed_owners is empty but cooling must still
+            # be applied, otherwise all gaps would bypass the cool-down filter.
+            has_whitelist = branch_decisions_complete
             group_chosen_owner: Optional[str] = (
                 max(owners, key=lambda item: float(item.get("priority") or 0.0))["id"]
                 if choose and owners else None
@@ -3220,12 +3239,18 @@ class MemoryManager:
                     ][:10]
                 except Exception:
                     pass
-                goal_node = graph_tools.get_node(
-                    graph_tools.get_query_parent(resolved_query_id) or ""
-                ) or {}
+                # Read research_goal from the root UserRequest node, not from
+                # the parent Query node: only the root stores research_goal.
+                # Sub-queries created by gap expansion have a Query parent that
+                # lacks this field, so get_query_parent would return empty.
+                from tools import research_state
+                goal_node = research_state.get_goal() or {}
                 research_goal = goal_node.get("research_goal") or goal_node.get("request") or ""
                 new_text = self._reformulate_query_text(
-                    original_text, research_goal, existing_source_titles
+                    original_text,
+                    research_goal,
+                    existing_source_titles,
+                    empty_reason="all results rejected as duplicates of already-collected evidence",
                 )
                 if new_text:
                     logger.info(
@@ -3557,11 +3582,13 @@ class MemoryManager:
         original_text: str,
         research_goal: str,
         existing_sources: list,
+        empty_reason: str = "",
     ) -> Optional[str]:
-        """Reformulate a query whose search returned only duplicate results.
+        """Reformulate a query whose search returned no usable new evidence.
 
         Asks the LLM to produce a variant query that searches from a different
-        angle, to attract new sources that the original phrasing missed.
+        angle, adapting the strategy to the specific failure reason (duplicates,
+        no results, extraction failure, etc.).
 
         Returns the new query text, or ``None`` if the LLM output is invalid or
         identical to the original.
@@ -3571,6 +3598,7 @@ class MemoryManager:
             .replace("{original_query}", original_text or "")
             .replace("{research_goal}", research_goal or "")
             .replace("{existing_sources}", json.dumps(existing_sources or [], ensure_ascii=False))
+            .replace("{empty_reason}", empty_reason or "unspecified")
         )
         parsed = self._invoke_json(prompt)
         new_text = (parsed.get("query_text") or "").strip()
