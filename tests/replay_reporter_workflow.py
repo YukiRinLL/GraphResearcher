@@ -27,7 +27,7 @@ load_dotenv(repo_dir / ".env")
 import config  # noqa: E402
 from agents.reporter_workflow import run_report_workflow  # noqa: E402
 from observability import LangfuseRun, start_langfuse_run  # noqa: E402
-from tools import graph_manager_tools, graph_tools  # noqa: E402
+from tools import graph_manager_tools, graph_tools, report_source_context  # noqa: E402
 
 
 def _normalized_type(value: Any) -> str:
@@ -257,7 +257,7 @@ def run_replay(
     )
 
     try:
-        with _patch_graph(graph):
+        with report_source_context.replay_source_scope(source_run), _patch_graph(graph):
             result = run_report_workflow(runnable_config=runnable_config)
             report = graph_manager_tools.get_compiled_report()
             if not report:

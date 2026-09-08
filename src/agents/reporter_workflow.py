@@ -9,15 +9,16 @@ from __future__ import annotations
 import json
 import logging
 import operator
+import re
 from typing import Annotated, Any, Literal, TypedDict
 
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END, StateGraph
 from langgraph.types import Send
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 import config
-from tools import graph_manager_tools, research_state
+from tools import graph_manager_tools, report_source_context, research_state
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +57,22 @@ class ChapterDraftCandidate(BaseModel):
     """章节写作阶段接受的单章模型输出."""
 
     chapters: list[ChapterCandidate] = Field(min_length=1, max_length=1)
+
+
+class ReadRequest(BaseModel):
+    """章节一次回读中的有界请求，引用合法性在读取边界逐项处理."""
+
+    model_config = ConfigDict(extra="forbid", strict=True)
+    evidence_ref: str = Field(max_length=100)
+    block_refs: list[Annotated[str, Field(max_length=120)]] = Field(default_factory=list, max_length=4)
+    purpose: str = Field(min_length=1, max_length=200)
+
+
+class ChapterReadCandidate(BaseModel):
+    """与最终章节互斥的回读分支."""
+
+    model_config = ConfigDict(extra="forbid", strict=True)
+    read_requests: list[ReadRequest] = Field(min_length=1, max_length=4)
 
 
 class PolishedReportCandidate(BaseModel):
@@ -128,7 +145,7 @@ def _parse_json_object(text: str) -> dict[str, Any]:
 def _invoke_reporter_json(
     prompt: str,
     *,
-    phase: Literal["draft", "polish"] = "draft",
+    phase: Literal["draft", "chapter", "polish"] = "draft",
 ) -> dict[str, Any]:
     """调用低温 Reporter 模型并解析 JSON 响应."""
     graph_manager_tools.increment_reporter_model_call_count()
@@ -137,6 +154,8 @@ def _invoke_reporter_json(
         if phase == "polish"
         else config.reporter_model
     )
+    if phase == "chapter":
+        model = model.bind(max_tokens=config.REPORTER_OUTPUT_TOKENS)
     return _parse_json_object(_response_text(model.invoke(prompt)))
 
 
@@ -237,19 +256,16 @@ def _chapter_prompt(
         if retry_error
         else ""
     )
-    return (
-        config.reporter_system_prompt
-        .replace("<language>", str(language or ""))
-        .replace("<retry_feedback>", retry_feedback)
-        .replace(
-            "<current_chapter_bundle>",
-            json.dumps(_writer_chapter_bundle(bundle), ensure_ascii=False),
-        )
-        .replace(
-            "<report_outline>",
-            json.dumps(_writer_report_outline(outline), ensure_ascii=False),
-        )
-        .replace("<user_request>", user_request.strip())
+    sections = {
+        "language": str(language or ""), "retry_feedback": retry_feedback,
+        "current_chapter_bundle": json.dumps(_writer_chapter_bundle(bundle), ensure_ascii=False),
+        "report_outline": json.dumps(_writer_report_outline(outline), ensure_ascii=False),
+        "user_request": user_request.strip(),
+    }
+    # 单次替换模板，原文内碰巧出现的占位符保持来源文字本身。
+    return re.sub(
+        r"<(language|retry_feedback|current_chapter_bundle|report_outline|user_request)>",
+        lambda match: sections[match[1]], config.reporter_system_prompt,
     ).strip()
 
 
@@ -335,7 +351,15 @@ def _writer_chapter_bundle(bundle: dict[str, Any]) -> dict[str, Any]:
         }
         for conflict in bundle.get("disclosed_conflicts") or []
     ]
+    source_context = bundle.get("_source_context")
+    if source_context is not None:
+        evidence = [
+            {**item, **source_context["evidence_locations"].get(item["ref"], {})}
+            for item in evidence
+        ]
     return {
+        **({key: source_context[key] for key in ("context_blocks", "read_results", "readback_available")}
+           if source_context is not None else {}),
         "chapter_id": bundle.get("chapter_id"),
         "chapter_title": bundle.get("chapter_title"),
         "chapter_goals": bundle.get("chapter_goals") or [],
@@ -530,69 +554,85 @@ def draft_chapter_node(state: ChapterTaskState) -> dict[str, Any]:
         }
 
     retry_error = ""
-    for attempt in range(1, _MAX_CHAPTER_ATTEMPTS + 1):
-        try:
-            candidate = ChapterDraftCandidate.model_validate(
-                _invoke_reporter_json(
-                    _chapter_prompt(
-                        str(state["report_context"]["user_request"]),
-                        state["outline"],
-                        bundle,
-                        retry_error,
-                        language=state["report_context"].get("language"),
-                    )
+    invocations = 0
+    failures = 0
+    readback_used = False
+    success = False
+    source_context = None
+    try:
+        source_context = report_source_context.SourceContext(bundle)
+        while failures < _MAX_CHAPTER_ATTEMPTS:
+            try:
+                prompt = source_context.prompt(
+                    lambda current: _chapter_prompt(
+                        str(state["report_context"]["user_request"]), state["outline"],
+                        current, retry_error, language=state["report_context"].get("language"),
+                    ),
+                    readback_used=readback_used,
                 )
-            )
-            chapter = candidate.chapters[0]
-            if chapter.chapter_id != expected_id:
-                raise ValueError(
-                    f"Chapter ID must match the current chapter: {expected_id}"
-                )
-            committed = graph_manager_tools.commit_report_chapter_batch(
-                chapters=[
-                    {
+                invocations += 1
+                response = _invoke_reporter_json(prompt, phase="chapter")
+                if set(response) == {"read_requests"}:
+                    if readback_used:
+                        raise ValueError("Readback already used; return final chapters only")
+                    requests = ChapterReadCandidate.model_validate(response)
+                    readback_used = True
+                    source_context.accept_requests([request.model_dump() for request in requests.read_requests])
+                    retry_error = ""
+                    continue
+                if set(response) != {"chapters"}:
+                    raise ValueError("Return exactly one of chapters or read_requests")
+                candidate = ChapterDraftCandidate.model_validate(response)
+                chapter = candidate.chapters[0]
+                if chapter.chapter_id != expected_id:
+                    raise ValueError(f"Chapter ID must match the current chapter: {expected_id}")
+                committed = graph_manager_tools.commit_report_chapter_batch(
+                    chapters=[{
                         "chapter_id": chapter.chapter_id,
                         "bundle_token": str(bundle["bundle_token"]),
                         "content": chapter.content,
                         "evidence_refs": chapter.evidence_refs,
                         "disclosed_conflict_refs": chapter.disclosed_conflict_refs,
-                    }
-                ],
-            )
-            committed_chapters = committed.get("chapters") or []
-            saved_ids = {
-                int(item.get("chapter_id") or 0)
-                for item in committed_chapters
-                if item.get("candidate_saved")
-            }
-            if committed.get("status") != "ok" or saved_ids != {expected_id}:
-                raise ValueError(
-                    json.dumps(committed_chapters or committed, ensure_ascii=False)
+                    }],
                 )
-        except Exception as exc:  # noqa: BLE001 - 结构与 provider 失败共享有界重试
-            retry_error = f"Chapter attempt {attempt} failed: {exc}"
-            continue
-        return {
-            "chapter_results": [
-                {
-                    "chapter_id": expected_id,
-                    "success": True,
-                    "attempts": attempt,
-                    "error": "",
+                committed_chapters = committed.get("chapters") or []
+                saved_ids = {
+                    int(item.get("chapter_id") or 0) for item in committed_chapters
+                    if item.get("candidate_saved")
                 }
-            ]
-        }
-
-    return {
-        "chapter_results": [
-            {
-                "chapter_id": expected_id,
-                "success": False,
-                "attempts": _MAX_CHAPTER_ATTEMPTS,
-                "error": retry_error,
-            }
-        ]
-    }
+                if committed.get("status") != "ok" or saved_ids != {expected_id}:
+                    raise ValueError(json.dumps(committed_chapters or committed, ensure_ascii=False))
+            except report_source_context.PromptBudgetError:
+                raise
+            except Exception as exc:  # noqa: BLE001 - 结构、提交与 provider 失败共享有界重试
+                failures += 1
+                # 不将模型返回的整章原文或无界异常重新放进 prompt。
+                detail = (
+                    json.dumps(exc.errors(include_input=False, include_url=False), ensure_ascii=False)
+                    if isinstance(exc, ValidationError) else str(exc)
+                )
+                retry_error = f"Chapter attempt {invocations} failed: {detail[:1200]}"
+                continue
+            success = True
+            retry_error = ""
+            break
+    except report_source_context.PromptBudgetError as exc:
+        retry_error = str(exc)
+    finally:
+        if source_context is not None:
+            source_context.audit(
+                model_invocations=invocations, failed_attempts=failures,
+                readback_used=readback_used, error=retry_error,
+            )
+        else:
+            report_source_context.write_audit(bundle, {
+                "model_invocations": invocations, "failed_attempts": failures,
+                "readback_used": readback_used, "error": retry_error, "views": [],
+            })
+    return {"chapter_results": [{
+        "chapter_id": expected_id, "success": success,
+        "attempts": invocations, "error": retry_error,
+    }]}
 
 
 def _chapter_fallback_reason(state: ReporterWorkflowState) -> str | None:

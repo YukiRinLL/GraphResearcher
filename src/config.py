@@ -40,6 +40,14 @@ REPORTER_CHAPTER_CONCURRENCY = _positive_int_from_env(
     3,
 )
 
+# 章节应用预算包含完整输入、输出预留和消息封装安全余量。
+REPORTER_CONTEXT_TOKENS = _positive_int_from_env("GR_REPORTER_CONTEXT_TOKENS", 32_768)
+REPORTER_OUTPUT_TOKENS = _positive_int_from_env("GR_REPORTER_OUTPUT_TOKENS", 8_192)
+REPORTER_SAFETY_TOKENS = _positive_int_from_env("GR_REPORTER_SAFETY_TOKENS", 1_024)
+REPORTER_SOURCE_TOKENS = _positive_int_from_env("GR_REPORTER_SOURCE_TOKENS", 2_000)
+REPORTER_TOKENIZER = os.environ.get("GR_REPORTER_TOKENIZER", "").strip()
+
+
 # Neo4j config
 NEO4J_URI = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
 NEO4J_USERNAME = os.environ.get("NEO4J_USERNAME", "neo4j")

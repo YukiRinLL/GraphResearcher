@@ -36,6 +36,7 @@ def _install_fakes(
     model_delay=0.0,
     prepare_fail_ids=None,
     language="English",
+    route_by_chapter=False,
 ):
     """安装隔离运行时，并返回观测记录和恢复函数。"""
     observations = {
@@ -49,6 +50,11 @@ def _install_fakes(
         "peak_model_concurrency": 0,
     }
     outputs = iter(model_outputs)
+    chapter_outputs = {
+        output["chapters"][0]["chapter_id"]: output
+        for output in model_outputs if route_by_chapter and isinstance(output, dict)
+        and len(output.get("chapters") or []) == 1 and "chapter_id" in output["chapters"][0]
+    }
     chapter_results = iter(commit_results or [{"status": "ok", "validated": True}])
     output_lock = threading.Lock()
     chapter_result_lock = threading.Lock()
@@ -211,7 +217,12 @@ def _install_fakes(
             )
         else:
             with output_lock:
-                output = next(outputs)
+                if route_by_chapter and "# Current Chapter Bundle" in prompt:
+                    # 并行章节按自己的输入领取响应，不依赖线程到达模型的顺序。
+                    current = json.JSONDecoder().raw_decode(prompt.split("# Current Chapter Bundle\n\n", 1)[1])[0]
+                    output = chapter_outputs.pop(current["chapter_id"])
+                else:
+                    output = next(outputs)
         with observation_lock:
             observations["model_prompts"].append(prompt)
             observations["model_phases"].append(phase)
@@ -715,6 +726,7 @@ def test_workflow_writes_one_chapter_per_parallel_model_call():
                 for chapter_id in range(1, 5)
             ],
         ],
+        route_by_chapter=True,
         commit_results=[{"status": "ok", "validated": True}] * 4,
         model_delay=0.05,
     )
@@ -787,6 +799,7 @@ def test_workflow_ignores_chapter_validation_and_skips_review():
                 for chapter_id in range(1, 5)
             ],
         ],
+        route_by_chapter=True,
         commit_results=[{"status": "ok", "validated": False}] * 4,
         delivery_results=[
             {
@@ -840,6 +853,7 @@ def test_failed_chapter_does_not_block_parallel_siblings():
                 ]
             },
         ],
+        route_by_chapter=True,
         commit_results=[{"status": "ok", "validated": True}] * 2,
         prepare_fail_ids={1},
     )

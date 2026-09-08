@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from memory.graph import EdgeType
-from tools import graph_tools
+from tools import graph_tools, report_source_context
 
 logger = logging.getLogger(__name__)
 
@@ -364,7 +364,22 @@ def get_report_evidence(query_id: str, offset: int = 0, limit: int = 20) -> dict
                 "supported_by", "contradicted_by", "qualified_by",
             }
         ]
+        document = nodes.get(node.get("document_id"), {})
+        document_source = document.get("source_id")
+        location = {}
+        if (
+            node.get("type") == "Evidence" and document.get("type") == "Document"
+            and document_source in source_ids
+            and node.get("source_id") in {None, document_source}
+        ):
+            source = registry_by_source[document_source]
+            location = {
+                **{key: document.get(key) for key in ("snapshot_id", "chunker_version", "capture_id")},
+                "block_refs": node.get("block_refs"), "location_status": node.get("location_status"),
+                "url": source["url"], "title": source["title"], "citation": f"[{source['n']}]",
+            }
         items.append({
+            **({"_source_location": location} if location else {}),
             "id": node["id"],
             "type": node["type"],
             "text": str(text).strip(),
@@ -467,6 +482,7 @@ def _public_evidence_items(
     projected = []
     for item in evidence_items:
         projected.append({
+            **({"_source_location": item["_source_location"]} if item.get("_source_location") else {}),
             "ref": id_to_ref[str(item["id"])],
             "type": item.get("type"),
             "text": item.get("text"),
@@ -580,6 +596,8 @@ def _prepare_report_chapter_bundle(
         "section_type": chapter.get("section_type"),
         "query_refs": query_refs,
         "evidence_items": public_items,
+        "_snapshot_binding": report_source_context.capture_binding(),
+        "_source_audit_dir": str(output_dir) if output_dir else None,
         "disclosed_conflicts": [
             {
                 "ref": ref,

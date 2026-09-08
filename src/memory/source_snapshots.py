@@ -270,9 +270,10 @@ def load_captured_snapshot(
     context: str | None,
     query_id: str | None = None,
     search_run_id: str | None = None,
+    scope: CaptureContext | None = None,
 ) -> tuple[str, dict[str, Any], dict[str, Any]]:
     """核对运行、搜索和来源归属后读取捕获关联的原文，失败不寻找其他目录."""
-    scope = current_capture_context()
+    scope = scope or current_capture_context()
     if scope.root is None or scope.context != context:
         raise ValueError("Snapshot root is unavailable for this context")
     capture_id = reference.get("capture_id")
@@ -296,6 +297,22 @@ def load_captured_snapshot(
     if index["source_key"] != source_key:
         raise ValueError("Snapshot does not belong to this Source")
     return body, index, record
+
+
+def load_replay_snapshot(
+    root: Path, reference: dict[str, Any], source_url: str,
+) -> tuple[str, dict[str, Any], dict[str, Any]]:
+    """从显式来源运行根只读回放，兼容导出图没有 context 属性的情况."""
+    capture_id = reference.get("capture_id")
+    if not isinstance(capture_id, str) or not _CAPTURE_ID.fullmatch(capture_id):
+        raise ValueError("Invalid capture identity")
+    record = json.loads(_contained_path(root, "captures", f"{capture_id}.json").read_bytes())
+    if not isinstance(record, dict):
+        raise ValueError("Invalid capture record")
+    context = record.get("context")
+    return load_captured_snapshot(
+        reference, source_url, context=context, scope=CaptureContext(root, context),
+    )
 
 
 def capture_source(
