@@ -58,6 +58,7 @@ class WorkflowState(TypedDict):
     messages: Annotated[list, add_messages]
     user_request: str
     current_action: Optional[dict]
+    current_action_batch: Optional[list]  # parallel dispatch_searcher actions
     step_count: int
     consecutive_idle: int  # 连续无进展动作数（dispatch 成功或 expand created>0 时重置）
     forced_convergence_count: int  # 连续强制收敛次数（正常收敛或成功搜索时重置）
@@ -193,12 +194,26 @@ def scheduler_node(state: dict) -> dict:
     if not actions:
         return {
             "current_action": None,
+            "current_action_batch": None,
             "step_count": step_count,
             "consecutive_idle": consecutive_idle,
             "forced_convergence_count": forced_count,
             "messages": [AIMessage(content="[scheduler] no actions, routing to convergence")],
         }
     action = actions[0]
+
+    # Parallel dispatch: when the top action is dispatch_searcher, grab
+    # additional pending dispatch actions (up to SEARCH_DISPATCH_CONCURRENCY)
+    # so dispatch_node can run them concurrently via ThreadPoolExecutor.
+    # All other action types run one-at-a-time as before.
+    from config import SEARCH_DISPATCH_CONCURRENCY
+    action_batch = None
+    if action.get("action") == "dispatch_searcher":
+        all_actions = gmt.get_next_actions.func(limit=SEARCH_DISPATCH_CONCURRENCY)
+        dispatch_actions = [a for a in all_actions if a.get("action") == "dispatch_searcher"]
+        if len(dispatch_actions) > 1:
+            action_batch = dispatch_actions
+            action = dispatch_actions[0]
 
     # 递归预算安全熔断：step_count 接近递归限制时强制收敛。
     if step_count >= _STEP_BUDGET_FOR_CONVERGENCE:
@@ -215,6 +230,7 @@ def scheduler_node(state: dict) -> dict:
                 "query_handle": None,
                 "reason": "forced convergence: step budget near limit",
             },
+            "current_action_batch": None,
             "step_count": step_count,
             "consecutive_idle": consecutive_idle,
             "forced_convergence_count": forced_count + 1,
@@ -235,6 +251,7 @@ def scheduler_node(state: dict) -> dict:
         summary = f"[scheduler] PATH EXHAUSTED: no actionable search/expansion paths remain, routing to convergence"
         return {
             "current_action": action,
+            "current_action_batch": None,
             "step_count": step_count,
             "consecutive_idle": consecutive_idle,
             "forced_convergence_count": forced_count + 1,
@@ -242,8 +259,12 @@ def scheduler_node(state: dict) -> dict:
         }
 
     summary = f"[scheduler] {_action_summary(action)}"
+    if action_batch:
+        handles = [a.get("query_handle", a.get("query_id")) for a in action_batch]
+        summary += f" (parallel batch: {handles})"
     return {
         "current_action": action,
+        "current_action_batch": action_batch,
         "step_count": step_count,
         "consecutive_idle": consecutive_idle,
         "forced_convergence_count": forced_count,
@@ -257,7 +278,7 @@ def assess_node(state: dict) -> dict:
     query_id = action.get("query_id")
     forced_count = int(state.get("forced_convergence_count") or 0)
     if not query_id:
-        return {"current_action": None, "forced_convergence_count": forced_count, "messages": [AIMessage(content="[assess_query] no query_id")]}
+        return {"current_action": None, "current_action_batch": None, "forced_convergence_count": forced_count, "messages": [AIMessage(content="[assess_query] no query_id")]}
 
     result = gmt.assess_query.func(query_id)
     idle = int(state.get("consecutive_idle") or 0) + 1  # assess 不直接产生搜索进展
@@ -269,7 +290,7 @@ def assess_node(state: dict) -> dict:
             f"status={result.get('status', '?')}, "
             f"sufficient_score={result.get('sufficiency_score', '?')}"
         )
-    return {"current_action": None, "consecutive_idle": idle, "forced_convergence_count": forced_count, "messages": [AIMessage(content=summary)]}
+    return {"current_action": None, "current_action_batch": None, "consecutive_idle": idle, "forced_convergence_count": forced_count, "messages": [AIMessage(content=summary)]}
 
 
 def portfolio_node(state: dict) -> dict:
@@ -315,7 +336,7 @@ def portfolio_node(state: dict) -> dict:
         idle = 0 if made_progress else int(state.get("consecutive_idle") or 0) + 1
         # 有进展时一并重置强制收敛计数
         forced_count = 0 if made_progress else int(state.get("forced_convergence_count") or 0)
-    return {"current_action": None, "consecutive_idle": idle, "forced_convergence_count": forced_count, "messages": [AIMessage(content=summary)]}
+    return {"current_action": None, "current_action_batch": None, "consecutive_idle": idle, "forced_convergence_count": forced_count, "messages": [AIMessage(content=summary)]}
 
 
 def expand_node(state: dict) -> dict:
@@ -324,7 +345,7 @@ def expand_node(state: dict) -> dict:
     parent_id = action.get("parent_id")
     gap_ids = action.get("gap_ids")
     if not parent_id:
-        return {"current_action": None, "consecutive_idle": int(state.get("consecutive_idle") or 0) + 1, "forced_convergence_count": int(state.get("forced_convergence_count") or 0), "messages": [AIMessage(content="[expand_gaps] no parent_id")]}
+        return {"current_action": None, "current_action_batch": None, "consecutive_idle": int(state.get("consecutive_idle") or 0) + 1, "forced_convergence_count": int(state.get("forced_convergence_count") or 0), "messages": [AIMessage(content="[expand_gaps] no parent_id")]}
 
     result = gmt.expand_gaps.func(parent_id, gap_ids)
     if result.get("error"):
@@ -341,27 +362,22 @@ def expand_node(state: dict) -> dict:
         idle = 0 if created > 0 else int(state.get("consecutive_idle") or 0) + 1
         # 有进展时一并重置强制收敛计数
         forced_count = 0 if created > 0 else int(state.get("forced_convergence_count") or 0)
-    return {"current_action": None, "consecutive_idle": idle, "forced_convergence_count": forced_count, "messages": [AIMessage(content=summary)]}
+    return {"current_action": None, "current_action_batch": None, "consecutive_idle": idle, "forced_convergence_count": forced_count, "messages": [AIMessage(content=summary)]}
 
 
-def dispatch_node(state: dict) -> dict:
-    """准备搜索上下文并调用 Searcher 子图收集证据."""
-    action = state.get("current_action") or {}
+def _run_single_search(action: dict) -> tuple[str, bool, str]:
+    """Execute one searcher dispatch and return (handle, succeeded, summary).
+
+    Encapsulates the prepare→invoke→summarise pipeline so it can be called
+    from both the serial path and a ThreadPoolExecutor.
+    """
     query_id = action.get("query_id")
-    if not query_id:
-        return {"current_action": None, "consecutive_idle": int(state.get("consecutive_idle") or 0) + 1, "forced_convergence_count": int(state.get("forced_convergence_count") or 0), "messages": [AIMessage(content="[dispatch_searcher] no query_id")]}
-
+    handle = action.get("query_handle", query_id)
     source_preferences = action.get("source_preferences")
+
     prepared = prepare_search(query_id, source_preferences)
     if prepared.get("error"):
-        return {
-            "current_action": None,
-            "consecutive_idle": int(state.get("consecutive_idle") or 0) + 1,
-            "forced_convergence_count": int(state.get("forced_convergence_count") or 0),
-            "messages": [AIMessage(
-                content=f"[dispatch_searcher] {action.get('query_handle', query_id)} prepare ERROR: {prepared['error']}"
-            )],
-        }
+        return handle, False, f"[dispatch_searcher] {handle} prepare ERROR: {prepared['error']}"
 
     try:
         result = searcher.invoke({
@@ -377,14 +393,7 @@ def dispatch_node(state: dict) -> dict:
         })
     except Exception as exc:  # noqa: BLE001 — Searcher 异常不应中断整个工作流
         fail_search(prepared["search_run_id"], prepared["query_id"], str(exc))
-        return {
-            "current_action": None,
-            "consecutive_idle": int(state.get("consecutive_idle") or 0) + 1,
-            "forced_convergence_count": int(state.get("forced_convergence_count") or 0),
-            "messages": [AIMessage(
-                content=f"[dispatch_searcher] {action.get('query_handle', query_id)} FAILED: {exc}"
-            )],
-        }
+        return handle, False, f"[dispatch_searcher] {handle} FAILED: {exc}"
 
     submit_result = result.get("submit_result")
     if isinstance(submit_result, dict):
@@ -394,29 +403,63 @@ def dispatch_node(state: dict) -> dict:
         evidence = written.get("evidence", "?")
         status = submit_result.get("status", "?")
         summary = (
-            f"[dispatch_searcher] {action.get('query_handle', query_id)}: "
+            f"[dispatch_searcher] {handle}: "
             f"status={status}, sources={sources}, documents={documents}, evidence={evidence}"
         )
-        # 成功的搜索产生新证据，重置空转计数与强制收敛计数
-        if status == "succeeded":
-            idle = 0
-            forced_count = 0
-        else:
-            idle = int(state.get("consecutive_idle") or 0) + 1
-            forced_count = int(state.get("forced_convergence_count") or 0)
+        return handle, status == "succeeded", summary
     else:
         fail_search(
             prepared["search_run_id"],
             prepared["query_id"],
             "Searcher returned no submit result",
         )
-        summary = (
-            f"[dispatch_searcher] {action.get('query_handle', query_id)}: "
-            f"no submit result (recorded as failure)"
-        )
+        return handle, False, f"[dispatch_searcher] {handle}: no submit result (recorded as failure)"
+
+
+def dispatch_node(state: dict) -> dict:
+    """准备搜索上下文并调用 Searcher 子图收集证据.
+
+    When ``current_action_batch`` is set (multiple dispatch_searcher actions
+    queued by the scheduler), runs them concurrently via ThreadPoolExecutor.
+    Graph writes inside ``submit_search_result`` are serialised by
+    ``MemoryManager._state_lock``, so only the I/O-bound search and analysis
+    work is parallelised.
+    """
+    action = state.get("current_action") or {}
+    query_id = action.get("query_id")
+    if not query_id:
+        return {"current_action": None, "current_action_batch": None, "consecutive_idle": int(state.get("consecutive_idle") or 0) + 1, "forced_convergence_count": int(state.get("forced_convergence_count") or 0), "messages": [AIMessage(content="[dispatch_searcher] no query_id")]}
+
+    batch = state.get("current_action_batch")
+
+    if batch and len(batch) > 1:
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        from config import SEARCH_DISPATCH_CONCURRENCY
+
+        summaries: list[str] = []
+        any_succeeded = False
+        with ThreadPoolExecutor(max_workers=SEARCH_DISPATCH_CONCURRENCY) as pool:
+            futures = {pool.submit(_run_single_search, a): a for a in batch}
+            for fut in as_completed(futures):
+                handle, succeeded, summary = fut.result()
+                summaries.append(summary)
+                if succeeded:
+                    any_succeeded = True
+
+        combined = "; ".join(summaries)
+        idle = 0 if any_succeeded else int(state.get("consecutive_idle") or 0) + len(batch)
+        forced_count = 0 if any_succeeded else int(state.get("forced_convergence_count") or 0)
+        return {"current_action": None, "current_action_batch": None, "consecutive_idle": idle, "forced_convergence_count": forced_count, "messages": [AIMessage(content=combined)]}
+
+    # Serial path (single dispatch or no batch)
+    handle, succeeded, summary = _run_single_search(action)
+    if succeeded:
+        idle = 0
+        forced_count = 0
+    else:
         idle = int(state.get("consecutive_idle") or 0) + 1
         forced_count = int(state.get("forced_convergence_count") or 0)
-    return {"current_action": None, "consecutive_idle": idle, "forced_convergence_count": forced_count, "messages": [AIMessage(content=summary)]}
+    return {"current_action": None, "current_action_batch": None, "consecutive_idle": idle, "forced_convergence_count": forced_count, "messages": [AIMessage(content=summary)]}
 
 
 def convergence_node(state: dict) -> dict:
@@ -482,6 +525,7 @@ def convergence_node(state: dict) -> dict:
         "current_action": None,
         "consecutive_idle": 0,
         "forced_convergence_count": new_forced_count,
+        "current_action_batch": None,
         "messages": [AIMessage(content=summary)],
     }
 

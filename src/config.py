@@ -40,6 +40,17 @@ REPORTER_CHAPTER_CONCURRENCY = _positive_int_from_env(
     3,
 )
 
+# Max number of concurrent searcher dispatches per superstep. Each searcher
+# call involves a Tavily search + analyzer LLM pass (10-30s of I/O); running
+# multiple in parallel via ThreadPoolExecutor cuts wall-clock time for the
+# dispatch phase proportionally. Graph writes are serialised by
+# MemoryManager._state_lock, so this only parallelises the I/O-bound search
+# and analysis work.
+SEARCH_DISPATCH_CONCURRENCY = _positive_int_from_env(
+    "GR_SEARCH_DISPATCH_CONCURRENCY",
+    3,
+)
+
 # Neo4j config
 NEO4J_URI = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
 NEO4J_USERNAME = os.environ.get("NEO4J_USERNAME", "neo4j")
