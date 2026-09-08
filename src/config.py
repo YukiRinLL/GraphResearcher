@@ -51,6 +51,17 @@ SEARCH_DISPATCH_CONCURRENCY = _positive_int_from_env(
     3,
 )
 
+# Max number of concurrent assess_query evaluations per superstep. Each
+# assess_query call involves 1-2 LLM passes (normalize_claims + sufficiency
+# evaluation) that read only the query's own evidence subgraph; they are
+# independent across queries and can run in parallel. Graph writes are
+# serialised by MemoryManager._state_lock and graph_tools._loop_lock, so
+# only the LLM-bound evaluation work is parallelised.
+ASSESS_QUERY_CONCURRENCY = _positive_int_from_env(
+    "GR_ASSESS_QUERY_CONCURRENCY",
+    3,
+)
+
 # Neo4j config
 NEO4J_URI = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
 NEO4J_USERNAME = os.environ.get("NEO4J_USERNAME", "neo4j")

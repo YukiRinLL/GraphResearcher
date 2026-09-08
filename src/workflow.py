@@ -220,8 +220,11 @@ def scheduler_node(state: dict) -> dict:
     # Parallel dispatch: when the top action is dispatch_searcher, grab
     # additional pending dispatch actions (up to SEARCH_DISPATCH_CONCURRENCY)
     # so dispatch_node can run them concurrently via ThreadPoolExecutor.
-    # All other action types run one-at-a-time as before.
-    from config import SEARCH_DISPATCH_CONCURRENCY
+    # Parallel assess: when the top action is assess_query, grab all pending
+    # assess actions so assess_node can run them concurrently via
+    # ThreadPoolExecutor. assess_query calls are independent — each only
+    # reads its own query's evidence subgraph and the LLM call dominates.
+    from config import SEARCH_DISPATCH_CONCURRENCY, ASSESS_QUERY_CONCURRENCY
     action_batch = None
     if action.get("action") == "dispatch_searcher":
         all_actions = gmt.get_next_actions.func(limit=SEARCH_DISPATCH_CONCURRENCY)
@@ -229,6 +232,12 @@ def scheduler_node(state: dict) -> dict:
         if len(dispatch_actions) > 1:
             action_batch = dispatch_actions
             action = dispatch_actions[0]
+    elif action.get("action") == "assess_query":
+        all_actions = gmt.get_next_actions.func(limit=ASSESS_QUERY_CONCURRENCY)
+        assess_actions = [a for a in all_actions if a.get("action") == "assess_query"]
+        if len(assess_actions) > 1:
+            action_batch = assess_actions
+            action = assess_actions[0]
 
     # 递归预算安全熔断：step_count 接近递归限制时强制收敛。
     if step_count >= _STEP_BUDGET_FOR_CONVERGENCE:
@@ -287,24 +296,60 @@ def scheduler_node(state: dict) -> dict:
     }
 
 
+def _run_single_assess(action: dict) -> tuple[str, bool, str]:
+    """Run one assess_query call and return (handle, succeeded, summary)."""
+    query_id = action.get("query_id")
+    handle = action.get("query_handle", query_id)
+    if not query_id:
+        return handle or "?", False, f"[assess_query] {handle or '?'}: no query_id"
+    try:
+        result = gmt.assess_query.func(query_id)
+    except Exception as exc:  # noqa: BLE001
+        return handle, False, f"[assess_query] {handle} FAILED: {exc}"
+    if result.get("error"):
+        return handle, False, f"[assess_query] {handle} ERROR: {result['error']}"
+    status = result.get("status", "?")
+    score = result.get("sufficiency_score", "?")
+    return handle, True, f"[assess_query] {handle}: status={status}, sufficient_score={score}"
+
+
 def assess_node(state: dict) -> dict:
-    """评估单个 Query 的证据充分性并推进其状态."""
+    """评估 Query 的证据充分性并推进其状态.
+
+    当 ``current_action_batch`` 包含多个 assess_query 动作时，使用
+    ThreadPoolExecutor 并行执行。assess_query 只读取各自 query 的证据
+    子图，LLM 调用（``_invoke_json``）在 ``_state_lock`` 外完成，因此
+    并行安全；图写入由 ``MemoryManager._state_lock`` 串行化。
+    """
     action = state.get("current_action") or {}
     query_id = action.get("query_id")
     forced_count = int(state.get("forced_convergence_count") or 0)
     if not query_id:
         return {"current_action": None, "current_action_batch": None, "forced_convergence_count": forced_count, "messages": [AIMessage(content="[assess_query] no query_id")]}
 
-    result = gmt.assess_query.func(query_id)
-    idle = int(state.get("consecutive_idle") or 0) + 1  # assess 不直接产生搜索进展
-    if result.get("error"):
-        summary = f"[assess_query] {action.get('query_handle', query_id)} ERROR: {result['error']}"
-    else:
-        summary = (
-            f"[assess_query] {action.get('query_handle', query_id)}: "
-            f"status={result.get('status', '?')}, "
-            f"sufficient_score={result.get('sufficiency_score', '?')}"
-        )
+    batch = state.get("current_action_batch")
+
+    if batch and len(batch) > 1:
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        from config import ASSESS_QUERY_CONCURRENCY
+
+        summaries: list[str] = []
+        any_succeeded = False
+        with ThreadPoolExecutor(max_workers=ASSESS_QUERY_CONCURRENCY) as pool:
+            futures = {pool.submit(_run_single_assess, a): a for a in batch}
+            for fut in as_completed(futures):
+                handle, succeeded, summary = fut.result()
+                summaries.append(summary)
+                if succeeded:
+                    any_succeeded = True
+
+        combined = "; ".join(summaries)
+        idle = 0 if any_succeeded else int(state.get("consecutive_idle") or 0) + len(batch)
+        return {"current_action": None, "current_action_batch": None, "consecutive_idle": idle, "forced_convergence_count": forced_count, "messages": [AIMessage(content=combined)]}
+
+    # Serial path (single assess or no batch)
+    handle, succeeded, summary = _run_single_assess(action)
+    idle = 0 if succeeded else int(state.get("consecutive_idle") or 0) + 1
     return {"current_action": None, "current_action_batch": None, "consecutive_idle": idle, "forced_convergence_count": forced_count, "messages": [AIMessage(content=summary)]}
 
 
