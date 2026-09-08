@@ -23,6 +23,7 @@ from urllib.parse import urlsplit
 
 import config
 import prompts.memory_manager_prompts as mm_prompts
+from memory import evidence_locations, source_snapshots
 from memory.graph import EdgeType, NodeType
 from tools import graph_tools
 
@@ -3081,9 +3082,23 @@ class MemoryManager:
             graph_tools.add_edge(run_id, source_id, "found_source")
 
         for document in evidence_package.get("documents", []) or []:
+            snapshot = evidence_locations.snapshot_fields(document)
+            if snapshot:
+                try:
+                    source_snapshots.load_captured_snapshot(
+                        snapshot,
+                        graph_tools.get_node(resolve(_first(document, "source_ref", "source"))).get("url") or "",
+                        context=source_snapshots.current_capture_context().context,
+                        query_id=resolved_query_id,
+                        search_run_id=search_run_id,
+                    )
+                except (OSError, ValueError, KeyError, TypeError) as exc:
+                    logger.warning("SearchRun Document snapshot unavailable: %s", type(exc).__name__)
+                    snapshot = {}
             doc_id = graph_tools.create_document(
                 text=_first(document, "document_summary", "summary_zh", "summary", "text", "content") or "",
                 source_id=resolve(_first(document, "source_ref", "source")),
+                **snapshot,
             )
             if document.get("local_ref"):
                 ref_map[document["local_ref"]] = doc_id
@@ -3149,6 +3164,7 @@ class MemoryManager:
                 qualifiers=evidence_item.get("qualifiers") if isinstance(evidence_item.get("qualifiers"), list) else [],
                 limitations=evidence_item.get("limitations") if isinstance(evidence_item.get("limitations"), list) else [],
                 locator=_first(evidence_item, "locator", "span", "quote_locator"),
+                **{key: evidence_item[key] for key in evidence_locations.LOCATION_FIELDS if key in evidence_item},
                 statement_ref=statement_ref,
                 statement_refs=statement_refs,
                 claim_ref=claim_ref,

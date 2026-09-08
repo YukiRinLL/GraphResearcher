@@ -19,7 +19,7 @@ from langgraph.graph import END, StateGraph
 from langgraph.graph.message import add_messages
 
 import config
-from memory import source_snapshots
+from memory import evidence_locations, source_snapshots
 from memory.source_snapshots import canonicalize_source_url as _canonicalize_url
 from tools.graph_manager_tools import submit_search_result
 from tools.search_tools import tavily_search
@@ -369,25 +369,81 @@ def _extract_source_packet(
     query: dict[str, Any],
     research_context: dict[str, Any],
     source: dict[str, Any],
+    *,
+    query_id: Optional[str] = None,
+    search_run_id: Optional[str] = None,
 ) -> dict:
     """对单个带正文来源执行一次 analyzer 抽取."""
+    source_view = {
+        "title": source.get("title"),
+        "url": source.get("url"),
+        "raw_content": (source.get("raw_content") or "")[:_MAX_SOURCE_RAW_CHARS],
+        "raw_content_truncated": bool(source.get("raw_content_truncated")),
+        "published_at": source.get("published_at"),
+        "reading_coverage": {"mode": "legacy", "reason": "no_snapshot"},
+    }
+    binding: dict[str, Any] = {}
+    body, index = "", {"blocks": []}
+    reference = source.get("source_snapshot")
+    if isinstance(reference, dict) and reference.get("status") == "stored":
+        try:
+            body, index, capture = source_snapshots.load_captured_snapshot(
+                reference, source.get("url") or "",
+                context=source_snapshots.current_capture_context().context,
+                query_id=query_id, search_run_id=search_run_id,
+            )
+            binding = evidence_locations.snapshot_fields(capture)
+            selected = evidence_locations.select_source_blocks(
+                body, index, query, research_context, str(source.get("content") or ""),
+                max_chars=_MAX_SOURCE_RAW_CHARS,
+            )
+            if selected["blocks"]:
+                source_view.pop("raw_content")
+                source_view.update(selected)
+                source_view["raw_content_truncated"] = bool(
+                    selected["reading_coverage"]["unloaded_blocks"] or capture.get("provider_raw_content_truncated")
+                )
+                source_view["provider_completeness"] = capture["provider_completeness"]
+            else:
+                source_view["reading_coverage"] = {"mode": "legacy", "reason": "no_blocks_fit"}
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            source_view["reading_coverage"] = {
+                "mode": "legacy", "reason": "snapshot_unavailable", "error_type": type(exc).__name__,
+            }
     analyzer_input = {
         "query": query,
         "research_context": research_context,
-        "source": {
-            "title": source.get("title"),
-            "url": source.get("url"),
-            "raw_content": (source.get("raw_content") or "")[:_MAX_SOURCE_RAW_CHARS],
-            "raw_content_truncated": bool(source.get("raw_content_truncated")),
-            "published_at": source.get("published_at"),
-        },
+        "source": source_view,
     }
     response = config.searcher_model.invoke([
         SystemMessage(content=config.analyzer_system_prompt),
         HumanMessage(content=json.dumps(analyzer_input, ensure_ascii=False)),
     ])
     text = response.content if hasattr(response, "content") else str(response)
-    return _parse_source_packet(text)
+    packet = _parse_source_packet(text)
+    # 模型只提供概述与块选择；快照身份和定位状态由本次实际输入决定。
+    for key in evidence_locations.SNAPSHOT_FIELDS:
+        packet["document"].pop(key, None)
+    if packet["document"].get("document_summary"):
+        packet["document"].update(binding)
+    shown_refs = {block["block_id"] for block in source_view.get("blocks", [])}
+    location_log = [{"stage": "source_reading", **source_view["reading_coverage"]}]
+    for evidence in packet["evidence"]:
+        if not isinstance(evidence, dict):
+            continue
+        location = evidence_locations.validate_block_refs(evidence.get("block_refs"), shown_refs)
+        evidence.update(location)
+        spans = evidence_locations.quote_locations(str(evidence.get("text") or ""), location["block_refs"], body, index)
+        location_log.append({
+            "stage": "evidence_location",
+            "local_ref": evidence.get("local_ref"),
+            **location,
+            "reason": "ref_not_in_analyzer_input" if location["location_status"] == "invalid" else "",
+            "quote_match": "exact" if spans else "not_exact",
+            "quote_spans": spans,
+        })
+    packet["_location_log"] = location_log
+    return packet
 
 
 def _nonempty_items(items: object, field: str = "text") -> list[dict]:
@@ -489,6 +545,10 @@ def _merge_source_packets(search_results: dict, packets: list[dict]) -> dict:
             continue
         src_url = source.get("url") or ""
         src_title = (source.get("title") or "")[:80]
+        package["extraction_log"].extend(
+            {"url": src_url, "title": src_title, **entry}
+            for entry in packet.get("_location_log", [])
+        )
         raw_content = str(source.get("content") or source.get("raw_content") or "")
         if _looks_like_login_wall_or_catalog(source, raw_content):
             package["extraction_log"].append({
@@ -535,6 +595,7 @@ def _merge_source_packets(search_results: dict, packets: list[dict]) -> dict:
             "local_ref": document_ref,
             "document_summary": summary,
             "source_ref": source_ref,
+            **evidence_locations.snapshot_fields(document),
         })
 
         statements = _nonempty_items(packet.get("statements"))
@@ -603,6 +664,7 @@ def _merge_source_packets(search_results: dict, packets: list[dict]) -> dict:
                 "document_ref": document_ref,
                 "source_ref": source_ref,
                 "statement_refs": [local_statement_map[ref] for ref in statement_refs],
+                **{key: evidence[key] for key in evidence_locations.LOCATION_FIELDS if key in evidence},
             })
         package["extraction_log"].append({
             "url": src_url, "title": src_title,
@@ -648,7 +710,10 @@ def extract_evidence_package_node(state: SearcherState) -> dict:
         "region_scope": None,
     }
     packets = [
-        _extract_source_packet(query, research_context, source)
+        _extract_source_packet(
+            query, research_context, source,
+            query_id=state.get("query_id"), search_run_id=state.get("search_run_id"),
+        )
         for source in sources
         if isinstance(source, dict)
     ]

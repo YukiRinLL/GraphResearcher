@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 CHUNKER_VERSION = "v1"
 _PARAGRAPH_CHARS = 2_000
 _SNAPSHOT_ID = re.compile(r"s_[0-9a-f]{64}")
+_CAPTURE_ID = re.compile(r"cap_[0-9a-f]{32}")
 _HEADING = re.compile(r"^ {0,3}(#{1,6})\s+")
 _LIST = re.compile(r"^\s*(?:[-+*]|\d+[.)])\s+")
 _FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
@@ -257,6 +258,46 @@ def search_capture_scope(query_id: str | None, search_run_id: str | None) -> Ite
         _search_context.reset(token)
 
 
+def current_capture_context() -> CaptureContext:
+    """返回当前调用固定的捕获配置，供读取边界核对运行归属."""
+    return _search_context.get() or _run_context
+
+
+def load_captured_snapshot(
+    reference: dict[str, Any],
+    source_url: str,
+    *,
+    context: str | None,
+    query_id: str | None = None,
+    search_run_id: str | None = None,
+) -> tuple[str, dict[str, Any], dict[str, Any]]:
+    """核对运行、搜索和来源归属后读取捕获关联的原文，失败不寻找其他目录."""
+    scope = current_capture_context()
+    if scope.root is None or scope.context != context:
+        raise ValueError("Snapshot root is unavailable for this context")
+    capture_id = reference.get("capture_id")
+    if not isinstance(capture_id, str) or not _CAPTURE_ID.fullmatch(capture_id):
+        raise ValueError("Invalid capture identity")
+    record = json.loads(_contained_path(scope.root, "captures", f"{capture_id}.json").read_bytes())
+    if not isinstance(record, dict) or record.get("status") != "stored" or record.get("schema_version") != 1:
+        raise ValueError("Capture is not available")
+    if record.get("capture_id") != capture_id or record.get("context") != context:
+        raise ValueError("Capture does not belong to this context")
+    if any(reference.get(key) != record.get(key) for key in ("snapshot_id", "chunker_version")):
+        raise ValueError("Capture and snapshot references do not match")
+    if query_id is not None and record.get("query_id") != query_id:
+        raise ValueError("Capture does not belong to this Query")
+    if search_run_id is not None and record.get("search_run_id") != search_run_id:
+        raise ValueError("Capture does not belong to this SearchRun")
+    source_key = canonicalize_source_url(source_url)
+    if source_key is None or canonicalize_source_url(record.get("url")) != source_key:
+        raise ValueError("Capture does not belong to this Source")
+    body, index = read_snapshot(scope.root, record["snapshot_id"], record["chunker_version"])
+    if index["source_key"] != source_key:
+        raise ValueError("Snapshot does not belong to this Source")
+    return body, index, record
+
+
 def capture_source(
     item: dict[str, Any],
     *,
@@ -268,7 +309,7 @@ def capture_source(
     raw_content_limit: int,
 ) -> dict[str, Any]:
     """在裁剪前捕获一条结果，文件失败只返回捕获错误，不中断搜索."""
-    scope = _search_context.get() or _run_context
+    scope = current_capture_context()
     if scope.root is None:
         return {"status": "disabled", "reason": "no_output_dir"}
     capture_id = "cap_" + uuid4().hex

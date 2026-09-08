@@ -349,7 +349,7 @@ def test_capture_failures_preserve_search():
         assert result["results"][0]["source_snapshot"]["reason"] == "capture_record_write_failed"
 
 
-def test_analyzer_input_and_packet_unchanged():
+def test_analyzer_blocks_preserve_single_call_and_facts():
     source_text = "The instrument measured the sample at 20 degrees Celsius. " * 15
     response = {"results": [{"url": "https://example.com", "title": "Measurement", "content": source_text, "raw_content": source_text}]}
     packet = {
@@ -375,11 +375,22 @@ def test_analyzer_input_and_packet_unchanged():
                 searched = searcher.web_search_node(state)
                 extracted = searcher.extract_evidence_package_node({**state, **searched})
             packages.append(extracted["evidence_package"])
-        assert len(prompts) == 2 and prompts[0] == prompts[1]
-        assert packages[0] == packages[1]
+        assert len(prompts) == 2 and prompts[0][0] == prompts[1][0]
+        legacy = json.loads(prompts[0][-1])["source"]
+        located = json.loads(prompts[1][-1])["source"]
+        assert legacy["raw_content"] == source_text and "blocks" not in legacy
+        assert "raw_content" not in located and located["blocks"][0]["text"] == source_text
+        assert located["reading_coverage"]["unloaded_blocks"] == 0
+        for key in ("sources", "statements", "evidence", "conflicts"):
+            assert packages[0][key] == packages[1][key]
+        assert packages[0]["documents"][0] == {
+            key: value for key, value in packages[1]["documents"][0].items()
+            if key not in {"snapshot_id", "chunker_version", "capture_id"}
+        }
+        assert packages[1]["documents"][0]["capture_id"]
+        assert packages[1]["evidence"][0]["block_refs"] == []
+        assert packages[1]["evidence"][0]["location_status"] == "missing"
         assert len(packages[0]["sources"]) == 1 and len(packages[0]["evidence"]) == 1
-        assert "snapshot" not in json.dumps(packages[1])
-        assert "snapshot" not in prompts[1][-1]
 
 
 def main():

@@ -2,7 +2,7 @@
 
 ## 状态与目标
 
-截至 2026-09-08，用户已确认阅读策略，并在审阅详细修改方案后授权新建分支开始修改。本轮在 `codex/source-snapshots-m1` 上完成里程碑 1，并补全后续阶段的设计契约。新增离线回归通过，两项既有回归失败和仓库 lint 基线见执行记录。里程碑 2—4 尚未实施；本轮在 M1 边界停止，后续阶段分别确认实施范围。
+截至 2026-09-08，M1 已在提交 `691dbdc` 中完成，分支按用户要求更名为 `增加原文回放`。用户授权提交 M1 并开始下一阶段后，本轮已完成 M2：Document 快照关联、Analyzer 块阅读和 Evidence 定位，相关修改保留在工作区。M3—M4 尚未实施；本轮在 M2 边界停止。新增离线回归通过，既有回归失败和 lint 基线见执行记录。
 
 目标是让 Reporter 能通过 Evidence 回到当次捕获的原文，在有界输入中补充必要上下文。原文保存在运行目录，Neo4j 继续保存图谱事实和定位关系。是否抽取发现事实、来源准入和 Claim 规范化不属于本次讨论范围。
 
@@ -48,7 +48,7 @@
 
 ## 数据形状提案
 
-快照存储与捕获接口已在 M1 实现；图字段、Analyzer 块阅读和 Reporter 回读仍为后续阶段提案，尚未作为运行时契约发布。
+快照存储与捕获接口已在 M1 实现，图字段和 Analyzer 块阅读已在 M2 实现。Reporter 自动附带与回读仍为后续阶段提案，尚未作为运行时契约发布。
 
 ### 快照与捕获记录
 
@@ -72,21 +72,25 @@ M1 的 v1 分块识别 ATX 标题、段落、列表、围栏代码和 Markdown p
 
 ### 图谱定位
 
-建议为 Document 增加可选 `snapshot_id`、`chunker_version` 和 `capture_id`；原有 `text` 继续保存概述。Evidence 增加可选 `block_refs: list[str]` 和 `location_status`，由 Document 解析所属快照。正文和块索引仍在文件中，图属性不保存嵌套块对象。身份、版本和定位状态由程序生成，模型只选择已展示的块标识。
+Document 增加可选 `snapshot_id`、`chunker_version` 和 `capture_id`；原有 `text` 继续保存概述。Evidence 增加可选 `block_refs: list[str]` 和 `location_status`，由 Document 解析所属快照。正文和块索引仍在文件中，图属性不保存嵌套块对象。身份、版本和定位状态由程序生成，模型只选择已展示的块标识。
 
 第一版不复用旧 `locator` 承载新结构，也不改写现有 `evidence_key` 规则。多个 Document 可以关联同一快照，从而先完成正文复用与章节去重；跨 Query 合并 Document、Statement 或 Evidence 节点属于另一个改造范围。
 
 Analyzer 只能选择本次实际提供给它的块标识。程序校验标识所属快照和输入集合；普通摘录可进一步验证原句位置。表格整理形式允许只有经验证的块引用，不伪造逐字字符区间。块存在的校验不等同于证明 Evidence 被该块语义支持。
 
-定位失败时，提案是保留原有可接受的 Evidence，清除不可用引用并记录失败，不新增定位修复 LLM 调用。历史 Evidence 没有定位字段时作为不可回读的旧记录处理。该策略不把位置校验升级成新的事实准入门槛。
+定位失败时保留原有可接受的 Evidence，清除不可用引用并记录失败，不新增定位修复 LLM 调用。历史 Evidence 没有定位字段时作为不可回读的旧记录处理。该策略不把位置校验升级成新的事实准入门槛。
 
 `location_status` 使用 `valid`、`missing` 和 `invalid`，分别表示非空引用全部通过校验、未提供引用和引用校验失败。任一引用非法时清空该条定位集合，细节留在审计中；`valid` 不代表语义核实。旧记录缺少字段时不迁移。更新已有 Evidence 时，缺省定位字段不能清除已存在的有效位置。
 
 ### Analyzer 阅读视图
 
-建议输入 `source.blocks`，其中每项包含 `block_id` 和来自快照的正文，并保留标题、URL、发布日期和捕获完整性标记。输出 Evidence 在现有 `local_ref`、`text`、`statement_refs` 上增加 `block_refs`。
+Analyzer 使用 `source.blocks` 阅读视图，其中每项包含 `block_id` 和来自快照的 `text`，并保留标题、URL、发布日期和捕获完整性标记。输出 Evidence 在现有 `local_ref`、`text`、`statement_refs` 上增加 `block_refs`。
 
-先用 `content` 的精确命中形成候选，再结合 Query、`acceptance_criteria` 和 `research_goal` 进行本地词法排序，补齐结构并按原文位置展示。重复原句保留多个候选位置，搜索摘要只作为检索线索。当前代码只有 20,000 字符正文上限，没有现成 token 阅读预算。M2 暂以该字符上限为起点，约 75% 用于定向相关块，25% 用于研究目标和分区覆盖，空闲额度可互相借用；具体参数在实施 M2 前确认。没有有效匹配时按首部正文和不同标题区域轮流选择，并明确只阅读了部分原文。
+先用 `content` 的精确命中形成候选，再结合 Query、`acceptance_criteria` 和 `research_goal` 进行本地词法排序，补齐结构并按原文位置展示。重复原句保留多个候选位置，搜索摘要只作为检索线索。M2 使用 20,000 字符正文上限，75% 用于定向相关块、25% 用于研究目标和分区覆盖，结构依赖也占用额度；该限制不宣称约束完整 prompt token。先按两部分额度选择，再把空闲额度依次借给剩余相关块和覆盖块。没有有效匹配时按首部正文和不同标题区域轮流选择，并明确只阅读了部分原文。
+
+词法检索使用小写英文词项和中文双字片段，按词项集合重合度排序，不按 Evidence 重复次数加权。候选的精确片段命中优先，其次比较 Query／完成条件／`content` 的词法相关度和研究目标相关度，最后按原文位置稳定排序。分区覆盖按所属标题分组，研究目标相关的分区优先，各分区轮流选择。过大的结构单元保留整体并跳过，全部候选都无法容纳时退回现有有界正文输入，明确标记不可定位。
+
+`source.reading_coverage` 说明实际阅读模式、选择范围和不可用原因；块视图不附带完整未选中索引。程序在单来源调用内保留已展示块集合，校验完成后只将 Document 的三个快照字段及 Evidence 的两个定位字段转发到入库 packet。选择范围、定位失败原因和可精确匹配的原句字符区间进入既有 `extraction_log`，不新增图属性。普通摘录无法逐字匹配时仅记录 `not_exact`，结构引用可仍为 `valid`；表格整理不被迫伪装成逐字摘录。
 
 启用块视图后只展示 `source.blocks`，不重复附带同一正文的 `raw_content`；快照不可用时保留有界旧正文输入并标记不可定位。抽取规则不变不意味着抽取结果不变，必须用 fixture 检查发现事实的覆盖情况。
 
@@ -156,7 +160,11 @@ M1 保证同一运行的并发捕获和顺序切换运行的隔离。当前图�
 
 ### 里程碑 2：Evidence 定位与图谱关联
 
-接入 Document 的快照引用、Evidence 的块引用和定位状态。更新 Searcher 的选择视图、Analyzer 的输入输出、packet 转发、MemoryManager 入库和图工具的可选字段。实施前补齐里程碑 1 确定的存储接口以及本阶段选择和回退参数，确认字段与失败边界。
+接入 Document 的快照引用、Evidence 的块引用和定位状态。更新 Searcher 的选择视图、Analyzer 的输入输出、packet 转发、MemoryManager 入库和图工具的可选字段。选择和回退参数使用本计划的 Analyzer 阅读视图约定。
+
+`src/memory/evidence_locations.py` 提供纯函数 `select_source_blocks`、`validate_block_refs` 和 `quote_locations`；`source_snapshots.load_captured_snapshot` 负责文件与归属校验。Searcher 单次调用后将程序计算的阅读和定位诊断合并到 `extraction_log`，MemoryManager 复核搜索归属后转发可选字段，图工具再校验 Document／Evidence 来源与当前图 context。旧调用不提供新字段时不读取快照，Reporter 的材料投影和提交路径保持原有行为。
+
+M2 在读取捕获记录时核对当前快照根、context、来源 URL、快照身份及分块版本。Searcher 与 MemoryManager 还核对 Query 和 SearchRun 归属，避免把其他搜索的捕获误绑到本轮 Document。模型返回的身份和定位状态不被采信。入库边界复核来源及快照归属，定位失败只清除新增关联或块引用，不改变原有事实绑定和 SearchRun 状态机。无定位字段的旧调用不触发快照读取，也不新增默认定位属性。
 
 验收：模型返回的块引用只允许来自其输入；普通原句位置可校验；表格整理不要求伪造精确摘录；多对多映射可读回；错误引用不能跨来源或运行；旧图仍可读取；同一来源仍只执行现有 Analyzer 调用。
 
@@ -194,7 +202,7 @@ uv run python tests/test_source_snapshots.py
 uv run python tests/test_tavily_searcher_pipeline.py
 uv run python tests/test_graph_context.py
 
-# 里程碑 2：新增脚本后执行，并覆盖现有入库约束。
+# 里程碑 2：覆盖现有入库约束。
 uv run python tests/test_evidence_locations.py
 uv run python tests/test_search_lifecycle.py
 uv run python tests/test_graph_invariants.py
@@ -222,3 +230,8 @@ uv run ruff check src tests main.py test_wlc.py
 - 验证：`uv run python tests/test_source_snapshots.py` 通过全部 14 项检查；新增模块与新增测试的 Ruff 检查通过；`git diff --check` 通过。完整 `uv run ruff check src tests main.py test_wlc.py` 返回 209 项问题，与通过 `git archive HEAD` 提取的修改前代码相比，按文件、规则和信息统计没有新增问题。
 - 既有回归：`tests/test_tavily_searcher_pipeline.py` 在第 249 行的来源数量断言失败，fixture 的短文本触发当前 `B_login_wall` 过滤；`tests/test_graph_context.py` 在第 255 行的路径断言失败，测试期待正斜线 context，当前规范化返回反斜线。两项均在临时目录的修改前 `HEAD` 上复现同样失败。本轮保留原断言和运行语义，用新增独立 fixture 验证捕获对模型输入、入库 packet 和运行根绑定的兼容性。
 - 验证过程未访问真实 Neo4j、Tavily 或模型。M1 实现完成，M2—M4 尚未开始。
+- 2026-09-08：M1 提交为 `691dbdc`。用户授权开始 M2，采用上述 20,000 字符与 75%／25% 初始选择参数；本轮不接入 Reporter 回读。
+- 2026-09-08：完成 M2。新增 `tests/test_evidence_locations.py` 的 13 项检查全部通过，覆盖截断位置之后的精确匹配、中文词法检索、研究目标和分区覆盖、表格完整性、重复原句位置、未展示块及伪造模型元数据拒绝、快照缺失与超长单元回退、多对多入库、跨来源／Query／SearchRun 拒绝、同快照多 Document，以及旧调用保留已有定位。图测试只替换存储边界，实际执行 MemoryManager 和 Document／Evidence 创建函数，没有访问 Neo4j。
+- M1 存储脚本的 14 项检查通过；其中原有 Analyzer 输入不变检查随 M2 的明确输入变更调整为块正文、调用次数与事实 packet 兼容检查，并明确断言新增字段和原有字段的取值。既有来源准入、引用绑定和状态机断言未放宽。
+- M2 的 `test_search_lifecycle.py` 在第 220 行因旧 Evidence 的 Statement 引用不符合当前校验而失败；`test_graph_invariants.py` 在第 62 行因当前 Query 转换采用容错处理而失败；`test_contract_v3.py` 在第 235 行因当前审阅流程与旧预期不同而失败。三项均通过临时目录提取提交 `691dbdc` 的源码复现相同结果，未修改这些回归脚本。
+- 新增模块、快照模块及两份定位相关测试的 Ruff 检查通过，`git diff --check` 通过。完整 Ruff 检查仍为 209 项既有问题，与 `691dbdc` 相比没有新增。M2 验证未访问真实模型、Tavily 或 Neo4j；没有新增 LLM 调用，M3—M4 尚未开始。

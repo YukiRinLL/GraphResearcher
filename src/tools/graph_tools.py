@@ -2,12 +2,16 @@
 
 import asyncio
 import hashlib
+import logging
 import os
 import re
 import threading
 from typing import Any, Optional
 
+from memory import evidence_locations, source_snapshots
 from memory.graph import EdgeType, NodeType
+
+logger = logging.getLogger(__name__)
 
 # Source credibility scoring based on source type
 # Higher score = more credible
@@ -503,7 +507,11 @@ def create_source(
 
 def create_document(
     text: str,
-    source_id: Optional[str] = None
+    source_id: Optional[str] = None,
+    *,
+    snapshot_id: Optional[str] = None,
+    chunker_version: Optional[str] = None,
+    capture_id: Optional[str] = None,
 ) -> dict[str, Any]:
     if source_id and get_node(source_id).get("type") != NodeType.SOURCE.value:
         raise ValueError(f"Document source must be Source: {source_id!r}")
@@ -511,6 +519,16 @@ def create_document(
     attributes = {"text": text}
     if source_id:
         attributes["source_id"] = source_id
+    if any(value is not None for value in (snapshot_id, chunker_version, capture_id)):
+        reference = {"snapshot_id": snapshot_id, "chunker_version": chunker_version, "capture_id": capture_id}
+        try:
+            source_snapshots.load_captured_snapshot(
+                reference, (get_node(source_id) if source_id else {}).get("url") or "", context=_context,
+            )
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            logger.warning("Document snapshot association unavailable: %s", type(exc).__name__)
+        else:
+            attributes.update(reference)
     doc_id = _run_async(manager.add_node(NodeType.DOCUMENT, attributes))
     if source_id:
         _run_async(manager.add_edge(source_id, doc_id, EdgeType.HAS_DOCUMENT))
@@ -618,6 +636,8 @@ def create_evidence(
     limitations: Optional[list[str]] = None,
     locator: Optional[str] = None,
     evidence_key: Optional[str] = None,
+    block_refs: Optional[list[str]] = None,
+    location_status: Optional[str] = None,
     **attributes: Any,
 ) -> dict[str, Any]:
     if document_id and get_node(document_id).get("type") != NodeType.DOCUMENT.value:
@@ -643,6 +663,24 @@ def create_evidence(
         "evidence_key": evidence_key,
         **attributes,
     }
+    if block_refs is not None or location_status is not None:
+        allowed_refs: set[str] = set()
+        if block_refs and location_status in (None, "valid", "missing"):
+            document = get_node(document_id) if document_id else {}
+            binding_source_id = source_id or document.get("source_id")
+            try:
+                if binding_source_id != document.get("source_id"):
+                    raise ValueError("Evidence and Document sources do not match")
+                _, index, _ = source_snapshots.load_captured_snapshot(
+                    document, (get_node(binding_source_id) if binding_source_id else {}).get("url") or "", context=_context,
+                )
+                allowed_refs = {block["block_id"] for block in index["blocks"]}
+            except (OSError, ValueError, KeyError, TypeError) as exc:
+                logger.warning("Evidence snapshot location unavailable: %s", type(exc).__name__)
+        location = evidence_locations.validate_block_refs(block_refs, allowed_refs)
+        if location_status not in (None, "valid", "missing"):
+            location = {"block_refs": [], "location_status": "invalid"}
+        properties.update(location)
     matches = search_nodes("evidence", {"evidence_key": evidence_key})
     if matches:
         evidence_id = matches[0]["id"]
