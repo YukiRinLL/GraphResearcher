@@ -1708,10 +1708,21 @@ class MemoryManager:
             )
             handle = owner.get("handle") or owner.get("text") or ""
             cooldown_streak = self._cooldown_streaks.get(owner_id, 0)
+            # Sufficiency trend: show the last few assessment scores so the
+            # evaluator can see whether sufficiency is rising, stuck, or
+            # declining — not just the last value.
+            suf_history = self._sufficiency_history.get(owner_id, [])
+            suf_tail = suf_history[-4:] if suf_history else []
+            suf_trend = "->".join(f"{s:.2f}" for s in suf_tail) if suf_tail else "-"
+            # Source count trend from recent search runs.
+            runs = self._query_search_runs(owner_id)
+            recent_source_counts = [int(r.get("sources") or 0) for r in runs[-3:]] if runs else []
+            source_trend = "->".join(str(c) for c in recent_source_counts) if recent_source_counts else "-"
             lines.append(
                 f"- owner_id={owner_id} handle={handle!r}: depth={depth}, "
                 f"child_queries={child_count}, open_gaps={open_gaps}, "
-                f"last_sufficiency={last_sufficiency}, novelty_trend={novelty_trend}, "
+                f"last_sufficiency={last_sufficiency}, sufficiency_trend={suf_trend}, "
+                f"source_trend={source_trend}, novelty_trend={novelty_trend}, "
                 f"cooldown_streak={cooldown_streak}"
             )
         return "\n".join(lines) or "(no active owners with candidate gaps)"
@@ -2227,61 +2238,26 @@ class MemoryManager:
                         "resolution_reason": "duplicate gap_key already exists on the ancestor path",
                     }, gap["id"])
                 continue
-            # Hard-brake 1: refuse to deepen a vertical branch once its parent
-            # has produced two consecutive empty SearchRuns. This is the
-            # "phrasing doesn't matter any more" regime and extra child
-            # queries only serve to exhaust the recursion budget on a tail
-            # chain. The brake is intentionally applied only to vertical
-            # expansions under a Query parent because horizontal expansions
-            # pivot to a different subject and therefore deserve a real try.
+            # Hard-brake: refuse to deepen a vertical branch once its parent
+            # has produced two consecutive empty SearchRuns. This is the only
+            # remaining hard brake — it catches genuinely exhausted search
+            # phrasing where no results come back at all. All other signals
+            # (low sufficiency, depth, novelty) are soft signals fed to the
+            # portfolio evaluator's branch_decisions, which has the global
+            # view to make an informed continue/cool_down/pause call.
             empty_streak = (
                 self._query_empty_streak(resolved)
                 if parent.get("type") == NodeType.QUERY.value else 0
             )
-            low_suf_streak = (
-                self._query_low_sufficiency_streak(resolved)
-                if parent.get("type") == NodeType.QUERY.value else 0
-            )
-            # Hard-brake 2: a three-run tail of sufficiency_scores *all* below
-            # 0.22 with non-increasing source counts means the evidence curve
-            # is already saturated. Further sub-queries on this path will
-            # return duplicated snippets; stop.
-            sources_increasing = False
-            if parent.get("type") == NodeType.QUERY.value:
-                runs = self._query_search_runs(resolved)
-                recent = runs[-3:] if len(runs) >= 2 else runs
-                source_counts = [int(run.get("sources") or 0) for run in recent]
-                if len(source_counts) >= 2 and source_counts[-1] > max(source_counts[:-1], default=0):
-                    sources_increasing = True
             vertical_hit = (
                 parent.get("type") == NodeType.QUERY.value
                 and mode == "vertical"
-                and (
-                    empty_streak >= _CONSECUTIVE_EMPTY_BRAKE
-                    or (
-                        low_suf_streak >= _CONSECUTIVE_LOW_SUFF_BRAKE
-                        and not sources_increasing
-                    )
-                )
+                and empty_streak >= _CONSECUTIVE_EMPTY_BRAKE
             )
-            # Hard-brake 3: absolute vertical depth cap.  Past
-            # _MAX_VERTICAL_DEPTH the evaluator typically keeps producing
-            # reworded variants of the same unmet acceptance criterion while
-            # ss hovers in the 0.50-0.67 zone.  Cut the chain so the budget is
-            # spent exploring orthogonal dimensions instead.
-            parent_depth = int(parent.get("depth") or 0) if parent.get("type") == NodeType.QUERY.value else 0
-            depth_hit = (
-                parent.get("type") == NodeType.QUERY.value
-                and mode == "vertical"
-                and parent_depth >= _MAX_VERTICAL_DEPTH
-            )
-            if vertical_hit or depth_hit:
+            if vertical_hit:
                 resolution = (
                     f"auto-paused parent chain: "
-                    f"consecutive empty={empty_streak}, "
-                    f"low suf streak={low_suf_streak}, "
-                    f"sources_increasing={sources_increasing}, "
-                    f"depth={parent_depth}, max_depth={_MAX_VERTICAL_DEPTH}"
+                    f"consecutive empty={empty_streak}"
                 )
                 for gap in group:
                     graph_tools.upsert_node(NodeType.ANALYSIS, {
@@ -2290,14 +2266,9 @@ class MemoryManager:
                     }, gap["id"])
                 logger.warning(
                     "expand_gaps hard-brake: skipped vertical expansion for %s "
-                    "(empty streak=%d, low_suf streak=%d, sources increasing=%s, "
-                    "parent_depth=%d, max_depth=%d)",
+                    "(consecutive empty=%d)",
                     parent.get("handle") or resolved,
                     empty_streak,
-                    low_suf_streak,
-                    sources_increasing,
-                    parent_depth,
-                    _MAX_VERTICAL_DEPTH,
                 )
                 continue
             if mode == "horizontal":
@@ -3197,9 +3168,6 @@ class MemoryManager:
         }
         ancestor_keys = self._ancestor_evidence_keys(resolved_query_id)
         novelty = len(evidence_keys - ancestor_keys) / len(evidence_ids) if evidence_ids else None
-        parent = graph_tools.get_node(graph_tools.get_query_parent(resolved_query_id) or "")
-        parent_streak = int(parent.get("low_novelty_streak") or 0)
-        low_streak = parent_streak + 1 if novelty is not None and novelty < 0.2 else 0
 
         run_status = "succeeded" if succeeded else "empty"
         graph_tools.upsert_node(NodeType.SEARCH_RUN, {
@@ -3215,7 +3183,6 @@ class MemoryManager:
                 resolved_query_id,
                 "assessing",
                 successful_search_runs=1,
-                low_novelty_streak=low_streak,
             )
             graph_tools.increment_successful_search_rounds(goal["id"])
             self._bump_portfolio_revision()
