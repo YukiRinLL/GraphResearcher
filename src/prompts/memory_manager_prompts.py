@@ -22,7 +22,7 @@ init_research = """你是 GraphResearcher 的 Query Planner。
 
 如果表格要求同时规定了必须调查的事实字段，应把这些事实字段保留在 Objective 的 acceptance criteria 中，但不要写入表格格式、列顺序或 Markdown 要求。
 
-呈现要求有时会夹带事实要求。此时只保留底层事实，不保留它在报告中的位置或写法。例如，需要识别对象、说明背景、意义或主要争议时，可以把这些事实写入 Objective；不得写成对导言、章节、表格、引文、参考文献或措辞的要求。
+呈现要求有时会夹带事实要求。此时只保留底层事实，不保留它在报告中的位置或写法。可以把这些事实写入 Objective；不得写成对导言、章节、表格、引文、参考文献或措辞的要求。
 
 ### 建立检索依赖关系
 
@@ -68,7 +68,7 @@ init_research = """你是 GraphResearcher 的 Query Planner。
 
 ### language
 
-在初始化时确定本次报告的目标语言，并写入 `language`，供后续写作阶段直接使用。用户明确指定输出语言时采用其指定；否则采用用户提出任务时的主要语言。混合语言请求以任务表达为准，引用的名称、材料和本提示词的语言不改变目标语言。使用明确的语言名称，例如 `English`、`简体中文`；确实无法判断时返回 `null`。
+在初始化时确定本次报告的目标语言，并写入 `language`，供后续写作阶段直接使用。用户明确指定输出语言时采用其指定；否则采用用户提出任务时的主要语言。混合语言请求以任务表达为准，引用的名称、材料和本提示词的语言不改变目标语言。使用明确的语言名称；确实无法判断时返回 `null`。
 
 ### time_window
 
@@ -115,7 +115,7 @@ init_research = """你是 GraphResearcher 的 Query Planner。
 
 ### 按检索依赖选择入口
 
-- 单一命名对象：只生成一条 Query，文本就是对象名称本身（必要时加引号精确匹配），不附加任何限定词。身份确认、规范名称和消歧由首次搜索返回的来源完成，不由 Query 文本承担。
+- 单一命名对象：只生成一条 Query，文本应包含研究对象名称和用户明确给出的必要限定条件，使其能直接用于检索相关文献和资料。身份确认、规范名称和消歧由首次搜索返回的来源完成，不由 Query 文本承担。
 - 未知分类或未知对象集合：先生成一条用于发现分类体系、规范术语或候选范围的 Query，不得用模型先验列出成员。
 - 用户明确列出的多个独立对象：在预算允许时，可以分别建立发现入口；不得把每个对象的属性继续拆分。
 - 多阶段任务：只为当前最上游的发现任务生成 Query，依赖其结果的工作交给后续 Gap 扩展。
@@ -132,7 +132,7 @@ init_research = """你是 GraphResearcher 的 Query Planner。
 - 不得加入身份确认、规范名称、消歧、来源筛选等任务性或来源性限定词；这些职责由搜索结果承担，不由 Query 文本承担。
 - 名称需要精确匹配时可以使用引号，但不得改变用户给出的名称。
 - 只有用户明确要求且能实质限定首次搜索时，才在 Query 中写入时间或地域条件。
-- Query 使用用户请求的语言。
+- Query 使用目标文献的主要语言，不强制使用用户请求语言。
 - 中文 Query 不得使用“调研”“梳理”“整理”“分析”“上述”“前述”“该”“这些”等任务指令或跨 Query 指代。
 - 英文 Query 不得以 `write`、`provide`、`ensure`、`explain`、`describe`、`analyze` 或 `research` 开头。
 - 每个禁止域名都必须以 `-site:domain` 的形式附加到 Query 末尾。
@@ -561,14 +561,14 @@ Atomic gaps to cover: {gaps}
 Reason: {reason}
 
 Requirements:
-- Inline the parent's concrete subject BY VALUE into every new query — use only the LITERAL NOUN PHRASE of the subject (the entity's proper name exactly as given in the research goal), NOT any task or attribute words. Never reference another query: no "上述/前述/该/这些/the above".
+- Inline the concrete subject BY VALUE into every new query. The subject is the parent Query's research subject when deepening the same topic, or a newly discovered parallel entity or new topic from the gap description when expanding horizontally. Use only the LITERAL NOUN PHRASE of the subject, NOT any task or attribute words. Never reference another query: no "上述/前述/该/这些/the above".
 - Each query must be a SHORT, TIGHT natural-language search phrase composed of the entity name (1-3 words) plus ONE OR TWO specific dimension keywords drawn from the assigned gap. Total length: 3-8 words maximum.
 - Good queries take the form: entity name plus one or two concrete dimension keywords drawn from the assigned gap. The entity name must be the literal subject noun phrase; the dimension keywords must be concrete facets named in the assigned gap, not generic research vocabulary.
 - Bad queries (AVOID) pile the entity name together with generic research filler words — words that describe the act of researching or the nature of the output rather than a concrete facet of the subject — instead of concrete dimension keywords from the gap.
 - Do NOT use generic filler words that describe research activity, output format, or analytical stance rather than a specific dimension of the subject being researched.
 - Cover only the assigned related gaps; do not repeat any existing Query.
 - Preserve forbidden domains with `-site:domain`; do not print exact forbidden URLs into the query.
-- Author the query text in the language of the research goal.
+- Author the query text in the language of the target literature for the subject, not necessarily the user request language.
 - Include concrete acceptance_criteria copied or refined from the assigned atomic gap.
 
 Search routing hint:
@@ -590,7 +590,7 @@ Return only valid JSON, no Markdown, at most {max_new} queries:
 
 reformulate_query = """You are the Query Reformulator for GraphResearcher.
 
-A web-search query returned results but all were rejected as duplicates of already-collected evidence. Reformulate the query to search from a different angle and potentially retrieve new sources.
+A web-search query failed to produce usable new evidence. The failure reason is: {empty_reason}. Reformulate the query to address this specific failure and retrieve usable sources.
 
 Original query: {original_query}
 Research goal: {research_goal}
@@ -604,6 +604,7 @@ Rules:
 - Write in the same language as the original query.
 - Do NOT use generic filler words like "research", "analysis", "study", "evidence", "sources".
 - Do NOT merely add or remove a single word; genuinely change the search angle.
+- Adapt the reformulation strategy to the failure reason: when results were duplicates, shift the search angle; when no results were returned, broaden or simplify the phrasing; when extraction failed, prefer clearer and more conventional phrasing.
 
 Return only valid JSON:
 {"query_text": "..."}
