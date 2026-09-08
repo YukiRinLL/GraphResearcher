@@ -1797,6 +1797,13 @@ class MemoryManager:
             for owner_id in sorted(active_owner_ids - parsed_owner_ids):
                 cooled_down_owners[owner_id] = "cool_down"
                 branch_decision_reasons[owner_id] = "LLM omitted this owner; default cool_down"
+            # All active owners now have a decision (either LLM-provided or
+            # default cool_down), so the cool-down filter must be applied.
+            # Without this, has_whitelist stays False and all gaps bypass the
+            # cool-down filter — a single newly-assessed owner (e.g. a query
+            # that just became needs_expansion) would un-defer every previously
+            # cooled gap in one shot.
+            branch_decisions_complete = True
         # Hard cool-down / pause thresholds. These override (or replace) the
         # LLM signal so a branch that has been parked twice in a row is
         # definitely skipped this round, and a branch that has been parked 5+
