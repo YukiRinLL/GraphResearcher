@@ -92,9 +92,11 @@ def configure(output_dir: Optional[str] = None, user_request: Optional[str] = No
                 if child.is_file():
                     child.unlink()
             chapter_dir.rmdir()
+    from memory import source_snapshots
     from tools import convergence, graph_tools
 
     run_context = _normalize_run_context(output_dir)
+    source_snapshots.configure(output_dir, run_context)
     graph_tools.set_context(run_context)
     graph_tools.clear_current_context()
     convergence.reset()

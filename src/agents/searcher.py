@@ -12,13 +12,15 @@ import json
 import logging
 import re
 from typing import Annotated, Any, Optional, TypedDict
-from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+from urllib.parse import urlsplit
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langgraph.graph import END, StateGraph
 from langgraph.graph.message import add_messages
 
 import config
+from memory import source_snapshots
+from memory.source_snapshots import canonicalize_source_url as _canonicalize_url
 from tools.graph_manager_tools import submit_search_result
 from tools.search_tools import tavily_search
 
@@ -44,7 +46,6 @@ class SearcherState(TypedDict):
 
 
 _QID_RE = re.compile(r"(?:query_id|Query ID|queryId|qid|id)[=:]\s*([a-f0-9_]+)", re.IGNORECASE)
-_TRACKING_QUERY_KEYS = {"gclid", "fbclid"}
 _MAX_DEBUG_SEARCH_OUTPUT_CHARS = 30_000
 _MAX_SOURCE_RAW_CHARS = 20_000
 _DEFAULT_MAX_RESULTS = 5
@@ -147,31 +148,6 @@ def init_node(state: SearcherState) -> dict:
     return {"query_id": query_id, "query_text": query_text.lstrip("：:").strip()}
 
 
-def _canonicalize_url(value: object) -> Optional[str]:
-    """规范化 HTTP(S) URL，并移除 fragment 和常见跟踪参数."""
-    if not isinstance(value, str) or not value.strip():
-        return None
-    try:
-        parts = urlsplit(value.strip())
-        hostname = parts.hostname
-    except ValueError:
-        return None
-    scheme = parts.scheme.lower()
-    if scheme not in {"http", "https"} or not hostname:
-        return None
-
-    netloc = parts.netloc.lower()
-    path = parts.path or "/"
-    if path != "/":
-        path = path.rstrip("/") or "/"
-    query_items = sorted(
-        (key, item_value)
-        for key, item_value in parse_qsl(parts.query, keep_blank_values=True)
-        if not key.lower().startswith("utm_") and key.lower() not in _TRACKING_QUERY_KEYS
-    )
-    return urlunsplit((scheme, netloc, path, urlencode(query_items, doseq=True), ""))
-
-
 def _normalize_search_result(item: dict[str, Any]) -> tuple[Optional[dict[str, Any]], Optional[str]]:
     """规范化一条 Tavily 结果，并返回丢弃原因."""
     url = _canonicalize_url(item.get("url"))
@@ -189,6 +165,7 @@ def _normalize_search_result(item: dict[str, Any]) -> tuple[Optional[dict[str, A
         "raw_content_truncated": raw_content_truncated,
         "score": item.get("score"),
         "published_at": item.get("published_at") or item.get("published_date") or item.get("date"),
+        **({"source_snapshot": item["source_snapshot"]} if isinstance(item.get("source_snapshot"), dict) else {}),
     }, None
 
 
@@ -292,7 +269,8 @@ def web_search_node(state: SearcherState) -> dict:
         call_kwargs["include_domains"] = include_domains
     if search_depth:
         call_kwargs["search_depth"] = search_depth
-    result = _TAVILY_SEARCH(**call_kwargs)
+    with source_snapshots.search_capture_scope(state.get("query_id"), state.get("search_run_id")):
+        result = _TAVILY_SEARCH(**call_kwargs)
     if not isinstance(result, dict):
         result = {
             "error": "tavily_search returned a non-dict response",
@@ -313,7 +291,8 @@ def web_search_node(state: SearcherState) -> dict:
         aggressive = re.sub(r'\s+', ' ', aggressive).strip()
         if aggressive and aggressive != cleaned_query:
             retry_kwargs = dict(call_kwargs, query=aggressive)
-            retry = _TAVILY_SEARCH(**retry_kwargs)
+            with source_snapshots.search_capture_scope(state.get("query_id"), state.get("search_run_id")):
+                retry = _TAVILY_SEARCH(**retry_kwargs)
             if isinstance(retry, dict) and (retry.get("results") or []):
                 result = retry
                 cleaned_query = aggressive

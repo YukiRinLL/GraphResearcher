@@ -1,0 +1,224 @@
+# 原文快照、Evidence 定位与章节回读
+
+## 状态与目标
+
+截至 2026-09-08，用户已确认阅读策略，并在审阅详细修改方案后授权新建分支开始修改。本轮在 `codex/source-snapshots-m1` 上完成里程碑 1，并补全后续阶段的设计契约。新增离线回归通过，两项既有回归失败和仓库 lint 基线见执行记录。里程碑 2—4 尚未实施；本轮在 M1 边界停止，后续阶段分别确认实施范围。
+
+目标是让 Reporter 能通过 Evidence 回到当次捕获的原文，在有界输入中补充必要上下文。原文保存在运行目录，Neo4j 继续保存图谱事实和定位关系。是否抽取发现事实、来源准入和 Claim 规范化不属于本次讨论范围。
+
+## 已确认决策
+
+1. 保留 Source → Document → Evidence 的证据层关系。Document 关联不可变原文快照，正文不整体写入图谱，也不为每个块创建图节点。
+2. 保存 Tavily 实际返回的 `raw_content`，并在应用自身截断之前完成保存。快照表示本次捕获到的内容，不宣称覆盖网站完整原文。
+3. `content` 用于筛选相关原文块。可精确匹配的片段定位到快照；摘要式内容只作为检索线索。不同 Query 的内容片段可以复用同一快照中的块。
+4. 程序生成稳定块标识。既有 Analyzer 调用同时输出 Evidence 和 `block_refs`，程序验证定位，不增加独立的 LLM 定位调用。
+5. 自动附带只选择本章相关 Evidence 直接定位的块，按章节目标分别排序和轮流分配预算。相同块去重，重复 Evidence 数量不作为重要性加分。
+6. 程序使用相关性、正文增量、已有的限定或冲突关系进行初筛。它不保证理解新增文字的语义重要性，Reporter 负责判断是否需要回读。
+7. 章节第一次调用可以直接返回完整章节，或批量提出原文阅读请求。最多执行一次回读，随后调用 Reporter 完成章节；不单独设置一个 LLM 阅读判断步骤。
+8. 自动附带与主动回读共享原文预算。主动请求优先，可以替换自动附带材料；回读不触发新搜索。
+9. 加载失败、定位失败和因预算未加载都应明确返回。未读取不能表述为已核实，材料不足时保留必要限定。
+
+## 运行记录依据
+
+两个 benchmark 目录共有 6 次运行、29 个归档章节材料包。根据 `evidence_ref_map` 回查图节点，单章 Evidence 数量中位数为 84，最大为 217；11 个章节至少有 100 条 Evidence。以 `o200k_base` 估算的候选 Evidence 与 Claim 正文合计中位数约为 6,019 tokens，最大为 15,334 tokens。
+
+这些数值不包含完整指令、JSON 结构和关系元数据，也不等同于历史 API 的实际输入。旧运行没有完整原文快照，不能据此计算真实块去重率或断言长上下文造成了评分下降。
+
+集成光子任务铌酸锂章节的 131 条 Evidence 只有 88 种完全不同的正文，其中一个文本出现 9 次。阴谋论任务的 5 个章节使用同一组 65 个候选节点。前者说明输入组装也需要去重，后者说明跨章节取材会重复产生费用；跨章节重复不等同于单次调用溢出。
+
+每章新增原文 2,000 tokens 是此前提出的初始试验参数，不是运行记录证明的最优值。还应检查完整 prompt 的预算余量，为输出预留空间。
+
+## 当前代码与目标的差异
+
+| 当前入口 | 当前行为 | 所需变化 |
+| --- | --- | --- |
+| `src/tools/search_tools.py` 的 Tavily 调用边界 | 在返回上层前截断 `raw_content` 至约 20,000 字符 | 在该截断之前保存快照，并记录实际搜索阶段 |
+| `src/agents/searcher.py` | 对来源再次截断；Analyzer 只接收 `raw_content`；组装 packet 时只转发现有字段 | 传入来自快照的带标识块，转发经验证的定位元数据 |
+| `src/prompts/analyzer.md` | 不允许输出 `block_refs` 等额外字段 | 仅调整输入与定位输出契约，保持事实抽取规则 |
+| `src/agents/memory_manager.py` | 用 `document_summary` 创建 Document，尚未转发快照和块引用 | Document 保存快照关联，Evidence 保存位置引用 |
+| `src/tools/graph_tools.py` | `create_document` 每次新增节点；Evidence 的 key 包含 Document 和旧 locator | 首版只增加可选定位字段，不静默改变图节点去重身份 |
+| `src/tools/report_tools.py` | 按 Query 持续翻页取得候选材料，以节点 ID 去重 | 另建章节共享原文视图，控制加载预算 |
+| `src/agents/reporter_workflow.py` | 章节结果只接受 `chapters`；失败最多尝试 3 次 | 增加一次有界回读分支，区分回读与错误重试 |
+| `src/tools/graph_manager_tools.py` 的 `configure` | 绑定图 context 并清理本轮报告产物 | 同时绑定快照根，保留既有清理范围 |
+| Searcher 的结果规范化与 packet 合并 | 多次重建字段字典 | 逐层转发程序生成的捕获引用；M1 只转发到搜索结果，不改变 Analyzer 或入库 packet |
+| Reporter 的 `_writer_chapter_bundle` | 再次投影为最小写作视图 | 显式投影阅读能力、已加载块和读取结果 |
+| `tests/replay_reporter_workflow.py` | 新目录中回放旧图，没有快照配置 | 后续显式绑定来源运行的只读快照根，将报告和审计写入回放目录 |
+
+当前 `CLAUDE.md` 中 JSONL 主存储和早期脚手架描述已落后于代码。本计划遵循 `AGENTS.md` 和当前 Neo4j 实现。
+
+## 数据形状提案
+
+快照存储与捕获接口已在 M1 实现；图字段、Analyzer 块阅读和 Reporter 回读仍为后续阶段提案，尚未作为运行时契约发布。
+
+### 快照与捕获记录
+
+本次运行目录下使用 `source_snapshots/` 保存正文、块索引和捕获记录。快照索引包含 `schema_version`、`snapshot_id`、`source_key`、`body_sha256`、`chunker_version` 和 `blocks`；每个块包含 `block_id`、`kind`、`start_char`、`end_char`，以及必要的结构依赖块引用。
+
+M1 使用 `source_snapshots/snapshots/<snapshot_id>/body.txt`、同目录下的 `index-v1.json` 和 `source_snapshots/captures/<capture_id>.json`。`snapshot_id` 由来源身份和 UTF-8 正文字节哈希派生；`capture_id` 为每次实际响应中的每条结果单独生成。块标识采用 `<snapshot_id>:v1:b000001`，由原文顺序确定。未来分块版本使用新的索引文件，旧索引不覆盖。来源身份复用当前 Searcher 的 URL 规范化函数；不能规范化的 URL 保留原值作为捕获身份，不改变后续来源过滤。
+
+正文以 UTF-8 保存，偏移采用解码后 Python 字符串的零起点、左闭右开区间。保存的正文不为去噪而改写；检索规范化在派生视图中进行，需要精确定位时维护到原文的映射。块标识由快照、分块版本和位置确定，不能仅以块文本哈希表示，因为同一段文字在一页中可能重复出现。
+
+文件读写保留 CRLF 等原始换行。先原子发布完整正文，再原子发布索引；索引是快照可读取的完成标记。已存在文件必须与预期字节一致，损坏时报告失败，不覆盖。不同写入者可以复用同一份有效文件。孤立正文不是可读取快照，后续相同捕获可以补齐缺失索引。
+
+快照身份由来源身份和完整捕获正文的精确哈希派生；同一运行中相同来源、相同正文复用快照，正文变化创建新版本。捕获时间、Query、原始 URL、实际搜索深度、返回的 `content`、供应商和应用截断信息单独记录，不能把多次检索的片段拼成一份不存在的原文。同文跨站转载也不能丢失各自来源身份。
+
+捕获记录包含 `schema_version`、`capture_id`、`snapshot_id`、`chunker_version`、`context`、`query_id`、`search_run_id`、实际查询文本、结果位置、URL、标题、发布日期、`content`、捕获时间、供应商、响应 request ID、实际 cascade 阶段、请求参数和捕获状态。未显式指定深度时保存 `provider_default`，不推断供应商实际采用的深度。`application_truncated` 表示应用是否将要裁剪返回正文；供应商未说明网页覆盖情况时，`provider_completeness` 为 `unknown`。完整保存返回字符串不代表完整抓取网页。
+
+搜索结果的程序字段 `source_snapshot` 返回 `stored`、`unavailable`、`error` 或 `disabled` 状态及可用的捕获引用。缺少运行根时禁用捕获；缺少正文时记录不可用。没有字典结果的响应也保存一次阶段记录，`result_index` 为 `null`，捕获状态放在响应顶层。供应商返回的 `raw_content_truncated` 原值另存为 `provider_raw_content_truncated`，不将其解释为网页完整性证明。文件或索引保存失败只影响捕获状态，不进入 Tavily 的搜索失败分支。捕获记录本身无法写入时在日志中报告失败，并保留返回状态。
+
+优先按 Markdown 标题、段落、列表和表格边界分块。普通长段落可按句界细分，表格保持完整表头和必要脚注。结构依赖的识别属于程序能力范围，无法可靠拆分的超长单元保留整体并允许报告预算不足，不能假定程序能识别所有语义限定。
+
+M1 的 v1 分块识别 ATX 标题、段落、列表、围栏代码和 Markdown pipe table；连续表格及紧随的显式 Markdown 脚注保持整体，块记录所属标题的 `dependency_refs`。普通段落以 2,000 字符为软目标按句界分组；无法安全拆开的长句、列表、代码或表格保留整体。空白分隔仍完整保存在正文中，索引无需为纯空白建块。程序不承诺识别所有表格脚注、跨段限定或网页结构。
+
+### 图谱定位
+
+建议为 Document 增加可选 `snapshot_id`、`chunker_version` 和 `capture_id`；原有 `text` 继续保存概述。Evidence 增加可选 `block_refs: list[str]` 和 `location_status`，由 Document 解析所属快照。正文和块索引仍在文件中，图属性不保存嵌套块对象。身份、版本和定位状态由程序生成，模型只选择已展示的块标识。
+
+第一版不复用旧 `locator` 承载新结构，也不改写现有 `evidence_key` 规则。多个 Document 可以关联同一快照，从而先完成正文复用与章节去重；跨 Query 合并 Document、Statement 或 Evidence 节点属于另一个改造范围。
+
+Analyzer 只能选择本次实际提供给它的块标识。程序校验标识所属快照和输入集合；普通摘录可进一步验证原句位置。表格整理形式允许只有经验证的块引用，不伪造逐字字符区间。块存在的校验不等同于证明 Evidence 被该块语义支持。
+
+定位失败时，提案是保留原有可接受的 Evidence，清除不可用引用并记录失败，不新增定位修复 LLM 调用。历史 Evidence 没有定位字段时作为不可回读的旧记录处理。该策略不把位置校验升级成新的事实准入门槛。
+
+`location_status` 使用 `valid`、`missing` 和 `invalid`，分别表示非空引用全部通过校验、未提供引用和引用校验失败。任一引用非法时清空该条定位集合，细节留在审计中；`valid` 不代表语义核实。旧记录缺少字段时不迁移。更新已有 Evidence 时，缺省定位字段不能清除已存在的有效位置。
+
+### Analyzer 阅读视图
+
+建议输入 `source.blocks`，其中每项包含 `block_id` 和来自快照的正文，并保留标题、URL、发布日期和捕获完整性标记。输出 Evidence 在现有 `local_ref`、`text`、`statement_refs` 上增加 `block_refs`。
+
+先用 `content` 的精确命中形成候选，再结合 Query、`acceptance_criteria` 和 `research_goal` 进行本地词法排序，补齐结构并按原文位置展示。重复原句保留多个候选位置，搜索摘要只作为检索线索。当前代码只有 20,000 字符正文上限，没有现成 token 阅读预算。M2 暂以该字符上限为起点，约 75% 用于定向相关块，25% 用于研究目标和分区覆盖，空闲额度可互相借用；具体参数在实施 M2 前确认。没有有效匹配时按首部正文和不同标题区域轮流选择，并明确只阅读了部分原文。
+
+启用块视图后只展示 `source.blocks`，不重复附带同一正文的 `raw_content`；快照不可用时保留有界旧正文输入并标记不可定位。抽取规则不变不意味着抽取结果不变，必须用 fixture 检查发现事实的覆盖情况。
+
+### Reporter 阅读视图与返回值
+
+Evidence 阅读项增加可回读引用，章节增加共享的 `context_blocks`。每个已加载块带有块标识、关联 Evidence 引用和来源信息，原文只出现一次。未加载标识按需紧凑表示，所有标识、状态和结构开销也计入输入预算。
+
+Evidence 的 `block_refs` 表示直接定位集合，`readable_block_refs` 表示直接集合加已公开的一跳结构依赖或紧邻块。首版不公开整页索引。自动附带仍只取直接定位集合，必要的表格结构在分块和定位阶段保持完整；主动请求可使用已公开的可读集合。同一快照的相同块去重，不合并不同来源的归属。
+
+直接完成时继续接受现有的 `{"chapters": [...]}`。提出回读时，建议接受以下互斥结果：
+
+```json
+{
+  "read_requests": [
+    {
+      "evidence_ref": "e12",
+      "block_refs": [],
+      "purpose": "核对该指标的实验条件与测量口径"
+    }
+  ]
+}
+```
+
+`evidence_ref` 必须属于当前章节材料包；未指定块时读取该 Evidence 的定位块。显式块引用只能取自该证据的合法定位或已经展示的结构邻接索引。阅读目的用于审计和续写，不通过另一轮 LLM 转化为检索计划，也不开放任意文件路径或网络地址。
+
+程序在每项请求的 `results` 中逐块返回 `block_ref` 和 `loaded`、`unavailable`、`invalid_ref` 或 `budget_exceeded` 状态，以表达部分加载成功。显式请求块优先，剩余预算再容纳自动选择块；保留原有 Evidence 和 Claim。第二次输入重新组装，不携带被替换原文的完整历史消息，避免名义上替换、实际上仍占上下文。
+
+第二次正常调用只接受最终章节。最终提交工具、章节文件和来源引用编号继续使用现有 shape；阅读请求不作为章节提交，不创建新的研究事实。首版回读用于解释、条件核对和已有证据的上下文，不把读到的无关新命题自动视为已有 Evidence 支持；新增事实的证据绑定另行讨论。
+
+## 预算与错误边界提案
+
+自动选择按章节目标分别进行词法相关性排序，优先考虑相对已附带文字的增量，再参考图中已经存在的限定或冲突关系。各目标轮流选择；同一个块可以服务多个目标但只计一次。重复 Evidence 的数量和短文本本身不构成优先级。
+
+排序按相关性、可计算的文字增量、已有 `qualifies`／`contradicts` 关系依次比较，同分按快照和位置稳定排序。过大块跳过后继续尝试其他候选并记录原因，不阻塞其他章节目标。文字增量不是语义重要性的证明。
+
+新增材料预算从每次章节输入 2,000 tokens 开始离线验证，包含新增字段、结构、请求结果和正文；不是两次调用合计的费用上限。实际额度取增量预算与完整 prompt 剩余空间的较小值，后者扣除输出预留和安全余量。每次调用前重新计算完整序列化输入，未知模型需明确 tokenizer 口径和上下文上限。基础材料已超限时记录 `base_prompt_over_budget`，走既有章节失败路径，不删除 Evidence，也不反复发送相同超限输入。
+
+章节局部状态使用 `model_invocations`、`failed_attempts` 和 `readback_used`。最多累计 3 次模型、结构或提交失败，允许一次不计失败的合法阅读请求；正常路径调用 1 次或 2 次，工作流层最多调用 4 次。首次有效阅读决策可在 JSON 错误后的重试中发生。非法 JSON、互斥分支同时出现、空请求数组或字段类型错误属于结构失败；合法请求中的越界引用、文件不可用或预算不足返回逐项结果并消耗唯一回读机会。回读后再次请求阅读属于协议失败。读取后的所有重试沿用替换视图，回读机会不重新开放。
+
+4 次上限不包含 SDK 内部 HTTP 重试，大纲和全文润色也单独统计。当前模型工厂配置了自动重试，不能把工作流调用次数直接解释为实际网络请求次数。
+
+读取失败不触发网络重抓、额外搜索或自动 LLM 修复。快照文件路径由当前运行根和受校验标识派生；切换运行时同时切换快照根，不能跨 context 查找碰巧同名的文件。图清理保持现有语义，不默认删除不可变运行产物。
+
+M1 保证同一运行的并发捕获和顺序切换运行的隔离。当前图工具使用进程级 context，本轮不扩展为同进程多研究任务并行。Searcher 在调用边界绑定 Query 和 SearchRun 元数据，Tavily 的公开工具参数保持不变，绑定在退出或异常后恢复。
+
+## 非目标与行为不变量
+
+- 保持现有来源准入、事实抽取范围、Claim normalization、Query 状态机、收敛规则和搜索预算语义。
+- 保持 Neo4j 为图谱事实来源，JSONL 为导出格式；快照是与图关联的运行文件，不作为另一套图数据库。
+- 不对旧运行补抓网页来伪造历史快照，不迁移或删除既有图节点。
+- 不全量附带原文，不引入向量库、嵌入调用或单独的 LLM 检索重排器。
+- 保持章节并行分支的阅读状态隔离，某章回读不能改变其他章的预算或引用表。
+- 保留最终提交的 Evidence 引用和引用编号规则，不能用原文回读绕开报告交付路径。
+- 所有来自网页的文字保持数据身份，不作为 Analyzer 或 Reporter 的流程指令。
+
+## 里程碑
+
+### 里程碑 1：快照保存与分块基础
+
+新增 `src/memory/source_snapshots.py`，将身份计算、分块和索引构造放在纯函数中，将文件写入、读取和哈希校验留在边界。通过现有运行配置明确快照根，在 Tavily 返回的正文被应用截断前捕获快照。保留当前 Searcher 与 Analyzer 的文本输入行为，暂不接入图字段或 Reporter 阅读。
+
+存储入口为 `save_snapshot(root, source_key, body)`，读取入口为 `read_snapshot(root, snapshot_id, chunker_version="v1")`，返回原始正文和校验后的索引；失败通过文件异常或 `ValueError` 暴露。`build_snapshot_index` 是纯函数。`configure(output_dir, context)` 只绑定配置、不创建或清理文件；`search_capture_scope(query_id, search_run_id)` 用 `ContextVar` 在搜索调用期间固定配置并恢复归属。`capture_source` 负责异常降级和捕获记录。Tavily 工具签名保持不变。
+
+捕获记录包含实际搜索阶段，因此 academic cascade 的每次实际返回应单独记录，不改变回退选择、搜索次数或日志中的正文裁剪策略。快照写入失败时记录明确失败状态，原有搜索继续；没有运行输出根时不写入共享工作目录，明确标记捕获未启用。
+
+验收：大于 20,000 字符的 fixture 完整落盘；相同捕获复用正文而保留不同 Query 的观察记录；正文变化产生新快照；重复段落有不同位置标识；中英文偏移能精确回切原文；并发写入不会留下部分文件；不同运行互不读写；本阶段模型调用数和 Analyzer 输入不变。
+
+### 里程碑 2：Evidence 定位与图谱关联
+
+接入 Document 的快照引用、Evidence 的块引用和定位状态。更新 Searcher 的选择视图、Analyzer 的输入输出、packet 转发、MemoryManager 入库和图工具的可选字段。实施前补齐里程碑 1 确定的存储接口以及本阶段选择和回退参数，确认字段与失败边界。
+
+验收：模型返回的块引用只允许来自其输入；普通原句位置可校验；表格整理不要求伪造精确摘录；多对多映射可读回；错误引用不能跨来源或运行；旧图仍可读取；同一来源仍只执行现有 Analyzer 调用。
+
+### 里程碑 3：有预算的自动附带与一次回读
+
+扩展章节准备视图和 Reporter 互斥返回协议。实现按目标轮流选块、共享块去重、token 预算、一次回读、替换后重新组装 prompt，以及不随错误重试重置的回读状态。更新 Reporter prompt，仅调整阅读与返回协议。
+
+实施前确认完整输入预算配置、tokenizer 口径、增量预算默认值和正常续写与失败重试的计数方式。所有新状态是章节临时编排状态，不新增图谱状态枚举。
+
+验收：有足够材料时章节正常路径不增加调用；回读只增加一次正常调用；错误重试不重开回读；请求结果逐项可审计；共享块不重复；替换后的输入没有旧块历史；多个章节状态隔离；最终提交、引用校验和 fallback 交付回归保持通过。
+
+### 里程碑 4：离线验证与参数评估
+
+使用保存的章节目标、Evidence 与构造的原文 fixture，测试重复、多目标覆盖、表格结构依赖和预算不足。记录实际 prompt token、选中块、未加载原因、回读次数和错误重试次数。旧 benchmark 可提供章节结构和材料规模，不能充当缺失快照的真实回读数据。
+
+真实新运行才能测量自动选择命中率和报告质量变化。需要端到端评估时单独说明模型与 Tavily 成本，不在离线验收中隐式执行。达到当前已授权里程碑后停止，不自动进入下一阶段。
+
+## 兼容策略
+
+新字段首版为可选，旧 Document 和 Evidence 正常提供原有写作材料，回读返回不可用。快照写入成功后才发布可读取索引；图中引用的文件丢失或校验失败时明确报告不可用，不自动改指向更新的网页。正文文件复用不意味着图节点或来源引用合并。
+
+准备、校验、提交、组装和 `main.py` 交付路径均需纳入影响检查。首版不更改报告接受条件来迁就回读失败，也不删除旧回归断言。
+
+M3 将阅读审计放入独立的 `report_source_context/chapter-<id>/`，不修改现有章节提交文件结构。审计关联原 `bundle_token`，记录阅读视图、选择原因、逐块结果、tokenizer 与调用计数。回放显式读取来源运行的快照根，将新报告和审计写入回放目录；无快照时返回不可用，不搜索其他目录或联网补抓。只读回放不调用具有清理副作用的 `configure()`。
+
+历史 benchmark 数值暂作为既有观察保留，尚缺统计脚本和运行目录清单；M4 在使用这些数值进行参数比较前补齐复现依据。
+
+## 验证命令
+
+里程碑 1 使用独立脚本 `tests/test_source_snapshots.py`；后续定位与选择测试可分别放入 `tests/test_evidence_locations.py` 和 `tests/test_report_source_context.py`。实施时沿用项目的裸包导入和 fixture／monkeypatch 模式，不依赖真实 Neo4j 或模型。
+
+```bash
+# 里程碑 1。
+uv run python tests/test_source_snapshots.py
+uv run python tests/test_tavily_searcher_pipeline.py
+uv run python tests/test_graph_context.py
+
+# 里程碑 2：新增脚本后执行，并覆盖现有入库约束。
+uv run python tests/test_evidence_locations.py
+uv run python tests/test_search_lifecycle.py
+uv run python tests/test_graph_invariants.py
+uv run python tests/test_contract_v3.py
+
+# 里程碑 3：新增脚本后执行，并验证完整交付路径。
+uv run python tests/test_report_source_context.py
+uv run python tests/test_report_context.py
+uv run python tests/test_reporter_workflow.py
+uv run python tests/test_report_validation.py
+uv run python tests/test_reporter_artifact_persistence.py
+uv run python tests/test_report_delivery.py
+uv run python tests/test_report_completeness.py
+uv run python tests/test_reporter_replay.py
+
+# 每个实施里程碑检查实际改动，并记录仓库既有 lint 问题。
+uv run ruff check src tests main.py test_wlc.py
+```
+
+## 执行记录
+
+- 2026-09-08：整理已确认设计，检查搜索截断、Analyzer packet、图工具和 Reporter 章节路径。记录图节点身份、历史快照缺失及错误重试计数的边界。本次只新增计划文档，未修改运行时代码，未运行真实搜索、模型或数据库验证。
+- 2026-09-08：用户授权新建分支开始修改。在 `codex/source-snapshots-m1` 上补全数据身份、失败边界和后续阅读契约，本轮实施范围限定为 M1。
+- 2026-09-08：完成 M1。新增 14 项离线回归覆盖长正文、CRLF／中英文偏移、重复段落、超长结构单元、正文发布后索引完成前的拒读、并发捕获、损坏校验、文件失败、运行切换、无目录禁用、级联空响应和查询清洗重试。比较启用与禁用快照时的完整 Analyzer 消息和入库 packet，两者一致。没有新增模型或搜索调用，没有修改图字段、来源过滤或 Reporter。
+- 验证：`uv run python tests/test_source_snapshots.py` 通过全部 14 项检查；新增模块与新增测试的 Ruff 检查通过；`git diff --check` 通过。完整 `uv run ruff check src tests main.py test_wlc.py` 返回 209 项问题，与通过 `git archive HEAD` 提取的修改前代码相比，按文件、规则和信息统计没有新增问题。
+- 既有回归：`tests/test_tavily_searcher_pipeline.py` 在第 249 行的来源数量断言失败，fixture 的短文本触发当前 `B_login_wall` 过滤；`tests/test_graph_context.py` 在第 255 行的路径断言失败，测试期待正斜线 context，当前规范化返回反斜线。两项均在临时目录的修改前 `HEAD` 上复现同样失败。本轮保留原断言和运行语义，用新增独立 fixture 验证捕获对模型输入、入库 packet 和运行根绑定的兼容性。
+- 验证过程未访问真实 Neo4j、Tavily 或模型。M1 实现完成，M2—M4 尚未开始。

@@ -7,6 +7,8 @@ from typing import Literal, Optional
 from langchain_core.tools import tool
 from tavily import TavilyClient
 
+from memory import source_snapshots
+
 logger = logging.getLogger(__name__)
 
 _tavily_client: Optional[TavilyClient] = None
@@ -145,7 +147,7 @@ def tavily_search(
         and topic == "general"
     )
 
-    def _call(depth_override: Optional[str], domains: Optional[list[str]]) -> dict:
+    def _call(depth_override: Optional[str], domains: Optional[list[str]], stage: str = "single") -> dict:
         try:
             search_kwargs = {
                 "max_results": max_results,
@@ -164,9 +166,26 @@ def tavily_search(
                 search_kwargs["exclude_domains"] = list(exclude_domains)
             response = _client().search(query, **search_kwargs)
             if isinstance(response, dict):
-                for item in response.get("results", []) or []:
-                    if not isinstance(item, dict):
-                        continue
+                items = [
+                    (index, item)
+                    for index, item in enumerate(response.get("results", []) or [])
+                    if isinstance(item, dict)
+                ]
+                # 空响应也保留实际阶段记录，不改变原有级联选择和空结果语义。
+                for result_index, item in items or [(None, {})]:
+                    capture = source_snapshots.capture_source(
+                        item,
+                        query=query,
+                        stage=stage,
+                        search_parameters=search_kwargs,
+                        response=response,
+                        result_index=result_index,
+                        raw_content_limit=_MAX_RAW_CONTENT_CHARS,
+                    )
+                    if result_index is None:
+                        response["source_snapshot"] = capture
+                    else:
+                        item["source_snapshot"] = capture
                     raw_content = item.get("raw_content")
                     if isinstance(raw_content, str) and len(raw_content) > _MAX_RAW_CONTENT_CHARS:
                         item["raw_content"] = raw_content[:_MAX_RAW_CONTENT_CHARS] + "...(truncated)"
@@ -200,7 +219,7 @@ def tavily_search(
     ]
     last_response: dict = {"query": query, "results": []}
     for stage_name, depth, domains in stages:
-        response = _call(depth, domains)
+        response = _call(depth, domains, stage_name)
         usable = _count_usable(response)
         if usable >= 2:
             if isinstance(response, dict):
