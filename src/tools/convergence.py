@@ -46,20 +46,15 @@ def reset() -> None:
     _novelty_history.clear()
 
 
-def is_diminishing(threshold: float = 0.2, window: int = 2) -> bool:
-    """Report whether recent rounds added little new evidence.
+def is_diminishing() -> bool:
+    """Legacy stub — always returns False.
 
-    Args:
-        threshold: Novelty ratio below which a round counts as low-yield.
-        window: Number of most-recent rounds that must all be low-yield.
-
-    Returns:
-        True once the last ``window`` recorded novelty ratios are all below
-        ``threshold``; False before enough rounds exist.
+    The hard-threshold diminishing-returns check has been removed. The full
+    novelty ratio history is still collected and passed to the portfolio
+    evaluator so the LLM can judge whether returns are diminishing based on
+    both the ratio trend and the nature of the new evidence.
     """
-    if len(_novelty_history) < window:
-        return False
-    return all(ratio < threshold for ratio in _novelty_history[-window:])
+    return False
 
 
 def compute_priority(sem_label: Optional[str], parent_id: Optional[str]) -> tuple:
@@ -145,8 +140,8 @@ def _novelty_metrics(advance: bool = True) -> dict:
             mutating any bookkeeping.
 
     Returns:
-        dict with ``ratio``, ``new_total``, ``new_unique``, a short
-        ``history_tail`` and the ``diminishing`` flag.
+        dict with ``ratio``, ``new_total``, ``new_unique`` and a short
+        ``history_tail`` of recent novelty ratios for the portfolio evaluator.
     """
     if not advance:
         return {
@@ -154,7 +149,6 @@ def _novelty_metrics(advance: bool = True) -> dict:
             "new_total": None,
             "new_unique": None,
             "history_tail": _novelty_history[-3:],
-            "diminishing": is_diminishing(),
         }
 
     from tools import graph_tools
@@ -185,7 +179,6 @@ def _novelty_metrics(advance: bool = True) -> dict:
         "new_total": new_total,
         "new_unique": new_unique,
         "history_tail": _novelty_history[-3:],
-        "diminishing": is_diminishing(),
     }
 
 
