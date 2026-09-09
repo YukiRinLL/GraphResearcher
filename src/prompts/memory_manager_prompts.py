@@ -22,7 +22,7 @@ init_research = """你是 GraphResearcher 的 Query Planner。
 
 如果表格要求同时规定了必须调查的事实字段，应把这些事实字段保留在 Objective 的 acceptance criteria 中，但不要写入表格格式、列顺序或 Markdown 要求。
 
-呈现要求有时会夹带事实要求。此时只保留底层事实，不保留它在报告中的位置或写法。例如，需要识别对象、说明背景、意义或主要争议时，可以把这些事实写入 Objective；不得写成对导言、章节、表格、引文、参考文献或措辞的要求。
+呈现要求有时会夹带事实要求。此时只保留底层事实，不保留它在报告中的位置或写法。可以把这些事实写入 Objective；不得写成对导言、章节、表格、引文、参考文献或措辞的要求。
 
 ### 建立检索依赖关系
 
@@ -68,7 +68,7 @@ init_research = """你是 GraphResearcher 的 Query Planner。
 
 ### language
 
-在初始化时确定本次报告的目标语言，并写入 `language`，供后续写作阶段直接使用。用户明确指定输出语言时采用其指定；否则采用用户提出任务时的主要语言。混合语言请求以任务表达为准，引用的名称、材料和本提示词的语言不改变目标语言。使用明确的语言名称，例如 `English`、`简体中文`；确实无法判断时返回 `null`。
+在初始化时确定本次报告的目标语言，并写入 `language`，供后续写作阶段直接使用。用户明确指定输出语言时采用其指定；否则采用用户提出任务时的主要语言。混合语言请求以任务表达为准，引用的名称、材料和本提示词的语言不改变目标语言。使用明确的语言名称；确实无法判断时返回 `null`。
 
 ### time_window
 
@@ -115,7 +115,7 @@ init_research = """你是 GraphResearcher 的 Query Planner。
 
 ### 按检索依赖选择入口
 
-- 单一命名对象：只生成一条 Query，文本就是对象名称本身（必要时加引号精确匹配），不附加任何限定词。身份确认、规范名称和消歧由首次搜索返回的来源完成，不由 Query 文本承担。
+- 单一命名对象：只生成一条 Query，文本应包含研究对象名称和用户明确给出的必要限定条件，使其能直接用于检索相关文献和资料。身份确认、规范名称和消歧由首次搜索返回的来源完成，不由 Query 文本承担。
 - 未知分类或未知对象集合：先生成一条用于发现分类体系、规范术语或候选范围的 Query，不得用模型先验列出成员。
 - 用户明确列出的多个独立对象：在预算允许时，可以分别建立发现入口；不得把每个对象的属性继续拆分。
 - 多阶段任务：只为当前最上游的发现任务生成 Query，依赖其结果的工作交给后续 Gap 扩展。
@@ -132,7 +132,7 @@ init_research = """你是 GraphResearcher 的 Query Planner。
 - 不得加入身份确认、规范名称、消歧、来源筛选等任务性或来源性限定词；这些职责由搜索结果承担，不由 Query 文本承担。
 - 名称需要精确匹配时可以使用引号，但不得改变用户给出的名称。
 - 只有用户明确要求且能实质限定首次搜索时，才在 Query 中写入时间或地域条件。
-- Query 使用用户请求的语言。
+- Query 使用目标文献的主要语言，不强制使用用户请求语言。
 - 中文 Query 不得使用“调研”“梳理”“整理”“分析”“上述”“前述”“该”“这些”等任务指令或跨 Query 指代。
 - 英文 Query 不得以 `write`、`provide`、`ensure`、`explain`、`describe`、`analyze` 或 `research` 开头。
 - 每个禁止域名都必须以 `-site:domain` 的形式附加到 Query 末尾。
@@ -243,6 +243,12 @@ Rules:
 - If more research may help, split the missing work into ATOMIC gaps. Gap
   creation does not mean the gap will be searched; global portfolio evaluation
   selects only work with enough report-level marginal value.
+- When deciding whether to create gaps, also cross-check the Query's evidence
+  against the report-level Objectives provided above. Even if the Query's own
+  acceptance criteria are met, if an Objective dimension that this Query's
+  subject should cover lacks substantive evidence in the current subgraph,
+  create a gap for that missing dimension. The gap's `objective_keys` must
+  reference the still-open Objective whose dimension is uncovered.
 - Each gap needs an importance, a generic gap category, affected objective keys,
   a reusable search subject key, decision impact, expected confidence gain,
   estimated search rounds, and concrete acceptance criteria.
@@ -267,8 +273,8 @@ Rules:
   Query-owned evidence or an explicit delivery requirement, never model prior
   knowledge.
 - `decision_impact` (0.0-1.0): estimate how much resolving this gap changes the
-  report's conclusions. A missing core fact = 0.5-0.8; contextual detail = 0.2-0.4;
-  enrichment = 0.1-0.2.
+  report's conclusions. Higher impact for missing core facts, lower for
+  contextual detail or enrichment.
 - `confidence_gain` (0.0-1.0): how much resolving this gap raises confidence of an
   existing weak claim. Default 0.2 for verification gaps.
 
@@ -555,14 +561,14 @@ Atomic gaps to cover: {gaps}
 Reason: {reason}
 
 Requirements:
-- Inline the parent's concrete subject BY VALUE into every new query — use only the LITERAL NOUN PHRASE of the subject (the entity's proper name exactly as given in the research goal), NOT any task or attribute words. Never reference another query: no "上述/前述/该/这些/the above".
-- Each query must be a SHORT, TIGHT natural-language search phrase composed of the entity name (1-3 words) plus ONE specific dimension keyword drawn from the assigned gap. Total length: 3-6 words maximum.
-- Good queries take the form: "<entity name> <one dimension keyword>". The entity name must be the literal subject noun phrase; the dimension keyword must be a concrete facet named in the assigned gap, not generic research vocabulary.
-- Bad queries (AVOID) pile the entity name together with generic research filler words (words meaning "research/analysis/study/sources/evidence" or other non-dimensional vocabulary) instead of a single concrete dimension keyword from the gap.
-- Do NOT use generic filler words: "authoritative", "identification", "disambiguation", "museum", "scholarly", "sources", "principal facts", "evidence", "debate", "analysis", "summary", "overview", "context", "comprehensive", "detailed", "research", "study", "investigation"
+- Inline the concrete subject BY VALUE into every new query. The subject is the parent Query's research subject when deepening the same topic, or a newly discovered parallel entity or new topic from the gap description when expanding horizontally. Use only the LITERAL NOUN PHRASE of the subject, NOT any task or attribute words. Never reference another query: no "上述/前述/该/这些/the above".
+- Each query must be a SHORT, TIGHT natural-language search phrase composed of the entity name (1-3 words) plus ONE OR TWO specific dimension keywords drawn from the assigned gap. Total length: 3-8 words maximum.
+- Good queries take the form: entity name plus one or two concrete dimension keywords drawn from the assigned gap. The entity name must be the literal subject noun phrase; the dimension keywords must be concrete facets named in the assigned gap, not generic research vocabulary.
+- Bad queries (AVOID) pile the entity name together with generic research filler words — words that describe the act of researching or the nature of the output rather than a concrete facet of the subject — instead of concrete dimension keywords from the gap.
+- Do NOT use generic filler words that describe research activity, output format, or analytical stance rather than a specific dimension of the subject being researched.
 - Cover only the assigned related gaps; do not repeat any existing Query.
 - Preserve forbidden domains with `-site:domain`; do not print exact forbidden URLs into the query.
-- Author the query text in the language of the research goal.
+- Author the query text in the language of the target literature for the subject, not necessarily the user request language.
 - Include concrete acceptance_criteria copied or refined from the assigned atomic gap.
 
 Search routing hint:
@@ -584,7 +590,7 @@ Return only valid JSON, no Markdown, at most {max_new} queries:
 
 reformulate_query = """You are the Query Reformulator for GraphResearcher.
 
-A web-search query returned results but all were rejected as duplicates of already-collected evidence. Reformulate the query to search from a different angle and potentially retrieve new sources.
+A web-search query failed to produce usable new evidence. The failure reason is: {empty_reason}. Reformulate the query to address this specific failure and retrieve usable sources.
 
 Original query: {original_query}
 Research goal: {research_goal}
@@ -598,6 +604,7 @@ Rules:
 - Write in the same language as the original query.
 - Do NOT use generic filler words like "research", "analysis", "study", "evidence", "sources".
 - Do NOT merely add or remove a single word; genuinely change the search angle.
+- Adapt the reformulation strategy to the failure reason: when results were duplicates, shift the search angle; when no results were returned, broaden or simplify the phrasing; when extraction failed, prefer clearer and more conventional phrasing.
 
 Return only valid JSON:
 {"query_text": "..."}
@@ -665,7 +672,7 @@ Return only JSON:
     {
       "owner_id": "query-id-from-branch-summary",
       "action": "continue_expansion|cool_down|pause",
-      "reason": "cite the specific signals that drove the decision, e.g. 'depth=5 vs peers_max_depth=2; novelty=0.05; sufficiency=0.25 stuck; child_queries=4; cooldown_streak=0' or for a recovery decision 'cooldown_streak=3 ended; open_gaps=2; peers_max_depth=4'"
+      "reason": "cite the specific signals that drove the decision using key=value pairs from branch_summary (depth, child_queries, open_gaps, last_sufficiency, sufficiency_trend, source_trend, novelty_trend, cooldown_streak). For recovery decisions on previously cooled owners, cite the ending cooldown_streak and remaining open_gaps."
     }
   ]
 }
@@ -682,9 +689,12 @@ You are also acting as the global search-tree balancer. The
 `branch_summary` block below lists every active owner (Query whose status is
 still in flight) with its current depth in the query tree, how many child
 queries it has already spawned, how many of its gaps are still open, its last
-sufficiency score, the recent per-round novelty trend across the whole run,
-and how many consecutive rounds the owner has been marked for cool_down or
-pause (cooldown_streak; 0 means it was expanded last round).
+sufficiency score, the recent sufficiency assessment trend (sufficiency_trend;
+a sequence of recent scores so you can see whether it is rising, flat, or
+declining), the recent per-run source count trend (source_trend; declining
+means fewer new sources per search), the per-round novelty trend across the
+whole run, and how many consecutive rounds the owner has been marked for
+cool_down or pause (cooldown_streak; 0 means it was expanded last round).
 
 For each owner in `branch_summary`, emit one `branch_decisions` entry with:
 - `action="continue_expansion"`: the owner is shallow, still has substantive
@@ -695,26 +705,35 @@ For each owner in `branch_summary`, emit one `branch_decisions` entry with:
 - `action="pause"`: the owner is sufficiently covered or clearly exhausted;
   do not expand it again in future rounds. Hard stop.
 - `reason` MUST cite concrete signals from `branch_summary` (depth, child_queries,
-  open_gaps, last_sufficiency, novelty_trend, cooldown_streak) as `key=value`
-  pairs separated by semicolons. Do NOT write vague prose like "branch is
-  deep" — write `depth=5 vs peers_max_depth=2; sufficiency=0.25; novelty=0.05`.
+  open_gaps, last_sufficiency, sufficiency_trend, source_trend, novelty_trend,
+  cooldown_streak) as `key=value` pairs separated by semicolons. Do NOT write
+  vague prose — use the actual signal values from the summary.
   For `continue_expansion` decisions, briefly state why the owner still
-  deserves budget (e.g. `depth=1; open_gaps=2; sufficiency=0.3 rising`). For
-  a recovery decision on a previously cooled owner, cite the streak that is
-  ending (e.g. `cooldown_streak=3 ended; open_gaps=2; peers caught up`).
+  deserves budget. For a recovery decision on a previously cooled owner, cite
+  the streak that is ending.
 
 Decision heuristics (apply together, not as a single threshold):
 - Depth: deeper chains tend to yield less new information. When an owner's
   depth is large relative to other active owners, prefer cool_down so
   shallower branches get search budget. Only keep expanding a deep owner if
-  it still has substantive open gaps AND its sufficiency_score is still
+  it still has substantive open gaps AND its `sufficiency_trend` is still
   rising.
-- Sufficiency stagnation: if `last_sufficiency` has stayed low while the owner
-  already has many child_queries, prefer cool_down so breadth wins. If
-  sufficiency is high and open_gaps is zero, prefer pause.
-- Novelty trend: when the recent novelty ratios are low, the whole run is
-  yielding few new facts; prefer cooling down the owners that are deepest or
-  have the most child_queries.
+- Sufficiency trend: examine `sufficiency_trend` (the sequence of recent
+  assessment scores). A rising trend means the branch is still making
+  progress — prefer `continue_expansion`. A flat or declining trend with
+  many child_queries means the branch is stalled — prefer `cool_down`. A
+  consistently low trend with many child_queries is a `pause` candidate.
+- Source trend: examine `source_trend` (recent per-run source counts). A
+  declining source count means the query phrasing is exhausting available
+  sources — prefer `cool_down`. A stable or rising source count means the
+  branch still has source diversity to explore.
+- Novelty trend: examine `novelty_trend` (the sequence of recent per-round
+  novelty ratios). Judge whether returns are diminishing based on both the
+  ratio values AND the nature of what the new evidence contributes — low
+  novelty does not automatically mean exhaustion if the new evidence provides
+  different perspectives, attributions, or qualifying details on already-known
+  facts. Use your judgment to decide when a branch is genuinely exhausted
+  versus when it is still adding value despite lower novelty.
 - Relative balance: compare owners against each other. An owner that is
   markedly deeper or has markedly more child_queries than its peers is a
   cool_down candidate even if its own absolute numbers are not extreme.
@@ -722,7 +741,7 @@ Decision heuristics (apply together, not as a single threshold):
   (`cooldown_streak>=3`) whose `open_gaps` are still substantive AND whose
   peers have caught up in depth should be revived via `continue_expansion`
   so the branch is not starved indefinitely. Conversely, an owner with
-  `cooldown_streak>=5` and still-low `last_sufficiency` is a `pause`
+  `cooldown_streak>=5` and still-low `sufficiency_trend` is a `pause`
   candidate — it has had multiple chances and is not converging.
 - Always emit a decision for every owner listed in `branch_summary`. Copy the
   `owner_id` verbatim; do not invent owner ids not present in the summary.

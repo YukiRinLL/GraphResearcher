@@ -47,6 +47,27 @@ REPORTER_SAFETY_TOKENS = _positive_int_from_env("GR_REPORTER_SAFETY_TOKENS", 1_0
 REPORTER_SOURCE_TOKENS = _positive_int_from_env("GR_REPORTER_SOURCE_TOKENS", 2_000)
 REPORTER_TOKENIZER = os.environ.get("GR_REPORTER_TOKENIZER", "").strip()
 
+# Max number of concurrent searcher dispatches per superstep. Each searcher
+# call involves a Tavily search + analyzer LLM pass (10-30s of I/O); running
+# multiple in parallel via ThreadPoolExecutor cuts wall-clock time for the
+# dispatch phase proportionally. Graph writes are serialised by
+# MemoryManager._state_lock, so this only parallelises the I/O-bound search
+# and analysis work.
+SEARCH_DISPATCH_CONCURRENCY = _positive_int_from_env(
+    "GR_SEARCH_DISPATCH_CONCURRENCY",
+    3,
+)
+
+# Max number of concurrent assess_query evaluations per superstep. Each
+# assess_query call involves 1-2 LLM passes (normalize_claims + sufficiency
+# evaluation) that read only the query's own evidence subgraph; they are
+# independent across queries and can run in parallel. Graph writes are
+# serialised by MemoryManager._state_lock and graph_tools._loop_lock, so
+# only the LLM-bound evaluation work is parallelised.
+ASSESS_QUERY_CONCURRENCY = _positive_int_from_env(
+    "GR_ASSESS_QUERY_CONCURRENCY",
+    3,
+)
 
 # Neo4j config
 NEO4J_URI = os.environ.get("NEO4J_URI", "bolt://localhost:7687")

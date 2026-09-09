@@ -1641,7 +1641,13 @@ class MemoryManager:
 
     @staticmethod
     def _linked_criteria_complete(objective_key: str, queries: list[dict]) -> bool:
-        """Return whether every Query linked to an Objective passed all criteria."""
+        """Return whether any non-blocked Query linked to an Objective passed all criteria.
+
+        A single blocked Query must not veto the whole Objective: if any sibling
+        Query on the same objective already satisfied its criteria, the objective
+        is considered linked-criteria-complete. Blocked queries are excluded so
+        that a permanently-failed branch does not prevent convergence.
+        """
         linked_queries = [
             query for query in queries
             if objective_key in (query.get("objective_keys") or [])
@@ -1654,7 +1660,10 @@ class MemoryManager:
                 return False
             return all(result.get("status") == "satisfied" for result in results)
 
-        return bool(linked_queries) and all(complete(query) for query in linked_queries)
+        return any(
+            complete(query) for query in linked_queries
+            if query.get("status") != "blocked"
+        )
 
     def _build_branch_summary(self, candidates: list[dict]) -> str:
         """Compose the per-branch health summary fed to the portfolio evaluator.
@@ -1709,10 +1718,21 @@ class MemoryManager:
             )
             handle = owner.get("handle") or owner.get("text") or ""
             cooldown_streak = self._cooldown_streaks.get(owner_id, 0)
+            # Sufficiency trend: show the last few assessment scores so the
+            # evaluator can see whether sufficiency is rising, stuck, or
+            # declining — not just the last value.
+            suf_history = self._sufficiency_history.get(owner_id, [])
+            suf_tail = suf_history[-4:] if suf_history else []
+            suf_trend = "->".join(f"{s:.2f}" for s in suf_tail) if suf_tail else "-"
+            # Source count trend from recent search runs.
+            runs = self._query_search_runs(owner_id)
+            recent_source_counts = [int(r.get("sources") or 0) for r in runs[-3:]] if runs else []
+            source_trend = "->".join(str(c) for c in recent_source_counts) if recent_source_counts else "-"
             lines.append(
                 f"- owner_id={owner_id} handle={handle!r}: depth={depth}, "
                 f"child_queries={child_count}, open_gaps={open_gaps}, "
-                f"last_sufficiency={last_sufficiency}, novelty_trend={novelty_trend}, "
+                f"last_sufficiency={last_sufficiency}, sufficiency_trend={suf_trend}, "
+                f"source_trend={source_trend}, novelty_trend={novelty_trend}, "
                 f"cooldown_streak={cooldown_streak}"
             )
         return "\n".join(lines) or "(no active owners with candidate gaps)"
@@ -1778,6 +1798,13 @@ class MemoryManager:
             for owner_id in sorted(active_owner_ids - parsed_owner_ids):
                 cooled_down_owners[owner_id] = "cool_down"
                 branch_decision_reasons[owner_id] = "LLM omitted this owner; default cool_down"
+            # All active owners now have a decision (either LLM-provided or
+            # default cool_down), so the cool-down filter must be applied.
+            # Without this, has_whitelist stays False and all gaps bypass the
+            # cool-down filter — a single newly-assessed owner (e.g. a query
+            # that just became needs_expansion) would un-defer every previously
+            # cooled gap in one shot.
+            branch_decisions_complete = True
         # Hard cool-down / pause thresholds. These override (or replace) the
         # LLM signal so a branch that has been parked twice in a row is
         # definitely skipped this round, and a branch that has been parked 5+
@@ -1944,6 +1971,10 @@ class MemoryManager:
         candidates = active_gaps
         selected: list[dict] = []
         deferred: list[dict] = []
+        # Track must objectives already covered by a force-expand decision
+        # so that subsequent gaps targeting the same objective do not
+        # bypass the marginal-utility ordering as well.
+        force_expanded_must_keys: set[str] = set()
         existing_subjects = {
             str(query.get("search_subject_key"))
             for query in queries
@@ -2002,27 +2033,32 @@ class MemoryManager:
                 for owner_id in owner_ids
                 if owner_id
             ]
-            force_expand = any(
-                owner and owner.get("status") == "needs_expansion"
-                for owner in owners
-            )
-            choose = fatal or force_expand or (utility >= threshold)
+            # Group-level selection based solely on marginal utility (and
+            # fatal conflicts). Per-gap force-expand is evaluated inside
+            # the gap loop so that only the specific gaps whose own owner
+            # needs expansion AND that target an uncovered must objective
+            # bypass the utility ordering. This prevents a single
+            # needs_expansion owner from pulling an entire subject group
+            # past higher-utility work on other branches.
+            group_chosen_by_utility = fatal or (utility >= threshold)
             # Apply branch-level cool-down at per-gap granularity: each gap is
             # deferred iff its own owner is marked cool_down/pause (and the
             # group is not a fatal conflict). This prevents a cooled owner from
             # piggybacking on a non-cooled owner that shares the same subject.
             # Fatal conflicts bypass cool-down to protect report-level
-            # conclusions. When the LLM provided no whitelist
-            # (allowed_owners empty), fall back to pure marginal-utility logic.
-            has_whitelist = bool(allowed_owners)
+            # conclusions. Gate on branch_decisions_complete (not
+            # allowed_owners emptiness): when the LLM cooled down *every*
+            # active owner, allowed_owners is empty but cooling must still
+            # be applied, otherwise all gaps would bypass the cool-down filter.
+            has_whitelist = branch_decisions_complete
             group_chosen_owner: Optional[str] = (
                 max(owners, key=lambda item: float(item.get("priority") or 0.0))["id"]
-                if choose and owners else None
+                if group_chosen_by_utility and owners else None
             )
             for gap in group:
                 gap_owner_id = self._gap_owner_id(gap["id"])
                 gap_cooled = (
-                    choose
+                    group_chosen_by_utility
                     and not fatal
                     and has_whitelist
                     and bool(gap_owner_id)
@@ -2037,12 +2073,53 @@ class MemoryManager:
                     )
                     gap_parent = None
                 else:
-                    gap_status = "selected" if choose else "deferred_low_value"
+                    # Evaluate force-expand at per-gap granularity: only
+                    # the gap whose own owner is marked needs_expansion AND
+                    # whose must objectives are not already covered by
+                    # another force-expanded gap may bypass the
+                    # marginal-utility ordering. This preserves portfolio
+                    # balancing while still guaranteeing that uncovered
+                    # must objectives get at least one expansion path.
+                    gap_owner = next(
+                        (o for o in owners if o and o.get("id") == gap_owner_id),
+                        None,
+                    )
+                    owner_needs_expansion = bool(
+                        gap_owner
+                        and gap_owner.get("status") == "needs_expansion"
+                    )
+                    gap_must_keys = {
+                        key
+                        for key in (gap.get("objective_keys") or [])
+                        if key in objective_by_key
+                        and objective_by_key[key].get("requirement") == "must"
+                        and objective_by_key[key].get("status")
+                        not in {"satisfied", "blocked"}
+                    }
+                    gap_impacts_uncovered_must = bool(
+                        gap_must_keys - force_expanded_must_keys
+                    )
+                    gap_force_expand = (
+                        owner_needs_expansion and gap_impacts_uncovered_must
+                    )
+                    gap_choose = group_chosen_by_utility or gap_force_expand
+                    gap_status = "selected" if gap_choose else "deferred_low_value"
                     gap_reason = (
-                        None if choose
+                        None if gap_choose
                         else "global marginal utility below expansion threshold"
                     )
-                    gap_parent = group_chosen_owner
+                    # A utility-selected gap expands under the group's
+                    # highest-priority owner; a force-expanded gap expands
+                    # under its own owner so the new query is grounded on
+                    # the branch that actually needs more evidence.
+                    if group_chosen_by_utility:
+                        gap_parent = group_chosen_owner
+                    elif gap_force_expand:
+                        gap_parent = gap_owner_id
+                    else:
+                        gap_parent = None
+                    if gap_force_expand:
+                        force_expanded_must_keys.update(gap_must_keys)
                 graph_tools.upsert_node(NodeType.ANALYSIS, {
                     "status": gap_status,
                     "marginal_utility": utility,
@@ -2228,61 +2305,26 @@ class MemoryManager:
                         "resolution_reason": "duplicate gap_key already exists on the ancestor path",
                     }, gap["id"])
                 continue
-            # Hard-brake 1: refuse to deepen a vertical branch once its parent
-            # has produced two consecutive empty SearchRuns. This is the
-            # "phrasing doesn't matter any more" regime and extra child
-            # queries only serve to exhaust the recursion budget on a tail
-            # chain. The brake is intentionally applied only to vertical
-            # expansions under a Query parent because horizontal expansions
-            # pivot to a different subject and therefore deserve a real try.
+            # Hard-brake: refuse to deepen a vertical branch once its parent
+            # has produced two consecutive empty SearchRuns. This is the only
+            # remaining hard brake — it catches genuinely exhausted search
+            # phrasing where no results come back at all. All other signals
+            # (low sufficiency, depth, novelty) are soft signals fed to the
+            # portfolio evaluator's branch_decisions, which has the global
+            # view to make an informed continue/cool_down/pause call.
             empty_streak = (
                 self._query_empty_streak(resolved)
                 if parent.get("type") == NodeType.QUERY.value else 0
             )
-            low_suf_streak = (
-                self._query_low_sufficiency_streak(resolved)
-                if parent.get("type") == NodeType.QUERY.value else 0
-            )
-            # Hard-brake 2: a three-run tail of sufficiency_scores *all* below
-            # 0.22 with non-increasing source counts means the evidence curve
-            # is already saturated. Further sub-queries on this path will
-            # return duplicated snippets; stop.
-            sources_increasing = False
-            if parent.get("type") == NodeType.QUERY.value:
-                runs = self._query_search_runs(resolved)
-                recent = runs[-3:] if len(runs) >= 2 else runs
-                source_counts = [int(run.get("sources") or 0) for run in recent]
-                if len(source_counts) >= 2 and source_counts[-1] > max(source_counts[:-1], default=0):
-                    sources_increasing = True
             vertical_hit = (
                 parent.get("type") == NodeType.QUERY.value
                 and mode == "vertical"
-                and (
-                    empty_streak >= _CONSECUTIVE_EMPTY_BRAKE
-                    or (
-                        low_suf_streak >= _CONSECUTIVE_LOW_SUFF_BRAKE
-                        and not sources_increasing
-                    )
-                )
+                and empty_streak >= _CONSECUTIVE_EMPTY_BRAKE
             )
-            # Hard-brake 3: absolute vertical depth cap.  Past
-            # _MAX_VERTICAL_DEPTH the evaluator typically keeps producing
-            # reworded variants of the same unmet acceptance criterion while
-            # ss hovers in the 0.50-0.67 zone.  Cut the chain so the budget is
-            # spent exploring orthogonal dimensions instead.
-            parent_depth = int(parent.get("depth") or 0) if parent.get("type") == NodeType.QUERY.value else 0
-            depth_hit = (
-                parent.get("type") == NodeType.QUERY.value
-                and mode == "vertical"
-                and parent_depth >= _MAX_VERTICAL_DEPTH
-            )
-            if vertical_hit or depth_hit:
+            if vertical_hit:
                 resolution = (
                     f"auto-paused parent chain: "
-                    f"consecutive empty={empty_streak}, "
-                    f"low suf streak={low_suf_streak}, "
-                    f"sources_increasing={sources_increasing}, "
-                    f"depth={parent_depth}, max_depth={_MAX_VERTICAL_DEPTH}"
+                    f"consecutive empty={empty_streak}"
                 )
                 for gap in group:
                     graph_tools.upsert_node(NodeType.ANALYSIS, {
@@ -2291,14 +2333,9 @@ class MemoryManager:
                     }, gap["id"])
                 logger.warning(
                     "expand_gaps hard-brake: skipped vertical expansion for %s "
-                    "(empty streak=%d, low_suf streak=%d, sources increasing=%s, "
-                    "parent_depth=%d, max_depth=%d)",
+                    "(consecutive empty=%d)",
                     parent.get("handle") or resolved,
                     empty_streak,
-                    low_suf_streak,
-                    sources_increasing,
-                    parent_depth,
-                    _MAX_VERTICAL_DEPTH,
                 )
                 continue
             if mode == "horizontal":
@@ -3213,9 +3250,6 @@ class MemoryManager:
         }
         ancestor_keys = self._ancestor_evidence_keys(resolved_query_id)
         novelty = len(evidence_keys - ancestor_keys) / len(evidence_ids) if evidence_ids else None
-        parent = graph_tools.get_node(graph_tools.get_query_parent(resolved_query_id) or "")
-        parent_streak = int(parent.get("low_novelty_streak") or 0)
-        low_streak = parent_streak + 1 if novelty is not None and novelty < 0.2 else 0
 
         run_status = "succeeded" if succeeded else "empty"
         graph_tools.upsert_node(NodeType.SEARCH_RUN, {
@@ -3231,7 +3265,6 @@ class MemoryManager:
                 resolved_query_id,
                 "assessing",
                 successful_search_runs=1,
-                low_novelty_streak=low_streak,
             )
             graph_tools.increment_successful_search_rounds(goal["id"])
             self._bump_portfolio_revision()
@@ -3269,12 +3302,18 @@ class MemoryManager:
                     ][:10]
                 except Exception:
                     pass
-                goal_node = graph_tools.get_node(
-                    graph_tools.get_query_parent(resolved_query_id) or ""
-                ) or {}
+                # Read research_goal from the root UserRequest node, not from
+                # the parent Query node: only the root stores research_goal.
+                # Sub-queries created by gap expansion have a Query parent that
+                # lacks this field, so get_query_parent would return empty.
+                from tools import research_state
+                goal_node = research_state.get_goal() or {}
                 research_goal = goal_node.get("research_goal") or goal_node.get("request") or ""
                 new_text = self._reformulate_query_text(
-                    original_text, research_goal, existing_source_titles
+                    original_text,
+                    research_goal,
+                    existing_source_titles,
+                    empty_reason="all results rejected as duplicates of already-collected evidence",
                 )
                 if new_text:
                     logger.info(
@@ -3606,11 +3645,13 @@ class MemoryManager:
         original_text: str,
         research_goal: str,
         existing_sources: list,
+        empty_reason: str = "",
     ) -> Optional[str]:
-        """Reformulate a query whose search returned only duplicate results.
+        """Reformulate a query whose search returned no usable new evidence.
 
         Asks the LLM to produce a variant query that searches from a different
-        angle, to attract new sources that the original phrasing missed.
+        angle, adapting the strategy to the specific failure reason (duplicates,
+        no results, extraction failure, etc.).
 
         Returns the new query text, or ``None`` if the LLM output is invalid or
         identical to the original.
@@ -3620,6 +3661,7 @@ class MemoryManager:
             .replace("{original_query}", original_text or "")
             .replace("{research_goal}", research_goal or "")
             .replace("{existing_sources}", json.dumps(existing_sources or [], ensure_ascii=False))
+            .replace("{empty_reason}", empty_reason or "unspecified")
         )
         parsed = self._invoke_json(prompt)
         new_text = (parsed.get("query_text") or "").strip()
