@@ -57,6 +57,35 @@ class PromptBudgetError(ValueError):
     """无法容纳基础材料或必要阅读元数据，不应再次调用模型."""
 
 
+def _resolve_reporter_encoding() -> "tiktoken.Encoding":
+    """Resolve a tiktoken encoding for token counting.
+
+    Priority:
+    1. ``GR_REPORTER_TOKENIZER`` if set and valid.
+    2. ``tiktoken.encoding_for_model(DEFAULT_MODEL)`` if the model is known.
+    3. ``o200k_base`` as a universal fallback with a warning.
+    """
+    if config.REPORTER_TOKENIZER:
+        try:
+            return tiktoken.get_encoding(config.REPORTER_TOKENIZER)
+        except (KeyError, ValueError):
+            logger.warning(
+                "GR_REPORTER_TOKENIZER=%r is not a known encoding; "
+                "falling back to o200k_base.",
+                config.REPORTER_TOKENIZER,
+            )
+    try:
+        return tiktoken.encoding_for_model(config.DEFAULT_MODEL)
+    except (KeyError, ValueError):
+        logger.warning(
+            "Model %r has no known tiktoken mapping; "
+            "using o200k_base for Reporter token counting. "
+            "Set GR_REPORTER_TOKENIZER to silence this warning.",
+            config.DEFAULT_MODEL,
+        )
+        return tiktoken.get_encoding("o200k_base")
+
+
 def write_audit(bundle: dict, record: dict) -> None:
     """将诊断写入独立目录，失败不改变报告交付结果."""
     output_dir = bundle.get("_source_audit_dir")

@@ -18,8 +18,10 @@ import re
 from pathlib import Path
 from typing import Any, Optional
 
+from memory.evidence_locations import _overlap, _terms
 from memory.graph import EdgeType
 from tools import graph_tools, report_source_context
+import config
 
 logger = logging.getLogger(__name__)
 
@@ -69,8 +71,9 @@ _FORBIDDEN_META_RE = re.compile(
     r"帮你补全|如需.{0,40}可|"
     r"supplied\s+(?:material|evidence|data|information)|"
     r"the\s+supplied|provided\s+(?:material|evidence|data)|"
-    r"available\s+(?:material|evidence|data)|"
-    r"本研究|本次检索|本轮|本次|检索轮次|摘要线索|未读取正文|标题层|"
+    r"(?:the|this)\s+available\s+(?:material|evidence|data)\b|"
+    r"本研究(?:的|中|使用|采用|基于|范围|过程|流程|方法)|"
+    r"本次检索|本轮证据|检索轮次|摘要线索|未读取正文|标题层|"
     r"source\s+节点|evidence\s+节点|claim\s+节点|"
     r"sufficiency|snippet|"
     # Fix 1 (auto-strip safety net): reader-directive / methodological-caveat
@@ -111,6 +114,80 @@ _EXTERNAL_FILE_RE = re.compile(
 )
 _NO_FINDINGS_TEXT = {"暂无可核实结论。", "No verifiable findings are available."}
 _MIN_RETENTION_RATIO = 0.6
+_CJK_CHAR_RE = re.compile(r"[\u4e00-\u9fff]")
+_SENTENCE_SPLIT_RE = re.compile(r"(?<=[。！？!?])\s*")
+
+
+def _estimate_tokens(text: str) -> float:
+    """Rough o200k token estimate without loading the encoding."""
+    cjk = len(_CJK_CHAR_RE.findall(text))
+    other = len(text) - cjk
+    return cjk * 0.9 + other * 0.28
+
+
+def _cap_evidence_by_budget(
+    evidence_items: list[dict[str, Any]],
+    chapter: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Keep highest-relevance evidence items within an estimated token budget.
+
+    Items are ranked by term overlap with chapter goals/section_plan, then by
+    whether they have source backing, then by text length.  A rough token
+    estimate is used so that the serialized bundle stays under the Reporter
+    input limit without needing the actual tiktoken encoding.
+    """
+    if not evidence_items:
+        return evidence_items
+
+    # Build goal terms for relevance ranking.
+    goals = [str(g) for g in chapter.get("goals") or []]
+    if not goals:
+        goals = [str(chapter.get("section_plan") or chapter.get("title") or "")]
+    goal_terms: set[str] = set()
+    for goal in goals:
+        goal_terms |= _terms(goal)
+    if not goal_terms:
+        return evidence_items
+
+    def relevance(item: dict[str, Any]) -> tuple:
+        text = str(item.get("text") or "")
+        terms = _terms(text)
+        overlap = _overlap(goal_terms, terms)
+        has_source = 1 if item.get("source_ids") or item.get("citations") else 0
+        return (-overlap, -has_source, -len(text))
+
+    ranked = sorted(evidence_items, key=relevance)
+
+    # 60 % of the input limit for evidence items; the rest is for prompt
+    # scaffolding, source-context metadata, and the chapter plan.
+    input_limit = (
+        config.REPORTER_CONTEXT_TOKENS
+        - config.REPORTER_OUTPUT_TOKENS
+        - config.REPORTER_SAFETY_TOKENS
+    )
+    budget = int(input_limit * 0.6)
+
+    kept_ids: set[str] = set()
+    total_est = 0.0
+    _ITEM_OVERHEAD = 80  # tokens for ref/type/confidence/relations JSON
+    for item in ranked:
+        text = str(item.get("text") or "")
+        est = _estimate_tokens(text) + _ITEM_OVERHEAD
+        if total_est + est > budget and kept_ids:
+            break
+        total_est += est
+        kept_ids.add(item["id"])
+
+    if len(kept_ids) == len(evidence_items):
+        return evidence_items
+    logger.info(
+        "Capped chapter %s evidence: %d -> %d items (~%.0f tokens, budget %d)",
+        chapter.get("chapter_id", "?"),
+        len(evidence_items), len(kept_ids), total_est, budget,
+    )
+    return [item for item in evidence_items if item["id"] in kept_ids]
+
+
 _RESERVED_SECTION_TITLES = {
     "references",
     "reference",
@@ -572,6 +649,8 @@ def _prepare_report_chapter_bundle(
             "chapter_id": int(chapter_id),
         }
 
+    evidence_items = _cap_evidence_by_budget(evidence_items, chapter)
+
     source_ids = sorted({
         source_id
         for item in evidence_items
@@ -883,13 +962,39 @@ def _load_committed_report(output_dir: Optional[str]) -> tuple[str, list[dict], 
     return str(outline.get("title") or "Research Report"), sections, missing
 
 
-def _fallback_chapter_content(bundle: dict[str, Any], *, lead: bool) -> str:
-    """Render a deterministic, citation-ready chapter when the Reporter omitted one."""
+def _fallback_chapter_content(
+    bundle: dict[str, Any],
+    *,
+    lead: bool,
+    global_seen: Optional[set[str]] = None,
+) -> str:
+    """Render a deterministic, citation-ready chapter when the Reporter omitted one.
+
+    Items are ranked by term overlap with ``chapter_goals`` so that the most
+    relevant evidence is selected first, not just the first items in bundle
+    order.  ``global_seen`` tracks normalised text used by previous chapters
+    to avoid producing identical fallback chapters when they share query_refs.
+    """
     items = [
         item for item in bundle.get("evidence_items") or []
         if str(item.get("text") or "").strip()
     ]
     limit = 4 if lead else 8
+
+    # Rank items by relevance to chapter goals.
+    goals = [str(g) for g in bundle.get("chapter_goals") or []]
+    if not goals:
+        goals = [str(bundle.get("section_plan") or bundle.get("chapter_title") or "")]
+    goal_terms: set[str] = set()
+    for goal in goals:
+        goal_terms |= _terms(goal)
+
+    if goal_terms:
+        def relevance(item: dict[str, Any]) -> tuple:
+            text = str(item.get("text") or "")
+            return (-_overlap(goal_terms, _terms(text)), -len(text))
+        items = sorted(items, key=relevance)
+
     paragraphs = []
     seen_text: set[str] = set()
     for item in items:
@@ -897,7 +1002,11 @@ def _fallback_chapter_content(bundle: dict[str, Any], *, lead: bool) -> str:
         normalized = re.sub(r"\s+", " ", text).casefold()
         if not text or normalized in seen_text:
             continue
+        if global_seen is not None and normalized in global_seen:
+            continue
         seen_text.add(normalized)
+        if global_seen is not None:
+            global_seen.add(normalized)
         citations = "".join(f"[{number}]" for number in item.get("source_numbers") or [])
         paragraphs.append(f"{text}。{citations}" if re.search(r"[\u4e00-\u9fff]", text) else f"{text}.{citations}")
         if len(paragraphs) >= limit:
@@ -911,6 +1020,7 @@ def _ensure_candidate_chapters(output_dir: Optional[str]) -> list[dict[str, Any]
     """Create deterministic candidate files for any outlined chapter the Reporter omitted."""
     outline = _read_json_file(_outline_path(output_dir))
     generated_issues = []
+    global_seen: set[str] = set()
     for chapter in sorted(outline.get("chapters") or [], key=lambda item: int(item.get("chapter_id") or 0)):
         chapter_id = int(chapter.get("chapter_id") or 0)
         if _chapter_path(output_dir, chapter_id).exists():
@@ -919,6 +1029,7 @@ def _ensure_candidate_chapters(output_dir: Optional[str]) -> list[dict[str, Any]
         content = _fallback_chapter_content(
             bundle,
             lead=chapter.get("section_type") == "lead" or chapter_id == 1,
+            global_seen=global_seen,
         )
         _chapter_path(output_dir, chapter_id).write_text(content + "\n", encoding="utf-8")
         issue = _issue(
@@ -1189,15 +1300,30 @@ def _render_references(registry: list[dict], cited_source_ids: set[str], label: 
 
 
 def sanitize_report(report_text: str) -> str:
-    """Remove internal-process explanations and service-offer paragraphs."""
+    """Remove internal-process explanations and service-offer text.
+
+    Prose paragraphs are filtered at sentence granularity: only sentences
+    matching forbidden meta-narrative patterns are stripped, preserving
+    factual content in the same paragraph.  Headings keep block-level
+    filtering because they are short and context-free.
+    """
     text = report_text or ""
     text = _LOCAL_REF_RE.sub("", text)
     kept: list[str] = []
     for block in re.split(r"\n\s*\n", text):
         stripped = block.strip()
-        if not stripped or _FORBIDDEN_META_RE.search(stripped):
+        if not stripped:
             continue
-        kept.append(stripped)
+        # Headings: block-level filter (short, context-free).
+        if stripped.startswith("#"):
+            if not _FORBIDDEN_META_RE.search(stripped):
+                kept.append(stripped)
+            continue
+        # Prose: sentence-level filter.
+        sentences = _SENTENCE_SPLIT_RE.split(stripped)
+        good = [s for s in sentences if s.strip() and not _FORBIDDEN_META_RE.search(s)]
+        if good:
+            kept.append(" ".join(good))
     return "\n\n".join(kept).strip() + ("\n" if kept else "")
 
 
