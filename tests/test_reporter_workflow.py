@@ -1180,7 +1180,7 @@ def test_run_report_workflow_forwards_runnable_config():
     assert observed["config"]["callbacks"] == ["trace"]
     assert observed["config"]["metadata"] == {"run": "reporter-replay"}
     assert observed["config"]["recursion_limit"] == 200
-    assert observed["config"]["max_concurrency"] == 3
+    assert observed["config"]["max_concurrency"] == workflow_module.config.REPORTER_CHAPTER_CONCURRENCY
 
 
 def test_reporter_chapter_concurrency_config_requires_positive_integer():
@@ -1203,6 +1203,66 @@ def test_reporter_chapter_concurrency_config_requires_positive_integer():
             os.environ.pop(name, None)
         else:
             os.environ[name] = original_value
+
+
+def test_prepare_chapters_keeps_order_and_batches_by_three():
+    """证据包按 3 章一批加载，结果与 chapter_ids 同序。"""
+    chapter_ids = list(range(1, 8))
+    seen_batches: list[list[int]] = []
+
+    def fake_prepare(chapters):
+        selected = [int(chapter["chapter_id"]) for chapter in chapters]
+        seen_batches.append(selected)
+        return {
+            "status": "ok",
+            "chapters": [
+                {"status": "ok", "chapter_id": chapter_id, "bundle_token": f"t{chapter_id}"}
+                for chapter_id in selected
+            ],
+        }
+
+    original = workflow_module.graph_manager_tools.prepare_report_chapter_batch
+    workflow_module.graph_manager_tools.prepare_report_chapter_batch = fake_prepare
+    try:
+        result = workflow_module.prepare_chapters_node({"chapter_ids": chapter_ids})
+    finally:
+        workflow_module.graph_manager_tools.prepare_report_chapter_batch = original
+
+    assert result["error"] == ""
+    assert seen_batches == [[1, 2, 3], [4, 5, 6], [7]]
+    assert [int(bundle["chapter_id"]) for bundle in result["chapter_bundles"]] == chapter_ids
+
+
+def test_prepare_chapters_batch_exception_becomes_ordered_placeholders():
+    """单批异常时该批章节得到有序 error 占位，且不影响其他批。"""
+
+    def fake_prepare(chapters):
+        selected = [int(chapter["chapter_id"]) for chapter in chapters]
+        if 4 in selected:
+            raise RuntimeError("boom")
+        return {
+            "status": "ok",
+            "chapters": [
+                {"status": "ok", "chapter_id": chapter_id, "bundle_token": f"t{chapter_id}"}
+                for chapter_id in selected
+            ],
+        }
+
+    chapter_ids = [1, 2, 3, 4, 5]
+    original = workflow_module.graph_manager_tools.prepare_report_chapter_batch
+    workflow_module.graph_manager_tools.prepare_report_chapter_batch = fake_prepare
+    try:
+        result = workflow_module.prepare_chapters_node({"chapter_ids": chapter_ids})
+    finally:
+        workflow_module.graph_manager_tools.prepare_report_chapter_batch = original
+
+    bundles = result["chapter_bundles"]
+    assert [int(bundle["chapter_id"]) for bundle in bundles] == chapter_ids
+    for chapter_id in (4, 5):
+        bundle = bundles[chapter_id - 1]
+        assert bundle["status"] == "error"
+        assert "boom" in bundle["message"]
+    assert all(bundles[i]["status"] == "ok" for i in (0, 1, 2))
 
 
 def test_parse_json_object_salvages_fenced_prefixed_and_extra_data():
