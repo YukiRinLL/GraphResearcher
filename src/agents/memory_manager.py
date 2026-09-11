@@ -311,6 +311,34 @@ def _required_structure(value: Any) -> list[dict]:
     return items
 
 
+def _normalize_blocked_url(value: str) -> str:
+    """归一化用于屏蔽比对的 URL：小写、去锚点、去首尾斜杠与空白."""
+    value = str(value or "").strip().lower()
+    value = value.split("#", 1)[0]
+    return value.rstrip("/")
+
+
+def _source_matches_blocklist(
+    url: Optional[str],
+    title: Optional[str],
+    blocked_urls: list[str],
+    blocked_titles: list[str],
+) -> bool:
+    """判断来源是否命中硬屏蔽名单（URL 精确包含或标题子串）."""
+    if url:
+        normalized = _normalize_blocked_url(url)
+        for entry in blocked_urls:
+            needle = _normalize_blocked_url(entry)
+            if needle and (normalized == needle or needle in normalized):
+                return True
+    if title:
+        lowered = str(title).strip().lower()
+        for entry in blocked_titles:
+            if entry.strip().lower() in lowered:
+                return True
+    return False
+
+
 def _query_handle_sort_key(query: dict) -> tuple:
     """按 Query handle 的数字树层级排序，非法 handle 稳定地排在末尾."""
     handle = str(query.get("handle") or "")
@@ -459,6 +487,8 @@ class MemoryManager:
                 excluded_urls=_string_list(parsed.get("excluded_urls")),
                 required_data_points=required_data_points,
                 required_structure=required_structure,
+                blocked_urls=list(config.BLOCKED_SOURCE_URLS),
+                blocked_titles=list(config.BLOCKED_SOURCE_TITLES),
                 research_state="INITIALIZING",
                 max_search_rounds=max_search_rounds,
                 dispatched_search_rounds=0,
@@ -3087,6 +3117,140 @@ class MemoryManager:
         with self._state_lock:
             return self._submit_search_result_unlocked(search_run_id, query_id, evidence_package)
 
+    def _active_source_blocklist(self) -> tuple[list[str], list[str]]:
+        """合并进程环境（GR_BLOCKED_*）与 goal 节点上的硬屏蔽名单."""
+        urls = list(config.BLOCKED_SOURCE_URLS)
+        titles = list(config.BLOCKED_SOURCE_TITLES)
+        try:
+            from tools import research_state
+            goal = research_state.get_goal() or {}
+        except Exception:  # noqa: BLE001 - 屏蔽名单缺失时退化为仅环境配置
+            goal = {}
+        urls = list(dict.fromkeys(urls + _string_list(goal.get("blocked_urls"))))
+        titles = list(dict.fromkeys(titles + _string_list(goal.get("blocked_titles"))))
+        return urls, titles
+
+    @staticmethod
+    def _filter_blocked_sources(
+        evidence_package: dict,
+        blocked_urls: list[str],
+        blocked_titles: list[str],
+    ) -> tuple[dict, list[str]]:
+        """整源剔除命中硬屏蔽名单的 Source 及其全部下游节点。
+
+        返回 (过滤后的新 package, 命中的实际 URL 列表)。被剔除链路上的
+        Document/Statement/Evidence/Conflict 一并移除，保证剩余包的引用
+        关系自洽，仍可通过 _validate_evidence_package_refs 校验。
+        """
+        if not blocked_urls and not blocked_titles:
+            return evidence_package, []
+
+        def first(item: dict, *keys: str):
+            return next((item.get(key) for key in keys if item.get(key) is not None), None)
+
+        kept_sources: list[dict] = []
+        dropped_source_refs: set[str] = set()
+        dropped_urls: list[str] = []
+        for source in evidence_package.get("sources", []) or []:
+            url = first(source, "url")
+            title = first(source, "title")
+            if url and _source_matches_blocklist(url, title, blocked_urls, blocked_titles):
+                ref = source.get("local_ref")
+                if ref:
+                    dropped_source_refs.add(ref)
+                dropped_urls.append(url)
+                logger.warning(
+                    "blocked source filtered before graph write: %s | %s", url, title or ""
+                )
+            else:
+                kept_sources.append(source)
+
+        def source_dropped(ref) -> bool:
+            return bool(ref) and (ref in dropped_source_refs or ref in dropped_urls)
+
+        kept_documents: list[dict] = []
+        dropped_doc_refs: set[str] = set()
+        for document in evidence_package.get("documents", []) or []:
+            ref = document.get("local_ref")
+            source_ref = first(document, "source_ref", "source")
+            if source_dropped(source_ref):
+                if ref:
+                    dropped_doc_refs.add(ref)
+            else:
+                kept_documents.append(document)
+
+        def doc_dropped(ref) -> bool:
+            return bool(ref) and ref in dropped_doc_refs
+
+        kept_statements: list[dict] = []
+        dropped_statement_refs: set[str] = set()
+        for statement in evidence_package.get("statements", []) or []:
+            ref = statement.get("local_ref")
+            if (
+                source_dropped(first(statement, "source_ref", "source"))
+                or doc_dropped(first(statement, "document_ref", "document"))
+            ):
+                if ref:
+                    dropped_statement_refs.add(ref)
+            else:
+                kept_statements.append(statement)
+
+        kept_evidence: list[dict] = []
+        dropped_evidence_refs: set[str] = set()
+        for evidence in evidence_package.get("evidence", []) or []:
+            ref = evidence.get("local_ref")
+            statement_refs = evidence.get("statement_refs") or []
+            if (
+                source_dropped(first(evidence, "source_ref", "source"))
+                or doc_dropped(first(evidence, "document_ref", "document"))
+                or any(stmt_ref in dropped_statement_refs for stmt_ref in statement_refs)
+            ):
+                if ref:
+                    dropped_evidence_refs.add(ref)
+            else:
+                kept_evidence.append(evidence)
+
+        # Claims 只清洗指向已剔除节点的 provenance 引用，不丢弃 Claim 本身。
+        kept_claims: list[dict] = []
+        for claim in evidence_package.get("claims", []) or []:
+            if (
+                source_dropped(first(claim, "source_ref", "source"))
+                or doc_dropped(first(claim, "document_ref", "document"))
+            ):
+                continue
+            cleaned = dict(claim)
+            if isinstance(cleaned.get("statement_refs"), list):
+                cleaned["statement_refs"] = [
+                    ref for ref in cleaned["statement_refs"] if ref not in dropped_statement_refs
+                ]
+            if isinstance(cleaned.get("evidence_refs"), list):
+                def evidence_id(item):
+                    return item if isinstance(item, str) else (
+                        item.get("id") if isinstance(item, dict) else None
+                    )
+                cleaned["evidence_refs"] = [
+                    item for item in cleaned["evidence_refs"]
+                    if evidence_id(item) not in dropped_evidence_refs
+                ]
+            kept_claims.append(cleaned)
+
+        kept_conflicts = [
+            conflict for conflict in evidence_package.get("conflicts", []) or []
+            if not any(
+                ref in dropped_evidence_refs
+                for ref in (conflict.get("evidence_refs") or conflict.get("related_claims") or [])
+            )
+        ]
+
+        filtered = dict(evidence_package)
+        filtered["sources"] = kept_sources
+        filtered["documents"] = kept_documents
+        filtered["statements"] = kept_statements
+        filtered["evidence"] = kept_evidence
+        filtered["claims"] = kept_claims
+        filtered["conflicts"] = kept_conflicts
+        return filtered, dropped_urls
+
     def _validate_evidence_package_refs(self, evidence_package: dict) -> Optional[str]:
         """Return a reference-validation error before any evidence nodes are written."""
         local_types: dict[str, str] = {}
@@ -3222,6 +3386,21 @@ class MemoryManager:
         validation_error = self._validate_evidence_package_refs(evidence_package)
         if validation_error:
             return self.fail_search(search_run_id, resolved_query_id, validation_error)
+        blocked_urls, blocked_titles = self._active_source_blocklist()
+        if blocked_urls or blocked_titles:
+            evidence_package, blocked_hits = self._filter_blocked_sources(
+                evidence_package, blocked_urls, blocked_titles
+            )
+            for blocked_url in dict.fromkeys(blocked_hits):
+                # 屏蔽名单对已在图中的同源节点同样生效：标记后由报告引用注册表排除。
+                for existing in graph_tools.search_nodes("source", {"url": blocked_url}):
+                    graph_tools.upsert_node(NodeType.SOURCE, {
+                        "blocked": True,
+                        "blocked_reason": "GR_BLOCKED_URLS/GR_BLOCKED_TITLES",
+                    }, existing["id"])
+            validation_error = self._validate_evidence_package_refs(evidence_package)
+            if validation_error:
+                return self.fail_search(search_run_id, resolved_query_id, validation_error)
         run_id = search_run_id
         produced_ids: list[str] = []
 

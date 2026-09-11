@@ -313,7 +313,11 @@ def build_reference_registry() -> list[dict]:
     Returns:
         A list of ``{"n", "source_id", "title", "url"}`` dicts.
     """
-    all_sources = [s for s in graph_tools.search_nodes("source", {}) if s.get("url")]
+    all_sources = [
+        source
+        for source in graph_tools.search_nodes("source", {})
+        if source.get("url") and not source.get("blocked")
+    ]
     referenced_source_ids: set[str] = set()
     # direction="in" returns edges where target == stmt_id; edge["source"] is the
     # upstream node (Document or Source). Walk Statement -> Document -> Source.

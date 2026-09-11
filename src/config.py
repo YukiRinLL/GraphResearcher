@@ -9,6 +9,7 @@ imports sibling packages with bare names (`prompts.`, not `deep_research.`).
 """
 
 import os
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -46,6 +47,21 @@ REPORTER_OUTPUT_TOKENS = _positive_int_from_env("GR_REPORTER_OUTPUT_TOKENS", 8_1
 REPORTER_SAFETY_TOKENS = _positive_int_from_env("GR_REPORTER_SAFETY_TOKENS", 1_024)
 REPORTER_SOURCE_TOKENS = _positive_int_from_env("GR_REPORTER_SOURCE_TOKENS", 2_000)
 REPORTER_TOKENIZER = os.environ.get("GR_REPORTER_TOKENIZER", "").strip()
+
+
+def _csv_env(name: str) -> list[str]:
+    """读取逗号/换行分隔的字符串列表环境变量（去空、去重、保序）."""
+    raw = os.environ.get(name, "")
+    items = [part.strip() for part in re.split(r"[,\n]", raw) if part.strip()]
+    return list(dict.fromkeys(items))
+
+
+# 硬屏蔽来源：命中的种子文献在证据入图前被整源剔除（连同其文档/陈述/证据），
+# 已在图中的同源节点会被标记 blocked 并从报告引用注册表排除。
+# GR_BLOCKED_URLS：完整 URL 或 URL 片段；GR_BLOCKED_TITLES：标题子串（忽略大小写）。
+BLOCKED_SOURCE_URLS = _csv_env("GR_BLOCKED_URLS")
+BLOCKED_SOURCE_TITLES = _csv_env("GR_BLOCKED_TITLES")
+
 
 # Max number of concurrent searcher dispatches per superstep. Each searcher
 # call involves a Tavily search + analyzer LLM pass (10-30s of I/O); running
