@@ -125,14 +125,29 @@ def _estimate_tokens(text: str) -> float:
     return cjk * 0.9 + other * 0.28
 
 
+# 精确数据点：年份、百分比、金额等；用于保住含具体数字的证据（Bench-II 类任务）。
+_NUMBER_CORE_RE = re.compile(r"\d[\d,]*(?:\.\d+)?")
+
+
+def _number_cores(text: str) -> set[str]:
+    """提取文本中的数字核心（去千分位），用于跨文本比对同一数据点."""
+    return {match.replace(",", "") for match in _NUMBER_CORE_RE.findall(text)}
+
+
+def _numeric_density(text: str) -> int:
+    """数字实体数量的封顶桶，作为相关性接近时的次级信号."""
+    return min(len(_NUMBER_CORE_RE.findall(text)), 5)
+
+
 def _cap_evidence_by_budget(
     evidence_items: list[dict[str, Any]],
     chapter: dict[str, Any],
 ) -> list[dict[str, Any]]:
     """Keep highest-relevance evidence items within an estimated token budget.
 
-    Items are ranked by term overlap with chapter goals/section_plan, then by
-    whether they have source backing, then by text length.  A rough token
+    Items are ranked by: (1) whether they contain explicit numeric data points
+    named in the chapter goals, (2) term overlap with goals/section_plan,
+    (3) numeric density, (4) source backing, (5) text length.  A rough token
     estimate is used so that the serialized bundle stays under the Reporter
     input limit without needing the actual tiktoken encoding.
     """
@@ -149,12 +164,19 @@ def _cap_evidence_by_budget(
     if not goal_terms:
         return evidence_items
 
+    # 用户/章节点名的精确数据点（年份、百分比、金额等），命中证据必须优先保留，
+    # 即使其词面与 goal 重合度低（精确数字常以改写句式出现）。
+    goal_numbers: set[str] = set()
+    for goal in goals:
+        goal_numbers |= _number_cores(goal)
+
     def relevance(item: dict[str, Any]) -> tuple:
         text = str(item.get("text") or "")
         terms = _terms(text)
         overlap = _overlap(goal_terms, terms)
+        named_hits = len(goal_numbers & _number_cores(text)) if goal_numbers else 0
         has_source = 1 if item.get("source_ids") or item.get("citations") else 0
-        return (-overlap, -has_source, -len(text))
+        return (-named_hits, -overlap, -_numeric_density(text), -has_source, -len(text))
 
     ranked = sorted(evidence_items, key=relevance)
 

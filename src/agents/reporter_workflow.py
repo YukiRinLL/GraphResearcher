@@ -126,17 +126,56 @@ def _response_text(response: Any) -> str:
     return str(content or "")
 
 
-def _parse_json_object(text: str) -> dict[str, Any]:
-    """解析单个 JSON 对象，并兼容模型附加的 Markdown 围栏."""
+def _strip_code_fence(text: str) -> str:
+    """剥离模型可能附加的 ```json ... ``` 围栏（容忍首尾解释文字）."""
     stripped = text.strip()
-    if stripped.startswith("```"):
-        stripped = stripped.split("\n", 1)[1] if "\n" in stripped else ""
-        if stripped.rstrip().endswith("```"):
-            stripped = stripped.rstrip()[:-3]
+    fence = stripped.find("```")
+    if fence != -1:
+        after_open = stripped.find("\n", fence)
+        if after_open != -1:
+            close = stripped.rfind("```")
+            if close > after_open:
+                return stripped[after_open + 1:close].strip()
+    return stripped
+
+
+def _salvage_json_object(text: str) -> dict[str, Any] | None:
+    """JSON 直接解析失败时的两级恢复.
+
+    1. 从首个 '{' 起用 raw_decode 解析第一个完整对象（容忍尾随说明文字或
+       模型连续输出多个对象导致的 Extra data）；
+    2. 仍失败时截取首个 '{' 到末个 '}' 的子串再解析（容忍前后都有散文）。
+    """
+    start = text.find("{")
+    if start == -1:
+        return None
+    try:
+        value, _end = json.JSONDecoder().raw_decode(text[start:])
+        if isinstance(value, dict):
+            return value
+    except json.JSONDecodeError:
+        pass
+    end = text.rfind("}")
+    if end > start:
+        try:
+            value = json.loads(text[start:end + 1])
+        except json.JSONDecodeError:
+            return None
+        return value if isinstance(value, dict) else None
+    return None
+
+
+def _parse_json_object(text: str) -> dict[str, Any]:
+    """解析单个 JSON 对象，兼容 Markdown 围栏、附加说明与轻微格式漂移."""
+    stripped = _strip_code_fence(text)
     try:
         value = json.loads(stripped)
     except json.JSONDecodeError as exc:
-        raise ValueError(f"Reporter returned invalid JSON: {exc.msg}") from exc
+        salvaged = _salvage_json_object(stripped)
+        if salvaged is None:
+            raise ValueError(f"Reporter returned invalid JSON: {exc.msg}") from exc
+        logger.warning("Reporter JSON 解析失败后通过首尾大括号截取恢复: %s", exc.msg)
+        value = salvaged
     if not isinstance(value, dict):
         raise ValueError("Reporter JSON must be an object")
     return value
@@ -253,6 +292,7 @@ def _chapter_prompt(
         "上一版章节 JSON 无法保存。请仅修复以下问题后重新输出当前章节的完整 JSON：\n"
         + retry_error
         + "\n修订时仍输出当前章节的完整候选正文，不输出补丁、解释或问题清单。"
+        "chapters 数组必须且只能包含当前这一章，且输出单个 JSON 对象、不要输出多个对象。"
         if retry_error
         else ""
     )
@@ -582,6 +622,29 @@ def draft_chapter_node(state: ChapterTaskState) -> dict[str, Any]:
                     continue
                 if set(response) != {"chapters"}:
                     raise ValueError("Return exactly one of chapters or read_requests")
+                raw_chapters = response.get("chapters")
+                if not isinstance(raw_chapters, list) or not raw_chapters:
+                    raise ValueError("chapters must be a non-empty list")
+                if len(raw_chapters) > 1:
+                    # 模型偶尔一次性返回多章；抽取当前目标章而不是整批作废。
+                    matched = [
+                        item for item in raw_chapters
+                        if isinstance(item, dict) and item.get("chapter_id") == expected_id
+                    ]
+                    if not matched:
+                        ids = [
+                            item.get("chapter_id") for item in raw_chapters
+                            if isinstance(item, dict)
+                        ]
+                        raise ValueError(
+                            f"Return only the current chapter {expected_id}; "
+                            f"got chapter ids {ids}"
+                        )
+                    logger.warning(
+                        "章节 %s 模型返回了 %d 章，已抽取目标章继续",
+                        expected_id, len(raw_chapters),
+                    )
+                    response = {"chapters": matched[:1]}
                 candidate = ChapterDraftCandidate.model_validate(response)
                 chapter = candidate.chapters[0]
                 if chapter.chapter_id != expected_id:

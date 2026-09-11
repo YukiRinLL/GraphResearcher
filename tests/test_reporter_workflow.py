@@ -1205,6 +1205,110 @@ def test_reporter_chapter_concurrency_config_requires_positive_integer():
             os.environ[name] = original_value
 
 
+def test_parse_json_object_salvages_fenced_prefixed_and_extra_data():
+    """解析器容忍围栏、前后解释文字和连续多个 JSON 对象."""
+    parse = workflow_module._parse_json_object
+    assert parse('{"report": "ok"}') == {"report": "ok"}
+    assert parse('```json\n{"report": "ok"}\n```') == {"report": "ok"}
+    # 前置说明 + JSON + 尾随说明
+    assert parse('Here is the result:\n{"report": "ok"}\nThanks.') == {"report": "ok"}
+    # Extra data：第一个完整对象之后还有第二个对象
+    assert parse('{"report": "ok"}{"report": "second"}') == {"report": "ok"}
+    # 前后都有散文时退回首尾大括号截取
+    assert parse('before {"a": {"b": 1}} after') == {"a": {"b": 1}}
+    for invalid_text in ("no json here", "", "```\nplain text\n```"):
+        try:
+            parse(invalid_text)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"Invalid JSON should raise: {invalid_text!r}")
+
+
+def test_chapter_salvages_target_chapter_from_multi_chapter_response():
+    """模型一次返回多章时抽取当前目标章，整批不作废、不重试."""
+    observations, restore = _install_fakes(
+        [
+            {
+                "title": "Report",
+                "chapters": [_outline_chapter()],
+            },
+            {
+                "chapters": [
+                    {
+                        "chapter_id": 1,
+                        "content": "Target chapter content.[1]",
+                        "evidence_refs": ["e1"],
+                    },
+                    {
+                        "chapter_id": 2,
+                        "content": "Stray sibling chapter.[1]",
+                        "evidence_refs": ["e1"],
+                    },
+                ]
+            },
+        ]
+    )
+    try:
+        result = workflow_module.run_report_workflow()
+    finally:
+        restore()
+
+    assert result["success"], result
+    assert not result.get("fallback_reason"), result
+    assert observations["calls"].count("commit_chapters") == 1
+    committed = observations["committed_chapters"][0]
+    assert len(committed) == 1
+    assert committed[0]["content"] == "Target chapter content.[1]"
+    # outline + 1 chapter + polish = 3 次模型调用，没有重试
+    assert len(observations["model_prompts"]) == 3
+
+
+def test_chapter_multi_response_without_target_still_retries():
+    """多章返回里没有当前目标章时给出明确反馈并重试，重试稿成功提交."""
+    observations, restore = _install_fakes(
+        [
+            {
+                "title": "Report",
+                "chapters": [_outline_chapter()],
+            },
+            {
+                "chapters": [
+                    {
+                        "chapter_id": 2,
+                        "content": "Not my chapter.[1]",
+                        "evidence_refs": ["e1"],
+                    },
+                    {
+                        "chapter_id": 3,
+                        "content": "Also not mine.[1]",
+                        "evidence_refs": ["e1"],
+                    },
+                ]
+            },
+            {
+                "chapters": [
+                    {
+                        "chapter_id": 1,
+                        "content": "Supported fact.[1]",
+                        "evidence_refs": ["e1"],
+                    }
+                ]
+            },
+        ]
+    )
+    try:
+        result = workflow_module.run_report_workflow()
+    finally:
+        restore()
+
+    assert result["success"], result
+    assert observations["calls"].count("commit_chapters") == 1
+    retry_prompt = observations["model_prompts"][-2]
+    assert "Return only the current chapter 1" in retry_prompt
+    assert "got chapter ids [2, 3]" in retry_prompt
+
+
 if __name__ == "__main__":
     test_workflow_commits_ordered_report_without_model_tool_calls()
     test_outline_prompt_is_limited_to_outline_planning()
@@ -1230,4 +1334,7 @@ if __name__ == "__main__":
     test_top_level_report_node_calls_deterministic_workflow()
     test_run_report_workflow_forwards_runnable_config()
     test_reporter_chapter_concurrency_config_requires_positive_integer()
+    test_parse_json_object_salvages_fenced_prefixed_and_extra_data()
+    test_chapter_salvages_target_chapter_from_multi_chapter_response()
+    test_chapter_multi_response_without_target_still_retries()
     print("ALL REPORTER WORKFLOW CHECKS PASSED")  # noqa: T201
