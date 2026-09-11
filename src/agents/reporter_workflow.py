@@ -665,6 +665,34 @@ def draft_chapter_node(state: ChapterTaskState) -> dict[str, Any]:
                 }
                 if committed.get("status") != "ok" or saved_ids != {expected_id}:
                     raise ValueError(json.dumps(committed_chapters or committed, ensure_ascii=False))
+                # A saved candidate with hard validation issues (e.g. citations
+                # unsupported by the chapter's own evidence refs) gets one more
+                # bounded repair round; residual violations are sanitised at
+                # assembly time.
+                saved_result = next(
+                    (
+                        item for item in committed_chapters
+                        if int(item.get("chapter_id") or 0) == expected_id
+                    ),
+                    {},
+                )
+                hard_issues = [
+                    {
+                        key: issue.get(key)
+                        for key in ("code", "message", "repair_hint")
+                    }
+                    for issue in (saved_result.get("issues") or [])
+                    if issue.get("severity") == "hard"
+                ]
+                if hard_issues and failures + 1 < _MAX_CHAPTER_ATTEMPTS:
+                    failures += 1
+                    retry_error = (
+                        "Chapter candidate saved but failed validation; repair and "
+                        "resubmit the same chapter: "
+                        + json.dumps(hard_issues, ensure_ascii=False)[:1200]
+                    )
+                    logger.info("章节 %s 触发校验返修：%s", expected_id, [i["code"] for i in hard_issues])
+                    continue
             except report_source_context.PromptBudgetError:
                 raise
             except Exception as exc:  # noqa: BLE001 - 结构、提交与 provider 失败共享有界重试
