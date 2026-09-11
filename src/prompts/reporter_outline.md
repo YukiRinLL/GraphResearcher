@@ -109,10 +109,12 @@ Output language: <language>
 
 # 规定结构模式的结构要求
 
-- 部分划分、章节/小节编号和用户指定的标题必须原样成为报告结构：章节 `title` 使用 User Request 给定的原文措辞，不改名、不意译、不合并，也不新增同级的部分或章节。
-- 用户指定的表格，在对应章节的 `goals` 或 `section_plan` 中锁定其标题原文以及必备的行、列维度。
-- User Request 中点名的每个精确数据点（年份、数值、百分比、金额、专名等）逐条写入某章 `goals`，并为其绑定可能支撑该点的 Query；不得遗漏或合并成笼统目标。
+- 当 `<report_context>` 中 `required_structure` 或 `required_data_points` 非空时，它们是 User Request 显式契约的逐字摘录，优先级最高：必须按其条目规划，再回头对照 User Request 原文补齐遗漏。
+- 部分划分、章节/小节编号和用户指定的标题必须原样成为报告结构：章节 `title` 使用 User Request 给定的原文措辞（包括 `required_structure` 中 `heading` 的原文），不改名、不意译、不合并，也不新增同级的部分或章节。
+- 用户指定的表格（含 `required_structure` 中 `type="table"` 的条目），在对应章节的 `goals` 或 `section_plan` 中锁定其标题原文以及必备的行、列维度；`columns` 给出的列名原样保留。
+- User Request 点名、以及 `required_data_points` 中列出的每个精确数据点（年份、数值、百分比、金额、专名等）逐条写入某章 `goals`，并为其绑定可能支撑该点的 Query；不得遗漏或合并成笼统目标。
 - 用户要求编号子要点的位置，在 `section_plan` 中注明按编号逐项展开。
+- 两个字段为空数组时本节不产生任何额外约束，按 User Request 原文和其余规则正常规划。
 
 # 结构约束
 

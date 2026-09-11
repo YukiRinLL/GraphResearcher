@@ -260,6 +260,57 @@ def _string_list(value: Any) -> list[str]:
     return list(dict.fromkeys(item for item in strings if item))
 
 
+_MAX_REQUIRED_DATA_POINTS = 60
+_MAX_REQUIRED_DATA_POINT_CHARS = 400
+_MAX_REQUIRED_STRUCTURE_ITEMS = 30
+
+
+def _required_data_points(value: Any) -> list[str]:
+    """净化 User Request 中点名的精确数据点（逐字保留、去重、限量）."""
+    points = _string_list(value)
+    cleaned: list[str] = []
+    for point in points:
+        point = point[:_MAX_REQUIRED_DATA_POINT_CHARS].strip()
+        if point:
+            cleaned.append(point)
+        if len(cleaned) >= _MAX_REQUIRED_DATA_POINTS:
+            break
+    return list(dict.fromkeys(cleaned))
+
+
+def _required_structure(value: Any) -> list[dict]:
+    """净化 User Request 中规定的成品结构（section/table 条目）."""
+    if not isinstance(value, list):
+        return []
+    items: list[dict] = []
+    seen: set[tuple] = set()
+    for raw in value:
+        if not isinstance(raw, dict):
+            continue
+        kind = str(raw.get("type") or "").strip().lower()
+        heading = str(raw.get("heading") or "").strip()
+        if kind not in {"section", "table"} or not heading:
+            continue
+        note = str(raw.get("note") or "").strip()
+        item: dict = {"type": kind, "heading": heading[:200]}
+        if kind == "table":
+            columns = [
+                column[:200]
+                for column in _string_list(raw.get("columns"))
+            ][:20]
+            item["columns"] = columns
+        if note:
+            item["note"] = note[:300]
+        dedupe_key = (item["type"], item["heading"], tuple(item.get("columns") or []))
+        if dedupe_key in seen:
+            continue
+        seen.add(dedupe_key)
+        items.append(item)
+        if len(items) >= _MAX_REQUIRED_STRUCTURE_ITEMS:
+            break
+    return items
+
+
 def _query_handle_sort_key(query: dict) -> tuple:
     """按 Query handle 的数字树层级排序，非法 handle 稳定地排在末尾."""
     handle = str(query.get("handle") or "")
@@ -394,6 +445,9 @@ class MemoryManager:
                     "error": "Initial query planner returned no valid literal web-search query after one retry",
                 }
 
+            required_data_points = _required_data_points(parsed.get("required_data_points"))
+            required_structure = _required_structure(parsed.get("required_structure"))
+
             goal_id = graph_tools.create_user_request(
                 request=user_request,
                 research_goal=parsed.get("research_goal"),
@@ -403,6 +457,8 @@ class MemoryManager:
                 source_preferences=_string_list(parsed.get("source_preferences")),
                 excluded_domains=excluded_domains,
                 excluded_urls=_string_list(parsed.get("excluded_urls")),
+                required_data_points=required_data_points,
+                required_structure=required_structure,
                 research_state="INITIALIZING",
                 max_search_rounds=max_search_rounds,
                 dispatched_search_rounds=0,
@@ -422,6 +478,7 @@ class MemoryManager:
             )
 
         objectives = self._create_objectives(goal_id, parsed.get("objectives"), user_request)
+        objectives = self._attach_required_data_points(goal_id, objectives, required_data_points)
         queries = []
         objective_by_key = {o["objective_key"]: o for o in objectives}
         for item in initial_queries:
@@ -516,6 +573,57 @@ class MemoryManager:
             last_evaluated_successful_rounds=0,
         )
         return [graph_tools.get_node(objective_id)]
+
+    def _attach_required_data_points(
+        self,
+        goal_id: str,
+        objectives: list[dict],
+        data_points: list[str],
+    ) -> list[dict]:
+        """把用户点名的精确数据点挂成 must objective 的验收标准。
+
+        复用既有的 must objective 覆盖门与 delivery_requirement 恢复链路：
+        数据点未被证据覆盖时该 objective 无法 satisfied，收敛前会生成
+        goal-owned 恢复 Gap 强制补检。模型已返回同 key objective 时把数据点
+        并入其 acceptance_criteria，否则新建一个专用 must objective。
+        """
+        if not data_points:
+            return objectives
+        existing = next(
+            (item for item in objectives if item.get("objective_key") == "required-data-points"),
+            None,
+        )
+        if existing is not None:
+            merged = list(dict.fromkeys(
+                [str(c).strip() for c in (existing.get("acceptance_criteria") or []) if str(c).strip()]
+                + data_points
+            ))
+            graph_tools.upsert_node(NodeType.ANALYSIS, {
+                "acceptance_criteria": merged,
+                "requirement": "must",
+            }, existing["id"])
+            objectives = [
+                graph_tools.get_node(existing["id"]) if item["id"] == existing["id"] else item
+                for item in objectives
+            ]
+            return objectives
+        objective_id = graph_tools.create_analysis(
+            text="覆盖用户在请求中点名要求的全部精确数据点",
+            query_id=goal_id,
+            analysis_type="objective",
+            objective_key="required-data-points",
+            description="覆盖用户在请求中点名要求的全部精确数据点（年份、数值、百分比、金额、专名等）",
+            requirement="must",
+            weight=1.0,
+            acceptance_criteria=data_points,
+            coverage=0.0,
+            confidence=0.0,
+            status="open",
+            low_gain_streak=0,
+            last_evaluated_successful_rounds=0,
+        )
+        objectives.append(graph_tools.get_node(objective_id))
+        return objectives
 
     @staticmethod
     def _select_initial_queries(
@@ -3420,6 +3528,8 @@ class MemoryManager:
         return {
             "user_request": request_text,
             "language": goal.get("language"),
+            "required_data_points": _required_data_points(goal.get("required_data_points")),
+            "required_structure": _required_structure(goal.get("required_structure")),
             "queries": [
                 {
                     "ref": query.get("handle"),

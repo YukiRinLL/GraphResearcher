@@ -101,6 +101,22 @@ init_research = """你是 GraphResearcher 的 Query Planner。
 - Query 中的 `-site:` 域名集合必须与 `excluded_domains` 完全一致。不得根据 `excluded_urls` 推导、增加或猜测域名。
 - 当 `excluded_domains` 为空时，Query 中不得出现任何 `-site:` 条件。
 
+### required_data_points（可选；仅摘录用户明确点名的点）
+
+- 逐一记录用户在请求中明确点名、最终报告必须出现的精确数据点：具体数字、百分比、金额、日期、名称、固定编号或专名。
+- 每条尽量逐字保留用户给出的形式（例如“2023 年土地出让收入 5.8 万亿元”），不得改写、换算、补全、合并或拆分。
+- 只有用户显式写出的点才记录；模型推测、常识背景、检索建议或一般性主题一律不写。
+- 同一数据点重复出现只保留一条。请求没有点名精确数据点时返回空数组 []。
+
+### required_structure（可选；仅记录用户明确规定的成品结构）
+
+- 仅当用户明确规定报告的固定结构时填写，例如“第 N 部分”、必须原样使用的章节标题、指定的表格及其行/列。
+- 每条结构要求输出为一个对象：
+  - 章节：{"type": "section", "heading": "用户原样标题", "note": ""}
+  - 表格：{"type": "table", "heading": "用户原样表名", "columns": ["用户给定列名"], "note": ""}
+- `heading` 与 `columns` 必须逐字复制用户原文，不得翻译、改写、增删或重排。
+- 用户没有规定固定结构的普通请求（包括“分析/调研/写一篇百科”等）返回空数组 []；不得用模型偏好的提纲填充该字段。
+
 ## 初始发现 Query
 
 初始 Query 用于取得后续研究所需的可靠入口，不负责提前完成报告。
@@ -163,7 +179,9 @@ init_research = """你是 GraphResearcher 的 Query Planner。
 8. 初始 Query 是否只处理当前最上游的发现任务。
 9. 是否存在可以删除而不影响首次发现能力的重复或低价值 Query。
 10. Query 数量是否不超过 {initial_query_limit}。
-11. 输出是否为合法 JSON，且没有增加 schema 之外的字段。
+11. `required_data_points` 是否只包含用户逐字点名的精确数据点，且没有混入模型推测内容。
+12. `required_structure` 是否只在用户明确规定成品结构时填写，标题与列名是否逐字保留。
+13. 输出是否为合法 JSON，且没有增加 schema 之外的字段。
 
 只返回 JSON，不要输出分析过程、说明文字或 Markdown 代码块。
 
@@ -177,6 +195,15 @@ init_research = """你是 GraphResearcher 的 Query Planner。
   "source_preferences": ["用户明确指定的来源类别或域名"],
   "excluded_domains": ["用户明确禁止的域名"],
   "excluded_urls": ["用户明确禁止的完整 URL"],
+  "required_data_points": ["用户逐字点名的精确数据点；没有则为空数组"],
+  "required_structure": [
+    {
+      "type": "section|table",
+      "heading": "用户原样标题或表名",
+      "columns": ["仅 table 类型使用；用户给定列名逐字复制"],
+      "note": "可选：必要的附加说明"
+    }
+  ],
   "scope_mode": "bounded|exhaustive",
   "objectives": [
     {
