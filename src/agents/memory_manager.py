@@ -2057,12 +2057,34 @@ class MemoryManager:
             )
             for gap in group:
                 gap_owner_id = self._gap_owner_id(gap["id"])
+                # Uncovered must-objective recovery gaps (including
+                # delivery-requirement gaps owned by the UserRequest itself)
+                # must not be starved by this round's branch cool-down: the
+                # whitelist only parks individual query branches, it cannot
+                # waive a report-level must objective. Compute must impact
+                # before the cool-down decision so these gaps fall through to
+                # the force-expand path below.
+                gap_must_keys = {
+                    key
+                    for key in (gap.get("objective_keys") or [])
+                    if key in objective_by_key
+                    and objective_by_key[key].get("requirement") == "must"
+                    and objective_by_key[key].get("status")
+                    not in {"satisfied", "blocked"}
+                }
+                gap_impacts_uncovered_must = bool(
+                    gap_must_keys - force_expanded_must_keys
+                )
+                owner_excluded_by_cooldown = (
+                    has_whitelist
+                    and bool(gap_owner_id)
+                    and gap_owner_id not in allowed_owners
+                )
                 gap_cooled = (
                     group_chosen_by_utility
                     and not fatal
-                    and has_whitelist
-                    and bool(gap_owner_id)
-                    and gap_owner_id not in allowed_owners
+                    and owner_excluded_by_cooldown
+                    and not gap_impacts_uncovered_must
                 )
                 if gap_cooled:
                     gap_status = "deferred_branch_cool_down"
@@ -2088,19 +2110,17 @@ class MemoryManager:
                         gap_owner
                         and gap_owner.get("status") == "needs_expansion"
                     )
-                    gap_must_keys = {
-                        key
-                        for key in (gap.get("objective_keys") or [])
-                        if key in objective_by_key
-                        and objective_by_key[key].get("requirement") == "must"
-                        and objective_by_key[key].get("status")
-                        not in {"satisfied", "blocked"}
-                    }
-                    gap_impacts_uncovered_must = bool(
-                        gap_must_keys - force_expanded_must_keys
+                    # Goal-owned delivery-requirement gaps and must gaps whose
+                    # query branch is parked this round are revived as fresh
+                    # (typically horizontal/ sibling) expansion paths.
+                    owner_is_goal = bool(
+                        gap_owner
+                        and gap_owner.get("type") == NodeType.USER_REQUEST.value
                     )
-                    gap_force_expand = (
-                        owner_needs_expansion and gap_impacts_uncovered_must
+                    gap_force_expand = gap_impacts_uncovered_must and (
+                        owner_needs_expansion
+                        or owner_is_goal
+                        or owner_excluded_by_cooldown
                     )
                     gap_choose = group_chosen_by_utility or gap_force_expand
                     gap_status = "selected" if gap_choose else "deferred_low_value"
