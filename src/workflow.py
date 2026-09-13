@@ -26,10 +26,12 @@ from __future__ import annotations
 import logging
 from typing import Annotated, Optional, TypedDict
 
+import openai
 from langchain_core.messages import AIMessage, HumanMessage
 from langgraph.config import get_config
 from langgraph.graph import END, StateGraph
 from langgraph.graph.message import add_messages
+from langgraph.types import RetryPolicy
 
 from agents.reporter_workflow import run_report_workflow
 from agents.searcher import searcher
@@ -37,6 +39,43 @@ from tools import graph_manager_tools as gmt
 from tools.graph_manager_tools import fail_search, prepare_search
 
 logger = logging.getLogger(__name__)
+
+# 网关偶发的 5xx / 429 / 超时 / 连接中断是瞬时故障（实测会在数十秒窗口内
+# 反复出现）。任一研究节点直接冒泡都会终止整个多轮研究，因此对全部节点统一
+# 应用下面的有界指数退避重试策略，而不是逐个节点包 try/except。
+_TRANSIENT_HTTP_STATUS = {408, 409, 425, 429, 500, 502, 503, 504}
+_TRANSIENT_OPENAI_ERRORS = (
+    openai.InternalServerError,  # 500/502/503/504
+    openai.RateLimitError,       # 429
+    openai.APITimeoutError,
+    openai.APIConnectionError,
+)
+
+
+def _is_transient_llm_error(exc: BaseException) -> bool:
+    """沿异常因果链识别瞬时（可重试）的模型/网络错误，逻辑错误不重试."""
+    seen: set[int] = set()
+    cur: Optional[BaseException] = exc
+    while cur is not None and id(cur) not in seen:
+        seen.add(id(cur))
+        if isinstance(cur, _TRANSIENT_OPENAI_ERRORS):
+            return True
+        status = getattr(cur, "status_code", None)
+        if isinstance(status, int) and status in _TRANSIENT_HTTP_STATUS:
+            return True
+        cur = cur.__cause__ or cur.__context__
+    return False
+
+
+# 初次 5s，指数退避 5→10→20→40，最多 5 次尝试（含首次），封顶约 75s。
+TRANSIENT_RETRY_POLICY = RetryPolicy(
+    initial_interval=5.0,
+    backoff_factor=2.0,
+    max_interval=40.0,
+    max_attempts=5,
+    jitter=True,
+    retry_on=_is_transient_llm_error,
+)
 
 # 各动作节点的路由目标名，与 ``get_next_actions`` 返回的 ``action`` 字段对齐。
 _ACTION_NODES = {
