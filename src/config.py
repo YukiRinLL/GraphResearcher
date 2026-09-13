@@ -49,41 +49,6 @@ REPORTER_SOURCE_TOKENS = _positive_int_from_env("GR_REPORTER_SOURCE_TOKENS", 2_0
 REPORTER_TOKENIZER = os.environ.get("GR_REPORTER_TOKENIZER", "").strip()
 
 
-def _non_negative_int_from_env(name: str, default: int) -> int:
-    """读取必须为非负整数的环境变量配置."""
-    raw_value = os.environ.get(name, str(default))
-    try:
-        value = int(raw_value)
-    except ValueError as exc:
-        raise ValueError(f"{name} must be a non-negative integer") from exc
-    if value < 0:
-        raise ValueError(f"{name} must be a non-negative integer")
-    return value
-
-
-def _float_from_env(name: str, default: float) -> float:
-    """读取浮点环境变量配置."""
-    raw_value = os.environ.get(name, str(default))
-    try:
-        return float(raw_value)
-    except ValueError as exc:
-        raise ValueError(f"{name} must be a number") from exc
-
-
-# 跨章证据共享：章节证据包除大纲绑定 query 外，按章 goal 从本轮全部 query 的
-# 证据中补入强相关条目，只占用绑定 query 选材后的预算余量，不挤占绑定证据。
-# 设 0 关闭；MIN_OVERLAP 是章 goal 术语被证据覆盖的比例阈值。
-REPORTER_CROSS_QUERY_EVIDENCE = os.environ.get(
-    "GR_REPORTER_CROSS_QUERY_EVIDENCE", "1"
-).strip().lower() not in {"0", "false", "no", "off"}
-REPORTER_CROSS_QUERY_MAX_ITEMS = _non_negative_int_from_env(
-    "GR_REPORTER_CROSS_QUERY_MAX_ITEMS", 12
-)
-REPORTER_CROSS_QUERY_MIN_OVERLAP = _float_from_env(
-    "GR_REPORTER_CROSS_QUERY_MIN_OVERLAP", 0.15
-)
-
-
 def _csv_env(name: str) -> list[str]:
     """读取逗号/换行分隔的字符串列表环境变量（去空、去重、保序）."""
     raw = os.environ.get(name, "")

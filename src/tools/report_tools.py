@@ -154,20 +154,47 @@ def _cap_evidence_by_budget(
     if not evidence_items:
         return evidence_items
 
-    goal_terms, goal_numbers = _chapter_goal_terms(chapter)
+    # Build goal terms for relevance ranking.
+    goals = [str(g) for g in chapter.get("goals") or []]
+    if not goals:
+        goals = [str(chapter.get("section_plan") or chapter.get("title") or "")]
+    goal_terms: set[str] = set()
+    for goal in goals:
+        goal_terms |= _terms(goal)
     if not goal_terms:
         return evidence_items
 
-    ranked = sorted(
-        evidence_items,
-        key=lambda item: _evidence_relevance_key(item, goal_terms, goal_numbers),
+    # 用户/章节点名的精确数据点（年份、百分比、金额等），命中证据必须优先保留，
+    # 即使其词面与 goal 重合度低（精确数字常以改写句式出现）。
+    goal_numbers: set[str] = set()
+    for goal in goals:
+        goal_numbers |= _number_cores(goal)
+
+    def relevance(item: dict[str, Any]) -> tuple:
+        text = str(item.get("text") or "")
+        terms = _terms(text)
+        overlap = _overlap(goal_terms, terms)
+        named_hits = len(goal_numbers & _number_cores(text)) if goal_numbers else 0
+        has_source = 1 if item.get("source_ids") or item.get("citations") else 0
+        return (-named_hits, -overlap, -_numeric_density(text), -has_source, -len(text))
+
+    ranked = sorted(evidence_items, key=relevance)
+
+    # 60 % of the input limit for evidence items; the rest is for prompt
+    # scaffolding, source-context metadata, and the chapter plan.
+    input_limit = (
+        config.REPORTER_CONTEXT_TOKENS
+        - config.REPORTER_OUTPUT_TOKENS
+        - config.REPORTER_SAFETY_TOKENS
     )
-    budget = _chapter_evidence_budget()
+    budget = int(input_limit * 0.6)
 
     kept_ids: set[str] = set()
     total_est = 0.0
+    _ITEM_OVERHEAD = 80  # tokens for ref/type/confidence/relations JSON
     for item in ranked:
-        est = _item_token_cost(item)
+        text = str(item.get("text") or "")
+        est = _estimate_tokens(text) + _ITEM_OVERHEAD
         if total_est + est > budget and kept_ids:
             break
         total_est += est
@@ -181,125 +208,6 @@ def _cap_evidence_by_budget(
         len(evidence_items), len(kept_ids), total_est, budget,
     )
     return [item for item in evidence_items if item["id"] in kept_ids]
-
-
-def _chapter_goal_terms(chapter: dict[str, Any]) -> tuple[set[str], set[str]]:
-    """Return (goal terms, goal-required numeric cores) for a chapter."""
-    goals = [str(g) for g in chapter.get("goals") or []]
-    if not goals:
-        goals = [str(chapter.get("section_plan") or chapter.get("title") or "")]
-    goal_terms: set[str] = set()
-    goal_numbers: set[str] = set()
-    for goal in goals:
-        goal_terms |= _terms(goal)
-        # 用户/章节点名的精确数据点（年份、百分比、金额等），命中证据必须优先
-        # 保留，即使其词面与 goal 重合度低（精确数字常以改写句式出现）。
-        goal_numbers |= _number_cores(goal)
-    return goal_terms, goal_numbers
-
-
-def _evidence_relevance_key(
-    item: dict[str, Any],
-    goal_terms: set[str],
-    goal_numbers: set[str],
-) -> tuple:
-    """Rank key: named data points, goal term overlap, numeric density, source."""
-    text = str(item.get("text") or "")
-    terms = _terms(text)
-    overlap = _overlap(goal_terms, terms)
-    named_hits = len(goal_numbers & _number_cores(text)) if goal_numbers else 0
-    has_source = 1 if item.get("source_ids") or item.get("citations") else 0
-    return (-named_hits, -overlap, -_numeric_density(text), -has_source, -len(text))
-
-
-def _chapter_evidence_budget() -> int:
-    """60 % of the Reporter input limit is reserved for evidence items."""
-    input_limit = (
-        config.REPORTER_CONTEXT_TOKENS
-        - config.REPORTER_OUTPUT_TOKENS
-        - config.REPORTER_SAFETY_TOKENS
-    )
-    return int(input_limit * 0.6)
-
-
-_ITEM_OVERHEAD = 80  # tokens for ref/type/confidence/relations JSON
-
-
-def _item_token_cost(item: dict[str, Any]) -> float:
-    return _estimate_tokens(str(item.get("text") or "")) + _ITEM_OVERHEAD
-
-
-def _supplement_cross_query_evidence(
-    bound_items: list[dict[str, Any]],
-    chapter: dict[str, Any],
-) -> list[dict[str, Any]]:
-    """Fill leftover chapter budget with on-goal evidence from other queries.
-
-    Evidence gathered by sibling queries (e.g. definitional taxonomy material
-    discovered while chasing a stakeholder gap) is otherwise invisible to a
-    chapter bound to a narrow query list. This supplements — never replaces —
-    the bound-query selection: bound items are capped first and cross-query
-    items only consume the remaining token budget, up to a fixed item cap,
-    and only when the share of the item's own terms covered by the chapter
-    goals clears a relevance threshold.
-    """
-    if (
-        not config.REPORTER_CROSS_QUERY_EVIDENCE
-        or config.REPORTER_CROSS_QUERY_MAX_ITEMS <= 0
-        or not bound_items
-    ):
-        return bound_items
-
-    goal_terms, goal_numbers = _chapter_goal_terms(chapter)
-    if not goal_terms:
-        return bound_items
-
-    nodes = {node["id"]: node for node in graph_tools.get_all_nodes()}
-    edges = graph_tools.get_all_edges()
-    registry_by_source = {entry["source_id"]: entry for entry in build_reference_registry()}
-    bound_ids = {item["id"] for item in bound_items}
-
-    candidates: list[dict[str, Any]] = []
-    min_overlap = config.REPORTER_CROSS_QUERY_MIN_OVERLAP
-    for node in nodes.values():
-        if str(node.get("type") or "").lower() not in {"claim", "evidence"}:
-            continue
-        if node["id"] in bound_ids:
-            continue
-        item = _build_report_item(node, nodes, edges, registry_by_source)
-        if item is None:
-            continue
-        if _overlap(goal_terms, _terms(item["text"])) < min_overlap:
-            continue
-        candidates.append(item)
-
-    if not candidates:
-        return bound_items
-
-    candidates.sort(
-        key=lambda item: _evidence_relevance_key(item, goal_terms, goal_numbers)
-    )
-    budget = _chapter_evidence_budget()
-    used = sum(_item_token_cost(item) for item in bound_items)
-    added: list[dict[str, Any]] = []
-    for item in candidates:
-        if len(added) >= config.REPORTER_CROSS_QUERY_MAX_ITEMS:
-            break
-        est = _item_token_cost(item)
-        if used + est > budget:
-            continue
-        used += est
-        added.append(item)
-
-    if added:
-        logger.info(
-            "Cross-query evidence supplement for chapter %s: +%d items "
-            "(~%.0f tokens, total %d items)",
-            chapter.get("chapter_id", "?"),
-            len(added), sum(_item_token_cost(item) for item in added),
-            len(bound_items) + len(added),
-        )
-    return bound_items + added
 
 
 _RESERVED_SECTION_TITLES = {
@@ -502,97 +410,6 @@ def _source_ids_for_item(item_id: str, nodes: dict[str, dict], edges: list[dict]
     )
 
 
-_STANCE_BY_EDGE = {
-    "supported_by": "supports",
-    "contradicted_by": "contradicts",
-    "qualified_by": "qualifies",
-}
-
-
-def _build_report_item(
-    node: dict[str, Any],
-    nodes: dict[str, dict[str, Any]],
-    edges: list[dict[str, Any]],
-    registry_by_source: dict[str, dict[str, Any]],
-) -> Optional[dict[str, Any]]:
-    """Project one Claim/Evidence node into a citation-ready evidence item.
-
-    Returns ``None`` when the node has no URL-backed registered source or no
-    text. Shared by query-scoped pages and the cross-query chapter pool so
-    both selection paths produce identically shaped items.
-    """
-    source_ids = [
-        source_id for source_id in _source_ids_for_item(node["id"], nodes, edges)
-        if source_id in registry_by_source
-    ]
-    if not source_ids:
-        return None
-    text = node.get("statement") or node.get("claim") or node.get("text")
-    if not str(text or "").strip():
-        return None
-    claim_relations = [
-        {
-            "claim_id": edge.get("target"),
-            "stance": _STANCE_BY_EDGE[str(edge.get("type") or "").lower()],
-        }
-        for edge in edges
-        if edge.get("source") == node["id"]
-        and nodes.get(edge.get("target"), {}).get("type") == "Claim"
-        and str(edge.get("type") or "").lower() in _STANCE_BY_EDGE
-    ]
-    evidence_relations = [
-        {
-            "evidence_id": edge.get("source"),
-            "stance": _STANCE_BY_EDGE[str(edge.get("type") or "").lower()],
-        }
-        for edge in edges
-        if edge.get("target") == node["id"]
-        and nodes.get(edge.get("source"), {}).get("type") == "Evidence"
-        and str(edge.get("type") or "").lower() in _STANCE_BY_EDGE
-    ]
-    document = nodes.get(node.get("document_id"), {})
-    document_source = document.get("source_id")
-    location = {}
-    if (
-        node.get("type") == "Evidence" and document.get("type") == "Document"
-        and document_source in source_ids
-        and node.get("source_id") in {None, document_source}
-    ):
-        source = registry_by_source[document_source]
-        location = {
-            **{key: document.get(key) for key in ("snapshot_id", "chunker_version", "capture_id")},
-            "block_refs": node.get("block_refs"), "location_status": node.get("location_status"),
-            "url": source["url"], "title": source["title"], "citation": f"[{source['n']}]",
-        }
-    return {
-        **({"_source_location": location} if location else {}),
-        "id": node["id"],
-        "type": node["type"],
-        "text": str(text).strip(),
-        "confidence": node.get("confidence"),
-        "qualifiers": node.get("qualifiers") or [],
-        "limitations": node.get("limitations") or [],
-        "locator": node.get("locator"),
-        "claim_relations": claim_relations,
-        "evidence_relations": evidence_relations,
-        "source_ids": source_ids,
-        "citations": [registry_by_source[source_id]["n"] for source_id in source_ids],
-        "sources": [
-            {
-                "source_id": source_id,
-                "title": registry_by_source[source_id]["title"],
-                "url": registry_by_source[source_id]["url"],
-                "source_type": nodes.get(source_id, {}).get("source_type"),
-                "published_at": (
-                    nodes.get(source_id, {}).get("published_at")
-                    or nodes.get(source_id, {}).get("publication_date")
-                ),
-            }
-            for source_id in source_ids
-        ],
-    }
-
-
 def get_report_evidence(query_id: str, offset: int = 0, limit: int = 20) -> dict:
     """Return one compact, citation-ready page of a Query's evidence."""
     try:
@@ -608,13 +425,89 @@ def get_report_evidence(query_id: str, offset: int = 0, limit: int = 20) -> dict
     registry = build_reference_registry()
     registry_by_source = {entry["source_id"]: entry for entry in registry}
     evaluation = graph_tools.get_query_evaluation_subgraph(resolved_query_id)
-    items: list[dict[str, Any]] = []
+    items: list[dict] = []
     for node in evaluation.get("nodes", []):
         if str(node.get("type") or "").lower() not in {"claim", "evidence"}:
             continue
-        item = _build_report_item(node, nodes, edges, registry_by_source)
-        if item is not None:
-            items.append(item)
+        source_ids = [
+            source_id for source_id in _source_ids_for_item(node["id"], nodes, edges)
+            if source_id in registry_by_source
+        ]
+        if not source_ids:
+            continue
+        text = node.get("statement") or node.get("claim") or node.get("text")
+        if not str(text or "").strip():
+            continue
+        stance_by_edge = {
+            "supported_by": "supports",
+            "contradicted_by": "contradicts",
+            "qualified_by": "qualifies",
+        }
+        claim_relations = [
+            {
+                "claim_id": edge.get("target"),
+                "stance": stance_by_edge[str(edge.get("type") or "").lower()],
+            }
+            for edge in edges
+            if edge.get("source") == node["id"]
+            and nodes.get(edge.get("target"), {}).get("type") == "Claim"
+            and str(edge.get("type") or "").lower() in {
+                "supported_by", "contradicted_by", "qualified_by",
+            }
+        ]
+        evidence_relations = [
+            {
+                "evidence_id": edge.get("source"),
+                "stance": stance_by_edge[str(edge.get("type") or "").lower()],
+            }
+            for edge in edges
+            if edge.get("target") == node["id"]
+            and nodes.get(edge.get("source"), {}).get("type") == "Evidence"
+            and str(edge.get("type") or "").lower() in {
+                "supported_by", "contradicted_by", "qualified_by",
+            }
+        ]
+        document = nodes.get(node.get("document_id"), {})
+        document_source = document.get("source_id")
+        location = {}
+        if (
+            node.get("type") == "Evidence" and document.get("type") == "Document"
+            and document_source in source_ids
+            and node.get("source_id") in {None, document_source}
+        ):
+            source = registry_by_source[document_source]
+            location = {
+                **{key: document.get(key) for key in ("snapshot_id", "chunker_version", "capture_id")},
+                "block_refs": node.get("block_refs"), "location_status": node.get("location_status"),
+                "url": source["url"], "title": source["title"], "citation": f"[{source['n']}]",
+            }
+        items.append({
+            **({"_source_location": location} if location else {}),
+            "id": node["id"],
+            "type": node["type"],
+            "text": str(text).strip(),
+            "confidence": node.get("confidence"),
+            "qualifiers": node.get("qualifiers") or [],
+            "limitations": node.get("limitations") or [],
+            "locator": node.get("locator"),
+            "claim_relations": claim_relations,
+            "evidence_relations": evidence_relations,
+            "source_ids": source_ids,
+            "citations": [registry_by_source[source_id]["n"] for source_id in source_ids],
+            "sources": [
+                {
+                    "source_id": source_id,
+                    "title": registry_by_source[source_id]["title"],
+                    "url": registry_by_source[source_id]["url"],
+                    "source_type": nodes.get(source_id, {}).get("source_type"),
+                    "published_at": (
+                        nodes.get(source_id, {}).get("published_at")
+                        or nodes.get(source_id, {}).get("publication_date")
+                    ),
+                }
+                for source_id in source_ids
+            ],
+        })
     items.sort(key=lambda item: item["id"])
     page = items[offset : offset + limit]
     next_offset = offset + len(page)
@@ -783,7 +676,6 @@ def _prepare_report_chapter_bundle(
         }
 
     evidence_items = _cap_evidence_by_budget(evidence_items, chapter)
-    evidence_items = _supplement_cross_query_evidence(evidence_items, chapter)
 
     source_ids = sorted({
         source_id
@@ -955,49 +847,27 @@ def _chapter_candidate_validation(
     edges = graph_tools.get_all_edges()
     registry = build_reference_registry()
     registry_by_url = {entry["url"]: entry for entry in registry}
-
-    def _source_set_for(item_ids: list[str]) -> set[str]:
-        return {
-            registry_by_url[nodes[source_id]["url"]]["source_id"]
-            for item_id in item_ids
-            for source_id in _source_ids_for_item(item_id, nodes, edges)
-            if nodes.get(source_id, {}).get("url") in registry_by_url
-        }
-
-    # Sources the chapter explicitly declared via evidence_refs.
-    declared_source_ids = _source_set_for(evidence_ids)
-    # Sources backing every item the bundle actually supplied to this chapter:
-    # this — not the model's ref bookkeeping — is the anti-fabrication boundary.
-    bundle_item_ids = list(dict.fromkeys(evidence_ref_map.values())) if token_matches else []
-    bundle_source_ids = _source_set_for(bundle_item_ids)
-    source_ids = sorted(declared_source_ids)
+    source_ids = sorted({
+        registry_by_url[nodes[source_id]["url"]]["source_id"]
+        for item_id in evidence_ids
+        for source_id in _source_ids_for_item(item_id, nodes, edges)
+        if nodes.get(source_id, {}).get("url") in registry_by_url
+    })
     registry_by_number = {entry["n"]: entry for entry in registry}
     cited_numbers = {int(value) for value in _CITE_TOKEN_RE.findall(str(chapter.get("content") or ""))}
     invalid_citations = sorted(
         number for number in cited_numbers
-        if registry_by_number.get(number, {}).get("source_id") not in bundle_source_ids
-    )
-    undeclared_citations = sorted(
-        number for number in cited_numbers
-        if registry_by_number.get(number, {}).get("source_id") in bundle_source_ids
-        and registry_by_number.get(number, {}).get("source_id") not in declared_source_ids
+        if registry_by_number.get(number, {}).get("source_id") not in source_ids
     )
     if invalid_citations:
         issues.append(_issue(
             "unsupported_inline_citations",
             "hard",
-            f"chapter {chapter_id} cites sources absent from its chapter bundle: {invalid_citations}",
-            "Use citation numbers attached to evidence supplied in this chapter bundle.",
-        ))
-    if undeclared_citations:
-        issues.append(_issue(
-            "undeclared_bundle_citations",
-            "soft",
-            f"chapter {chapter_id} cites bundle-backed sources whose local refs are missing from evidence_refs: {undeclared_citations}",
-            "Add the corresponding local evidence refs to evidence_refs before resubmitting.",
+            f"chapter {chapter_id} cites sources not supported by its local evidence refs: {invalid_citations}",
+            "Use citation numbers attached to the selected local evidence refs.",
         ))
     return {
-        "validated": not any(issue.get("severity") == "hard" for issue in issues),
+        "validated": not issues,
         "issues": issues,
         "evidence_ids": evidence_ids,
         "source_ids": source_ids,
@@ -1090,11 +960,9 @@ def _load_committed_report(output_dir: Optional[str]) -> tuple[str, list[dict], 
         content = content_path.read_text(encoding="utf-8").strip()
         meta = _read_json_file(_chapter_meta_path(output_dir, chapter_id))
         sections.append({
-            "chapter_id": chapter_id,
             "title": str(chapter.get("title") or meta.get("title") or "").strip()
             or f"Section {chapter_id}",
             "content": content,
-            "evidence_ref_map": dict(meta.get("evidence_ref_map") or {}),
             "source_ids": list(dict.fromkeys(
                 _chapter_dynamic_value(meta, chapter, "source_ids", []) or []
             )),
@@ -1220,9 +1088,6 @@ def _best_effort_report(title: str, sections: list[dict[str, Any]]) -> tuple[str
     """Compile every candidate section without discarding prose on validation failure."""
     registry = build_reference_registry()
     registry_by_number = {entry["n"]: entry for entry in registry}
-    registry_by_url = {entry["url"]: entry for entry in registry}
-    graph_nodes = {node["id"]: node for node in graph_tools.get_all_nodes()}
-    graph_edges = graph_tools.get_all_edges()
     compiled_sections = []
     cited_source_ids: set[str] = set()
     issues: list[dict[str, Any]] = []
@@ -1233,47 +1098,19 @@ def _best_effort_report(title: str, sections: list[dict[str, Any]]) -> tuple[str
             for value in _CITE_TOKEN_RE.findall(content)
             if int(value) not in registry_by_number
         })
-        # Chapter-scoped enforcement: a number is legitimate whenever its
-        # source backs evidence the chapter bundle actually supplied or the
-        # chapter explicitly declared. Everything else is a fabricated
-        # attribution and is removed before compilation.
-        bundle_map = section.get("evidence_ref_map") or {}
-        allowed_source_ids = {
-            registry_by_url[graph_nodes[source_id]["url"]]["source_id"]
-            for item_id in dict.fromkeys(bundle_map.values())
-            for source_id in _source_ids_for_item(str(item_id), graph_nodes, graph_edges)
-            if graph_nodes.get(source_id, {}).get("url") in registry_by_url
-        }
-        allowed_source_ids |= set(section.get("source_ids") or [])
-        out_of_scope_numbers = sorted({
-            int(value)
-            for value in _CITE_TOKEN_RE.findall(content)
-            if int(value) in registry_by_number
-            and registry_by_number[int(value)]["source_id"] not in allowed_source_ids
-        })
-        stripped_numbers = sorted(set(invalid_numbers) | set(out_of_scope_numbers))
-        if stripped_numbers:
-            stripped_set = set(stripped_numbers)
+        if invalid_numbers:
+            invalid_set = set(invalid_numbers)
             content = _CITE_TOKEN_RE.sub(
-                lambda match: "" if int(match.group(1)) in stripped_set else match.group(0),
+                lambda match: "" if int(match.group(1)) in invalid_set else match.group(0),
                 content,
             )
-            if invalid_numbers:
-                issues.append(_issue(
-                    "unknown_inline_citations_removed",
-                    "hard",
-                    f"section {section.get('title')!r} contained unknown citation numbers: {invalid_numbers}",
-                    "Use citation numbers from the chapter bundle.",
-                    section_title=str(section.get("title") or ""),
-                ))
-            if out_of_scope_numbers:
-                issues.append(_issue(
-                    "unsupported_inline_citations_removed",
-                    "hard",
-                    f"section {section.get('title')!r} cited sources outside its selected evidence: {out_of_scope_numbers}",
-                    "Use citation numbers attached to the selected local evidence refs.",
-                    section_title=str(section.get("title") or ""),
-                ))
+            issues.append(_issue(
+                "unknown_inline_citations_removed",
+                "hard",
+                f"section {section.get('title')!r} contained unknown citation numbers: {invalid_numbers}",
+                "Use citation numbers from the chapter bundle.",
+                section_title=str(section.get("title") or ""),
+            ))
         cited_numbers = {int(value) for value in _CITE_TOKEN_RE.findall(content)}
         source_ids = sorted({
             registry_by_number[number]["source_id"]
@@ -1517,19 +1354,12 @@ def sanitize_report(report_text: str) -> str:
 
 
 def _reference_entries(report_text: str) -> dict[int, str]:
-    """Return numbered URL-bearing reference entries from report Markdown.
-
-    Reference URLs occasionally contain stray whitespace (e.g. ``? id=`` or
-    ``?hl= zh-CN`` from scraped titles); such a URL is still one continuous
-    address, so whitespace after the scheme is removed before matching.
-    """
+    """Return numbered URL-bearing reference entries from report Markdown."""
     result: dict[int, str] = {}
     for line in (report_text or "").splitlines():
-        match = re.match(r"^\[(\d{1,4})\]\s+.*?(https?://.*)$", line.strip())
+        match = re.match(r"^\[(\d{1,4})\]\s+.*?(https?://\S+)\s*$", line.strip())
         if match:
-            url = re.sub(r"\s+", "", match.group(2)).rstrip(".,，。);）]")
-            if url.startswith(("http://", "https://")):
-                result[int(match.group(1))] = url
+            result[int(match.group(1))] = match.group(2).rstrip(".,，。);）]")
     return result
 
 
@@ -1591,175 +1421,6 @@ def validate_report_quality(report_text: str) -> list[str]:
     if len(headings) > 1 or _REFERENCE_VARIANT_RE.search(text):
         issues.append("report contains multiple or variant references sections")
     return list(dict.fromkeys(issues))
-
-
-def _report_body(report_text: str) -> str:
-    """Return the report body before the references heading."""
-    ref_match = _REF_HEADING_RE.search(report_text or "")
-    return report_text[: ref_match.start()] if ref_match else (report_text or "")
-
-
-def _citation_counts(report_text: str) -> dict[int, int]:
-    counts: dict[int, int] = {}
-    for match in _CITE_TOKEN_RE.finditer(_report_body(report_text)):
-        number = int(match.group(1))
-        counts[number] = counts.get(number, 0) + 1
-    return counts
-
-
-def _pipe_table_rows(report_text: str) -> int:
-    return len(re.findall(r"^\|.*\|\s*$", report_text or "", re.MULTILINE))
-
-
-def _heading_count(report_text: str) -> int:
-    return len(_ANY_HEADING_RE.findall(report_text or ""))
-
-
-def evaluate_polished_report(
-    polished_text: str,
-    compiled_text: str,
-    *,
-    wikipedia_mode: bool = False,
-) -> tuple[bool, list[str]]:
-    """Decide whether a model-polished full report may replace the compilation.
-
-    The compiled report is the citation-safe canonical artifact, so a polished
-    variant is accepted only when it provably preserves its evidence surface:
-    identical numbered reference URLs, no invented citation numbers, all table
-    rows retained, no new hard/quality violations, and a mode-appropriate
-    length floor. Anything else rejects (caller falls back to the compilation).
-    """
-    polished = (polished_text or "").strip()
-    compiled = (compiled_text or "").strip()
-    if not polished:
-        return False, ["polished report is empty"]
-    if not compiled:
-        return False, ["compiled baseline is missing"]
-
-    reasons: list[str] = []
-
-    polished_refs = _reference_entries(polished)
-    compiled_refs = _reference_entries(compiled)
-    if polished_refs != compiled_refs:
-        missing = sorted(set(compiled_refs) - set(polished_refs))
-        changed = sorted(
-            number for number in (set(polished_refs) & set(compiled_refs))
-            if polished_refs[number] != compiled_refs[number]
-        )
-        added = sorted(set(polished_refs) - set(compiled_refs))
-        details = []
-        if missing:
-            details.append(f"missing entries {missing}")
-        if changed:
-            details.append(f"changed URLs {changed}")
-        if added:
-            details.append(f"added entries {added}")
-        reasons.append("reference list altered: " + "; ".join(details))
-
-    polished_counts = _citation_counts(polished)
-    compiled_counts = _citation_counts(compiled)
-    invented = sorted(set(polished_counts) - set(compiled_counts))
-    if invented:
-        reasons.append(f"polished body cites numbers absent from draft: {invented}")
-    missing_cites = sorted(
-        number for number, count in compiled_counts.items()
-        if polished_counts.get(number, 0) > count
-    )
-    if missing_cites:
-        reasons.append(f"polished body duplicates citations beyond draft: {missing_cites}")
-
-    if _pipe_table_rows(polished) != _pipe_table_rows(compiled):
-        reasons.append(
-            f"table row count changed: {_pipe_table_rows(compiled)} -> "
-            f"{_pipe_table_rows(polished)}"
-        )
-
-    if _heading_count(polished) < max(2, int(_heading_count(compiled) * 0.7)):
-        reasons.append("polished report removed too many sections/headings")
-
-    polished_chars = len(_CJK_CHAR_RE.findall(polished)) + len(polished)
-    compiled_chars = len(_CJK_CHAR_RE.findall(compiled)) + len(compiled)
-    floor = 0.6 if wikipedia_mode else 0.85
-    if compiled_chars and polished_chars < compiled_chars * floor:
-        reasons.append(
-            f"polished report shrunk below {floor:.0%} of draft "
-            f"({polished_chars} vs {compiled_chars} chars)"
-        )
-    if compiled_chars and polished_chars > compiled_chars * 1.35:
-        reasons.append("polished report expanded beyond 135% of draft")
-
-    if _FORBIDDEN_META_RE.search(polished):
-        reasons.append("polished report contains forbidden meta/service prose")
-    if _PLACEHOLDER_RE.search(polished) or _EXTERNAL_FILE_RE.search(polished):
-        reasons.append("polished report contains placeholder/external-file markers")
-
-    compiled_hard = set(validate_delivery_invariants(compiled))
-    polished_hard = set(validate_delivery_invariants(polished))
-    new_hard = sorted(polished_hard - compiled_hard)
-    if new_hard:
-        reasons.append(f"new delivery violations after polish: {new_hard}")
-    compiled_quality = set(validate_report_quality(compiled))
-    polished_quality = set(validate_report_quality(polished))
-    new_quality = sorted(polished_quality - compiled_quality)
-    if new_quality:
-        reasons.append(f"new quality violations after polish: {new_quality}")
-
-    return not reasons, reasons
-
-
-_REF_LINE_RE = re.compile(r"^\[(\d{1,4})\]\s+(.*)$")
-
-
-def prune_dangling_references(report_text: str) -> str:
-    """Drop reference entries lacking an in-text citation and renumber.
-
-    Late prose sanitization (e.g. delivery audit) can remove the only sentence
-    carrying a citation after the reference list was rendered. This repair is
-    pure Markdown text processing with no graph access, so it is safe to run on
-    audited delivery text. Tokens in the body that have no reference entry are
-    left untouched.
-    """
-    text = report_text or ""
-    match = _REF_HEADING_RE.search(text)
-    if not match:
-        return text
-    body = text[: match.start()].rstrip()
-    ref_heading = match.group(0)
-    ref_lines: list[tuple[int, str]] = []
-    for raw in text[match.end():].splitlines():
-        line_match = _REF_LINE_RE.match(raw.strip())
-        if line_match:
-            ref_lines.append((int(line_match.group(1)), raw.strip()))
-    if not ref_lines:
-        return text
-    refs_by_number = dict(ref_lines)
-
-    order: list[int] = []
-    for token in _CITE_TOKEN_RE.finditer(body):
-        number = int(token.group(1))
-        if number in refs_by_number and number not in order:
-            order.append(number)
-    if not order:
-        return text
-    if set(order) == set(refs_by_number) and order == sorted(refs_by_number):
-        return text  # every entry is cited and numbering is already canonical
-
-    old_to_new = {old: i + 1 for i, old in enumerate(order)}
-
-    def _renumber(match: re.Match) -> str:
-        number = int(match.group(1))
-        if number in old_to_new:
-            return f"[{old_to_new[number]}]"
-        if number in refs_by_number:
-            return ""
-        return match.group(0)
-
-    new_body = _CITE_TOKEN_RE.sub(_renumber, body)
-    rendered = [ref_heading, ""]
-    for old in order:
-        rest = _REF_LINE_RE.match(refs_by_number[old]).group(2)
-        rendered.extend([f"[{old_to_new[old]}] {rest}", ""])
-    return new_body + "\n\n" + "\n".join(rendered).rstrip() + "\n"
 
 
 _INFOBOX_RE = re.compile(r"^\s*\|.*\|\s*\n\s*\|[\s-]+\|\s*\n", re.MULTILINE)
@@ -2101,11 +1762,6 @@ def _compile_section_report(
 
     Renumbers in-text citations contiguously by first-appearance order so that
     the references section has no gaps (e.g. [1][2][3] instead of [1][3][5]).
-
-    The reference list is derived strictly from citation tokens that survive
-    in the sanitized body. Upstream stages validate and strip out-of-scope or
-    unknown tokens; declared-but-never-cited sources therefore never produce
-    dangling reference entries.
     """
     is_chinese = bool(re.search(r"[\u4e00-\u9fff]", title or ""))
     report_title = str(title or ("调研报告" if is_chinese else "Research Report")).strip()
@@ -2120,22 +1776,16 @@ def _compile_section_report(
     raw_body = "\n\n".join(parts)
 
     registry_by_number = {entry["n"]: entry for entry in registry}
-    # Retained for signature compatibility; citation membership is driven by
-    # the tokens that actually survive in the body, not by declared sets.
-    _ = {sid for sid in cited_source_ids if sid}
-
-    # Sanitize prose before numbering: forbidden meta-narrative sentences (and
-    # their citations) are removed first, so the reference list never keeps an
-    # entry whose only in-text citation was stripped.
-    sanitized_body = sanitize_report(raw_body).rstrip()
+    cited_source_ids = {sid for sid in cited_source_ids if sid}
 
     first_seen_numbers: list[int] = []
     seen_numbers: set[int] = set()
-    for token in _CITE_TOKEN_RE.finditer(sanitized_body):
+    for token in _CITE_TOKEN_RE.finditer(raw_body):
         old_num = int(token.group(1))
         if old_num in seen_numbers:
             continue
-        if old_num not in registry_by_number:
+        entry = registry_by_number.get(old_num)
+        if entry is None or entry["source_id"] not in cited_source_ids:
             continue
         seen_numbers.add(old_num)
         first_seen_numbers.append(old_num)
@@ -2147,7 +1797,7 @@ def _compile_section_report(
         new = old_to_new.get(old)
         return f"[{new}]" if new is not None else ""
 
-    renumbered_body = _CITE_TOKEN_RE.sub(_renumber, sanitized_body)
+    renumbered_body = _CITE_TOKEN_RE.sub(_renumber, raw_body)
 
     cited_registry_entries = [
         registry_by_number[old_num]
@@ -2161,7 +1811,7 @@ def _compile_section_report(
         "参考文献" if is_chinese else "References",
     )
 
-    return f"{renumbered_body}\n\n{sanitize_report(references_text)}\n"
+    return sanitize_report(f"{renumbered_body}\n\n{references_text}")
 
 
 def _renumber_registry(
@@ -2924,9 +2574,13 @@ def _reference_sources(report_text: str) -> dict[int, dict]:
         if source.get("url")
     }
     result: dict[int, dict] = {}
-    for number, url in _reference_entries(report_text).items():
+    for line in report_text.splitlines():
+        match = re.match(r"^\[(\d{1,4})\]\s+.*?(https?://\S+)\s*$", line.strip())
+        if not match:
+            continue
+        url = match.group(2).rstrip(".,，。);）]")
         if url in by_url:
-            result[number] = by_url[url]
+            result[int(match.group(1))] = by_url[url]
     return result
 
 

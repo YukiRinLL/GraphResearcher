@@ -46,7 +46,6 @@ from rich.markdown import Markdown  # noqa: E402
 from observability import LangfuseRun, start_langfuse_run  # noqa: E402
 
 console = Console()
-logger = logging.getLogger(__name__)
 
 _ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[ -/]*[@-~]")
 
@@ -196,10 +195,6 @@ def _prepare_report_for_delivery(
         local_issues: list[str] = []
         try:
             report_text = report_tools.sanitize_report(text)
-            # Sentence-level sanitization may remove the only carrier of a
-            # citation after the reference list was rendered; prune and
-            # renumber so the delivered file never has dangling references.
-            report_text = report_tools.prune_dangling_references(report_text)
             hard_issues = report_tools.validate_delivery_invariants(report_text)
             quality_issues = report_tools.validate_report_quality(report_text)
             consistency_issues = report_tools.validate_final_report(report_text)
@@ -218,24 +213,6 @@ def _prepare_report_for_delivery(
             if (attempt_summary or {}).get("validated")
             else "compiled_reporter_unvalidated"
         )
-        # The model-polished full report replaces the compilation only when it
-        # provably preserves the citation/reference/table evidence surface;
-        # otherwise the compiled chapters remain the canonical artifact.
-        polished_text = str((attempt_summary or {}).get("report") or "").strip()
-        if polished_text and polished_text != compiled_text.strip():
-            wikipedia_mode = "wikipedia" in (request or "").casefold() or "维基百科" in (request or "")
-            accepted, gate_reasons = report_tools.evaluate_polished_report(
-                polished_text, compiled_text, wikipedia_mode=wikipedia_mode
-            )
-            if accepted:
-                polished_audited, polished_issues = audit_candidate(polished_text, "polished_reporter")
-                if not set(polished_issues) - set(local_issues):
-                    report_text, local_issues = polished_audited, polished_issues
-                    mode = "polished_reporter"
-                else:
-                    logger.warning("polished report rejected at audit: %s", polished_issues)
-            else:
-                logger.info("polished report rejected, using compiled chapters: %s", gate_reasons)
         return report_text, local_issues, mode
 
     if salvaged_text.strip():

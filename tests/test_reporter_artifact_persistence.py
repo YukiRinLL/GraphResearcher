@@ -168,10 +168,8 @@ def test_chapter_commit_keeps_outline_static_and_loads_meta():
         assert title == "Static Report" and not missing
         assert sections == [
             {
-                "chapter_id": 1,
                 "title": "First Chapter",
                 "content": "Supported content.[1]",
-                "evidence_ref_map": {"e1": "evidence-1"},
                 "source_ids": ["source-1"],
                 "evidence_ids": ["evidence-1"],
                 "disclosed_conflict_ids": [],
