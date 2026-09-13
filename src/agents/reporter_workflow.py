@@ -525,12 +525,7 @@ def route_outline(state: ReporterWorkflowState) -> str:
 
 
 def prepare_chapters_node(state: ReporterWorkflowState) -> dict[str, Any]:
-    """按工具批量上限顺序加载全部章节证据包.
-
-    证据包准备是本地 CPU 密集的图遍历（受 GIL 约束），实测线程并发会因
-    争用变慢（44s -> 119s），因此保持串行；真正可并发的模型调用发生在
-    下游 draft_chapter 扇出（REPORTER_CHAPTER_CONCURRENCY 控制）。
-    """
+    """按工具批量上限顺序加载全部章节证据包."""
     bundles: list[dict[str, Any]] = []
     chapter_ids = state["chapter_ids"]
     for start in range(0, len(chapter_ids), 3):

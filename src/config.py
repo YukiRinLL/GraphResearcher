@@ -36,11 +36,9 @@ def _positive_int_from_env(name: str, default: int) -> int:
     return value
 
 
-# 章节起草分支彼此隔离（各自的证据包与 meta 文件），默认 6 路并发；
-# 实测 8 章同时起草对模型 API 无压力，可用环境变量下调到 1 退回串行。
 REPORTER_CHAPTER_CONCURRENCY = _positive_int_from_env(
     "GR_REPORTER_CHAPTER_CONCURRENCY",
-    6,
+    3,
 )
 
 # 章节应用预算包含完整输入、输出预留和消息封装安全余量。
