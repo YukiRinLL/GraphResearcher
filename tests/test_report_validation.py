@@ -217,6 +217,20 @@ def main():
     assert "Supported finding [1]." in sanitized
     assert not report_tools.validate_delivery_invariants(sanitized)
 
+    global_compiled = report_tools.compile_global_writer_report(
+        None,
+        "## Findings\n\nSupported finding [1] with local marker [e17]."
+    )
+    assert "Supported finding [1]" in global_compiled["report"]
+    assert "[e17]" not in global_compiled["report"]
+    assert not global_compiled["hard_issues"]
+
+    no_citation = report_tools.compile_global_writer_report(
+        None,
+        "## Findings\n\nAn uncited factual claim."
+    )
+    assert any("no valid inline citations" in issue for issue in no_citation["hard_issues"])
+
     uncited_unit = valid.replace("[1]", "", 1)
     assert any("uncited factual paragraph" in issue for issue in report_tools.validate_delivery_invariants(uncited_unit))
 

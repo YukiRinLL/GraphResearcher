@@ -298,12 +298,12 @@ def run_bench_evaluation(
     completed = load_successful_evaluations(result_path)
     staged = stage_pending_reports(reports, completed, model_name, staging_report_dir)
     command_prefix = [python_bin] if python_bin else _bench_python_command(bench_root)
+    wrapper = Path(__file__).resolve().parent / "run_benchmark_background.py"
 
     if staged:
         print(f"Staged {len(staged)} pending report(s): {staging_report_dir}")
         evaluation_command = [
-            *command_prefix,
-            str(evaluation_script),
+            *([python_bin, str(wrapper), "--env-file", str(bench_root / ".env"), str(evaluation_script)] if python_bin else command_prefix + [str(evaluation_script)]),
             "--pdf_dir",
             str(staging_report_dir),
             "--out_jsonl",
@@ -318,8 +318,7 @@ def run_bench_evaluation(
         print(f"All {len(reports)} report(s) for {model_name} already have successful evaluations.")
 
     aggregate_command = [
-        *command_prefix,
-        str(aggregate_script),
+        *([python_bin, str(wrapper), "--env-file", str(bench_root / ".env"), str(aggregate_script)] if python_bin else command_prefix + [str(aggregate_script)]),
         "--input",
         str(result_path),
         "--tasks-file",

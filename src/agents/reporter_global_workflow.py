@@ -225,9 +225,16 @@ def run_global_report_workflow() -> dict[str, Any]:
                 attempt,
                 len(last_result.get("issues") or []),
             )
-            feedback = "\n".join(
-                str(item.get("message") or item) for item in last_result.get("issues") or []
-            )[:3000]
+            feedback = (
+                "Repair the cited Markdown blocks in the previous draft. Every paragraph, "
+                "list item, blockquote, table row, equation block, and sentence introducing "
+                "a list/table/formula must carry a valid inline citation in that same block. "
+                "Do not put a citation only in the following block. Convert any citation "
+                "wrapper such as cite[1][2] to plain [1][2]. Specific compiler issues:\n"
+                + "\n".join(
+                    str(item.get("message") or item) for item in last_result.get("issues") or []
+                )
+            )[:5000]
         except Exception as exc:  # noqa: BLE001
             logger.warning(
                 "[reporter.global] attempt_failed attempt=%s error_type=%s error=%s",

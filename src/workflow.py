@@ -604,13 +604,20 @@ def report_node(state: dict) -> dict:
                     result.get("attempts"),
                     str(result.get("error"))[:500],
                 )
-                result = run_report_workflow(runnable_config=get_config())
-                result["fallback_reason"] = "global Reporter failed"
+                fallback_result = run_report_workflow(runnable_config=get_config())
                 logger.info(
                     "[reporter.fallback] chapter_completed success=%s validated=%s",
-                    result.get("success"),
-                    result.get("validated"),
+                    fallback_result.get("success"),
+                    fallback_result.get("validated"),
                 )
+                # Never treat an unvalidated chapter artifact as a successful
+                # replacement for the global report. It may remain available as
+                # a diagnostic salvage artifact, but must not enter benchmark output.
+                if fallback_result.get("success") and fallback_result.get("validated"):
+                    result = fallback_result
+                    result["fallback_reason"] = "global Reporter failed"
+                else:
+                    result["fallback_reason"] = "global Reporter failed; chapter fallback was not validated"
         else:
             result = run_report_workflow(runnable_config=get_config())
     except Exception as exc:  # noqa: BLE001 — Reporter 异常不应导致无输出

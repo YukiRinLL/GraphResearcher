@@ -158,7 +158,11 @@ def run_bench_evaluation(
     """调用官方清洗、RACE 和 FACT 流程，将可变产物保存在输出目录。"""
     bench_root = bench_root.resolve()
     output_dir = output_dir.resolve()
+    # Official FACT modules are imported as ``utils.*`` from the benchmark root.
+    if str(bench_root) not in sys.path:
+        sys.path.insert(0, str(bench_root))
     env = bench_subprocess_env(bench_root, mode)
+    wrapper = Path(__file__).resolve().parent / "run_benchmark_background.py"
     raw_path = output_dir / "raw_data" / f"{model_name}.jsonl"
     work_dir = output_dir / "_evaluation" / model_name
     query_path = work_dir / "query.jsonl"
@@ -182,7 +186,8 @@ def run_bench_evaluation(
         race_dir.mkdir(parents=True, exist_ok=True)
         race_query_path = stage_race_queries(query_path, race_dir / "raw_results.jsonl", work_dir / "race_query.jsonl")
         run_command_tee([
-            python_bin, "deepresearch_bench_race.py", model_name,
+            python_bin, str(wrapper), "--env-file", str(bench_root / ".env"),
+            str(bench_root / "deepresearch_bench_race.py"), model_name,
             "--raw_data_dir", str(raw_path.parent),
             "--cleaned_data_dir", str(output_dir / "cleaned_data"),
             "--query_file", str(race_query_path), "--output_dir", str(race_dir),

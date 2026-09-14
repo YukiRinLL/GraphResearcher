@@ -26,6 +26,7 @@ load_dotenv(repo_dir / ".env")
 
 import config  # noqa: E402
 from agents.reporter_workflow import run_report_workflow  # noqa: E402
+from agents.reporter_global_workflow import run_global_report_workflow  # noqa: E402
 from observability import LangfuseRun, start_langfuse_run  # noqa: E402
 from tools import graph_manager_tools, graph_tools, report_source_context  # noqa: E402
 
@@ -207,6 +208,7 @@ def run_replay(
     source_run: Path,
     output_dir: Path,
     *,
+    mode: str = "chapters",
     enable_langfuse: bool = True,
 ) -> dict[str, Any]:
     """Run the public Reporter workflow against one exported graph snapshot."""
@@ -248,6 +250,7 @@ def run_replay(
         "source_run": str(source_run),
         "output_dir": str(output_dir),
         "model": config.DEFAULT_MODEL,
+        "mode": mode,
         "langfuse_enabled": langfuse_run.enabled,
         "langfuse_session_id": langfuse_run.session_id,
     }
@@ -258,7 +261,11 @@ def run_replay(
 
     try:
         with report_source_context.replay_source_scope(source_run), _patch_graph(graph):
-            result = run_report_workflow(runnable_config=runnable_config)
+            result = (
+                run_global_report_workflow()
+                if mode == "global"
+                else run_report_workflow(runnable_config=runnable_config)
+            )
             report = graph_manager_tools.get_compiled_report()
             if not report:
                 attempt = graph_manager_tools.get_last_report_attempt()
@@ -311,6 +318,12 @@ def main() -> None:
     parser.add_argument("source_run", type=Path)
     parser.add_argument("--output-dir", type=Path)
     parser.add_argument(
+        "--mode",
+        choices=("chapters", "global"),
+        default="chapters",
+        help="Reporter implementation to replay.",
+    )
+    parser.add_argument(
         "--no-langfuse",
         action="store_true",
         help="Disable Langfuse even when credentials are configured.",
@@ -327,9 +340,11 @@ def main() -> None:
     result = run_replay(
         source_run,
         output_dir,
+        mode=args.mode,
         enable_langfuse=not args.no_langfuse,
     )
-    print(json.dumps(result, ensure_ascii=False, indent=2))  # noqa: T201
+    text = json.dumps(result, ensure_ascii=False, indent=2)
+    sys.stdout.buffer.write((text + "\n").encode("utf-8"))
     if not result.get("delivered"):
         raise SystemExit(1)
 

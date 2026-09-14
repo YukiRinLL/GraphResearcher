@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 
 # In-text citation token, e.g. ``[12]``; adjacency ``[1][3]`` is two matches.
 _CITE_TOKEN_RE = re.compile(r"\[(\d{1,4})\]")
+_CITE_WRAPPER_RE = re.compile(r"cite((?:\[\d{1,4}\])+?)")
 # Local reference token (bundle-internal refs), e.g. ``[e17]``, ``[c4]``, ``[d5]``.
 _LOCAL_REF_RE = re.compile(r"\[([ecd])\d+\]")
 # The references-section heading line (any ATX level, zh/en, case-insensitive).
@@ -1191,6 +1192,7 @@ def _render_references(registry: list[dict], cited_source_ids: set[str], label: 
 def sanitize_report(report_text: str) -> str:
     """Remove internal-process explanations and service-offer paragraphs."""
     text = report_text or ""
+    # Keep canonical numeric citations such as [12]; only remove bundle-local refs.
     text = _LOCAL_REF_RE.sub("", text)
     kept: list[str] = []
     for block in re.split(r"\n\s*\n", text):
@@ -1204,7 +1206,7 @@ def sanitize_report(report_text: str) -> str:
 def compile_global_writer_report(output_dir: Optional[str], body: str) -> dict[str, Any]:
     """Compile one global-writer body against the canonical citation registry."""
     del output_dir
-    raw = str(body or "").strip()
+    raw = _CITE_WRAPPER_RE.sub(r"\1", str(body or "").strip())
     ref_match = _REF_HEADING_RE.search(raw)
     body_text = raw[: ref_match.start()] if ref_match else raw
     registry = build_reference_registry()
@@ -1235,7 +1237,11 @@ def compile_global_writer_report(output_dir: Optional[str], body: str) -> dict[s
         except Exception:  # noqa: BLE001 - graph traceability is best effort
             logger.warning("Global report section persistence failed", exc_info=True)
     hard_issues = [f"citation has no URL-backed reference: [{number}]" for number in invalid]
-    hard_issues.extend(validate_delivery_invariants(report))
+    if not valid_numbers and cleaned_body:
+        hard_issues.append("global report contains no valid inline citations")
+    hard_issues.extend(
+        validate_delivery_invariants(report, require_citation_per_unit=False)
+    )
     hard_issues.extend(validate_report_quality(report))
     return {
         "report": report,
@@ -1279,8 +1285,18 @@ def _body_units(report_text: str) -> list[str]:
     return units
 
 
-def validate_delivery_invariants(report_text: str) -> list[str]:
-    """Return hard delivery violations for citations and forbidden prose."""
+def validate_delivery_invariants(
+    report_text: str,
+    *,
+    require_citation_per_unit: bool = True,
+) -> list[str]:
+    """Return hard delivery violations for citations and forbidden prose.
+
+    The chapter compiler keeps the strict per-unit rule. The global writer follows
+    my_agent's finalization model: citations are required for factual claims, while
+    headings, equations, table scaffolding, and recommendation lead-ins may rely on
+    the cited prose that follows them.
+    """
     text = report_text or ""
     issues: list[str] = []
     if _FORBIDDEN_META_RE.search(text):
@@ -1290,7 +1306,7 @@ def validate_delivery_invariants(report_text: str) -> list[str]:
         if unit in _NO_FINDINGS_TEXT:
             continue
         citations = [int(match.group(1)) for match in _CITE_TOKEN_RE.finditer(unit)]
-        if not citations:
+        if not citations and require_citation_per_unit:
             issues.append(f"uncited factual paragraph or list item: {unit[:80]}")
             continue
         for citation in citations:
