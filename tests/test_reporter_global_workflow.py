@@ -1,0 +1,83 @@
+"""Offline checks for the my_agent-style global Reporter input contract."""
+
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+from unittest.mock import patch
+
+
+SRC_DIR = Path(__file__).parent.parent / "src"
+sys.path.insert(0, str(SRC_DIR))
+
+from agents import reporter_global_workflow as workflow  # noqa: E402
+
+
+def test_prompt_contains_my_agent_final_writer_inputs() -> None:
+    packet = {
+        "research_brief": {"user_request": "original request", "research_goal": "research brief"},
+        "required_data_points": ["data point"],
+        "required_structure": ["comparison"],
+        "findings": [{"query": {"ref": "q1"}, "items": [{"text": "finding"}]}],
+        "draft_report": "# Draft\n\nDraft answer.",
+        "conflicts": [{"description": "conflict"}],
+        "citation_registry": [{"n": 1, "title": "Source", "url": "https://example.com"}],
+    }
+
+    prompt = workflow._prompt(packet)
+
+    assert "research brief" in prompt
+    assert "finding" in prompt
+    assert "# Draft" in prompt
+    assert "data point" in prompt
+    assert "comparison" in prompt
+    assert "https://example.com" in prompt
+
+
+def test_draft_citations_are_added_to_global_registry() -> None:
+    context = {
+        "user_request": "request",
+        "research_goal": "brief",
+        "language": "en",
+        "queries": [],
+        "objectives": [],
+        "disclosed_conflicts": [],
+    }
+    evidence = {
+        "q": {
+            "items": [
+                {
+                    "id": "e1",
+                    "type": "Evidence",
+                    "text": "Finding",
+                    "citations": [1],
+                    "sources": [],
+                }
+            ],
+            "next_offset": None,
+        }
+    }
+
+    with (
+        patch.object(workflow.report_tools, "get_report_evidence", return_value={"items": [], "next_offset": None}),
+        patch.object(workflow.report_tools, "build_cited_evidence_report", return_value="Draft claim.[2]"),
+        patch.object(
+            workflow.report_tools,
+            "build_reference_registry",
+            return_value=[
+                {"n": 1, "source_id": "s1", "title": "One", "url": "https://one.example"},
+                {"n": 2, "source_id": "s2", "title": "Two", "url": "https://two.example"},
+            ],
+        ),
+    ):
+        packet = workflow._build_packet(context)
+
+    assert packet["draft_report"] == "Draft claim.[2]"
+    assert [entry["n"] for entry in packet["citation_registry"]] == [2]
+    del evidence
+
+
+if __name__ == "__main__":
+    test_prompt_contains_my_agent_final_writer_inputs()
+    test_draft_citations_are_added_to_global_registry()
+    print("test_reporter_global_workflow: PASS")

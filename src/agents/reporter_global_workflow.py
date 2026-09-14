@@ -99,6 +99,13 @@ def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
         if used_chars >= budget:
             break
 
+    draft_report = report_tools.build_cited_evidence_report(
+        str(context.get("user_request") or "")
+    )
+    used_numbers.update(
+        int(match.group(1))
+        for match in re.finditer(r"\[(\d+)\]", draft_report)
+    )
     registry = [
         entry for entry in report_tools.build_reference_registry()
         if int(entry["n"]) in used_numbers
@@ -106,6 +113,7 @@ def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
     packet = {
         "research_brief": {
             "user_request": context.get("user_request", ""),
+            "research_goal": context.get("research_goal") or context.get("user_request", ""),
             "language": context.get("language"),
             "queries": context.get("queries") or [],
             "objectives": context.get("objectives") or [],
@@ -117,6 +125,7 @@ def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
         ],
         "required_structure": context.get("required_structure") or [],
         "findings": findings,
+        "draft_report": draft_report,
         "conflicts": context.get("disclosed_conflicts") or [],
         "citation_registry": registry,
         "export_errors": export_errors,
@@ -139,13 +148,20 @@ def _prompt(packet: dict[str, Any], feedback: str = "") -> str:
     template = config.reporter_global_system_prompt
     replacements = {
         "user_request": packet["research_brief"].get("user_request", ""),
-        "research_brief": json.dumps(packet["research_brief"], ensure_ascii=False),
+        "research_brief": packet["research_brief"].get("research_goal") or json.dumps(packet["research_brief"], ensure_ascii=False),
+        "required_data_points": json.dumps(packet.get("required_data_points") or [], ensure_ascii=False),
+        "required_structure": json.dumps(packet.get("required_structure") or [], ensure_ascii=False),
         "findings": json.dumps(packet["findings"], ensure_ascii=False),
+        "draft_report": packet.get("draft_report", ""),
         "conflicts": json.dumps(packet["conflicts"], ensure_ascii=False),
         "citation_registry": json.dumps(packet["citation_registry"], ensure_ascii=False),
         "retry_feedback": feedback,
     }
-    return re.sub(r"<(user_request|research_brief|findings|conflicts|citation_registry|retry_feedback)>", lambda m: replacements[m.group(1)], template)
+    return re.sub(
+        r"<(user_request|research_brief|required_data_points|required_structure|findings|draft_report|conflicts|citation_registry|retry_feedback)>",
+        lambda m: replacements[m.group(1)],
+        template,
+    )
 
 
 def _authorize() -> dict[str, Any]:

@@ -3399,6 +3399,7 @@ class MemoryManager:
         disclosed_conflicts = report_tools.get_disclosed_conflicts()
         return {
             "user_request": request_text,
+            "research_goal": goal.get("research_goal") or request_text,
             "language": goal.get("language"),
             "queries": [
                 {
