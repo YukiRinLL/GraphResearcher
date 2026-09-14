@@ -31,7 +31,9 @@ from langgraph.config import get_config
 from langgraph.graph import END, StateGraph
 from langgraph.graph.message import add_messages
 
+import config
 from agents.reporter_workflow import run_report_workflow
+from agents.reporter_global_workflow import run_global_report_workflow
 from agents.searcher import searcher
 from tools import graph_manager_tools as gmt
 from tools.graph_manager_tools import fail_search, prepare_search
@@ -594,7 +596,14 @@ def report_node(state: dict) -> dict:
     """执行嵌套的确定性 Reporter workflow."""
     del state
     try:
-        result = run_report_workflow(runnable_config=get_config())
+        if config.reporter_mode() == "global":
+            result = run_global_report_workflow()
+            if not result.get("success") and config.GR_REPORTER_FALLBACK:
+                logger.warning("Global Reporter failed; falling back to chapter Reporter: %s", result.get("error"))
+                result = run_report_workflow(runnable_config=get_config())
+                result["fallback_reason"] = "global Reporter failed"
+        else:
+            result = run_report_workflow(runnable_config=get_config())
     except Exception as exc:  # noqa: BLE001 — Reporter 异常不应导致无输出
         logger.exception("Reporter workflow invocation failed")
         return {

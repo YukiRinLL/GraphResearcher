@@ -564,6 +564,39 @@ def deliver_polished_report(
     return final
 
 
+def deliver_global_report(
+    body: str,
+    *,
+    issues: Optional[list[dict[str, Any]]] = None,
+) -> dict[str, Any]:
+    """Compile and persist a report produced by the global Reporter writer."""
+    global _report_submit_count
+    from tools import report_tools
+
+    _report_submit_count += 1
+    compiled = report_tools.compile_global_writer_report(_cache_dir, body)
+    compiler_issues = [
+        {"code": "global_report_validation", "severity": "hard", "message": message}
+        for message in compiled.get("hard_issues") or []
+    ]
+    all_issues = list(issues or []) + compiler_issues
+    final = {
+        "delivered": bool(compiled.get("report")) and not compiled.get("hard_issues"),
+        "validated": not bool(compiled.get("hard_issues")),
+        "accepted": not bool(compiled.get("hard_issues")),
+        "revision_requested": bool(compiled.get("hard_issues")),
+        "review_status": "global_compiler",
+        "severity": "hard" if compiled.get("hard_issues") else ("soft" if all_issues else "clean"),
+        "report": compiled.get("report", ""),
+        "salvaged_report": compiled.get("report", ""),
+        "graph_persisted": False,
+        "issues": all_issues,
+        "cited_numbers": compiled.get("cited_numbers", []),
+    }
+    _record_report_result(final, finalized=bool(final["delivered"]))
+    return final
+
+
 def get_report_submit_count() -> int:
     """Return the run-scoped number of final report submissions."""
     return _report_submit_count

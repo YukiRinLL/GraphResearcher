@@ -1201,6 +1201,50 @@ def sanitize_report(report_text: str) -> str:
     return "\n\n".join(kept).strip() + ("\n" if kept else "")
 
 
+def compile_global_writer_report(output_dir: Optional[str], body: str) -> dict[str, Any]:
+    """Compile one global-writer body against the canonical citation registry."""
+    del output_dir
+    raw = str(body or "").strip()
+    ref_match = _REF_HEADING_RE.search(raw)
+    body_text = raw[: ref_match.start()] if ref_match else raw
+    registry = build_reference_registry()
+    by_number = {int(entry["n"]): entry for entry in registry}
+    cited_numbers = list(dict.fromkeys(int(match.group(1)) for match in _CITE_TOKEN_RE.finditer(body_text)))
+    invalid = [number for number in cited_numbers if number not in by_number]
+
+    def remove_invalid(match: re.Match) -> str:
+        return match.group(0) if int(match.group(1)) in by_number else ""
+
+    cleaned_body = sanitize_report(_CITE_TOKEN_RE.sub(remove_invalid, body_text)).rstrip()
+    valid_numbers = [number for number in cited_numbers if number in by_number]
+    cited_source_ids = {by_number[number]["source_id"] for number in valid_numbers}
+    is_chinese = bool(re.search(r"[\u4e00-\u9fff]", cleaned_body))
+    references = _render_references(
+        registry,
+        cited_source_ids,
+        "参考文献" if is_chinese else "References",
+    )
+    report = f"{cleaned_body}\n\n{references}\n" if cleaned_body else ""
+    if valid_numbers:
+        try:
+            _persist_sections(
+                cleaned_body,
+                {number: number for number in valid_numbers},
+                by_number,
+            )
+        except Exception:  # noqa: BLE001 - graph traceability is best effort
+            logger.warning("Global report section persistence failed", exc_info=True)
+    hard_issues = [f"citation has no URL-backed reference: [{number}]" for number in invalid]
+    hard_issues.extend(validate_delivery_invariants(report))
+    hard_issues.extend(validate_report_quality(report))
+    return {
+        "report": report,
+        "hard_issues": list(dict.fromkeys(hard_issues)),
+        "soft_issues": [],
+        "cited_numbers": valid_numbers,
+    }
+
+
 def _reference_entries(report_text: str) -> dict[int, str]:
     """Return numbered URL-bearing reference entries from report Markdown."""
     result: dict[int, str] = {}

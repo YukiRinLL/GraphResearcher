@@ -1,0 +1,177 @@
+"""Single-pass, full-context Reporter workflow with deterministic compilation."""
+
+from __future__ import annotations
+
+import json
+import logging
+import re
+from pathlib import Path
+from typing import Any
+
+import config
+from tools import graph_manager_tools, report_tools, research_state
+
+logger = logging.getLogger(__name__)
+_MAX_ATTEMPTS = 3
+
+
+def _response_text(response: Any) -> str:
+    content = getattr(response, "content", response)
+    if isinstance(content, list):
+        return "".join(part.get("text", "") if isinstance(part, dict) else str(part) for part in content)
+    return str(content or "")
+
+
+def _write_artifact(root: Path, name: str, value: Any) -> None:
+    root.mkdir(parents=True, exist_ok=True)
+    path = root / name
+    if isinstance(value, str):
+        path.write_text(value, encoding="utf-8")
+    else:
+        path.write_text(json.dumps(value, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def _estimate_tokens(value: Any) -> int:
+    return max(1, len(json.dumps(value, ensure_ascii=False)) // 4)
+
+
+def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
+    findings: list[dict[str, Any]] = []
+    used_numbers: set[int] = set()
+    budget = config.GR_GLOBAL_PACKET_TOKENS * 4
+    used_chars = 0
+    for query in context.get("queries") or []:
+        query_ref = str(query.get("ref") or "").strip()
+        if not query_ref:
+            continue
+        offset = 0
+        query_items: list[dict[str, Any]] = []
+        while True:
+            page = report_tools.get_report_evidence(query_ref, offset=offset, limit=100)
+            if page.get("error"):
+                break
+            for item in page.get("items") or []:
+                compact = {
+                    "id": item.get("id"),
+                    "type": item.get("type"),
+                    "text": item.get("text"),
+                    "confidence": item.get("confidence"),
+                    "qualifiers": item.get("qualifiers") or [],
+                    "limitations": item.get("limitations") or [],
+                    "citations": item.get("citations") or [],
+                    "sources": item.get("sources") or [],
+                    "claim_relations": item.get("claim_relations") or [],
+                    "evidence_relations": item.get("evidence_relations") or [],
+                }
+                item_chars = len(json.dumps(compact, ensure_ascii=False))
+                if used_chars + item_chars > budget:
+                    break
+                query_items.append(compact)
+                used_chars += item_chars
+                used_numbers.update(int(number) for number in compact["citations"])
+            if used_chars >= budget or page.get("next_offset") is None:
+                break
+            offset = int(page["next_offset"])
+        if query_items:
+            findings.append({"query": query, "items": query_items})
+        if used_chars >= budget:
+            break
+
+    registry = [
+        entry for entry in report_tools.build_reference_registry()
+        if int(entry["n"]) in used_numbers
+    ]
+    packet = {
+        "research_brief": {
+            "user_request": context.get("user_request", ""),
+            "language": context.get("language"),
+            "queries": context.get("queries") or [],
+            "objectives": context.get("objectives") or [],
+        },
+        "required_data_points": [
+            criterion
+            for objective in context.get("objectives") or []
+            for criterion in objective.get("acceptance_criteria") or []
+        ],
+        "required_structure": context.get("required_structure") or [],
+        "findings": findings,
+        "conflicts": context.get("disclosed_conflicts") or [],
+        "citation_registry": registry,
+        "budget": {"tokens": config.GR_GLOBAL_PACKET_TOKENS, "estimated_tokens": _estimate_tokens(findings)},
+    }
+    return packet
+
+
+def _prompt(packet: dict[str, Any], feedback: str = "") -> str:
+    template = config.reporter_global_system_prompt
+    replacements = {
+        "user_request": packet["research_brief"].get("user_request", ""),
+        "research_brief": json.dumps(packet["research_brief"], ensure_ascii=False),
+        "findings": json.dumps(packet["findings"], ensure_ascii=False),
+        "conflicts": json.dumps(packet["conflicts"], ensure_ascii=False),
+        "citation_registry": json.dumps(packet["citation_registry"], ensure_ascii=False),
+        "retry_feedback": feedback,
+    }
+    return re.sub(r"<(user_request|research_brief|findings|conflicts|citation_registry|retry_feedback)>", lambda m: replacements[m.group(1)], template)
+
+
+def _authorize() -> dict[str, Any]:
+    goal = research_state.get_goal()
+    current = goal.get("research_state")
+    if current not in research_state.REPORT_ALLOWED and current != research_state.REPORTING:
+        return {"error": f"Reporter is not authorized from research state {current!r}"}
+    if current != research_state.REPORTING:
+        research_state.update_goal({"research_state": research_state.REPORTING, "reporting_from_state": current})
+    return {"error": "", "user_request": str(goal.get("request") or "")}
+
+
+def run_global_report_workflow() -> dict[str, Any]:
+    """Run global Reporter writing and return a compact delivery result."""
+    auth = _authorize()
+    if auth.get("error"):
+        return {"success": False, "delivered": False, "validated": False, "error": auth["error"]}
+    context = graph_manager_tools.export_report_context()
+    if not context.get("user_request"):
+        return {"success": False, "delivered": False, "validated": False, "error": "Reporter context has no user request"}
+    packet = _build_packet(context)
+    artifact_dir = Path(graph_manager_tools._cache_dir or ".") / ".global_reporter"
+    _write_artifact(artifact_dir, "packet.json", packet)
+    feedback = ""
+    last_result: dict[str, Any] = {}
+    for attempt in range(1, _MAX_ATTEMPTS + 1):
+        try:
+            graph_manager_tools.increment_reporter_model_call_count()
+            response = config.reporter_global_model.bind(
+                max_tokens=config.GR_GLOBAL_WRITER_OUTPUT_TOKENS
+            ).invoke(_prompt(packet, feedback))
+            raw_report = _response_text(response).strip()
+            if attempt == 1:
+                _write_artifact(artifact_dir, "raw_report.md", raw_report)
+            _write_artifact(artifact_dir, f"attempt_{attempt}.md", raw_report)
+            last_result = graph_manager_tools.deliver_global_report(raw_report)
+            _write_artifact(artifact_dir, "validation.json", last_result)
+            if last_result.get("delivered"):
+                _write_artifact(artifact_dir, "compiled_report.md", last_result.get("report", ""))
+                return {
+                    "success": True,
+                    "delivered": True,
+                    "validated": bool(last_result.get("validated")),
+                    "review_status": "global_compiler",
+                    "attempts": attempt,
+                    "error": None,
+                }
+            feedback = "\n".join(
+                str(item.get("message") or item) for item in last_result.get("issues") or []
+            )[:3000]
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Global Reporter attempt %s failed", attempt, exc_info=True)
+            feedback = f"Writer invocation failed: {exc}"[:2000]
+            _write_artifact(artifact_dir, f"attempt_{attempt}.error.txt", feedback)
+    return {
+        "success": False,
+        "delivered": False,
+        "validated": False,
+        "review_status": "global_compiler_failed",
+        "attempts": _MAX_ATTEMPTS,
+        "error": str(last_result.get("issues") or "Global Reporter exhausted retries"),
+    }

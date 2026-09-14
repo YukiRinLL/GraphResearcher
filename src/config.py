@@ -47,6 +47,24 @@ REPORTER_SAFETY_TOKENS = _positive_int_from_env("GR_REPORTER_SAFETY_TOKENS", 1_0
 REPORTER_SOURCE_TOKENS = _positive_int_from_env("GR_REPORTER_SOURCE_TOKENS", 2_000)
 REPORTER_TOKENIZER = os.environ.get("GR_REPORTER_TOKENIZER", "").strip()
 
+REPORTER_GLOBAL_MODEL = os.environ.get("GR_REPORTER_GLOBAL_MODEL", "").strip() or DEFAULT_MODEL
+GR_GLOBAL_WRITER_OUTPUT_TOKENS = _positive_int_from_env(
+    "GR_GLOBAL_WRITER_OUTPUT_TOKENS", 16_384
+)
+GR_GLOBAL_PACKET_TOKENS = _positive_int_from_env("GR_GLOBAL_PACKET_TOKENS", 48_000)
+GR_REPORTER_FALLBACK = os.environ.get("GR_REPORTER_FALLBACK", "1").strip().lower() not in {
+    "0",
+    "false",
+    "no",
+    "off",
+}
+
+
+def reporter_mode() -> str:
+    """Return the selected Reporter implementation."""
+    mode = os.environ.get("GR_REPORTER_MODE", "global").strip().lower()
+    return mode if mode in {"global", "chapters"} else "global"
+
 # Max number of concurrent searcher dispatches per superstep. Each searcher
 # call involves a Tavily search + analyzer LLM pass (10-30s of I/O); running
 # multiple in parallel via ThreadPoolExecutor cuts wall-clock time for the
@@ -132,6 +150,7 @@ def load_prompt(name: str) -> str:
 reporter_system_prompt = load_prompt("reporter")
 reporter_outline_prompt = load_prompt("reporter_outline")
 reporter_polish_prompt = load_prompt("reporter_polish")
+reporter_global_system_prompt = load_prompt("reporter_global")
 report_reviewer_system_prompt = load_prompt("report_reviewer")
 analyzer_system_prompt = load_prompt("analyzer")
 
@@ -164,6 +183,19 @@ def _reporter_polish_model() -> ChatOpenAI:
     return _model_cache["reporter_polish"]
 
 
+def _reporter_global_model() -> ChatOpenAI:
+    if "reporter_global" not in _model_cache:
+        timeout = float(os.environ.get("GR_REPORTER_GLOBAL_TIMEOUT", "600"))
+        if timeout <= 0:
+            raise ValueError("GR_REPORTER_GLOBAL_TIMEOUT must be positive")
+        _model_cache["reporter_global"] = build_model(
+            model_name=REPORTER_GLOBAL_MODEL,
+            temperature=0.2,
+            timeout=timeout,
+        )
+    return _model_cache["reporter_global"]
+
+
 def _report_reviewer_model() -> ChatOpenAI:
     if "report_reviewer" not in _model_cache:
         _model_cache["report_reviewer"] = build_model(temperature=0.0)
@@ -183,6 +215,8 @@ def __getattr__(name: str) -> ChatOpenAI:
         return _reporter_model()
     if name == "reporter_polish_model":
         return _reporter_polish_model()
+    if name == "reporter_global_model":
+        return _reporter_global_model()
     if name == "report_reviewer_model":
         return _report_reviewer_model()
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
