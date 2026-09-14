@@ -599,9 +599,18 @@ def report_node(state: dict) -> dict:
         if config.reporter_mode() == "global":
             result = run_global_report_workflow()
             if not result.get("success") and config.GR_REPORTER_FALLBACK:
-                logger.warning("Global Reporter failed; falling back to chapter Reporter: %s", result.get("error"))
+                logger.warning(
+                    "[reporter.fallback] global_failed attempts=%s error=%s",
+                    result.get("attempts"),
+                    str(result.get("error"))[:500],
+                )
                 result = run_report_workflow(runnable_config=get_config())
                 result["fallback_reason"] = "global Reporter failed"
+                logger.info(
+                    "[reporter.fallback] chapter_completed success=%s validated=%s",
+                    result.get("success"),
+                    result.get("validated"),
+                )
         else:
             result = run_report_workflow(runnable_config=get_config())
     except Exception as exc:  # noqa: BLE001 — Reporter 异常不应导致无输出

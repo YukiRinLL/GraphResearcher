@@ -31,12 +31,26 @@ def _write_artifact(root: Path, name: str, value: Any) -> None:
         path.write_text(json.dumps(value, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+def _try_write_artifact(root: Path, name: str, value: Any) -> None:
+    """Persist diagnostics without making artifact storage a report failure."""
+    try:
+        _write_artifact(root, name, value)
+    except OSError:
+        logger.warning(
+            "[reporter.global] artifact_write_failed path=%s error_type=%s",
+            root / name,
+            "OSError",
+            exc_info=True,
+        )
+
+
 def _estimate_tokens(value: Any) -> int:
     return max(1, len(json.dumps(value, ensure_ascii=False)) // 4)
 
 
 def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
     findings: list[dict[str, Any]] = []
+    export_errors: list[dict[str, Any]] = []
     used_numbers: set[int] = set()
     budget = config.GR_GLOBAL_PACKET_TOKENS * 4
     used_chars = 0
@@ -49,6 +63,14 @@ def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
         while True:
             page = report_tools.get_report_evidence(query_ref, offset=offset, limit=100)
             if page.get("error"):
+                error = str(page["error"])
+                export_errors.append({"query": query_ref, "offset": offset, "error": error})
+                logger.warning(
+                    "[reporter.global] evidence_export_failed query=%s offset=%s error=%s",
+                    query_ref,
+                    offset,
+                    error[:500],
+                )
                 break
             for item in page.get("items") or []:
                 compact = {
@@ -97,8 +119,19 @@ def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
         "findings": findings,
         "conflicts": context.get("disclosed_conflicts") or [],
         "citation_registry": registry,
+        "export_errors": export_errors,
         "budget": {"tokens": config.GR_GLOBAL_PACKET_TOKENS, "estimated_tokens": _estimate_tokens(findings)},
     }
+    logger.info(
+        "[reporter.global] packet_built queries=%s findings=%s estimated_tokens=%s "
+        "budget_tokens=%s citations=%s export_errors=%s",
+        len(context.get("queries") or []),
+        sum(len(group["items"]) for group in findings),
+        packet["budget"]["estimated_tokens"],
+        config.GR_GLOBAL_PACKET_TOKENS,
+        len(registry),
+        len(export_errors),
+    )
     return packet
 
 
@@ -135,23 +168,34 @@ def run_global_report_workflow() -> dict[str, Any]:
         return {"success": False, "delivered": False, "validated": False, "error": "Reporter context has no user request"}
     packet = _build_packet(context)
     artifact_dir = Path(graph_manager_tools._cache_dir or ".") / ".global_reporter"
-    _write_artifact(artifact_dir, "packet.json", packet)
+    _try_write_artifact(artifact_dir, "packet.json", packet)
     feedback = ""
     last_result: dict[str, Any] = {}
     for attempt in range(1, _MAX_ATTEMPTS + 1):
         try:
+            logger.info(
+                "[reporter.global] writer_attempt_started attempt=%s/%s",
+                attempt,
+                _MAX_ATTEMPTS,
+            )
             graph_manager_tools.increment_reporter_model_call_count()
             response = config.reporter_global_model.bind(
                 max_tokens=config.GR_GLOBAL_WRITER_OUTPUT_TOKENS
             ).invoke(_prompt(packet, feedback))
             raw_report = _response_text(response).strip()
             if attempt == 1:
-                _write_artifact(artifact_dir, "raw_report.md", raw_report)
-            _write_artifact(artifact_dir, f"attempt_{attempt}.md", raw_report)
+                _try_write_artifact(artifact_dir, "raw_report.md", raw_report)
+            _try_write_artifact(artifact_dir, f"attempt_{attempt}.md", raw_report)
             last_result = graph_manager_tools.deliver_global_report(raw_report)
-            _write_artifact(artifact_dir, "validation.json", last_result)
+            _try_write_artifact(artifact_dir, "validation.json", last_result)
             if last_result.get("delivered"):
-                _write_artifact(artifact_dir, "compiled_report.md", last_result.get("report", ""))
+                logger.info(
+                    "[reporter.global] delivered attempt=%s chars=%s citations=%s",
+                    attempt,
+                    len(last_result.get("report") or ""),
+                    len(last_result.get("cited_numbers") or []),
+                )
+                _try_write_artifact(artifact_dir, "compiled_report.md", last_result.get("report", ""))
                 return {
                     "success": True,
                     "delivered": True,
@@ -160,13 +204,29 @@ def run_global_report_workflow() -> dict[str, Any]:
                     "attempts": attempt,
                     "error": None,
                 }
+            logger.warning(
+                "[reporter.global] compilation_rejected attempt=%s issues=%s",
+                attempt,
+                len(last_result.get("issues") or []),
+            )
             feedback = "\n".join(
                 str(item.get("message") or item) for item in last_result.get("issues") or []
             )[:3000]
         except Exception as exc:  # noqa: BLE001
-            logger.warning("Global Reporter attempt %s failed", attempt, exc_info=True)
+            logger.warning(
+                "[reporter.global] attempt_failed attempt=%s error_type=%s error=%s",
+                attempt,
+                type(exc).__name__,
+                str(exc)[:500],
+                exc_info=True,
+            )
             feedback = f"Writer invocation failed: {exc}"[:2000]
-            _write_artifact(artifact_dir, f"attempt_{attempt}.error.txt", feedback)
+            _try_write_artifact(artifact_dir, f"attempt_{attempt}.error.txt", feedback)
+    logger.error(
+        "[reporter.global] exhausted_retries attempts=%s last_issues=%s",
+        _MAX_ATTEMPTS,
+        len(last_result.get("issues") or []),
+    )
     return {
         "success": False,
         "delivered": False,

@@ -593,6 +593,17 @@ def deliver_global_report(
         "issues": all_issues,
         "cited_numbers": compiled.get("cited_numbers", []),
     }
+    if compiled.get("hard_issues"):
+        logger.warning(
+            "[reporter.global] compilation_rejected issues=%s",
+            len(compiled["hard_issues"]),
+        )
+    else:
+        logger.info(
+            "[reporter.global] compilation_succeeded chars=%s citations=%s",
+            len(final["report"]),
+            len(final["cited_numbers"]),
+        )
     _record_report_result(final, finalized=bool(final["delivered"]))
     return final
 
