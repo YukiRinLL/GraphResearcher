@@ -90,7 +90,16 @@ def main() -> None:
 
     context = MemoryManager(model=object()).export_report_context()
 
-    assert set(context) == {"user_request", "language", "queries", "disclosed_conflicts"}
+    assert set(context) == {
+        "user_request",
+        "research_goal",
+        "language",
+        "objectives",
+        "queries",
+        "disclosed_conflicts",
+    }
+    assert context["research_goal"] == goal["request"]
+    assert context["objectives"] == []
     assert context["language"] == goal["language"]
     assert context["user_request"] == goal["request"]
     assert context["queries"] == [

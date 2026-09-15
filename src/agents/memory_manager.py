@@ -3396,11 +3396,35 @@ class MemoryManager:
             ),
             key=_query_handle_sort_key,
         )
+        objectives = [
+            {
+                "objective_key": objective.get("objective_key"),
+                "description": objective.get("description") or objective.get("text") or "",
+                "requirement": objective.get("requirement") or "should",
+                "acceptance_criteria": [
+                    criterion
+                    for criterion in objective.get("acceptance_criteria") or []
+                    if isinstance(criterion, str) and criterion.strip()
+                ],
+                "status": objective.get("status") or "open",
+                "coverage": float(objective.get("coverage") or 0.0),
+                "confidence": float(objective.get("confidence") or 0.0),
+                "unmet_acceptance_criteria": [
+                    criterion
+                    for criterion in objective.get("unmet_acceptance_criteria") or []
+                    if isinstance(criterion, str) and criterion.strip()
+                ],
+                "supported_boundary": objective.get("supported_boundary") or "",
+            }
+            for objective in self.get_research_objectives(goal_id)
+            if objective.get("objective_key")
+        ]
         disclosed_conflicts = report_tools.get_disclosed_conflicts()
         return {
             "user_request": request_text,
             "research_goal": goal.get("research_goal") or request_text,
             "language": goal.get("language"),
+            "objectives": objectives,
             "queries": [
                 {
                     "ref": query.get("handle"),

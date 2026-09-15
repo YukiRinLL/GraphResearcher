@@ -97,6 +97,7 @@ def main():
     try:
         report_context = MemoryManager(model=object()).export_report_context()
         assert not GRAPH_ID_RE.search(json.dumps(report_context, ensure_ascii=False)), report_context
+        assert report_context["objectives"] == []
         assert report_context["queries"] == [
             {"ref": "q1", "text": "产品", "supported_topics": ["产品与应用"]},
             {"ref": "q2", "text": "融资", "supported_topics": ["融资进展"]},
