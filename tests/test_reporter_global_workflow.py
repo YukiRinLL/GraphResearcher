@@ -34,6 +34,18 @@ def test_prompt_contains_my_agent_final_writer_inputs() -> None:
     assert "https://example.com" in prompt
 
 
+def test_task_requirements_extract_explicit_structure() -> None:
+    requirements = workflow._derive_task_requirements(
+        "请分两部分回答：1. 分析机制；2. 给出具体数据。请制作一个对比表，截至2024年。"
+    )
+
+    assert requirements["requires_table"] is True
+    assert requirements["requires_exact_values"] is True
+    assert requirements["has_time_scope"] is True
+    assert len(requirements["explicit_items"]) >= 2
+    assert requirements["language_hint"] == "zh"
+
+
 def test_draft_citations_are_added_to_global_registry() -> None:
     context = {
         "user_request": "request",
@@ -73,6 +85,7 @@ def test_draft_citations_are_added_to_global_registry() -> None:
         packet = workflow._build_packet(context)
 
     assert packet["draft_report"] == "Draft claim.[2]"
+    assert packet["task_requirements"]["language_hint"] == "en"
     assert [entry["n"] for entry in packet["citation_registry"]] == [2]
     del evidence
 

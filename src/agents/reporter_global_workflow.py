@@ -13,6 +13,11 @@ from tools import graph_manager_tools, report_tools, research_state
 
 logger = logging.getLogger(__name__)
 _MAX_ATTEMPTS = 3
+_STRUCTURE_HEADING_RE = re.compile(r"(?m)^\s{0,3}(?:#{1,6}\s+)?(?:part|section|chapter|第[一二三四五六七八九十]+部分|[一二三四五六七八九十]+[、.)])\s*(.+?)\s*$", re.IGNORECASE)
+_NUMBERED_ITEM_RE = re.compile(r"(?m)^\s*(?:\d+[.)]|[一二三四五六七八九十]+[、.)])\s+(.+?)\s*$")
+_TABLE_SIGNAL_RE = re.compile(r"(?:表格|对比表|比较表|summary table|comparison table|table)", re.IGNORECASE)
+_NUMBER_SIGNAL_RE = re.compile(r"(?:具体数据|具体数字|数值|百分比|均值|标准差|specific data|exact number|percentage|mean|standard deviation)", re.IGNORECASE)
+_TIME_SIGNAL_RE = re.compile(r"(?:截至|截止|时间范围|之前|之后|as of|before|after|between|from .*? to)", re.IGNORECASE)
 
 
 def _response_text(response: Any) -> str:
@@ -46,6 +51,21 @@ def _try_write_artifact(root: Path, name: str, value: Any) -> None:
 
 def _estimate_tokens(value: Any) -> int:
     return max(1, len(json.dumps(value, ensure_ascii=False)) // 4)
+
+
+def _derive_task_requirements(request: str) -> dict[str, Any]:
+    """Extract explicit, surface-level delivery requirements from the request."""
+    text = re.sub(r"\s+", " ", str(request or "")).strip()
+    headings = [match.group(1).strip(" ：:") for match in _STRUCTURE_HEADING_RE.finditer(request or "")]
+    numbered_items = [match.group(1).strip() for match in _NUMBERED_ITEM_RE.finditer(request or "")]
+    return {
+        "sections": list(dict.fromkeys(headings))[:20],
+        "explicit_items": list(dict.fromkeys(numbered_items))[:40],
+        "requires_table": bool(_TABLE_SIGNAL_RE.search(text)),
+        "requires_exact_values": bool(_NUMBER_SIGNAL_RE.search(text)),
+        "has_time_scope": bool(_TIME_SIGNAL_RE.search(text)),
+        "language_hint": "zh" if re.search(r"[\u4e00-\u9fff]", text) else "en",
+    }
 
 
 def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
@@ -124,6 +144,7 @@ def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
             for criterion in objective.get("acceptance_criteria") or []
         ],
         "required_structure": context.get("required_structure") or [],
+        "task_requirements": _derive_task_requirements(str(context.get("user_request") or "")),
         "findings": findings,
         "draft_report": draft_report,
         "conflicts": context.get("disclosed_conflicts") or [],
@@ -151,6 +172,7 @@ def _prompt(packet: dict[str, Any], feedback: str = "") -> str:
         "research_brief": packet["research_brief"].get("research_goal") or json.dumps(packet["research_brief"], ensure_ascii=False),
         "required_data_points": json.dumps(packet.get("required_data_points") or [], ensure_ascii=False),
         "required_structure": json.dumps(packet.get("required_structure") or [], ensure_ascii=False),
+        "task_requirements": json.dumps(packet.get("task_requirements") or {}, ensure_ascii=False),
         "findings": json.dumps(packet["findings"], ensure_ascii=False),
         "draft_report": packet.get("draft_report", ""),
         "conflicts": json.dumps(packet["conflicts"], ensure_ascii=False),
@@ -158,7 +180,7 @@ def _prompt(packet: dict[str, Any], feedback: str = "") -> str:
         "retry_feedback": feedback,
     }
     return re.sub(
-        r"<(user_request|research_brief|required_data_points|required_structure|findings|draft_report|conflicts|citation_registry|retry_feedback)>",
+        r"<(user_request|research_brief|required_data_points|required_structure|task_requirements|findings|draft_report|conflicts|citation_registry|retry_feedback)>",
         lambda m: replacements[m.group(1)],
         template,
     )

@@ -60,6 +60,9 @@ Required data points:
 Required structure:
 <required_structure>
 
+Explicit task requirements extracted from the user's request:
+<task_requirements>
+
 Findings:
 <findings>
 
