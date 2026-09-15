@@ -2,7 +2,7 @@
 
 Provides the model factory, prompt loader, and the `system_prompt` / model
 constants that the workflow modules (`workflow.py`, `agents/searcher.py`,
-`agents/reporter_workflow.py`) reference as `config.*`.
+`agents/reporter_global_workflow.py`) reference as `config.*`.
 
 Follows the repo import convention: `src/` is on `sys.path`, so this module
 imports sibling packages with bare names (`prompts.`, not `deep_research.`).
@@ -35,36 +35,11 @@ def _positive_int_from_env(name: str, default: int) -> int:
     return value
 
 
-REPORTER_CHAPTER_CONCURRENCY = _positive_int_from_env(
-    "GR_REPORTER_CHAPTER_CONCURRENCY",
-    3,
-)
-
-# 章节应用预算包含完整输入、输出预留和消息封装安全余量。
-REPORTER_CONTEXT_TOKENS = _positive_int_from_env("GR_REPORTER_CONTEXT_TOKENS", 32_768)
-REPORTER_OUTPUT_TOKENS = _positive_int_from_env("GR_REPORTER_OUTPUT_TOKENS", 8_192)
-REPORTER_SAFETY_TOKENS = _positive_int_from_env("GR_REPORTER_SAFETY_TOKENS", 1_024)
-REPORTER_SOURCE_TOKENS = _positive_int_from_env("GR_REPORTER_SOURCE_TOKENS", 2_000)
-REPORTER_TOKENIZER = os.environ.get("GR_REPORTER_TOKENIZER", "").strip()
-
 REPORTER_GLOBAL_MODEL = os.environ.get("GR_REPORTER_GLOBAL_MODEL", "").strip() or DEFAULT_MODEL
 GR_GLOBAL_WRITER_OUTPUT_TOKENS = _positive_int_from_env(
     "GR_GLOBAL_WRITER_OUTPUT_TOKENS", 40_000
 )
 GR_GLOBAL_PACKET_TOKENS = _positive_int_from_env("GR_GLOBAL_PACKET_TOKENS", 48_000)
-GR_REPORTER_FALLBACK = os.environ.get("GR_REPORTER_FALLBACK", "1").strip().lower() not in {
-    "0",
-    "false",
-    "no",
-    "off",
-}
-
-
-def reporter_mode() -> str:
-    """Return the selected Reporter implementation."""
-    mode = os.environ.get("GR_REPORTER_MODE", "global").strip().lower()
-    return mode if mode in {"global", "chapters"} else "global"
-
 # Max number of concurrent searcher dispatches per superstep. Each searcher
 # call involves a Tavily search + analyzer LLM pass (10-30s of I/O); running
 # multiple in parallel via ThreadPoolExecutor cuts wall-clock time for the
@@ -147,9 +122,6 @@ def load_prompt(name: str) -> str:
 
 
 # System prompts (loaded lazily-at-import; cheap file reads).
-reporter_system_prompt = load_prompt("reporter")
-reporter_outline_prompt = load_prompt("reporter_outline")
-reporter_polish_prompt = load_prompt("reporter_polish")
 reporter_global_system_prompt = load_prompt("reporter_global")
 report_reviewer_system_prompt = load_prompt("report_reviewer")
 analyzer_system_prompt = load_prompt("analyzer")
@@ -163,24 +135,6 @@ def _shared_model() -> ChatOpenAI:
     if "default" not in _model_cache:
         _model_cache["default"] = build_model()
     return _model_cache["default"]
-
-
-def _reporter_model() -> ChatOpenAI:
-    if "reporter" not in _model_cache:
-        _model_cache["reporter"] = build_model(temperature=0.2)
-    return _model_cache["reporter"]
-
-
-def _reporter_polish_model() -> ChatOpenAI:
-    if "reporter_polish" not in _model_cache:
-        timeout = float(os.environ.get("GR_REPORTER_POLISH_TIMEOUT", "600"))
-        if timeout <= 0:
-            raise ValueError("GR_REPORTER_POLISH_TIMEOUT must be positive")
-        _model_cache["reporter_polish"] = build_model(
-            temperature=0.2,
-            timeout=timeout,
-        )
-    return _model_cache["reporter_polish"]
 
 
 def _reporter_global_model() -> ChatOpenAI:
@@ -211,10 +165,6 @@ def __getattr__(name: str) -> ChatOpenAI:
     """
     if name in ("default_model", "searcher_model"):
         return _shared_model()
-    if name == "reporter_model":
-        return _reporter_model()
-    if name == "reporter_polish_model":
-        return _reporter_polish_model()
     if name == "reporter_global_model":
         return _reporter_global_model()
     if name == "report_reviewer_model":

@@ -17,8 +17,8 @@ MemoryManager 的对应方法，无需 LLM 参与调度决策——调度优先�
   兼容（``stream_mode="values"`` 逐 superstep 快照打印新消息）。
 - 每个节点 append 一条 ``AIMessage`` 摘要，便于 CLI 侧观察进度。
 - ``current_action`` 由 ``scheduler_node`` 写入，各动作节点消费后清空。
-- ``report_node`` 调用嵌套的确定性 Reporter StateGraph。模型只生成受 schema
-  约束的大纲和章节候选，不参与报告工具调度。
+- ``report_node`` 调用全局 Reporter。模型负责综合研究 packet，报告工具负责
+  确定性引用编译和交付校验。
 """
 
 from __future__ import annotations
@@ -27,12 +27,10 @@ import logging
 from typing import Annotated, Optional, TypedDict
 
 from langchain_core.messages import AIMessage, HumanMessage
-from langgraph.config import get_config
 from langgraph.graph import END, StateGraph
 from langgraph.graph.message import add_messages
 
 import config
-from agents.reporter_workflow import run_report_workflow
 from agents.reporter_global_workflow import run_global_report_workflow
 from agents.searcher import searcher
 from tools import graph_manager_tools as gmt
@@ -596,30 +594,7 @@ def report_node(state: dict) -> dict:
     """执行嵌套的确定性 Reporter workflow."""
     del state
     try:
-        if config.reporter_mode() == "global":
-            result = run_global_report_workflow()
-            if not result.get("success") and config.GR_REPORTER_FALLBACK:
-                logger.warning(
-                    "[reporter.fallback] global_failed attempts=%s error=%s",
-                    result.get("attempts"),
-                    str(result.get("error"))[:500],
-                )
-                fallback_result = run_report_workflow(runnable_config=get_config())
-                logger.info(
-                    "[reporter.fallback] chapter_completed success=%s validated=%s",
-                    fallback_result.get("success"),
-                    fallback_result.get("validated"),
-                )
-                # Never treat an unvalidated chapter artifact as a successful
-                # replacement for the global report. It may remain available as
-                # a diagnostic salvage artifact, but must not enter benchmark output.
-                if fallback_result.get("success") and fallback_result.get("validated"):
-                    result = fallback_result
-                    result["fallback_reason"] = "global Reporter failed"
-                else:
-                    result["fallback_reason"] = "global Reporter failed; chapter fallback was not validated"
-        else:
-            result = run_report_workflow(runnable_config=get_config())
+        result = run_global_report_workflow()
     except Exception as exc:  # noqa: BLE001 — Reporter 异常不应导致无输出
         logger.exception("Reporter workflow invocation failed")
         return {

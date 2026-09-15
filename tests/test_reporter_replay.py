@@ -65,8 +65,7 @@ def test_replay_passes_langfuse_config_and_flushes():
             observed["langfuse_start"] = kwargs
             return langfuse_run
 
-        def run_report_workflow(*, runnable_config):
-            observed["runnable_config"] = runnable_config
+        def run_global_report_workflow():
             replay.graph_manager_tools._compiled_report = "# Replayed report\n"
             return {
                 "success": True,
@@ -79,16 +78,11 @@ def test_replay_passes_langfuse_config_and_flushes():
 
         with (
             patch.object(replay, "start_langfuse_run", start_langfuse_run),
-            patch.object(replay, "run_report_workflow", run_report_workflow),
+            patch.object(replay, "run_global_report_workflow", run_global_report_workflow),
         ):
             result = replay.run_replay(source_run, output_dir, enable_langfuse=True)
 
         assert observed["langfuse_start"]["output_dir"] == output_dir
-        assert observed["runnable_config"]["callbacks"] == ["langfuse-callback"]
-        assert (
-            observed["runnable_config"]["run_name"] == "graphresearcher.reporter-replay"
-        )
-        assert observed["runnable_config"]["metadata"]["replay_source_run"] == "source"
         assert langfuse_run.flushed
         assert result["langfuse_enabled"]
         assert result["langfuse_session_id"] == "replay-session"
@@ -119,13 +113,12 @@ def test_replay_records_failure_and_flushes():
         _write_source_run(source_run)
         langfuse_run = _FakeLangfuseRun()
 
-        def fail_workflow(*, runnable_config):
-            assert runnable_config["callbacks"] == ["langfuse-callback"]
+        def fail_workflow():
             raise RuntimeError("provider unavailable")
 
         with (
             patch.object(replay, "start_langfuse_run", lambda **_kwargs: langfuse_run),
-            patch.object(replay, "run_report_workflow", fail_workflow),
+            patch.object(replay, "run_global_report_workflow", fail_workflow),
         ):
             try:
                 replay.run_replay(source_run, output_dir, enable_langfuse=True)

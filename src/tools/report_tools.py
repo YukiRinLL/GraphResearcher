@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from memory.graph import EdgeType
-from tools import graph_tools, report_source_context
+from tools import graph_tools
 
 logger = logging.getLogger(__name__)
 
@@ -597,8 +597,6 @@ def _prepare_report_chapter_bundle(
         "section_type": chapter.get("section_type"),
         "query_refs": query_refs,
         "evidence_items": public_items,
-        "_snapshot_binding": report_source_context.capture_binding(),
-        "_source_audit_dir": str(output_dir) if output_dir else None,
         "disclosed_conflicts": [
             {
                 "ref": ref,
