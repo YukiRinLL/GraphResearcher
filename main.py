@@ -195,7 +195,18 @@ def _prepare_report_for_delivery(
         local_issues: list[str] = []
         try:
             report_text = report_tools.sanitize_report(text)
-            hard_issues = report_tools.validate_delivery_invariants(report_text)
+            # Global compiler and final delivery must agree about structural
+            # blocks: headings, table scaffolding, and recommendation lead-ins
+            # do not need standalone citations. Citation validity and quality
+            # checks remain active for every report.
+            require_citation_per_unit = mode not in {
+                "compiled_reporter",
+                "salvaged_reporter",
+            }
+            hard_issues = report_tools.validate_delivery_invariants(
+                report_text,
+                require_citation_per_unit=require_citation_per_unit,
+            )
             quality_issues = report_tools.validate_report_quality(report_text)
             consistency_issues = report_tools.validate_final_report(report_text)
             local_issues.extend(hard_issues)

@@ -158,7 +158,9 @@ def main():
         assert context["language"] == "简体中文"
         assert set(context) == {
             "user_request",
+            "research_goal",
             "language",
+            "objectives",
             "queries",
             "disclosed_conflicts",
         }
@@ -167,6 +169,7 @@ def main():
                 "ref": "q1",
                 "text": "机器人公司的产品与融资",
                 "supported_topics": ["仓储机器人", "融资进展"],
+                "objective_keys": [],
             }
         ]
         assert "status" not in context["queries"][0]
