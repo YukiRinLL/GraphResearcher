@@ -3430,6 +3430,10 @@ class MemoryManager:
                     "ref": query.get("handle"),
                     "text": query.get("text"),
                     "supported_topics": _string_list(query.get("covered")),
+                    "objective_keys": [
+                        key for key in query.get("objective_keys") or []
+                        if isinstance(key, str) and key.strip()
+                    ],
                 }
                 for query in report_queries
             ],

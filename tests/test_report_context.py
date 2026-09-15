@@ -24,6 +24,7 @@ def main() -> None:
             "handle": "q2.10",
             "text": "Later child",
             "importance": "core",
+            "objective_keys": ["objective-1"],
             "successful_search_runs": 1,
             "covered": "not-a-list",
         },
@@ -103,21 +104,28 @@ def main() -> None:
     assert context["language"] == goal["language"]
     assert context["user_request"] == goal["request"]
     assert context["queries"] == [
-        {"ref": "q1", "text": "Root topic", "supported_topics": []},
+        {"ref": "q1", "text": "Root topic", "supported_topics": [], "objective_keys": []},
         {
             "ref": "q2.2",
             "text": "Earlier child",
             "supported_topics": ["First topic", "Second topic"],
+            "objective_keys": [],
         },
-        {"ref": "q2.10", "text": "Later child", "supported_topics": []},
+        {
+            "ref": "q2.10",
+            "text": "Later child",
+            "supported_topics": [],
+            "objective_keys": ["objective-1"],
+        },
         {
             "ref": "legacy",
             "text": "Invalid legacy handle",
             "supported_topics": ["Legacy topic"],
+            "objective_keys": [],
         },
     ]
     assert all(
-        set(query) == {"ref", "text", "supported_topics"}
+        set(query) == {"ref", "text", "supported_topics", "objective_keys"}
         for query in context["queries"]
     )
     assert "importance" not in str(context)

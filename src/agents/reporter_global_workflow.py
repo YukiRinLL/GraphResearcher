@@ -74,7 +74,24 @@ def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
     used_numbers: set[int] = set()
     budget = config.GR_GLOBAL_PACKET_TOKENS * 4
     used_chars = 0
-    for query in context.get("queries") or []:
+    objectives = {
+        objective.get("objective_key"): objective
+        for objective in context.get("objectives") or []
+        if objective.get("objective_key")
+    }
+
+    def query_priority(query: dict[str, Any]) -> tuple[int, float, str]:
+        linked = [objectives[key] for key in query.get("objective_keys") or [] if key in objectives]
+        unmet = any(
+            objective.get("requirement") == "must"
+            and objective.get("status") != "satisfied"
+            for objective in linked
+        )
+        coverage = min((float(objective.get("coverage") or 0.0) for objective in linked), default=1.0)
+        return (0 if unmet else 1, coverage, str(query.get("ref") or ""))
+
+    ordered_queries = sorted(context.get("queries") or [], key=query_priority)
+    for query in ordered_queries:
         query_ref = str(query.get("ref") or "").strip()
         if not query_ref:
             continue

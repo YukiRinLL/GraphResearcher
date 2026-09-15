@@ -90,6 +90,31 @@ def test_draft_citations_are_added_to_global_registry() -> None:
     del evidence
 
 
+def test_packet_prioritizes_unmet_objective_queries() -> None:
+    context = {
+        "user_request": "request",
+        "research_goal": "brief",
+        "queries": [
+            {"ref": "q1", "objective_keys": ["covered"]},
+            {"ref": "q2", "objective_keys": ["unmet"]},
+        ],
+        "objectives": [
+            {"objective_key": "covered", "requirement": "must", "status": "satisfied", "coverage": 1.0},
+            {"objective_key": "unmet", "requirement": "must", "status": "blocked", "coverage": 0.1},
+        ],
+        "disclosed_conflicts": [],
+    }
+
+    with (
+        patch.object(workflow.report_tools, "get_report_evidence", return_value={"items": [], "next_offset": None}),
+        patch.object(workflow.report_tools, "build_cited_evidence_report", return_value=""),
+        patch.object(workflow.report_tools, "build_reference_registry", return_value=[]),
+    ):
+        packet = workflow._build_packet(context)
+
+    assert packet["findings"] == []
+
+
 if __name__ == "__main__":
     test_prompt_contains_my_agent_final_writer_inputs()
     test_draft_citations_are_added_to_global_registry()
