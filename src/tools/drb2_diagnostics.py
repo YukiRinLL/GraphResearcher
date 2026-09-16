@@ -61,6 +61,40 @@ def load_drb2_tasks(path: str | Path) -> list[dict[str, Any]]:
     return tasks
 
 
+def build_drb2_research_plan(task: dict[str, Any]) -> dict[str, Any]:
+    """Convert a projected task into generic Objective/Query planning metadata."""
+    projection = project_drb2_task(task)
+    components = projection["required_components"]
+    sections = projection["target_sections"] or ["Answer"]
+    objectives = [
+        {
+            "objective_key": f"drb2-{index + 1}",
+            "description": component,
+            "requirement": "must",
+            "weight": 1.0,
+            "acceptance_criteria": [component],
+        }
+        for index, component in enumerate(components)
+        if component
+    ]
+    query_specs = [
+        {
+            "text": f"{section}: {task.get('description') or task.get('id') or 'research task'}",
+            "objective_keys": [objective["objective_key"] for objective in objectives],
+            "target_components": components,
+            "target_sections": [section],
+            "analysis_mode": projection["analysis_mode"],
+            "required_evidence_types": ["primary", "secondary"],
+        }
+        for section in sections
+    ]
+    return {
+        **projection,
+        "objectives": objectives,
+        "initial_queries": query_specs,
+    }
+
+
 def diagnose_packet(packet: dict[str, Any]) -> dict[str, Any]:
     """Report delivery gaps without calling the graph, web, or an LLM."""
     objectives = packet.get("research_brief", {}).get("objectives") or []

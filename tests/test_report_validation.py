@@ -252,6 +252,14 @@ def main():
         assert proof["validated"] is True
         assert Path(proof_dir, ".report_commit_proof.json").exists()
 
+    outline = report_tools.build_default_report_outline({
+        "user_request": "request",
+        "research_goal": "goal",
+        "queries": [{"ref": "q1", "text": "Products", "target_sections": ["Products"], "target_components": ["comparison"]}],
+    })
+    assert outline["chapters"][0]["query_refs"] == ["q1"]
+    assert report_tools.validate_component_coverage("## Products\n\ncomparison", ["comparison"]) == []
+
 
     contract_rejection = report_tools.compile_global_writer_report(
         None,
