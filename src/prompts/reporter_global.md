@@ -63,6 +63,9 @@ Required structure:
 Explicit task requirements extracted from the user's request:
 <task_requirements>
 
+Answer contract enforced by the delivery compiler:
+<answer_contract>
+
 Findings:
 <findings>
 

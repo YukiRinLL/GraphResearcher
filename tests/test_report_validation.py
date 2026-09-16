@@ -231,6 +231,20 @@ def main():
     )
     assert any("no valid inline citations" in issue for issue in no_citation["hard_issues"])
 
+    contract_rejection = report_tools.compile_global_writer_report(
+        None,
+        "## Findings\n\nSupported finding [1].",
+        answer_contract={
+            "blocked_sources": ["https://example.com/current"],
+            "required_sections": ["Missing section"],
+            "requires_table": True,
+            "language_hint": "en",
+        },
+    )
+    assert any("blocked source" in issue for issue in contract_rejection["hard_issues"])
+    assert any("required report section" in issue for issue in contract_rejection["hard_issues"])
+    assert any("requires a Markdown table" in issue for issue in contract_rejection["hard_issues"])
+
     uncited_unit = valid.replace("[1]", "", 1)
     assert any("uncited factual paragraph" in issue for issue in report_tools.validate_delivery_invariants(uncited_unit))
 

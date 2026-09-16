@@ -18,6 +18,7 @@ def test_prompt_contains_my_agent_final_writer_inputs() -> None:
         "research_brief": {"user_request": "original request", "research_goal": "research brief"},
         "required_data_points": ["data point"],
         "required_structure": ["comparison"],
+        "answer_contract": {"required_sections": ["comparison"]},
         "findings": [{"query": {"ref": "q1"}, "items": [{"text": "finding"}]}],
         "draft_report": "# Draft\n\nDraft answer.",
         "conflicts": [{"description": "conflict"}],
@@ -31,6 +32,7 @@ def test_prompt_contains_my_agent_final_writer_inputs() -> None:
     assert "# Draft" in prompt
     assert "data point" in prompt
     assert "comparison" in prompt
+    assert "required_sections" in prompt
     assert "https://example.com" in prompt
 
 
@@ -44,6 +46,20 @@ def test_task_requirements_extract_explicit_structure() -> None:
     assert requirements["has_time_scope"] is True
     assert len(requirements["explicit_items"]) >= 2
     assert requirements["language_hint"] == "zh"
+
+
+def test_answer_contract_extracts_blocked_sources_and_structure() -> None:
+    contract = workflow._build_answer_contract({
+        "user_request": (
+            "请制作一个对比表。禁止引用 https://blocked.example/article。"
+            "请分两部分回答：1. 背景；2. 影响。"
+        ),
+        "required_structure": [{"title": "结论"}],
+    })
+
+    assert contract["blocked_sources"] == ["https://blocked.example/article"]
+    assert contract["requires_table"] is True
+    assert "结论" in contract["required_sections"]
 
 
 def test_draft_citations_are_added_to_global_registry() -> None:
@@ -117,5 +133,6 @@ def test_packet_prioritizes_unmet_objective_queries() -> None:
 
 if __name__ == "__main__":
     test_prompt_contains_my_agent_final_writer_inputs()
+    test_answer_contract_extracts_blocked_sources_and_structure()
     test_draft_citations_are_added_to_global_registry()
     print("test_reporter_global_workflow: PASS")
