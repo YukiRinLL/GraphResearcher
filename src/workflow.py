@@ -593,6 +593,12 @@ def convergence_node(state: dict) -> dict:
 def report_node(state: dict) -> dict:
     """执行嵌套的确定性 Reporter workflow."""
     del state
+    analysis_result: dict = {"created": [], "skipped": [], "error": None}
+    try:
+        analysis_result = gmt.run_analysis_pass.func()
+    except Exception as exc:  # noqa: BLE001 - analysis is an optional pre-report pass
+        logger.warning("Analysis pass failed open: %s", exc, exc_info=True)
+        analysis_result["error"] = str(exc)
     try:
         result = run_global_report_workflow()
     except Exception as exc:  # noqa: BLE001 — Reporter 异常不应导致无输出
@@ -613,6 +619,7 @@ def report_node(state: dict) -> dict:
         summary += f", error={result['error']}"
     if result.get("fallback_reason"):
         summary += f", fallback={result['fallback_reason']}"
+    summary += f", analysis_notes={len(analysis_result.get('created') or [])}"
     return {"messages": [AIMessage(content=summary)]}
 
 

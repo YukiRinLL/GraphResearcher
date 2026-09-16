@@ -273,6 +273,7 @@ def main():
                 ],
             )
             assert committed["validated"], committed
+            assert "analysis_refs" in committed["chapters"][0]
             lead_meta = json.loads(Path(temp_dir, ".report_chapters", "chapter_01.meta.json").read_text())
             assert lead_meta["source_ids"] == ["s1"]
 

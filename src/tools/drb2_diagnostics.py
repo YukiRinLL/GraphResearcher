@@ -2,7 +2,63 @@
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
+import re
 from typing import Any
+
+
+_URL_RE = re.compile(r"https?://[^\s<>\"']+")
+
+
+def project_drb2_task(task: dict[str, Any]) -> dict[str, Any]:
+    """Project one DRB II task into generic GraphResearcher delivery metadata."""
+    prompt = str(task.get("prompt") or task.get("description") or "")
+    content = task.get("content") if isinstance(task.get("content"), dict) else {}
+    rubric = content.get("rubric") if isinstance(content.get("rubric"), dict) else task.get("rubric") or {}
+    rubric_values = [
+        str(item)
+        for values in rubric.values()
+        for item in (values if isinstance(values, list) else [values])
+    ]
+    text = " ".join([prompt, *rubric_values])
+    analysis_mode = "none"
+    if re.search(r"compare|comparison|对比|比较", text, re.IGNORECASE):
+        analysis_mode = "compare"
+    elif re.search(r"why|cause|causal|原因|机制|影响", text, re.IGNORECASE):
+        analysis_mode = "causal"
+    elif re.search(r"categor|分类|归类", text, re.IGNORECASE):
+        analysis_mode = "classification"
+    elif re.search(r"analy|分析|synthesi|综合", text, re.IGNORECASE):
+        analysis_mode = "synthesis"
+    blocked_sources = []
+    for match in _URL_RE.finditer(prompt):
+        url = match.group(0).rstrip(".,，。);）")
+        if re.search(r"not allowed|do not|ignore|不得|禁止|不能|不允许", prompt[max(0, match.start() - 180): match.end() + 80], re.IGNORECASE):
+            if url not in blocked_sources:
+                blocked_sources.append(url)
+    return {
+        "task_id": task.get("id"),
+        "language": task.get("language") or ("zh" if re.search(r"[\u4e00-\u9fff]", prompt) else "en"),
+        "analysis_mode": analysis_mode,
+        "required_components": rubric_values,
+        "target_sections": [
+            line.strip(" -*#：:")
+            for line in prompt.splitlines()
+            if re.match(r"^\s*(?:#{1,6}\s+|第[一二三四五六七八九十]+部分|Part\s+\w+)", line, re.IGNORECASE)
+        ],
+        "blocked_sources": blocked_sources,
+        "rubric_dimensions": sorted(rubric),
+    }
+
+
+def load_drb2_tasks(path: str | Path) -> list[dict[str, Any]]:
+    """Load and project a JSONL DRB II task file without touching runtime state."""
+    tasks = []
+    for line in Path(path).read_text(encoding="utf-8").splitlines():
+        if line.strip():
+            tasks.append(project_drb2_task(json.loads(line)))
+    return tasks
 
 
 def diagnose_packet(packet: dict[str, Any]) -> dict[str, Any]:

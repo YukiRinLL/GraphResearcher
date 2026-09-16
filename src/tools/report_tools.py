@@ -849,7 +849,18 @@ def _chapter_candidate_validation(
     allowed_note_query_refs = {
         str(note.get("query_ref")) for note in (prepared_meta.get("research_notes") or [])
     }
+    analysis_required = any(
+        str(note.get("analysis_mode") or "none") != "none"
+        for note in (prepared_meta.get("research_notes") or [])
+    )
     candidate_note_refs = [str(ref) for ref in chapter.get("analysis_refs") or []]
+    if analysis_required and not candidate_note_refs:
+        issues.append(_issue(
+            "missing_analysis_refs",
+            "hard",
+            f"chapter {chapter_id} contains analysis-mode research but declares no analysis_refs",
+            "Declare the AnalysisNote query refs used by this chapter.",
+        ))
     invalid_note_refs = [ref for ref in candidate_note_refs if ref not in allowed_note_query_refs]
     if invalid_note_refs:
         issues.append(_issue(
