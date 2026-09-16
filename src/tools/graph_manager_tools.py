@@ -326,6 +326,12 @@ def create_analysis(text: str, query_id: Optional[str] = None) -> dict:
 
 
 @tool
+def run_analysis_pass(query_ids: Optional[list[str]] = None) -> dict:
+    """Persist citation-bound AnalysisNotes for queries with an analysis mode."""
+    return _mm().run_analysis_pass(query_ids)
+
+
+@tool
 def get_query_evaluation_subgraph(query_id: str) -> dict:
     """Read the evidence owned by one Query, excluding parent and sibling evidence."""
     from tools import graph_tools
@@ -643,6 +649,7 @@ ORCHESTRATOR_TOOLS: list[Any] = [
     expand_gaps,
     assess_convergence,
     create_analysis,
+    run_analysis_pass,
     get_query_evaluation_subgraph,
     get_subgraph,
     get_node,

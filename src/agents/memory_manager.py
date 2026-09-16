@@ -2983,6 +2983,51 @@ class MemoryManager:
         insight_id = graph_tools.create_analysis(text=text, query_id=resolved, analysis_type="insight")
         return {"analysis_id": insight_id, "query_id": resolved}
 
+    def run_analysis_pass(self, query_ids: Optional[list[str]] = None) -> dict:
+        """Persist deterministic AnalysisNotes for queries that request analysis."""
+        from tools import report_tools
+
+        candidates = graph_tools.search_nodes("query", {})
+        wanted = {str(item) for item in query_ids or []}
+        created = []
+        skipped = []
+        for query in candidates:
+            if wanted and str(query.get("id")) not in wanted and str(query.get("handle")) not in wanted:
+                continue
+            mode = str(query.get("analysis_mode") or "none")
+            if mode == "none":
+                skipped.append(query.get("handle") or query.get("id"))
+                continue
+            existing = graph_tools.search_nodes("analysis", {
+                "analysis_type": "research_note",
+                "query_id": query.get("id"),
+            })
+            if existing:
+                skipped.append(query.get("handle") or query.get("id"))
+                continue
+            evidence = report_tools.get_report_evidence(query.get("id"), limit=100)
+            if evidence.get("error"):
+                skipped.append(query.get("handle") or query.get("id"))
+                continue
+            notes = evidence.get("research_notes") or report_tools.build_research_notes(
+                evidence.get("query") or query,
+                evidence.get("items") or [],
+            )
+            note_id = graph_tools.create_analysis(
+                text=json.dumps(notes, ensure_ascii=False, sort_keys=True),
+                query_id=query.get("id"),
+                analysis_type="research_note",
+                note=notes,
+                analysis_mode=mode,
+                evidence_ids=[item.get("id") for item in evidence.get("items") or [] if item.get("id")],
+                status="ready" if not notes.get("gaps") else "gap",
+            )
+            for evidence_id in notes.get("confirmed_facts") or []:
+                if evidence_id:
+                    graph_tools.add_edge(note_id, evidence_id, EdgeType.SUPPORTED_BY)
+            created.append({"analysis_id": note_id, "query_ref": query.get("handle"), "notes": notes})
+        return {"created": created, "skipped": skipped}
+
     def submit_search_result(self, search_run_id: str, query_id: str, evidence_package: dict) -> dict:
         """Write one Searcher's result exactly once and advance its Query."""
         with self._state_lock:

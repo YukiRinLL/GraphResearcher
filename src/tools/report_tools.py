@@ -543,6 +543,9 @@ def commit_report_outline(output_dir: Optional[str], title: str, chapters: list[
             "query_refs": list(dict.fromkeys(query_refs)),
             "section_plan": str(chapter.get("section_plan") or "").strip(),
             "section_type": chapter.get("section_type"),
+            "target_sections": [
+                str(item).strip() for item in chapter.get("target_sections") or [] if str(item).strip()
+            ],
         })
     outline = {"title": str(title).strip() or "Research Report", "chapters": normalized}
     _write_json_file(_outline_path(output_dir), outline)
@@ -624,6 +627,7 @@ def _prepare_report_chapter_bundle(
         *[str(query_ref).strip() for query_ref in extra_query_refs or [] if str(query_ref).strip()],
     ]))
     evidence_items: list[dict[str, Any]] = []
+    research_notes: list[dict[str, Any]] = []
     seen_items: set[str] = set()
     resolved_query_ids: list[str] = []
     for query_ref in query_refs:
@@ -652,6 +656,8 @@ def _prepare_report_chapter_bundle(
                     continue
                 evidence_items.append(item)
                 seen_items.add(item["id"])
+            if page.get("research_notes"):
+                research_notes.append(page["research_notes"])
             if page.get("next_offset") is None:
                 break
             offset = int(page["next_offset"])
@@ -686,6 +692,8 @@ def _prepare_report_chapter_bundle(
         "section_plan": chapter.get("section_plan") or "",
         "section_type": chapter.get("section_type"),
         "query_refs": query_refs,
+        "target_sections": chapter.get("target_sections") or [],
+        "research_notes": research_notes,
         "evidence_items": public_items,
         "disclosed_conflicts": [
             {
@@ -709,6 +717,7 @@ def _prepare_report_chapter_bundle(
         "resolved_query_ids": resolved_query_ids,
         "evidence_ref_map": evidence_ref_map,
         "conflict_ref_map": conflict_ref_map,
+        "research_notes": research_notes,
     }
     _write_json_file(_chapter_meta_path(output_dir, int(chapter_id)), meta)
     return bundle
@@ -837,6 +846,18 @@ def _chapter_candidate_validation(
         for source_id in _source_ids_for_item(item_id, nodes, edges)
         if nodes.get(source_id, {}).get("url") in registry_by_url
     })
+    allowed_note_query_refs = {
+        str(note.get("query_ref")) for note in (prepared_meta.get("research_notes") or [])
+    }
+    candidate_note_refs = [str(ref) for ref in chapter.get("analysis_refs") or []]
+    invalid_note_refs = [ref for ref in candidate_note_refs if ref not in allowed_note_query_refs]
+    if invalid_note_refs:
+        issues.append(_issue(
+            "unknown_analysis_refs",
+            "hard",
+            f"chapter {chapter_id} used unknown analysis refs: {invalid_note_refs}",
+            "Use only AnalysisNote query refs returned by this chapter bundle.",
+        ))
     registry_by_number = {entry["n"]: entry for entry in registry}
     cited_numbers = {int(value) for value in _CITE_TOKEN_RE.findall(str(chapter.get("content") or ""))}
     invalid_citations = sorted(
@@ -858,6 +879,7 @@ def _chapter_candidate_validation(
         "disclosed_conflict_ids": conflict_ids,
         "unknown_evidence_refs": unknown_evidence_refs,
         "unknown_conflict_refs": unknown_conflict_refs,
+        "analysis_refs": candidate_note_refs,
     }
 
 
@@ -910,6 +932,7 @@ def commit_report_chapter_batch(
             "source_ids": validation["source_ids"],
             "evidence_ids": validation["evidence_ids"],
             "disclosed_conflict_ids": validation["disclosed_conflict_ids"],
+            "analysis_refs": validation["analysis_refs"],
             "validation_issues": validation["issues"],
         })
         _write_json_file(_chapter_meta_path(output_dir, chapter_id), meta)
@@ -1137,6 +1160,8 @@ def submit_committed_report(output_dir: Optional[str], *, persist: bool = False)
         and strict.get("report")
         and not strict.get("issues")
     )
+    best_effort, best_effort_issues = _best_effort_report(title, sections)
+    report = str(strict.get("report") or best_effort)
     graph_persisted = False
     if persist and validated:
         persisted = compile_structured_report(title, sections, persist=True)
@@ -1144,8 +1169,12 @@ def submit_committed_report(output_dir: Optional[str], *, persist: bool = False)
             persisted.get("report")
             and not persisted.get("issues")
         )
-    best_effort, best_effort_issues = _best_effort_report(title, sections)
-    report = str(strict.get("report") or best_effort)
+        if graph_persisted:
+            proof = write_commit_proof(output_dir, report, sections)
+        else:
+            proof = {}
+    else:
+        proof = {}
     issues = [*generated_issues, *chapter_issues, *strict.get("issues", []), *best_effort_issues]
     severity = "hard" if any(item.get("severity") == "hard" for item in issues) else ("soft" if issues else "clean")
     return {
@@ -1162,7 +1191,33 @@ def submit_committed_report(output_dir: Optional[str], *, persist: bool = False)
         "salvaged_report": "" if validated else report,
         "graph_persisted": graph_persisted,
         "issues": issues,
+        "commit_proof": proof,
     }
+
+
+def _sha256_text(value: str) -> str:
+    return hashlib.sha256(str(value).encode("utf-8")).hexdigest()
+
+
+def write_commit_proof(
+    output_dir: Optional[str],
+    report: str,
+    sections: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Persist hashes proving which validated artifacts produced the report."""
+    registry = build_reference_registry()
+    chapter_hashes = {
+        str(section.get("title") or index): _sha256_text(str(section.get("content") or ""))
+        for index, section in enumerate(sections, start=1)
+    }
+    proof = {
+        "report_sha256": _sha256_text(report),
+        "chapter_sha256": chapter_hashes,
+        "citation_registry_sha256": _sha256_text(json.dumps(registry, ensure_ascii=False, sort_keys=True)),
+        "validated": True,
+    }
+    _write_json_file(_artifact_root(output_dir) / ".report_commit_proof.json", proof)
+    return proof
 
 
 def assemble_committed_report(output_dir: Optional[str]) -> dict[str, Any]:

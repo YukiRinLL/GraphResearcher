@@ -243,6 +243,16 @@ def main():
     assert notes["confirmed_facts"] == ["e1"]
     assert notes["analysis"]["status"] == "ready"
 
+    with TemporaryDirectory() as proof_dir:
+        proof = report_tools.write_commit_proof(
+            proof_dir,
+            "# Report\n\nFinding [1]",
+            [{"title": "Findings", "content": "Finding [1]"}],
+        )
+        assert proof["validated"] is True
+        assert Path(proof_dir, ".report_commit_proof.json").exists()
+
+
     contract_rejection = report_tools.compile_global_writer_report(
         None,
         "## Findings\n\nSupported finding [1].",
