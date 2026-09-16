@@ -11,6 +11,7 @@ SRC_DIR = Path(__file__).parent.parent / "src"
 sys.path.insert(0, str(SRC_DIR))
 
 from agents import reporter_global_workflow as workflow  # noqa: E402
+from tools.drb2_diagnostics import diagnose_packet  # noqa: E402
 
 
 def test_prompt_contains_my_agent_final_writer_inputs() -> None:
@@ -129,6 +130,52 @@ def test_packet_prioritizes_unmet_objective_queries() -> None:
         packet = workflow._build_packet(context)
 
     assert packet["findings"] == []
+
+
+def test_packet_preserves_research_notes_and_component_buckets() -> None:
+    context = {
+        "user_request": "Compare the products.",
+        "research_goal": "brief",
+        "language": "en",
+        "queries": [{
+            "ref": "q1", "target_components": ["comparison"], "target_sections": ["Products"],
+            "analysis_mode": "compare", "objective_keys": [],
+        }],
+        "objectives": [],
+        "disclosed_conflicts": [],
+    }
+    page = {
+        "items": [{"id": "e1", "type": "Evidence", "text": "Finding", "citations": [1]}],
+        "next_offset": None,
+        "research_notes": {
+            "query_ref": "q1", "analysis_mode": "compare", "confirmed_facts": ["e1"],
+        },
+    }
+    with (
+        patch.object(workflow.report_tools, "get_report_evidence", return_value=page),
+        patch.object(workflow.report_tools, "build_cited_evidence_report", return_value=""),
+        patch.object(workflow.report_tools, "build_reference_registry", return_value=[]),
+    ):
+        packet = workflow._build_packet(context)
+
+    assert packet["research_notes"][0]["analysis_mode"] == "compare"
+    assert len(packet["component_buckets"]["comparison"]) == 1
+
+
+def test_drb2_diagnostics_reports_packet_gaps() -> None:
+    diagnosis = diagnose_packet({
+        "research_brief": {
+            "objectives": [{"objective_key": "analysis", "requirement": "must"}],
+            "queries": [{"ref": "q1", "target_components": []}],
+        },
+        "answer_contract": {"required_sections": ["Analysis"]},
+        "findings": [{"query": {"ref": "q1", "objective_keys": ["other"]}, "items": []}],
+        "research_notes": [{"query_ref": "q1", "gaps": ["missing evidence"]}],
+    })
+
+    assert diagnosis["uncovered_must_objectives"] == ["analysis"]
+    assert diagnosis["untargeted_required_sections"] == ["Analysis"]
+    assert diagnosis["research_note_gaps"] == ["q1"]
 
 
 if __name__ == "__main__":

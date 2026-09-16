@@ -69,6 +69,12 @@ Answer contract enforced by the delivery compiler:
 Findings:
 <findings>
 
+Structured ResearchNotes and analysis handoff:
+<research_notes>
+
+Findings grouped by requested answer component:
+<component_buckets>
+
 Draft report:
 <draft_report>
 

@@ -104,7 +104,11 @@ def main() -> None:
     assert context["language"] == goal["language"]
     assert context["user_request"] == goal["request"]
     assert context["queries"] == [
-        {"ref": "q1", "text": "Root topic", "supported_topics": [], "objective_keys": []},
+        {
+            "ref": "q1", "text": "Root topic", "supported_topics": [], "objective_keys": [],
+            "target_components": [], "target_sections": [], "analysis_mode": "none",
+            "required_evidence_types": [],
+        },
         {
             "ref": "q2.2",
             "text": "Earlier child",
@@ -125,7 +129,10 @@ def main() -> None:
         },
     ]
     assert all(
-        set(query) == {"ref", "text", "supported_topics", "objective_keys"}
+        set(query) == {
+            "ref", "text", "supported_topics", "objective_keys", "target_components",
+            "target_sections", "analysis_mode", "required_evidence_types",
+        }
         for query in context["queries"]
     )
     assert "importance" not in str(context)

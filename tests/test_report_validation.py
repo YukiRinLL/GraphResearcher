@@ -231,6 +231,18 @@ def main():
     )
     assert any("no valid inline citations" in issue for issue in no_citation["hard_issues"])
 
+    notes = report_tools.build_research_notes(
+        {
+            "id": "q1", "handle": "q1", "analysis_mode": "compare",
+            "target_components": ["comparison"], "target_sections": ["Products"],
+            "required_evidence_types": ["primary"],
+        },
+        [{"id": "e1", "type": "Evidence", "source_ids": ["s1"], "limitations": ["limited"]}],
+    )
+    assert notes["analysis_mode"] == "compare"
+    assert notes["confirmed_facts"] == ["e1"]
+    assert notes["analysis"]["status"] == "ready"
+
     contract_rejection = report_tools.compile_global_writer_report(
         None,
         "## Findings\n\nSupported finding [1].",

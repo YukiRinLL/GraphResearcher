@@ -78,6 +78,7 @@ def _build_answer_contract(context: dict[str, Any]) -> dict[str, Any]:
 
 def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
     findings: list[dict[str, Any]] = []
+    research_notes: list[dict[str, Any]] = []
     export_errors: list[dict[str, Any]] = []
     used_numbers: set[int] = set()
     budget = config.GR_GLOBAL_PACKET_TOKENS * 4
@@ -117,6 +118,8 @@ def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
                     error[:500],
                 )
                 break
+            if page.get("research_notes"):
+                research_notes.append(page["research_notes"])
             for item in page.get("items") or []:
                 compact = {
                     "id": item.get("id"),
@@ -129,6 +132,8 @@ def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
                     "sources": item.get("sources") or [],
                     "claim_relations": item.get("claim_relations") or [],
                     "evidence_relations": item.get("evidence_relations") or [],
+                    "target_components": query.get("target_components") or [],
+                    "target_sections": query.get("target_sections") or [],
                 }
                 item_chars = len(json.dumps(compact, ensure_ascii=False))
                 if used_chars + item_chars > budget:
@@ -172,6 +177,18 @@ def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
         "task_requirements": _derive_task_requirements(str(context.get("user_request") or "")),
         "answer_contract": _build_answer_contract(context),
         "findings": findings,
+        "research_notes": research_notes,
+        "component_buckets": {
+            component: [
+                group for group in findings
+                if component in (group.get("query", {}).get("target_components") or [])
+            ]
+            for component in sorted({
+                component
+                for query in context.get("queries") or []
+                for component in query.get("target_components") or []
+            })
+        },
         "draft_report": draft_report,
         "conflicts": context.get("disclosed_conflicts") or [],
         "citation_registry": registry,
@@ -201,13 +218,15 @@ def _prompt(packet: dict[str, Any], feedback: str = "") -> str:
         "task_requirements": json.dumps(packet.get("task_requirements") or {}, ensure_ascii=False),
         "answer_contract": json.dumps(packet.get("answer_contract") or {}, ensure_ascii=False),
         "findings": json.dumps(packet["findings"], ensure_ascii=False),
+        "research_notes": json.dumps(packet.get("research_notes") or [], ensure_ascii=False),
+        "component_buckets": json.dumps(packet.get("component_buckets") or {}, ensure_ascii=False),
         "draft_report": packet.get("draft_report", ""),
         "conflicts": json.dumps(packet["conflicts"], ensure_ascii=False),
         "citation_registry": json.dumps(packet["citation_registry"], ensure_ascii=False),
         "retry_feedback": feedback,
     }
     return re.sub(
-        r"<(user_request|research_brief|required_data_points|required_structure|task_requirements|answer_contract|findings|draft_report|conflicts|citation_registry|retry_feedback)>",
+        r"<(user_request|research_brief|required_data_points|required_structure|task_requirements|answer_contract|findings|research_notes|component_buckets|draft_report|conflicts|citation_registry|retry_feedback)>",
         lambda m: replacements[m.group(1)],
         template,
     )

@@ -170,6 +170,10 @@ def main():
                 "text": "机器人公司的产品与融资",
                 "supported_topics": ["仓储机器人", "融资进展"],
                 "objective_keys": [],
+                "target_components": [],
+                "target_sections": [],
+                "analysis_mode": "none",
+                "required_evidence_types": [],
             }
         ]
         assert "status" not in context["queries"][0]

@@ -454,16 +454,61 @@ def get_report_evidence(query_id: str, offset: int = 0, limit: int = 20) -> dict
     items.sort(key=lambda item: item["id"])
     page = items[offset : offset + limit]
     next_offset = offset + len(page)
+    query_node = evaluation.get("query", {})
+    notes = build_research_notes(query_node, items)
     return {
         "query": {
-            key: evaluation.get("query", {}).get(key)
-            for key in ("id", "handle", "text", "importance")
+            key: query_node.get(key)
+            for key in (
+                "id", "handle", "text", "importance", "target_components",
+                "target_sections", "analysis_mode", "required_evidence_types",
+            )
         },
         "items": page,
         "offset": offset,
         "limit": limit,
         "total": len(items),
         "next_offset": next_offset if next_offset < len(items) else None,
+        "research_notes": notes if offset == 0 else {},
+    }
+
+
+def build_research_notes(query: dict[str, Any], items: list[dict[str, Any]]) -> dict[str, Any]:
+    """Create a deterministic ResearchNotes projection for Reporter handoff."""
+    mode = str(query.get("analysis_mode") or "none")
+    evidence = [item for item in items if str(item.get("type") or "").lower() == "evidence"]
+    claims = [item for item in items if str(item.get("type") or "").lower() == "claim"]
+    source_ids = sorted({source_id for item in items for source_id in item.get("source_ids") or []})
+    limitations = list(dict.fromkeys(
+        str(value).strip()
+        for item in items
+        for value in item.get("limitations") or []
+        if str(value).strip()
+    ))
+    analysis = {
+        "mode": mode,
+        "status": "ready" if items else "gap",
+        "evidence_count": len(evidence),
+        "claim_count": len(claims),
+        "comparison_candidates": [item["id"] for item in items if item.get("claim_relations") or item.get("evidence_relations")],
+        "limitations": limitations,
+        "interpretation_boundary": (
+            "Use evidence to compare or synthesize only where claims share explicit source-backed relations."
+            if mode in {"compare", "synthesis", "classification"}
+            else "Do not infer beyond the cited evidence and stated qualifiers."
+        ),
+    }
+    return {
+        "query_ref": query.get("handle") or query.get("id"),
+        "target_components": query.get("target_components") or [],
+        "target_sections": query.get("target_sections") or [],
+        "analysis_mode": mode,
+        "required_evidence_types": query.get("required_evidence_types") or [],
+        "confirmed_facts": [item["id"] for item in evidence],
+        "claim_refs": [item["id"] for item in claims],
+        "source_ids": source_ids,
+        "analysis": analysis,
+        "gaps": [] if items else ["No citation-ready evidence was exported for this query."],
     }
 
 
