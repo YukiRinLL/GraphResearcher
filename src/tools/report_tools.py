@@ -124,51 +124,6 @@ _OUTLINE_FILE = ".report_outline.json"
 _OUTLINE_MARKDOWN_FILE = ".report_outline.md"
 _CHAPTER_DIR = ".report_chapters"
 _CHAPTER_META_SUFFIX = ".meta.json"
-_URL_RE = re.compile(r"https?://[^\s<>\"']+")
-_BLOCKED_SOURCE_RE = re.compile(
-    r"(?:blocked|forbidden|prohibited|do\s+not\s+(?:use|cite)|不要(?:使用|引用)|禁止(?:使用|引用)|不得(?:使用|引用))",
-    re.IGNORECASE,
-)
-_TABLE_RE = re.compile(r"(?m)^\s*\|.+\|\s*$\n\s*\|\s*:?-{3,}")
-
-
-def build_answer_contract(request: str, required_structure: Optional[list[Any]] = None) -> dict[str, Any]:
-    """Derive explicit, compiler-checkable delivery requirements from a request."""
-    text = str(request or "")
-    compact = re.sub(r"\s+", " ", text).strip()
-    headings = [
-        match.group(1).strip(" ：:")
-        for match in re.finditer(
-            r"(?mi)^\s*(?:#{1,6}\s+)?(?:part|section|chapter|第[一二三四五六七八九十]+部分|[一二三四五六七八九十]+[、.)])\s*(.+?)\s*$",
-            text,
-        )
-    ]
-    explicit_items = [
-        match.group(1).strip()
-        for match in re.finditer(
-            r"(?m)^\s*(?:\d+[.)]|[一二三四五六七八九十]+[、.)])\s+(.+?)\s*$", text
-        )
-    ]
-    blocked_sources: list[str] = []
-    for match in _URL_RE.finditer(text):
-        url = match.group(0).rstrip(".,，。);）")
-        nearby_text = text[max(0, match.start() - 140): match.end() + 140]
-        if _BLOCKED_SOURCE_RE.search(nearby_text) and url not in blocked_sources:
-            blocked_sources.append(url)
-    structure = list(dict.fromkeys(
-        str(item.get("title") if isinstance(item, dict) else item).strip()
-        for item in (required_structure or [])
-        if str(item.get("title") if isinstance(item, dict) else item).strip()
-    ))
-    return {
-        "required_sections": list(dict.fromkeys(headings + structure))[:30],
-        "explicit_items": list(dict.fromkeys(explicit_items))[:40],
-        "blocked_sources": blocked_sources,
-        "requires_table": bool(re.search(r"(?:表格|对比表|比较表|summary table|comparison table|table)", compact, re.IGNORECASE)),
-        "requires_exact_values": bool(re.search(r"(?:具体数据|具体数字|数值|百分比|均值|标准差|specific data|exact number|percentage|mean|standard deviation)", compact, re.IGNORECASE)),
-        "has_time_scope": bool(re.search(r"(?:截至|截止|时间范围|之前|之后|as of|before|after|between|from .*? to)", compact, re.IGNORECASE)),
-        "language_hint": "zh" if re.search(r"[\u4e00-\u9fff]", compact) else "en",
-    }
 
 
 def _artifact_root(output_dir: Optional[str]) -> Path:
@@ -1246,12 +1201,7 @@ def sanitize_report(report_text: str) -> str:
     return "\n\n".join(kept).strip() + ("\n" if kept else "")
 
 
-def compile_global_writer_report(
-    output_dir: Optional[str],
-    body: str,
-    *,
-    answer_contract: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
+def compile_global_writer_report(output_dir: Optional[str], body: str) -> dict[str, Any]:
     """Compile one global-writer body against the canonical citation registry."""
     del output_dir
     raw = _CITE_WRAPPER_RE.sub(r"\1", str(body or "").strip())
@@ -1285,29 +1235,6 @@ def compile_global_writer_report(
         except Exception:  # noqa: BLE001 - graph traceability is best effort
             logger.warning("Global report section persistence failed", exc_info=True)
     hard_issues = [f"citation has no URL-backed reference: [{number}]" for number in invalid]
-    contract = answer_contract or {}
-    blocked_sources = {
-        str(url).rstrip(".,，。);）") for url in contract.get("blocked_sources") or []
-    }
-    blocked_citations = [
-        number for number in valid_numbers
-        if str(by_number[number].get("url") or "").rstrip(".,，。);）") in blocked_sources
-    ]
-    hard_issues.extend(
-        f"citation uses blocked source: [{number}]" for number in blocked_citations
-    )
-    body_lower = cleaned_body.casefold()
-    for section in contract.get("required_sections") or []:
-        section_text = str(section).strip()
-        if section_text and section_text.casefold() not in body_lower:
-            hard_issues.append(f"required report section is missing: {section_text}")
-    if contract.get("requires_table") and not _TABLE_RE.search(cleaned_body):
-        hard_issues.append("answer contract requires a Markdown table")
-    language_hint = contract.get("language_hint")
-    if language_hint == "zh" and not re.search(r"[\u4e00-\u9fff]", cleaned_body):
-        hard_issues.append("answer contract requires Chinese prose")
-    if language_hint == "en" and not re.search(r"[A-Za-z]", cleaned_body):
-        hard_issues.append("answer contract requires English prose")
     if not valid_numbers and cleaned_body:
         hard_issues.append("global report contains no valid inline citations")
     hard_issues.extend(

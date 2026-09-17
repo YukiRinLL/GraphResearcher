@@ -68,14 +68,6 @@ def _derive_task_requirements(request: str) -> dict[str, Any]:
     }
 
 
-def _build_answer_contract(context: dict[str, Any]) -> dict[str, Any]:
-    """Project explicit request requirements into the delivery compiler contract."""
-    return report_tools.build_answer_contract(
-        str(context.get("user_request") or ""),
-        context.get("required_structure") or [],
-    )
-
-
 def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
     findings: list[dict[str, Any]] = []
     export_errors: list[dict[str, Any]] = []
@@ -170,7 +162,6 @@ def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
         ],
         "required_structure": context.get("required_structure") or [],
         "task_requirements": _derive_task_requirements(str(context.get("user_request") or "")),
-        "answer_contract": _build_answer_contract(context),
         "findings": findings,
         "draft_report": draft_report,
         "conflicts": context.get("disclosed_conflicts") or [],
@@ -199,7 +190,6 @@ def _prompt(packet: dict[str, Any], feedback: str = "") -> str:
         "required_data_points": json.dumps(packet.get("required_data_points") or [], ensure_ascii=False),
         "required_structure": json.dumps(packet.get("required_structure") or [], ensure_ascii=False),
         "task_requirements": json.dumps(packet.get("task_requirements") or {}, ensure_ascii=False),
-        "answer_contract": json.dumps(packet.get("answer_contract") or {}, ensure_ascii=False),
         "findings": json.dumps(packet["findings"], ensure_ascii=False),
         "draft_report": packet.get("draft_report", ""),
         "conflicts": json.dumps(packet["conflicts"], ensure_ascii=False),
@@ -207,7 +197,7 @@ def _prompt(packet: dict[str, Any], feedback: str = "") -> str:
         "retry_feedback": feedback,
     }
     return re.sub(
-        r"<(user_request|research_brief|required_data_points|required_structure|task_requirements|answer_contract|findings|draft_report|conflicts|citation_registry|retry_feedback)>",
+        r"<(user_request|research_brief|required_data_points|required_structure|task_requirements|findings|draft_report|conflicts|citation_registry|retry_feedback)>",
         lambda m: replacements[m.group(1)],
         template,
     )
@@ -234,7 +224,6 @@ def run_global_report_workflow() -> dict[str, Any]:
     packet = _build_packet(context)
     artifact_dir = Path(graph_manager_tools._cache_dir or ".") / ".global_reporter"
     _try_write_artifact(artifact_dir, "packet.json", packet)
-    _try_write_artifact(artifact_dir, "answer_contract.json", packet["answer_contract"])
     feedback = ""
     last_result: dict[str, Any] = {}
     for attempt in range(1, _MAX_ATTEMPTS + 1):

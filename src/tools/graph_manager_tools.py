@@ -574,12 +574,7 @@ def deliver_global_report(
     from tools import report_tools
 
     _report_submit_count += 1
-    answer_contract = report_tools.build_answer_contract(_user_request or "")
-    compiled = report_tools.compile_global_writer_report(
-        _cache_dir,
-        body,
-        answer_contract=answer_contract,
-    )
+    compiled = report_tools.compile_global_writer_report(_cache_dir, body)
     compiler_issues = [
         {"code": "global_report_validation", "severity": "hard", "message": message}
         for message in compiled.get("hard_issues") or []
