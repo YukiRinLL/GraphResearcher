@@ -179,7 +179,7 @@ def main():
         assert "status" not in context["queries"][0]
         assert not any(
             key in str(context)
-            for key in ("importance", "unmet_objectives", "budget")
+            for key in ("importance", "unmet_objectives", "budget", "analysis")
         )
 
         evidence = report_tools.get_report_evidence("q1", limit=10)
@@ -194,8 +194,8 @@ def main():
 
         assert callable(graph_manager_tools.commit_report_chapter_batch)
         assert not hasattr(graph_manager_tools.commit_report_chapter_batch, "invoke")
-        assert callable(graph_manager_tools.submit_final_report)
-        assert hasattr(graph_manager_tools.run_analysis_pass, "invoke")
+            assert callable(graph_manager_tools.submit_final_report)
+            assert callable(graph_manager_tools.run_analysis_pass)
 
         with TemporaryDirectory() as temp_dir:
             graph_manager_tools.configure(temp_dir, user_request=request)
@@ -221,7 +221,7 @@ def main():
                 ],
             )
             assert outline["status"] == "ok"
-            stored_outline = json.loads(Path(temp_dir, ".report_outline.json").read_text(encoding="utf-8"))
+            stored_outline = json.loads(Path(temp_dir, ".report_outline.json").read_text())
             assert stored_outline["chapters"][0]["query_refs"] == ["q1"]
 
             prepared = graph_manager_tools.prepare_report_chapter_batch(
@@ -274,7 +274,7 @@ def main():
             )
             assert committed["validated"], committed
             assert "analysis_refs" in committed["chapters"][0]
-            lead_meta = json.loads(Path(temp_dir, ".report_chapters", "chapter_01.meta.json").read_text(encoding="utf-8"))
+            lead_meta = json.loads(Path(temp_dir, ".report_chapters", "chapter_01.meta.json").read_text())
             assert lead_meta["source_ids"] == ["s1"]
 
             reviews = []
@@ -288,7 +288,7 @@ def main():
             assert final["report"].index("该公司开发") < final["report"].index("## 融资")
             assert final["report"].count("## 参考文献") == 1
             assert final["commit_proof"]["validated"] is True
-            proof = json.loads(Path(temp_dir, ".report_commit_proof.json").read_text(encoding="utf-8"))
+            proof = json.loads(Path(temp_dir, ".report_commit_proof.json").read_text())
             assert proof["report_sha256"] == final["commit_proof"]["report_sha256"]
             assert len(created_sections) == 2
             assert created_sections[0]["content"] == "该公司开发仓储机器人。[1]"

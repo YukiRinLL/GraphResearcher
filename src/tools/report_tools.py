@@ -124,7 +124,7 @@ _OUTLINE_FILE = ".report_outline.json"
 _OUTLINE_MARKDOWN_FILE = ".report_outline.md"
 _CHAPTER_DIR = ".report_chapters"
 _CHAPTER_META_SUFFIX = ".meta.json"
-_URL_RE = re.compile(r"https?://[^\s<>\"'，。；：！？、）》】）]+")
+_URL_RE = re.compile(r"https?://[^\s<>\"']+")
 _BLOCKED_SOURCE_RE = re.compile(
     r"(?:blocked|forbidden|prohibited|do\s+not\s+(?:use|cite)|不要(?:使用|引用)|禁止(?:使用|引用)|不得(?:使用|引用))",
     re.IGNORECASE,
@@ -323,30 +323,6 @@ def build_reference_registry() -> list[dict]:
                         referenced_source_ids.add(doc_src_node.get("id"))
             elif node_type == "source":
                 referenced_source_ids.add(src_node_id)
-    # Some lightweight and legacy graphs bind Source directly to Evidence or
-    # Claim without a Statement/Document intermediary. Keep those citations
-    # visible when the evidence itself is otherwise report-ready.
-    for item_type in ("evidence", "claim"):
-        for item in graph_tools.search_nodes(item_type, {}):
-            item_id = item.get("id")
-            if not item_id:
-                continue
-            for edge in graph_tools.get_node_edges(item_id, direction="in") or []:
-                source_id = edge.get("source")
-                source = graph_tools.get_node(source_id) if source_id else {}
-                if source and str(source.get("type") or "").lower() == "source":
-                    referenced_source_ids.add(source_id)
-    all_nodes_by_id = {
-        node.get("id"): node for node in graph_tools.get_all_nodes() if node.get("id")
-    }
-    for edge in graph_tools.get_all_edges() or []:
-        source = all_nodes_by_id.get(edge.get("source"), {})
-        target = all_nodes_by_id.get(edge.get("target"), {})
-        if (
-            str(source.get("type") or "").lower() == "source"
-            and str(target.get("type") or "").lower() in {"evidence", "claim"}
-        ):
-            referenced_source_ids.add(source.get("id"))
     sources = [s for s in all_sources if s.get("id") in referenced_source_ids]
     sources.sort(key=lambda s: s.get("id") or "")
     registry: list[dict] = []
@@ -1015,7 +991,6 @@ def commit_report_chapter_batch(
             "issues": validation["issues"],
             "unknown_evidence_refs": validation["unknown_evidence_refs"],
             "unknown_conflict_refs": validation["unknown_conflict_refs"],
-            "analysis_refs": validation["analysis_refs"],
         })
 
     return {
@@ -2111,14 +2086,6 @@ def compile_structured_report(title: str, sections: list[dict], *, persist: bool
                 "Replace missing or invalid source_ids with valid URL-backed sources for this section.",
                 section_title=section_title,
             ))
-            if disclosed_conflict_ids:
-                issues.append(_issue(
-                    "invalid_conflict_disclosure_binding",
-                    "hard",
-                    f"section {section_title!r} cannot bind disclosed conflicts to its selected sources",
-                    "Use the conflict's supporting URL-backed sources in this section.",
-                    section_title=section_title,
-                ))
             continue
         cited_numbers = {int(value) for value in _CITE_TOKEN_RE.findall(content)}
         registry_by_number = {entry["n"]: entry for entry in registry}
