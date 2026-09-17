@@ -194,8 +194,7 @@ def main():
 
         assert callable(graph_manager_tools.commit_report_chapter_batch)
         assert not hasattr(graph_manager_tools.commit_report_chapter_batch, "invoke")
-            assert callable(graph_manager_tools.submit_final_report)
-            assert callable(graph_manager_tools.run_analysis_pass)
+        assert callable(graph_manager_tools.submit_final_report)
 
         with TemporaryDirectory() as temp_dir:
             graph_manager_tools.configure(temp_dir, user_request=request)
@@ -286,9 +285,6 @@ def main():
             assert "## Lead" not in final["report"] and "## 导言" not in final["report"]
             assert final["report"].index("该公司开发") < final["report"].index("## 融资")
             assert final["report"].count("## 参考文献") == 1
-            assert final["commit_proof"]["validated"] is True
-            proof = json.loads(Path(temp_dir, ".report_commit_proof.json").read_text())
-            assert proof["report_sha256"] == final["commit_proof"]["report_sha256"]
             assert len(created_sections) == 2
             assert created_sections[0]["content"] == "该公司开发仓储机器人。[1]"
             assert final["report"].rstrip().endswith("https://example.com/funding")

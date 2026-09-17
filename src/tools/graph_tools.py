@@ -723,7 +723,7 @@ def create_analysis(
     analysis_type: str = "insight",
     **attributes: Any,
 ) -> dict[str, Any]:
-    if analysis_type not in {"gap", "insight", "objective", "research_note"}:
+    if analysis_type not in {"gap", "insight", "objective"}:
         raise ValueError(f"Invalid analysis_type: {analysis_type!r}")
     if query_id:
         parent_type = get_node(query_id).get("type")
