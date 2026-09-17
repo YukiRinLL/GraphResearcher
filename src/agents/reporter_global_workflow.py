@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import re
+import time
 from pathlib import Path
 from typing import Any
 
@@ -78,6 +79,7 @@ def _build_answer_contract(context: dict[str, Any]) -> dict[str, Any]:
 
 
 def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
+    started_at = time.perf_counter()
     findings: list[dict[str, Any]] = []
     research_notes: list[dict[str, Any]] = []
     export_errors: list[dict[str, Any]] = []
@@ -101,10 +103,16 @@ def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
         return (0 if unmet else 1, coverage, str(query.get("ref") or ""))
 
     ordered_queries = sorted(context.get("queries") or [], key=query_priority)
-    for query in ordered_queries:
+    logger.info(
+        "[reporter.global] packet_build_started queries=%s budget_tokens=%s",
+        len(ordered_queries),
+        config.GR_GLOBAL_PACKET_TOKENS,
+    )
+    for query_index, query in enumerate(ordered_queries, start=1):
         query_ref = str(query.get("ref") or "").strip()
         if not query_ref:
             continue
+        query_started_at = time.perf_counter()
         offset = 0
         query_items: list[dict[str, Any]] = []
         while True:
@@ -147,7 +155,22 @@ def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
             offset = int(page["next_offset"])
         if query_items:
             findings.append({"query": query, "items": query_items})
+        logger.info(
+            "[reporter.global] packet_query_exported index=%s/%s query=%s items=%s chars=%s elapsed=%.2fs",
+            query_index,
+            len(ordered_queries),
+            query_ref,
+            len(query_items),
+            used_chars,
+            time.perf_counter() - query_started_at,
+        )
         if used_chars >= budget:
+            logger.info(
+                "[reporter.global] packet_budget_reached query=%s used_chars=%s budget_chars=%s",
+                query_ref,
+                used_chars,
+                budget,
+            )
             break
 
     draft_report = report_tools.build_cited_evidence_report(
@@ -210,13 +233,14 @@ def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
         packet["atomic_diagnostics"] = diagnose_packet(packet)
     logger.info(
         "[reporter.global] packet_built queries=%s findings=%s estimated_tokens=%s "
-        "budget_tokens=%s citations=%s export_errors=%s",
+        "budget_tokens=%s citations=%s export_errors=%s elapsed=%.2fs",
         len(context.get("queries") or []),
         sum(len(group["items"]) for group in findings),
         packet["budget"]["estimated_tokens"],
         config.GR_GLOBAL_PACKET_TOKENS,
         len(registry),
         len(export_errors),
+        time.perf_counter() - started_at,
     )
     return packet
 
@@ -259,13 +283,30 @@ def _authorize() -> dict[str, Any]:
 
 def run_global_report_workflow() -> dict[str, Any]:
     """Run global Reporter writing and return a compact delivery result."""
+    workflow_started_at = time.perf_counter()
+    logger.info("[reporter.global] workflow_started max_attempts=%s", _MAX_ATTEMPTS)
     auth = _authorize()
     if auth.get("error"):
+        logger.error("[reporter.global] authorization_failed error=%s", auth["error"])
         return {"success": False, "delivered": False, "validated": False, "error": auth["error"]}
+    logger.info("[reporter.global] authorization_succeeded")
     context = graph_manager_tools.export_report_context()
+    logger.info(
+        "[reporter.global] context_exported queries=%s objectives=%s atomic_rubrics=%s conflicts=%s",
+        len(context.get("queries") or []),
+        len(context.get("objectives") or []),
+        len(context.get("atomic_rubrics") or []),
+        len(context.get("disclosed_conflicts") or []),
+    )
     if not context.get("user_request"):
+        logger.error("[reporter.global] context_invalid reason=missing_user_request")
         return {"success": False, "delivered": False, "validated": False, "error": "Reporter context has no user request"}
     packet = _build_packet(context)
+    logger.info(
+        "[reporter.global] packet_ready findings=%s estimated_tokens=%s",
+        sum(len(group["items"]) for group in packet.get("findings") or []),
+        packet.get("budget", {}).get("estimated_tokens", 0),
+    )
     artifact_dir = Path(graph_manager_tools._cache_dir or ".") / ".global_reporter"
     _try_write_artifact(artifact_dir, "packet.json", packet)
     _try_write_artifact(artifact_dir, "answer_contract.json", packet["answer_contract"])
@@ -290,21 +331,46 @@ def run_global_report_workflow() -> dict[str, Any]:
                 _MAX_ATTEMPTS,
             )
             graph_manager_tools.increment_reporter_model_call_count()
+            model_started_at = time.perf_counter()
+            prompt = _prompt(packet, feedback)
+            logger.info(
+                "[reporter.global] writer_invoke_started attempt=%s prompt_chars=%s feedback_chars=%s max_tokens=%s",
+                attempt,
+                len(prompt),
+                len(feedback),
+                config.GR_GLOBAL_WRITER_OUTPUT_TOKENS,
+            )
             response = config.reporter_global_model.bind(
                 max_tokens=config.GR_GLOBAL_WRITER_OUTPUT_TOKENS
-            ).invoke(_prompt(packet, feedback))
+            ).invoke(prompt)
             raw_report = _response_text(response).strip()
+            logger.info(
+                "[reporter.global] writer_invoke_finished attempt=%s report_chars=%s elapsed=%.2fs",
+                attempt,
+                len(raw_report),
+                time.perf_counter() - model_started_at,
+            )
             if attempt == 1:
                 _try_write_artifact(artifact_dir, "raw_report.md", raw_report)
             _try_write_artifact(artifact_dir, f"attempt_{attempt}.md", raw_report)
             last_result = graph_manager_tools.deliver_global_report(raw_report)
+            logger.info(
+                "[reporter.global] report_compilation_finished attempt=%s delivered=%s validated=%s hard_issues=%s soft_issues=%s elapsed=%.2fs",
+                attempt,
+                last_result.get("delivered", False),
+                last_result.get("validated", False),
+                len(last_result.get("issues") or []),
+                len(last_result.get("soft_issues") or []),
+                time.perf_counter() - model_started_at,
+            )
             _try_write_artifact(artifact_dir, "validation.json", last_result)
             if last_result.get("delivered"):
                 logger.info(
-                    "[reporter.global] delivered attempt=%s chars=%s citations=%s",
+                    "[reporter.global] delivered attempt=%s chars=%s citations=%s total_elapsed=%.2fs",
                     attempt,
                     len(last_result.get("report") or ""),
                     len(last_result.get("cited_numbers") or []),
+                    time.perf_counter() - workflow_started_at,
                 )
                 _try_write_artifact(artifact_dir, "compiled_report.md", last_result.get("report", ""))
                 return {
@@ -330,6 +396,12 @@ def run_global_report_workflow() -> dict[str, Any]:
                     str(item.get("message") or item) for item in last_result.get("issues") or []
                 )
             )[:5000]
+            logger.info(
+                "[reporter.global] retry_scheduled attempt=%s next_attempt=%s feedback_chars=%s",
+                attempt,
+                attempt + 1,
+                len(feedback),
+            )
         except Exception as exc:  # noqa: BLE001
             logger.warning(
                 "[reporter.global] attempt_failed attempt=%s error_type=%s error=%s",
@@ -341,9 +413,10 @@ def run_global_report_workflow() -> dict[str, Any]:
             feedback = f"Writer invocation failed: {exc}"[:2000]
             _try_write_artifact(artifact_dir, f"attempt_{attempt}.error.txt", feedback)
     logger.error(
-        "[reporter.global] exhausted_retries attempts=%s last_issues=%s",
+        "[reporter.global] exhausted_retries attempts=%s last_issues=%s total_elapsed=%.2fs",
         _MAX_ATTEMPTS,
         len(last_result.get("issues") or []),
+        time.perf_counter() - workflow_started_at,
     )
     return {
         "success": False,
