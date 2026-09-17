@@ -96,6 +96,8 @@ def main() -> None:
         "research_goal",
         "language",
         "objectives",
+        "rubrics",
+        "blocked_sources",
         "queries",
         "disclosed_conflicts",
     }
@@ -103,29 +105,66 @@ def main() -> None:
     assert context["objectives"] == []
     assert context["language"] == goal["language"]
     assert context["user_request"] == goal["request"]
+    assert context["rubrics"] == []
+    assert context["blocked_sources"] == []
     assert context["queries"] == [
-        {"ref": "q1", "text": "Root topic", "supported_topics": [], "objective_keys": []},
+        {
+            "ref": "q1",
+            "text": "Root topic",
+            "supported_topics": [],
+            "objective_keys": [],
+            "target_components": [],
+            "target_sections": [],
+            "analysis_mode": "none",
+            "required_evidence_types": [],
+            "rubric_ids": [],
+        },
         {
             "ref": "q2.2",
             "text": "Earlier child",
             "supported_topics": ["First topic", "Second topic"],
             "objective_keys": [],
+            "target_components": [],
+            "target_sections": [],
+            "analysis_mode": "none",
+            "required_evidence_types": [],
+            "rubric_ids": [],
         },
         {
             "ref": "q2.10",
             "text": "Later child",
             "supported_topics": [],
             "objective_keys": ["objective-1"],
+            "target_components": [],
+            "target_sections": [],
+            "analysis_mode": "none",
+            "required_evidence_types": [],
+            "rubric_ids": [],
         },
         {
             "ref": "legacy",
             "text": "Invalid legacy handle",
             "supported_topics": ["Legacy topic"],
             "objective_keys": [],
+            "target_components": [],
+            "target_sections": [],
+            "analysis_mode": "none",
+            "required_evidence_types": [],
+            "rubric_ids": [],
         },
     ]
     assert all(
-        set(query) == {"ref", "text", "supported_topics", "objective_keys"}
+        set(query) == {
+            "ref",
+            "text",
+            "supported_topics",
+            "objective_keys",
+            "target_components",
+            "target_sections",
+            "analysis_mode",
+            "required_evidence_types",
+            "rubric_ids",
+        }
         for query in context["queries"]
     )
     assert "importance" not in str(context)

@@ -57,11 +57,12 @@ Research brief and requirements:
 Required data points:
 <required_data_points>
 
-Atomic DRB2 rubrics. Treat each item as an independent acceptance criterion. Do not
-silently merge, omit, or replace a rubric with a broader thematic summary:
-<atomic_rubrics>
+Rubric requirements. Handle each item as a separate checkpoint. Preserve the
+distinctions between requirements, and do not quietly omit or replace a checkpoint
+with a broad summary:
+<rubrics>
 
-Atomic rubric packet diagnostics:
+Atomic diagnostics for rubric coverage:
 <atomic_diagnostics>
 
 Required structure:

@@ -589,16 +589,16 @@ def deliver_global_report(
     answer_contract = report_tools.build_answer_contract(_user_request or "")
     try:
         context = export_report_context()
-        # DRB2 uses the semantic atomic-rubric validator below. Reusing the
-        # legacy exact-string component validator would reject paraphrases.
-        if not context.get("atomic_rubrics"):
+        # Rubric-aware validation permits paraphrases instead of requiring
+        # every requirement to appear as an exact sentence.
+        if not context.get("rubrics"):
             answer_contract["required_components"] = list(dict.fromkeys(
                 component
                 for query in context.get("queries") or []
                 for component in query.get("target_components") or []
                 if str(component).strip()
             ))
-        answer_contract["atomic_rubrics"] = context.get("atomic_rubrics") or []
+        answer_contract["rubrics"] = context.get("rubrics") or []
     except Exception:  # noqa: BLE001 - delivery contract remains fail-open for legacy callers
         logger.warning("Could not enrich delivery contract with Query components", exc_info=True)
     compiled = report_tools.compile_global_writer_report(

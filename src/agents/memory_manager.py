@@ -387,10 +387,10 @@ class MemoryManager:
 
             max_search_rounds = middleware.get_max_search_rounds()
             initial_query_limit = _initial_query_limit(max_search_rounds)
-            if self.run_plan.get("atomic_rubrics"):
-                # DRB2 queries are the atomic acceptance contract; truncating
-                # them by the generic discovery cap silently drops rubric items.
-                initial_query_limit = max(initial_query_limit, len(self.run_plan["atomic_rubrics"]))
+            if self.run_plan.get("rubrics"):
+                # Requirement-linked queries are the acceptance contract;
+                # truncating them by the generic discovery cap drops coverage.
+                initial_query_limit = max(initial_query_limit, len(self.run_plan["rubrics"]))
             parsed = self.run_plan or self._plan_initial_queries(user_request, initial_query_limit)
             excluded_domains = list(dict.fromkeys(filter(None, (
                 _normalize_domain(item) for item in _string_list(parsed.get("excluded_domains"))
@@ -446,7 +446,7 @@ class MemoryManager:
                 last_max_marginal_utility=0.0,
                 state_contract_version=4,
                 report_completeness_score=0.0,
-                atomic_rubrics=self.run_plan.get("atomic_rubrics", []),
+                rubrics=self.run_plan.get("rubrics", []),
                 blocked_sources=self.run_plan.get("blocked_sources", []),
             )
 
@@ -493,7 +493,7 @@ class MemoryManager:
             "scope_mode": graph_tools.get_node(goal_id).get("scope_mode", "bounded"),
             "objectives": objectives,
             "queries": queries,
-            "atomic_rubrics": self.run_plan.get("atomic_rubrics", []),
+            "rubrics": self.run_plan.get("rubrics", []),
             "blocked_sources": self.run_plan.get("blocked_sources", []),
         }
 
@@ -3515,7 +3515,7 @@ class MemoryManager:
             "research_goal": goal.get("research_goal") or request_text,
             "language": goal.get("language"),
             "objectives": objectives,
-            "atomic_rubrics": self.run_plan.get("atomic_rubrics") or goal.get("atomic_rubrics") or [],
+            "rubrics": self.run_plan.get("rubrics") or goal.get("rubrics") or [],
             "blocked_sources": self.run_plan.get("blocked_sources") or goal.get("blocked_sources") or [],
             "queries": [
                 {

@@ -26,7 +26,7 @@ import dotenv
 from tqdm import tqdm
 
 from main import VERBOSITY_PRESETS, resolve_log_options, run
-from tools.drb2_diagnostics import build_drb2_research_plan
+from tools.research_requirements import build_research_plan
 
 dotenv.load_dotenv(".env")
 
@@ -143,7 +143,7 @@ def run_one(
 
     print(f"Processing: idx={idx}, id={task_id}")
     print(f"Detailed artifacts: {run_dir}")
-    run_plan = build_drb2_research_plan(item) if isinstance(item.get("content"), dict) else None
+    run_plan = build_research_plan(item) if isinstance(item.get("content"), dict) else None
     if run_plan and "run_plan" in inspect.signature(run).parameters:
         run(prompt, run_dir, max_rounds, opts, run_plan=run_plan)
     else:

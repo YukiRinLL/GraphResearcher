@@ -11,7 +11,7 @@ from typing import Any
 
 import config
 from tools import graph_manager_tools, report_tools, research_state
-from tools.drb2_diagnostics import diagnose_packet
+from tools.research_requirements import inspect_delivery_packet
 
 logger = logging.getLogger(__name__)
 _MAX_ATTEMPTS = 3
@@ -198,14 +198,14 @@ def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
             "language": context.get("language"),
             "queries": context.get("queries") or [],
             "objectives": context.get("objectives") or [],
-            "atomic_rubrics": context.get("atomic_rubrics") or [],
+            "rubrics": context.get("rubrics") or [],
         },
         "required_data_points": [
             criterion
             for objective in context.get("objectives") or []
             for criterion in objective.get("acceptance_criteria") or []
         ],
-        "atomic_rubrics": context.get("atomic_rubrics") or [],
+        "rubrics": context.get("rubrics") or [],
         "required_structure": context.get("required_structure") or [],
         "task_requirements": _derive_task_requirements(str(context.get("user_request") or "")),
         "answer_contract": answer_contract,
@@ -229,8 +229,8 @@ def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
         "export_errors": export_errors,
         "budget": {"tokens": config.GR_GLOBAL_PACKET_TOKENS, "estimated_tokens": _estimate_tokens(findings)},
     }
-    if packet["atomic_rubrics"]:
-        packet["atomic_diagnostics"] = diagnose_packet(packet)
+    if packet["rubrics"]:
+        packet["atomic_diagnostics"] = inspect_delivery_packet(packet)
     logger.info(
         "[reporter.global] packet_built queries=%s findings=%s estimated_tokens=%s "
         "budget_tokens=%s citations=%s export_errors=%s elapsed=%.2fs",
@@ -251,7 +251,7 @@ def _prompt(packet: dict[str, Any], feedback: str = "") -> str:
         "user_request": packet["research_brief"].get("user_request", ""),
         "research_brief": packet["research_brief"].get("research_goal") or json.dumps(packet["research_brief"], ensure_ascii=False),
         "required_data_points": json.dumps(packet.get("required_data_points") or [], ensure_ascii=False),
-        "atomic_rubrics": json.dumps(packet.get("atomic_rubrics") or [], ensure_ascii=False),
+        "rubrics": json.dumps(packet.get("rubrics") or [], ensure_ascii=False),
         "required_structure": json.dumps(packet.get("required_structure") or [], ensure_ascii=False),
         "task_requirements": json.dumps(packet.get("task_requirements") or {}, ensure_ascii=False),
         "answer_contract": json.dumps(packet.get("answer_contract") or {}, ensure_ascii=False),
@@ -265,7 +265,7 @@ def _prompt(packet: dict[str, Any], feedback: str = "") -> str:
         "retry_feedback": feedback,
     }
     return re.sub(
-        r"<(user_request|research_brief|required_data_points|atomic_rubrics|atomic_diagnostics|required_structure|task_requirements|answer_contract|findings|research_notes|component_buckets|draft_report|conflicts|citation_registry|retry_feedback)>",
+        r"<(user_request|research_brief|required_data_points|rubrics|atomic_diagnostics|required_structure|task_requirements|answer_contract|findings|research_notes|component_buckets|draft_report|conflicts|citation_registry|retry_feedback)>",
         lambda m: replacements[m.group(1)],
         template,
     )
@@ -292,10 +292,10 @@ def run_global_report_workflow() -> dict[str, Any]:
     logger.info("[reporter.global] authorization_succeeded")
     context = graph_manager_tools.export_report_context()
     logger.info(
-        "[reporter.global] context_exported queries=%s objectives=%s atomic_rubrics=%s conflicts=%s",
+        "[reporter.global] context_exported queries=%s objectives=%s rubrics=%s conflicts=%s",
         len(context.get("queries") or []),
         len(context.get("objectives") or []),
-        len(context.get("atomic_rubrics") or []),
+        len(context.get("rubrics") or []),
         len(context.get("disclosed_conflicts") or []),
     )
     if not context.get("user_request"):
@@ -310,7 +310,7 @@ def run_global_report_workflow() -> dict[str, Any]:
     artifact_dir = Path(graph_manager_tools._cache_dir or ".") / ".global_reporter"
     _try_write_artifact(artifact_dir, "packet.json", packet)
     _try_write_artifact(artifact_dir, "answer_contract.json", packet["answer_contract"])
-    _try_write_artifact(artifact_dir, "atomic_rubric_diagnostics.json", packet.get("atomic_diagnostics") or {})
+    _try_write_artifact(artifact_dir, "atomic_diagnostics.json", packet.get("atomic_diagnostics") or {})
     outline_path = Path(graph_manager_tools._cache_dir or ".") / ".report_outline.json"
     if not outline_path.exists():
         outline = report_tools.build_default_report_outline(context)

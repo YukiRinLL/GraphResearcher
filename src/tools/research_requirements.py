@@ -1,4 +1,4 @@
-"""Pure, offline diagnostics for DRB II-style report packet coverage."""
+"""Pure, offline helpers for requirement-aware research planning."""
 
 from __future__ import annotations
 
@@ -43,8 +43,8 @@ def _split_atomic_statement(statement: str) -> list[str]:
     return [part.strip(" ，,：:") for part in parts if part.strip(" ，,：:")]
 
 
-def build_atomic_rubrics(task: dict[str, Any]) -> list[dict[str, Any]]:
-    """Build stable, auditable atomic rubric records from one DRB II task."""
+def build_rubrics(task: dict[str, Any]) -> list[dict[str, Any]]:
+    """Build stable, auditable rubric records from one research task."""
     content = task.get("content") if isinstance(task.get("content"), dict) else {}
     rubric = content.get("rubric") if isinstance(content.get("rubric"), dict) else task.get("rubric") or {}
     prompt = str(task.get("prompt") or task.get("description") or "")
@@ -66,7 +66,7 @@ def build_atomic_rubrics(task: dict[str, Any]) -> list[dict[str, Any]]:
                 answer_type = "analysis"
             elif re.search(r"define|definition|what is|定义|什么是", statement, re.IGNORECASE):
                 answer_type = "definition"
-            rubric_id = f"drb2-{task.get('idx', task.get('id', 'task'))}-{dimension}-{index:03d}-{part_index:02d}"
+            rubric_id = f"task-{task.get('idx', task.get('id', 'task'))}-{dimension}-{index:03d}-{part_index:02d}"
             atomic.append({
                 "rubric_id": rubric_id,
                 "source_dimension": dimension,
@@ -91,8 +91,8 @@ def build_atomic_rubrics(task: dict[str, Any]) -> list[dict[str, Any]]:
     return atomic
 
 
-def project_drb2_task(task: dict[str, Any]) -> dict[str, Any]:
-    """Project one DRB II task into generic GraphResearcher delivery metadata."""
+def project_task_requirements(task: dict[str, Any]) -> dict[str, Any]:
+    """Project one task into generic GraphResearcher delivery metadata."""
     prompt = str(task.get("prompt") or task.get("description") or "")
     content = task.get("content") if isinstance(task.get("content"), dict) else {}
     rubric = content.get("rubric") if isinstance(content.get("rubric"), dict) else task.get("rubric") or {}
@@ -125,23 +125,23 @@ def project_drb2_task(task: dict[str, Any]) -> dict[str, Any]:
         ],
         "blocked_sources": blocked_sources,
         "rubric_dimensions": sorted(rubric),
-        "atomic_rubrics": build_atomic_rubrics(task),
+        "rubrics": build_rubrics(task),
     }
 
 
-def load_drb2_tasks(path: str | Path) -> list[dict[str, Any]]:
-    """Load and project a JSONL DRB II task file without touching runtime state."""
+def load_task_records(path: str | Path) -> list[dict[str, Any]]:
+    """Load and project JSONL task records without touching runtime state."""
     tasks = []
     for line in Path(path).read_text(encoding="utf-8").splitlines():
         if line.strip():
-            tasks.append(project_drb2_task(json.loads(line)))
+            tasks.append(project_task_requirements(json.loads(line)))
     return tasks
 
 
-def build_drb2_research_plan(task: dict[str, Any]) -> dict[str, Any]:
-    """Convert a projected task into generic Objective/Query planning metadata."""
-    projection = project_drb2_task(task)
-    rubrics = projection["atomic_rubrics"]
+def build_research_plan(task: dict[str, Any]) -> dict[str, Any]:
+    """Convert task requirements into Objective/Query planning metadata."""
+    projection = project_task_requirements(task)
+    rubrics = projection["rubrics"]
     components = [rubric["statement"] for rubric in rubrics]
     sections = projection["target_sections"] or ["Answer"]
     groups: dict[tuple[str, str, str], list[dict[str, Any]]] = {}
@@ -172,7 +172,7 @@ def build_drb2_research_plan(task: dict[str, Any]) -> dict[str, Any]:
     # creating one graph Objective per rubric overwhelms the existing scheduler.
     objectives = [
         {
-            "objective_key": f"drb2-{task.get('idx', task.get('id', 'task'))}-group-{index:03d}",
+            "objective_key": f"task-{task.get('idx', task.get('id', 'task'))}-group-{index:03d}",
             "rubric_ids": query["rubric_ids"],
             "description": query["text"],
             "requirement": "must",
@@ -187,11 +187,11 @@ def build_drb2_research_plan(task: dict[str, Any]) -> dict[str, Any]:
         **projection,
         "objectives": objectives,
         "initial_queries": query_specs,
-        "atomic_rubrics": rubrics,
+        "rubrics": rubrics,
     }
 
 
-def diagnose_packet(packet: dict[str, Any]) -> dict[str, Any]:
+def inspect_delivery_packet(packet: dict[str, Any]) -> dict[str, Any]:
     """Report delivery gaps without calling the graph, web, or an LLM."""
     objectives = packet.get("research_brief", {}).get("objectives") or []
     findings = packet.get("findings") or []

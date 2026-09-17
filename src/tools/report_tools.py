@@ -281,8 +281,8 @@ def validate_component_coverage(report_text: str, required_components: list[str]
     ]
 
 
-def validate_atomic_rubrics(report_text: str, rubrics: list[dict[str, Any]]) -> list[str]:
-    """Return hard delivery issues for uncovered DRB2 atomic requirements."""
+def validate_rubrics(report_text: str, rubrics: list[dict[str, Any]]) -> list[str]:
+    """Return delivery diagnostics for rubric requirements not covered in prose."""
     body = re.sub(r"\s+", " ", str(report_text or "")).casefold()
     issues: list[str] = []
     for rubric in rubrics or []:
@@ -1491,9 +1491,9 @@ def compile_global_writer_report(
         cleaned_body,
         contract.get("required_components") or [],
     ))
-    atomic_issues = validate_atomic_rubrics(
+    rubric_issues = validate_rubrics(
         cleaned_body,
-        contract.get("atomic_rubrics") or [],
+        contract.get("rubrics") or [],
     )
     blocked_sources = {
         str(url).rstrip(".,，。);）") for url in contract.get("blocked_sources") or []
@@ -1528,7 +1528,7 @@ def compile_global_writer_report(
         "hard_issues": list(dict.fromkeys(hard_issues)),
         "soft_issues": [
             f"{issue}; writer coverage diagnostic only"
-            for issue in atomic_issues
+            for issue in rubric_issues
         ],
         "cited_numbers": valid_numbers,
     }
