@@ -124,6 +124,52 @@ _OUTLINE_FILE = ".report_outline.json"
 _OUTLINE_MARKDOWN_FILE = ".report_outline.md"
 _CHAPTER_DIR = ".report_chapters"
 _CHAPTER_META_SUFFIX = ".meta.json"
+_URL_RE = re.compile(r"https?://[^\s<>\"'，。；：！？、）》】）]+")
+_BLOCKED_SOURCE_RE = re.compile(
+    r"(?:blocked|forbidden|prohibited|do\s+not\s+(?:use|cite)|不要(?:使用|引用)|禁止(?:使用|引用)|不得(?:使用|引用))",
+    re.IGNORECASE,
+)
+_TABLE_RE = re.compile(r"(?m)^\s*\|.+\|\s*$\n\s*\|\s*:?-{3,}")
+
+
+def build_answer_contract(request: str, required_structure: Optional[list[Any]] = None) -> dict[str, Any]:
+    """Derive explicit, compiler-checkable delivery requirements from a request."""
+    text = str(request or "")
+    compact = re.sub(r"\s+", " ", text).strip()
+    headings = [
+        match.group(1).strip(" ：:")
+        for match in re.finditer(
+            r"(?mi)^\s*(?:#{1,6}\s+)?(?:part|section|chapter|第[一二三四五六七八九十]+部分|[一二三四五六七八九十]+[、.)])\s*(.+?)\s*$",
+            text,
+        )
+    ]
+    explicit_items = [
+        match.group(1).strip()
+        for match in re.finditer(
+            r"(?m)^\s*(?:\d+[.)]|[一二三四五六七八九十]+[、.)])\s+(.+?)\s*$", text
+        )
+    ]
+    blocked_sources: list[str] = []
+    for match in _URL_RE.finditer(text):
+        url = match.group(0).rstrip(".,，。);）")
+        nearby_text = text[max(0, match.start() - 140): match.end() + 140]
+        if _BLOCKED_SOURCE_RE.search(nearby_text) and url not in blocked_sources:
+            blocked_sources.append(url)
+    structure = list(dict.fromkeys(
+        str(item.get("title") if isinstance(item, dict) else item).strip()
+        for item in (required_structure or [])
+        if str(item.get("title") if isinstance(item, dict) else item).strip()
+    ))
+    return {
+        "required_sections": list(dict.fromkeys(headings + structure))[:30],
+        "explicit_items": list(dict.fromkeys(explicit_items))[:40],
+        "required_components": [],
+        "blocked_sources": blocked_sources,
+        "requires_table": bool(re.search(r"(?:表格|对比表|比较表|summary table|comparison table|table)", compact, re.IGNORECASE)),
+        "requires_exact_values": bool(re.search(r"(?:具体数据|具体数字|数值|百分比|均值|标准差|specific data|exact number|percentage|mean|standard deviation)", compact, re.IGNORECASE)),
+        "has_time_scope": bool(re.search(r"(?:截至|截止|时间范围|之前|之后|as of|before|after|between|from .*? to)", compact, re.IGNORECASE)),
+        "language_hint": "zh" if re.search(r"[\u4e00-\u9fff]", compact) else "en",
+    }
 
 
 def _artifact_root(output_dir: Optional[str]) -> Path:
@@ -199,6 +245,70 @@ def _render_outline_markdown(title: str, chapters: list[dict[str, Any]]) -> str:
     return "\n".join(lines).strip() + "\n"
 
 
+def build_default_report_outline(context: dict[str, Any]) -> dict[str, Any]:
+    """Build a deterministic chapter outline from Query delivery metadata."""
+    sections: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for query in context.get("queries") or []:
+        targets = query.get("target_sections") or [query.get("text") or query.get("ref") or "Research findings"]
+        for target in targets:
+            title = str(target).strip()
+            if not title or title.casefold() in seen:
+                continue
+            seen.add(title.casefold())
+            sections.append({
+                "chapter_id": len(sections) + 1,
+                "title": title,
+                "goals": list(query.get("target_components") or []),
+                "query_refs": [query["ref"]] if query.get("ref") else [],
+                "target_sections": [title],
+                "section_plan": "Use only chapter-local evidence and ResearchNotes.",
+                "section_type": "lead" if not sections else "body",
+            })
+    return {
+        "title": str(context.get("research_goal") or context.get("user_request") or "Research Report"),
+        "chapters": sections,
+    }
+
+
+def validate_component_coverage(report_text: str, required_components: list[str]) -> list[str]:
+    """Return deterministic missing-component issues for a report body."""
+    body = str(report_text or "").casefold()
+    return [
+        f"required answer component is missing: {component}"
+        for component in dict.fromkeys(str(item).strip() for item in required_components or [])
+        if component and component.casefold() not in body
+    ]
+
+
+def validate_atomic_rubrics(report_text: str, rubrics: list[dict[str, Any]]) -> list[str]:
+    """Return hard delivery issues for uncovered DRB2 atomic requirements."""
+    body = re.sub(r"\s+", " ", str(report_text or "")).casefold()
+    issues: list[str] = []
+    for rubric in rubrics or []:
+        if not isinstance(rubric, dict):
+            continue
+        statement = str(rubric.get("statement") or "").strip()
+        if not statement:
+            continue
+        # Use content-word overlap rather than exact sentence matching because
+        # the writer is expected to paraphrase rubric statements.
+        words = [word.casefold() for word in re.findall(r"[\w\u4e00-\u9fff]{2,}", statement)]
+        matched = sum(1 for word in dict.fromkeys(words) if word in body)
+        numeric = [str(value).replace(",", "") for value in rubric.get("expected_numbers") or []]
+        normalized_body = body.replace(",", "")
+        missing_numbers = [value for value in numeric if value.casefold() not in normalized_body]
+        threshold = max(1, int(len(set(words)) * 0.45))
+        # A rubric can be paraphrased. Require content overlap only for
+        # non-numeric items; numeric rubrics additionally require every value.
+        if (not numeric and matched < threshold) or missing_numbers:
+            suffix = f"; missing values={missing_numbers}" if missing_numbers else ""
+            issues.append(
+                f"atomic rubric is not explicitly covered: {rubric.get('rubric_id', statement)}{suffix}"
+            )
+    return issues
+
+
 def build_reference_registry() -> list[dict]:
     """Return the canonical, URL-deduped, stably-numbered reference registry.
 
@@ -241,6 +351,30 @@ def build_reference_registry() -> list[dict]:
                         referenced_source_ids.add(doc_src_node.get("id"))
             elif node_type == "source":
                 referenced_source_ids.add(src_node_id)
+    # Some lightweight and legacy graphs bind Source directly to Evidence or
+    # Claim without a Statement/Document intermediary. Keep those citations
+    # visible when the evidence itself is otherwise report-ready.
+    for item_type in ("evidence", "claim"):
+        for item in graph_tools.search_nodes(item_type, {}):
+            item_id = item.get("id")
+            if not item_id:
+                continue
+            for edge in graph_tools.get_node_edges(item_id, direction="in") or []:
+                source_id = edge.get("source")
+                source = graph_tools.get_node(source_id) if source_id else {}
+                if source and str(source.get("type") or "").lower() == "source":
+                    referenced_source_ids.add(source_id)
+    all_nodes_by_id = {
+        node.get("id"): node for node in graph_tools.get_all_nodes() if node.get("id")
+    }
+    for edge in graph_tools.get_all_edges() or []:
+        source = all_nodes_by_id.get(edge.get("source"), {})
+        target = all_nodes_by_id.get(edge.get("target"), {})
+        if (
+            str(source.get("type") or "").lower() == "source"
+            and str(target.get("type") or "").lower() in {"evidence", "claim"}
+        ):
+            referenced_source_ids.add(source.get("id"))
     sources = [s for s in all_sources if s.get("id") in referenced_source_ids]
     sources.sort(key=lambda s: s.get("id") or "")
     registry: list[dict] = []
@@ -409,16 +543,61 @@ def get_report_evidence(query_id: str, offset: int = 0, limit: int = 20) -> dict
     items.sort(key=lambda item: item["id"])
     page = items[offset : offset + limit]
     next_offset = offset + len(page)
+    query_node = evaluation.get("query", {})
+    notes = build_research_notes(query_node, items)
     return {
         "query": {
-            key: evaluation.get("query", {}).get(key)
-            for key in ("id", "handle", "text", "importance")
+            key: query_node.get(key)
+            for key in (
+                "id", "handle", "text", "importance", "target_components",
+                "target_sections", "analysis_mode", "required_evidence_types",
+            )
         },
         "items": page,
         "offset": offset,
         "limit": limit,
         "total": len(items),
         "next_offset": next_offset if next_offset < len(items) else None,
+        "research_notes": notes if offset == 0 else {},
+    }
+
+
+def build_research_notes(query: dict[str, Any], items: list[dict[str, Any]]) -> dict[str, Any]:
+    """Create a deterministic ResearchNotes projection for Reporter handoff."""
+    mode = str(query.get("analysis_mode") or "none")
+    evidence = [item for item in items if str(item.get("type") or "").lower() == "evidence"]
+    claims = [item for item in items if str(item.get("type") or "").lower() == "claim"]
+    source_ids = sorted({source_id for item in items for source_id in item.get("source_ids") or []})
+    limitations = list(dict.fromkeys(
+        str(value).strip()
+        for item in items
+        for value in item.get("limitations") or []
+        if str(value).strip()
+    ))
+    analysis = {
+        "mode": mode,
+        "status": "ready" if items else "gap",
+        "evidence_count": len(evidence),
+        "claim_count": len(claims),
+        "comparison_candidates": [item["id"] for item in items if item.get("claim_relations") or item.get("evidence_relations")],
+        "limitations": limitations,
+        "interpretation_boundary": (
+            "Use evidence to compare or synthesize only where claims share explicit source-backed relations."
+            if mode in {"compare", "synthesis", "classification"}
+            else "Do not infer beyond the cited evidence and stated qualifiers."
+        ),
+    }
+    return {
+        "query_ref": query.get("handle") or query.get("id"),
+        "target_components": query.get("target_components") or [],
+        "target_sections": query.get("target_sections") or [],
+        "analysis_mode": mode,
+        "required_evidence_types": query.get("required_evidence_types") or [],
+        "confirmed_facts": [item["id"] for item in evidence],
+        "claim_refs": [item["id"] for item in claims],
+        "source_ids": source_ids,
+        "analysis": analysis,
+        "gaps": [] if items else ["No citation-ready evidence was exported for this query."],
     }
 
 
@@ -453,6 +632,9 @@ def commit_report_outline(output_dir: Optional[str], title: str, chapters: list[
             "query_refs": list(dict.fromkeys(query_refs)),
             "section_plan": str(chapter.get("section_plan") or "").strip(),
             "section_type": chapter.get("section_type"),
+            "target_sections": [
+                str(item).strip() for item in chapter.get("target_sections") or [] if str(item).strip()
+            ],
         })
     outline = {"title": str(title).strip() or "Research Report", "chapters": normalized}
     _write_json_file(_outline_path(output_dir), outline)
@@ -534,6 +716,7 @@ def _prepare_report_chapter_bundle(
         *[str(query_ref).strip() for query_ref in extra_query_refs or [] if str(query_ref).strip()],
     ]))
     evidence_items: list[dict[str, Any]] = []
+    research_notes: list[dict[str, Any]] = []
     seen_items: set[str] = set()
     resolved_query_ids: list[str] = []
     for query_ref in query_refs:
@@ -562,6 +745,8 @@ def _prepare_report_chapter_bundle(
                     continue
                 evidence_items.append(item)
                 seen_items.add(item["id"])
+            if page.get("research_notes"):
+                research_notes.append(page["research_notes"])
             if page.get("next_offset") is None:
                 break
             offset = int(page["next_offset"])
@@ -596,6 +781,8 @@ def _prepare_report_chapter_bundle(
         "section_plan": chapter.get("section_plan") or "",
         "section_type": chapter.get("section_type"),
         "query_refs": query_refs,
+        "target_sections": chapter.get("target_sections") or [],
+        "research_notes": research_notes,
         "evidence_items": public_items,
         "disclosed_conflicts": [
             {
@@ -619,6 +806,7 @@ def _prepare_report_chapter_bundle(
         "resolved_query_ids": resolved_query_ids,
         "evidence_ref_map": evidence_ref_map,
         "conflict_ref_map": conflict_ref_map,
+        "research_notes": research_notes,
     }
     _write_json_file(_chapter_meta_path(output_dir, int(chapter_id)), meta)
     return bundle
@@ -747,6 +935,29 @@ def _chapter_candidate_validation(
         for source_id in _source_ids_for_item(item_id, nodes, edges)
         if nodes.get(source_id, {}).get("url") in registry_by_url
     })
+    allowed_note_query_refs = {
+        str(note.get("query_ref")) for note in (prepared_meta.get("research_notes") or [])
+    }
+    analysis_required = any(
+        str(note.get("analysis_mode") or "none") != "none"
+        for note in (prepared_meta.get("research_notes") or [])
+    )
+    candidate_note_refs = [str(ref) for ref in chapter.get("analysis_refs") or []]
+    if analysis_required and not candidate_note_refs:
+        issues.append(_issue(
+            "missing_analysis_refs",
+            "hard",
+            f"chapter {chapter_id} contains analysis-mode research but declares no analysis_refs",
+            "Declare the AnalysisNote query refs used by this chapter.",
+        ))
+    invalid_note_refs = [ref for ref in candidate_note_refs if ref not in allowed_note_query_refs]
+    if invalid_note_refs:
+        issues.append(_issue(
+            "unknown_analysis_refs",
+            "hard",
+            f"chapter {chapter_id} used unknown analysis refs: {invalid_note_refs}",
+            "Use only AnalysisNote query refs returned by this chapter bundle.",
+        ))
     registry_by_number = {entry["n"]: entry for entry in registry}
     cited_numbers = {int(value) for value in _CITE_TOKEN_RE.findall(str(chapter.get("content") or ""))}
     invalid_citations = sorted(
@@ -768,6 +979,7 @@ def _chapter_candidate_validation(
         "disclosed_conflict_ids": conflict_ids,
         "unknown_evidence_refs": unknown_evidence_refs,
         "unknown_conflict_refs": unknown_conflict_refs,
+        "analysis_refs": candidate_note_refs,
     }
 
 
@@ -820,6 +1032,7 @@ def commit_report_chapter_batch(
             "source_ids": validation["source_ids"],
             "evidence_ids": validation["evidence_ids"],
             "disclosed_conflict_ids": validation["disclosed_conflict_ids"],
+            "analysis_refs": validation["analysis_refs"],
             "validation_issues": validation["issues"],
         })
         _write_json_file(_chapter_meta_path(output_dir, chapter_id), meta)
@@ -830,6 +1043,7 @@ def commit_report_chapter_batch(
             "issues": validation["issues"],
             "unknown_evidence_refs": validation["unknown_evidence_refs"],
             "unknown_conflict_refs": validation["unknown_conflict_refs"],
+            "analysis_refs": validation["analysis_refs"],
         })
 
     return {
@@ -1047,6 +1261,8 @@ def submit_committed_report(output_dir: Optional[str], *, persist: bool = False)
         and strict.get("report")
         and not strict.get("issues")
     )
+    best_effort, best_effort_issues = _best_effort_report(title, sections)
+    report = str(strict.get("report") or best_effort)
     graph_persisted = False
     if persist and validated:
         persisted = compile_structured_report(title, sections, persist=True)
@@ -1054,8 +1270,12 @@ def submit_committed_report(output_dir: Optional[str], *, persist: bool = False)
             persisted.get("report")
             and not persisted.get("issues")
         )
-    best_effort, best_effort_issues = _best_effort_report(title, sections)
-    report = str(strict.get("report") or best_effort)
+        if graph_persisted:
+            proof = write_commit_proof(output_dir, report, sections)
+        else:
+            proof = {}
+    else:
+        proof = {}
     issues = [*generated_issues, *chapter_issues, *strict.get("issues", []), *best_effort_issues]
     severity = "hard" if any(item.get("severity") == "hard" for item in issues) else ("soft" if issues else "clean")
     return {
@@ -1072,7 +1292,33 @@ def submit_committed_report(output_dir: Optional[str], *, persist: bool = False)
         "salvaged_report": "" if validated else report,
         "graph_persisted": graph_persisted,
         "issues": issues,
+        "commit_proof": proof,
     }
+
+
+def _sha256_text(value: str) -> str:
+    return hashlib.sha256(str(value).encode("utf-8")).hexdigest()
+
+
+def write_commit_proof(
+    output_dir: Optional[str],
+    report: str,
+    sections: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Persist hashes proving which validated artifacts produced the report."""
+    registry = build_reference_registry()
+    chapter_hashes = {
+        str(section.get("title") or index): _sha256_text(str(section.get("content") or ""))
+        for index, section in enumerate(sections, start=1)
+    }
+    proof = {
+        "report_sha256": _sha256_text(report),
+        "chapter_sha256": chapter_hashes,
+        "citation_registry_sha256": _sha256_text(json.dumps(registry, ensure_ascii=False, sort_keys=True)),
+        "validated": True,
+    }
+    _write_json_file(_artifact_root(output_dir) / ".report_commit_proof.json", proof)
+    return proof
 
 
 def assemble_committed_report(output_dir: Optional[str]) -> dict[str, Any]:
@@ -1201,7 +1447,12 @@ def sanitize_report(report_text: str) -> str:
     return "\n\n".join(kept).strip() + ("\n" if kept else "")
 
 
-def compile_global_writer_report(output_dir: Optional[str], body: str) -> dict[str, Any]:
+def compile_global_writer_report(
+    output_dir: Optional[str],
+    body: str,
+    *,
+    answer_contract: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
     """Compile one global-writer body against the canonical citation registry."""
     del output_dir
     raw = _CITE_WRAPPER_RE.sub(r"\1", str(body or "").strip())
@@ -1235,6 +1486,37 @@ def compile_global_writer_report(output_dir: Optional[str], body: str) -> dict[s
         except Exception:  # noqa: BLE001 - graph traceability is best effort
             logger.warning("Global report section persistence failed", exc_info=True)
     hard_issues = [f"citation has no URL-backed reference: [{number}]" for number in invalid]
+    contract = answer_contract or {}
+    hard_issues.extend(validate_component_coverage(
+        cleaned_body,
+        contract.get("required_components") or [],
+    ))
+    atomic_issues = validate_atomic_rubrics(
+        cleaned_body,
+        contract.get("atomic_rubrics") or [],
+    )
+    blocked_sources = {
+        str(url).rstrip(".,，。);）") for url in contract.get("blocked_sources") or []
+    }
+    blocked_citations = [
+        number for number in valid_numbers
+        if str(by_number[number].get("url") or "").rstrip(".,，。);）") in blocked_sources
+    ]
+    hard_issues.extend(
+        f"citation uses blocked source: [{number}]" for number in blocked_citations
+    )
+    body_lower = cleaned_body.casefold()
+    for section in contract.get("required_sections") or []:
+        section_text = str(section).strip()
+        if section_text and section_text.casefold() not in body_lower:
+            hard_issues.append(f"required report section is missing: {section_text}")
+    if contract.get("requires_table") and not _TABLE_RE.search(cleaned_body):
+        hard_issues.append("answer contract requires a Markdown table")
+    language_hint = contract.get("language_hint")
+    if language_hint == "zh" and not re.search(r"[\u4e00-\u9fff]", cleaned_body):
+        hard_issues.append("answer contract requires Chinese prose")
+    if language_hint == "en" and not re.search(r"[A-Za-z]", cleaned_body):
+        hard_issues.append("answer contract requires English prose")
     if not valid_numbers and cleaned_body:
         hard_issues.append("global report contains no valid inline citations")
     hard_issues.extend(
@@ -1244,7 +1526,10 @@ def compile_global_writer_report(output_dir: Optional[str], body: str) -> dict[s
     return {
         "report": report,
         "hard_issues": list(dict.fromkeys(hard_issues)),
-        "soft_issues": [],
+        "soft_issues": [
+            f"{issue}; writer coverage diagnostic only"
+            for issue in atomic_issues
+        ],
         "cited_numbers": valid_numbers,
     }
 
@@ -1861,6 +2146,14 @@ def compile_structured_report(title: str, sections: list[dict], *, persist: bool
                 "Replace missing or invalid source_ids with valid URL-backed sources for this section.",
                 section_title=section_title,
             ))
+            if disclosed_conflict_ids:
+                issues.append(_issue(
+                    "invalid_conflict_disclosure_binding",
+                    "hard",
+                    f"section {section_title!r} cannot bind disclosed conflicts to its selected sources",
+                    "Use the conflict's supporting URL-backed sources in this section.",
+                    section_title=section_title,
+                ))
             continue
         cited_numbers = {int(value) for value in _CITE_TOKEN_RE.findall(content)}
         registry_by_number = {entry["n"]: entry for entry in registry}

@@ -19,6 +19,7 @@ _best_report: str = ""
 _last_report_attempt: dict[str, Any] = {}
 _report_lock = Lock()
 _user_request: Optional[str] = None
+_run_plan: Optional[dict[str, Any]] = None
 _report_review_completed = False
 _report_review_had_issues = False
 _report_submit_count = 0
@@ -58,11 +59,16 @@ def _normalize_run_context(output_dir: Optional[str]) -> str:
     return str(rel).replace("/", "\\")
 
 
-def configure(output_dir: Optional[str] = None, user_request: Optional[str] = None) -> None:
+def configure(
+    output_dir: Optional[str] = None,
+    user_request: Optional[str] = None,
+    run_plan: Optional[dict[str, Any]] = None,
+) -> None:
     """Clear and scope graph storage, then rebuild the shared manager for a run."""
-    global _best_report, _cache_dir, _compiled_report, _last_report_attempt, _manager, _report_model_call_count, _report_review_completed, _report_review_had_issues, _report_submit_count, _salvaged_report, _user_request
+    global _best_report, _cache_dir, _compiled_report, _last_report_attempt, _manager, _report_model_call_count, _report_review_completed, _report_review_had_issues, _report_submit_count, _salvaged_report, _user_request, _run_plan
     _cache_dir = output_dir
     _user_request = user_request
+    _run_plan = run_plan
     _manager = None
     _report_review_completed = False
     _report_review_had_issues = False
@@ -105,7 +111,7 @@ def configure(output_dir: Optional[str] = None, user_request: Optional[str] = No
 def _mm() -> MemoryManager:
     global _manager
     if _manager is None:
-        _manager = MemoryManager(cache_dir=_cache_dir, user_request=_user_request)
+        _manager = MemoryManager(cache_dir=_cache_dir, user_request=_user_request, run_plan=_run_plan)
     return _manager
 
 
@@ -323,6 +329,12 @@ def assess_convergence(goal_id: Optional[str] = None) -> dict:
 def create_analysis(text: str, query_id: Optional[str] = None) -> dict:
     """Record a typed insight, resolving an optional Query handle safely."""
     return _mm().create_insight(text, query_id)
+
+
+@tool
+def run_analysis_pass(query_ids: Optional[list[str]] = None) -> dict:
+    """Persist citation-bound AnalysisNotes for queries with an analysis mode."""
+    return _mm().run_analysis_pass(query_ids)
 
 
 @tool
@@ -574,7 +586,26 @@ def deliver_global_report(
     from tools import report_tools
 
     _report_submit_count += 1
-    compiled = report_tools.compile_global_writer_report(_cache_dir, body)
+    answer_contract = report_tools.build_answer_contract(_user_request or "")
+    try:
+        context = export_report_context()
+        # DRB2 uses the semantic atomic-rubric validator below. Reusing the
+        # legacy exact-string component validator would reject paraphrases.
+        if not context.get("atomic_rubrics"):
+            answer_contract["required_components"] = list(dict.fromkeys(
+                component
+                for query in context.get("queries") or []
+                for component in query.get("target_components") or []
+                if str(component).strip()
+            ))
+        answer_contract["atomic_rubrics"] = context.get("atomic_rubrics") or []
+    except Exception:  # noqa: BLE001 - delivery contract remains fail-open for legacy callers
+        logger.warning("Could not enrich delivery contract with Query components", exc_info=True)
+    compiled = report_tools.compile_global_writer_report(
+        _cache_dir,
+        body,
+        answer_contract=answer_contract,
+    )
     compiler_issues = [
         {"code": "global_report_validation", "severity": "hard", "message": message}
         for message in compiled.get("hard_issues") or []
@@ -591,6 +622,7 @@ def deliver_global_report(
         "salvaged_report": compiled.get("report", ""),
         "graph_persisted": False,
         "issues": all_issues,
+        "soft_issues": compiled.get("soft_issues") or [],
         "cited_numbers": compiled.get("cited_numbers", []),
     }
     if compiled.get("hard_issues"):
@@ -638,6 +670,7 @@ ORCHESTRATOR_TOOLS: list[Any] = [
     expand_gaps,
     assess_convergence,
     create_analysis,
+    run_analysis_pass,
     get_query_evaluation_subgraph,
     get_subgraph,
     get_node,

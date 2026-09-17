@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import inspect
 import json
 import os
 import random
@@ -25,6 +26,7 @@ import dotenv
 from tqdm import tqdm
 
 from main import VERBOSITY_PRESETS, resolve_log_options, run
+from tools.drb2_diagnostics import build_drb2_research_plan
 
 dotenv.load_dotenv(".env")
 
@@ -141,7 +143,13 @@ def run_one(
 
     print(f"Processing: idx={idx}, id={task_id}")
     print(f"Detailed artifacts: {run_dir}")
-    run(prompt, run_dir, max_rounds, opts)
+    run_plan = build_drb2_research_plan(item) if isinstance(item.get("content"), dict) else None
+    if run_plan and "run_plan" in inspect.signature(run).parameters:
+        run(prompt, run_dir, max_rounds, opts, run_plan=run_plan)
+    else:
+        # Keep the generic batch helper compatible with lightweight test doubles
+        # and non-DRB2 callers that do not provide rubric metadata.
+        run(prompt, run_dir, max_rounds, opts)
 
     report_path = run_dir / "report.md"
     if not report_path.exists():
@@ -338,6 +346,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-path", type=Path, default=OUTPUT_PATH, help="Output root for reports and artifacts.")
     parser.add_argument("--sample-size", type=int, default=SAMPLE_SIZE, help="Random sample size; <=0 means all.")
     parser.add_argument("--seed", type=int, default=RANDOM_SEED, help="Optional random seed for sampling.")
+    parser.add_argument("--item", type=int, default=None, help="Run exactly one benchmark idx.")
     parser.add_argument("--model-name", default=MODEL_NAME, help="Official evaluator model directory name.")
     parser.add_argument("--bench-root", type=Path, default=BENCH_ROOT, help="DeepResearch Bench II repository root.")
     parser.add_argument("--evaluate", action="store_true", help="Run official scoring and aggregation after generation.")
@@ -373,7 +382,13 @@ def main() -> None:
     args.output_path.mkdir(parents=True, exist_ok=True)
 
     if not args.evaluate_only:
-        items = sample_items(load_items(args.prompt_path), args.sample_size, args.seed)
+        items = load_items(args.prompt_path)
+        if args.item is not None:
+            items = [item for item in items if item["idx"] == args.item]
+            if not items:
+                raise ValueError(f"No DRB2 task found for idx={args.item}")
+        else:
+            items = sample_items(items, args.sample_size, args.seed)
         opts = resolve_log_options(args)
         for item in tqdm(items, desc="Processing items"):
             try:

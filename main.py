@@ -249,7 +249,13 @@ def _prepare_report_for_delivery(
     return report_text, list(dict.fromkeys([*issues, *local_issues])), "evidence_fallback"
 
 
-def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
+def run(
+    request: str,
+    output_dir: Path,
+    max_rounds: int,
+    opts: dict,
+    run_plan: dict | None = None,
+) -> None:
     """Run the research loop for a single request and save the artifacts.
 
     Args:
@@ -309,7 +315,11 @@ def run(request: str, output_dir: Path, max_rounds: int, opts: dict) -> None:
             from tools import graph_manager_tools, middleware
 
             middleware.configure(max_search_rounds=max_rounds)
-            graph_manager_tools.configure(output_dir=str(output_dir), user_request=request)
+            graph_manager_tools.configure(
+                output_dir=str(output_dir),
+                user_request=request,
+                run_plan=run_plan,
+            )
 
             import config
             from workflow import workflow

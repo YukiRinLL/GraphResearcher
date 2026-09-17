@@ -213,6 +213,27 @@ def _query_spec(item: Any) -> tuple:
     return item, [], []
 
 
+_ANALYSIS_MODES = {"none", "compare", "causal", "mechanism", "classification", "synthesis"}
+
+
+def _query_delivery_spec(item: Any) -> dict[str, Any]:
+    """Return optional report-delivery metadata without changing the legacy tuple."""
+    if not isinstance(item, dict):
+        return {
+            "target_components": [],
+            "target_sections": [],
+            "analysis_mode": "none",
+            "required_evidence_types": [],
+        }
+    mode = str(item.get("analysis_mode") or "none").strip().lower()
+    return {
+        "target_components": _string_list(item.get("target_components")),
+        "target_sections": _string_list(item.get("target_sections")),
+        "analysis_mode": mode if mode in _ANALYSIS_MODES else "none",
+        "required_evidence_types": _string_list(item.get("required_evidence_types")),
+    }
+
+
 _FOLLOWUP_VALID_SEARCH_MODES = {
     "general", "news", "finance", "linkedin", "github", "academic"
 }
@@ -306,6 +327,7 @@ class MemoryManager:
         model: Optional[Any] = None,
         cache_dir: Optional[str] = None,
         user_request: Optional[str] = None,
+        run_plan: Optional[dict[str, Any]] = None,
     ):
         """Initialize the manager.
 
@@ -317,6 +339,7 @@ class MemoryManager:
         self.cache_dir = cache_dir
         self.model = model if model is not None else config.build_model()
         self.user_request = user_request
+        self.run_plan = run_plan or {}
         self._state_lock = threading.RLock()
         # Track consecutive cool-down rounds per owner so the LLM can see when a
         # branch has been parked for a while and decide whether to revive it.
@@ -364,7 +387,11 @@ class MemoryManager:
 
             max_search_rounds = middleware.get_max_search_rounds()
             initial_query_limit = _initial_query_limit(max_search_rounds)
-            parsed = self._plan_initial_queries(user_request, initial_query_limit)
+            if self.run_plan.get("atomic_rubrics"):
+                # DRB2 queries are the atomic acceptance contract; truncating
+                # them by the generic discovery cap silently drops rubric items.
+                initial_query_limit = max(initial_query_limit, len(self.run_plan["atomic_rubrics"]))
+            parsed = self.run_plan or self._plan_initial_queries(user_request, initial_query_limit)
             excluded_domains = list(dict.fromkeys(filter(None, (
                 _normalize_domain(item) for item in _string_list(parsed.get("excluded_domains"))
             ))))
@@ -419,6 +446,8 @@ class MemoryManager:
                 last_max_marginal_utility=0.0,
                 state_contract_version=4,
                 report_completeness_score=0.0,
+                atomic_rubrics=self.run_plan.get("atomic_rubrics", []),
+                blocked_sources=self.run_plan.get("blocked_sources", []),
             )
 
         objectives = self._create_objectives(goal_id, parsed.get("objectives"), user_request)
@@ -426,6 +455,7 @@ class MemoryManager:
         objective_by_key = {o["objective_key"]: o for o in objectives}
         for item in initial_queries:
             text, criteria, objective_keys = _query_spec(item)
+            delivery = _query_delivery_spec(item)
             if not isinstance(text, str) or not text.strip():
                 continue
             query_id = graph_tools.create_query_child(
@@ -436,6 +466,8 @@ class MemoryManager:
                 objective_keys=[key for key in objective_keys if key in objective_by_key],
                 required_for_parent=False,
                 query_role="discovery",
+                rubric_ids=item.get("rubric_ids") if isinstance(item, dict) else [],
+                **delivery,
             )
             for key in objective_keys:
                 objective = objective_by_key.get(key)
@@ -449,6 +481,8 @@ class MemoryManager:
                 "priority_tier": query.get("priority_tier"),
                 "acceptance_criteria": criteria,
                 "objective_keys": objective_keys,
+                "rubric_ids": item.get("rubric_ids", []) if isinstance(item, dict) else [],
+                **delivery,
             })
         research_state.update_goal({"research_state": research_state.RESEARCHING}, goal_id)
 
@@ -459,6 +493,8 @@ class MemoryManager:
             "scope_mode": graph_tools.get_node(goal_id).get("scope_mode", "bounded"),
             "objectives": objectives,
             "queries": queries,
+            "atomic_rubrics": self.run_plan.get("atomic_rubrics", []),
+            "blocked_sources": self.run_plan.get("blocked_sources", []),
         }
 
     def _create_objectives(self, goal_id: str, raw_objectives: Any, user_request: str) -> list[dict]:
@@ -496,6 +532,8 @@ class MemoryManager:
                 status="open",
                 low_gain_streak=0,
                 last_evaluated_successful_rounds=0,
+                rubric_id=raw.get("rubric_id"),
+                rubric_status="uncovered",
             )
             objectives.append(graph_tools.get_node(objective_id))
         if objectives:
@@ -542,6 +580,7 @@ class MemoryManager:
                 "text": text,
                 "acceptance_criteria": criteria,
                 "objective_keys": objective_keys,
+                **_query_delivery_spec(item),
             })
             if len(selected) >= limit:
                 break
@@ -2398,6 +2437,10 @@ class MemoryManager:
                 expansion_mode=mode,
                 query_role="evidence_gap",
                 search_mode=spec.get("search_mode") or "general",
+                target_components=spec.get("target_components") or [],
+                target_sections=spec.get("target_sections") or [],
+                analysis_mode=spec.get("analysis_mode") or "none",
+                required_evidence_types=spec.get("required_evidence_types") or [],
             )
             for key in objective_keys:
                 graph_tools.add_edge(child_id, objective_by_key[key]["id"], EdgeType.COVERS_OBJECTIVE)
@@ -2954,6 +2997,51 @@ class MemoryManager:
         insight_id = graph_tools.create_analysis(text=text, query_id=resolved, analysis_type="insight")
         return {"analysis_id": insight_id, "query_id": resolved}
 
+    def run_analysis_pass(self, query_ids: Optional[list[str]] = None) -> dict:
+        """Persist deterministic AnalysisNotes for queries that request analysis."""
+        from tools import report_tools
+
+        candidates = graph_tools.search_nodes("query", {})
+        wanted = {str(item) for item in query_ids or []}
+        created = []
+        skipped = []
+        for query in candidates:
+            if wanted and str(query.get("id")) not in wanted and str(query.get("handle")) not in wanted:
+                continue
+            mode = str(query.get("analysis_mode") or "none")
+            if mode == "none":
+                skipped.append(query.get("handle") or query.get("id"))
+                continue
+            existing = graph_tools.search_nodes("analysis", {
+                "analysis_type": "research_note",
+                "query_id": query.get("id"),
+            })
+            if existing:
+                skipped.append(query.get("handle") or query.get("id"))
+                continue
+            evidence = report_tools.get_report_evidence(query.get("id"), limit=100)
+            if evidence.get("error"):
+                skipped.append(query.get("handle") or query.get("id"))
+                continue
+            notes = evidence.get("research_notes") or report_tools.build_research_notes(
+                evidence.get("query") or query,
+                evidence.get("items") or [],
+            )
+            note_id = graph_tools.create_analysis(
+                text=json.dumps(notes, ensure_ascii=False, sort_keys=True),
+                query_id=query.get("id"),
+                analysis_type="research_note",
+                note=notes,
+                analysis_mode=mode,
+                evidence_ids=[item.get("id") for item in evidence.get("items") or [] if item.get("id")],
+                status="ready" if not notes.get("gaps") else "gap",
+            )
+            for evidence_id in notes.get("confirmed_facts") or []:
+                if evidence_id:
+                    graph_tools.add_edge(note_id, evidence_id, EdgeType.SUPPORTED_BY)
+            created.append({"analysis_id": note_id, "query_ref": query.get("handle"), "notes": notes})
+        return {"created": created, "skipped": skipped}
+
     def submit_search_result(self, search_run_id: str, query_id: str, evidence_package: dict) -> dict:
         """Write one Searcher's result exactly once and advance its Query."""
         with self._state_lock:
@@ -3415,6 +3503,8 @@ class MemoryManager:
                     if isinstance(criterion, str) and criterion.strip()
                 ],
                 "supported_boundary": objective.get("supported_boundary") or "",
+                "rubric_id": objective.get("rubric_id"),
+                "rubric_status": objective.get("rubric_status") or objective.get("status") or "uncovered",
             }
             for objective in self.get_research_objectives(goal_id)
             if objective.get("objective_key")
@@ -3425,6 +3515,8 @@ class MemoryManager:
             "research_goal": goal.get("research_goal") or request_text,
             "language": goal.get("language"),
             "objectives": objectives,
+            "atomic_rubrics": self.run_plan.get("atomic_rubrics") or goal.get("atomic_rubrics") or [],
+            "blocked_sources": self.run_plan.get("blocked_sources") or goal.get("blocked_sources") or [],
             "queries": [
                 {
                     "ref": query.get("handle"),
@@ -3434,6 +3526,11 @@ class MemoryManager:
                         key for key in query.get("objective_keys") or []
                         if isinstance(key, str) and key.strip()
                     ],
+                    "target_components": _string_list(query.get("target_components")),
+                    "target_sections": _string_list(query.get("target_sections")),
+                    "analysis_mode": query.get("analysis_mode") or "none",
+                    "required_evidence_types": _string_list(query.get("required_evidence_types")),
+                    "rubric_ids": _string_list(query.get("rubric_ids")),
                 }
                 for query in report_queries
             ],
@@ -3638,6 +3735,7 @@ class MemoryManager:
                     "acceptance_criteria": criteria,
                     "objective_keys": objective_keys,
                     "search_mode": search_mode,
+                    **_query_delivery_spec(raw),
                 })
             return items
 
