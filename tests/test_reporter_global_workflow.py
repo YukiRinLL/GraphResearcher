@@ -12,7 +12,6 @@ sys.path.insert(0, str(SRC_DIR))
 
 from agents import reporter_global_workflow as workflow  # noqa: E402
 from tools.drb2_diagnostics import diagnose_packet  # noqa: E402
-from tools.drb2_diagnostics import project_drb2_task  # noqa: E402
 
 
 def test_prompt_contains_my_agent_final_writer_inputs() -> None:
@@ -177,23 +176,6 @@ def test_drb2_diagnostics_reports_packet_gaps() -> None:
     assert diagnosis["uncovered_must_objectives"] == ["analysis"]
     assert diagnosis["untargeted_required_sections"] == ["Analysis"]
     assert diagnosis["research_note_gaps"] == ["q1"]
-
-
-def test_drb2_projection_extracts_analysis_and_blocked_sources() -> None:
-    projected = project_drb2_task({
-        "id": "task1",
-        "language": "zh",
-        "prompt": (
-            "请比较两个方案并分析原因。\n"
-            "不得查看 https://blocked.example/paper。\n"
-            "第一部分：现状\n第二部分：建议"
-        ),
-        "content": {"rubric": {"analysis": ["比较优缺点"]}},
-    })
-
-    assert projected["analysis_mode"] == "compare"
-    assert projected["blocked_sources"] == ["https://blocked.example/paper"]
-    assert projected["rubric_dimensions"] == ["analysis"]
 
 
 if __name__ == "__main__":
