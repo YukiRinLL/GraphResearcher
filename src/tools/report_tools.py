@@ -163,7 +163,6 @@ def build_answer_contract(request: str, required_structure: Optional[list[Any]] 
     return {
         "required_sections": list(dict.fromkeys(headings + structure))[:30],
         "explicit_items": list(dict.fromkeys(explicit_items))[:40],
-        "required_components": [],
         "blocked_sources": blocked_sources,
         "requires_table": bool(re.search(r"(?:表格|对比表|比较表|summary table|comparison table|table)", compact, re.IGNORECASE)),
         "requires_exact_values": bool(re.search(r"(?:具体数据|具体数字|数值|百分比|均值|标准差|specific data|exact number|percentage|mean|standard deviation)", compact, re.IGNORECASE)),
@@ -243,42 +242,6 @@ def _render_outline_markdown(title: str, chapters: list[dict[str, Any]]) -> str:
             lines.extend(["", f"Queries: {', '.join(query_refs)}"])
         lines.append("")
     return "\n".join(lines).strip() + "\n"
-
-
-def build_default_report_outline(context: dict[str, Any]) -> dict[str, Any]:
-    """Build a deterministic chapter outline from Query delivery metadata."""
-    sections: list[dict[str, Any]] = []
-    seen: set[str] = set()
-    for query in context.get("queries") or []:
-        targets = query.get("target_sections") or [query.get("text") or query.get("ref") or "Research findings"]
-        for target in targets:
-            title = str(target).strip()
-            if not title or title.casefold() in seen:
-                continue
-            seen.add(title.casefold())
-            sections.append({
-                "chapter_id": len(sections) + 1,
-                "title": title,
-                "goals": list(query.get("target_components") or []),
-                "query_refs": [query["ref"]] if query.get("ref") else [],
-                "target_sections": [title],
-                "section_plan": "Use only chapter-local evidence and ResearchNotes.",
-                "section_type": "lead" if not sections else "body",
-            })
-    return {
-        "title": str(context.get("research_goal") or context.get("user_request") or "Research Report"),
-        "chapters": sections,
-    }
-
-
-def validate_component_coverage(report_text: str, required_components: list[str]) -> list[str]:
-    """Return deterministic missing-component issues for a report body."""
-    body = str(report_text or "").casefold()
-    return [
-        f"required answer component is missing: {component}"
-        for component in dict.fromkeys(str(item).strip() for item in required_components or [])
-        if component and component.casefold() not in body
-    ]
 
 
 def build_reference_registry() -> list[dict]:
@@ -1434,10 +1397,6 @@ def compile_global_writer_report(
             logger.warning("Global report section persistence failed", exc_info=True)
     hard_issues = [f"citation has no URL-backed reference: [{number}]" for number in invalid]
     contract = answer_contract or {}
-    hard_issues.extend(validate_component_coverage(
-        cleaned_body,
-        contract.get("required_components") or [],
-    ))
     blocked_sources = {
         str(url).rstrip(".,，。);）") for url in contract.get("blocked_sources") or []
     }

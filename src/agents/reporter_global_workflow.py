@@ -160,13 +160,6 @@ def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
         entry for entry in report_tools.build_reference_registry()
         if int(entry["n"]) in used_numbers
     ]
-    answer_contract = _build_answer_contract(context)
-    answer_contract["required_components"] = list(dict.fromkeys(
-        component
-        for query in context.get("queries") or []
-        for component in query.get("target_components") or []
-        if str(component).strip()
-    ))
     packet = {
         "research_brief": {
             "user_request": context.get("user_request", ""),
@@ -182,7 +175,7 @@ def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
         ],
         "required_structure": context.get("required_structure") or [],
         "task_requirements": _derive_task_requirements(str(context.get("user_request") or "")),
-        "answer_contract": answer_contract,
+        "answer_contract": _build_answer_contract(context),
         "findings": findings,
         "research_notes": research_notes,
         "component_buckets": {
@@ -261,16 +254,6 @@ def run_global_report_workflow() -> dict[str, Any]:
     artifact_dir = Path(graph_manager_tools._cache_dir or ".") / ".global_reporter"
     _try_write_artifact(artifact_dir, "packet.json", packet)
     _try_write_artifact(artifact_dir, "answer_contract.json", packet["answer_contract"])
-    outline_path = Path(graph_manager_tools._cache_dir or ".") / ".report_outline.json"
-    if not outline_path.exists():
-        outline = report_tools.build_default_report_outline(context)
-        if outline.get("chapters"):
-            report_tools.commit_report_outline(
-                graph_manager_tools._cache_dir,
-                outline["title"],
-                outline["chapters"],
-            )
-            _try_write_artifact(artifact_dir, "default_outline.json", outline)
     feedback = ""
     last_result: dict[str, Any] = {}
     for attempt in range(1, _MAX_ATTEMPTS + 1):

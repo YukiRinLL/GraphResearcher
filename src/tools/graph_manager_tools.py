@@ -581,16 +581,6 @@ def deliver_global_report(
 
     _report_submit_count += 1
     answer_contract = report_tools.build_answer_contract(_user_request or "")
-    try:
-        context = export_report_context()
-        answer_contract["required_components"] = list(dict.fromkeys(
-            component
-            for query in context.get("queries") or []
-            for component in query.get("target_components") or []
-            if str(component).strip()
-        ))
-    except Exception:  # noqa: BLE001 - delivery contract remains fail-open for legacy callers
-        logger.warning("Could not enrich delivery contract with Query components", exc_info=True)
     compiled = report_tools.compile_global_writer_report(
         _cache_dir,
         body,

@@ -12,7 +12,7 @@ sys.path.insert(0, str(SRC_DIR))
 
 from agents import reporter_global_workflow as workflow  # noqa: E402
 from tools.drb2_diagnostics import diagnose_packet  # noqa: E402
-from tools.drb2_diagnostics import build_drb2_research_plan, project_drb2_task  # noqa: E402
+from tools.drb2_diagnostics import project_drb2_task  # noqa: E402
 
 
 def test_prompt_contains_my_agent_final_writer_inputs() -> None:
@@ -194,34 +194,6 @@ def test_drb2_projection_extracts_analysis_and_blocked_sources() -> None:
     assert projected["analysis_mode"] == "compare"
     assert projected["blocked_sources"] == ["https://blocked.example/paper"]
     assert projected["rubric_dimensions"] == ["analysis"]
-
-    plan = build_drb2_research_plan({
-        "id": "task1", "description": "Compare two policies", "prompt": "Compare policies",
-        "rubric": {"analysis": ["compare mechanisms"]},
-    })
-    assert plan["objectives"][0]["requirement"] == "must"
-    assert plan["initial_queries"][0]["analysis_mode"] == "compare"
-
-
-def test_default_outline_uses_query_delivery_metadata() -> None:
-    outline = workflow.report_tools.build_default_report_outline({
-        "user_request": "request",
-        "research_goal": "goal",
-        "queries": [{
-            "ref": "q1", "text": "products", "target_sections": ["Products"],
-            "target_components": ["comparison"],
-        }],
-    })
-
-    assert outline["chapters"] == [{
-        "chapter_id": 1,
-        "title": "Products",
-        "goals": ["comparison"],
-        "query_refs": ["q1"],
-        "target_sections": ["Products"],
-        "section_plan": "Use only chapter-local evidence and ResearchNotes.",
-        "section_type": "lead",
-    }]
 
 
 if __name__ == "__main__":
