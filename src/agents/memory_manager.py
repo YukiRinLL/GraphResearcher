@@ -213,27 +213,6 @@ def _query_spec(item: Any) -> tuple:
     return item, [], []
 
 
-_ANALYSIS_MODES = {"none", "compare", "causal", "mechanism", "classification", "synthesis"}
-
-
-def _query_delivery_spec(item: Any) -> dict[str, Any]:
-    """Return optional report-delivery metadata without changing the legacy tuple."""
-    if not isinstance(item, dict):
-        return {
-            "target_components": [],
-            "target_sections": [],
-            "analysis_mode": "none",
-            "required_evidence_types": [],
-        }
-    mode = str(item.get("analysis_mode") or "none").strip().lower()
-    return {
-        "target_components": _string_list(item.get("target_components")),
-        "target_sections": _string_list(item.get("target_sections")),
-        "analysis_mode": mode if mode in _ANALYSIS_MODES else "none",
-        "required_evidence_types": _string_list(item.get("required_evidence_types")),
-    }
-
-
 _FOLLOWUP_VALID_SEARCH_MODES = {
     "general", "news", "finance", "linkedin", "github", "academic"
 }
@@ -447,7 +426,6 @@ class MemoryManager:
         objective_by_key = {o["objective_key"]: o for o in objectives}
         for item in initial_queries:
             text, criteria, objective_keys = _query_spec(item)
-            delivery = _query_delivery_spec(item)
             if not isinstance(text, str) or not text.strip():
                 continue
             query_id = graph_tools.create_query_child(
@@ -458,7 +436,6 @@ class MemoryManager:
                 objective_keys=[key for key in objective_keys if key in objective_by_key],
                 required_for_parent=False,
                 query_role="discovery",
-                **delivery,
             )
             for key in objective_keys:
                 objective = objective_by_key.get(key)
@@ -472,7 +449,6 @@ class MemoryManager:
                 "priority_tier": query.get("priority_tier"),
                 "acceptance_criteria": criteria,
                 "objective_keys": objective_keys,
-                **delivery,
             })
         research_state.update_goal({"research_state": research_state.RESEARCHING}, goal_id)
 
@@ -566,7 +542,6 @@ class MemoryManager:
                 "text": text,
                 "acceptance_criteria": criteria,
                 "objective_keys": objective_keys,
-                **_query_delivery_spec(item),
             })
             if len(selected) >= limit:
                 break
@@ -2423,10 +2398,6 @@ class MemoryManager:
                 expansion_mode=mode,
                 query_role="evidence_gap",
                 search_mode=spec.get("search_mode") or "general",
-                target_components=spec.get("target_components") or [],
-                target_sections=spec.get("target_sections") or [],
-                analysis_mode=spec.get("analysis_mode") or "none",
-                required_evidence_types=spec.get("required_evidence_types") or [],
             )
             for key in objective_keys:
                 graph_tools.add_edge(child_id, objective_by_key[key]["id"], EdgeType.COVERS_OBJECTIVE)
@@ -3463,10 +3434,6 @@ class MemoryManager:
                         key for key in query.get("objective_keys") or []
                         if isinstance(key, str) and key.strip()
                     ],
-                    "target_components": _string_list(query.get("target_components")),
-                    "target_sections": _string_list(query.get("target_sections")),
-                    "analysis_mode": query.get("analysis_mode") or "none",
-                    "required_evidence_types": _string_list(query.get("required_evidence_types")),
                 }
                 for query in report_queries
             ],
@@ -3671,7 +3638,6 @@ class MemoryManager:
                     "acceptance_criteria": criteria,
                     "objective_keys": objective_keys,
                     "search_mode": search_mode,
-                    **_query_delivery_spec(raw),
                 })
             return items
 

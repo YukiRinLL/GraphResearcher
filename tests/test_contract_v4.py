@@ -99,16 +99,8 @@ def main():
         assert not GRAPH_ID_RE.search(json.dumps(report_context, ensure_ascii=False)), report_context
         assert report_context["objectives"] == []
         assert report_context["queries"] == [
-            {
-                "ref": "q1", "text": "产品", "supported_topics": ["产品与应用"],
-                "target_components": [], "target_sections": [], "analysis_mode": "none",
-                "required_evidence_types": [],
-            },
-            {
-                "ref": "q2", "text": "融资", "supported_topics": ["融资进展"],
-                "target_components": [], "target_sections": [], "analysis_mode": "none",
-                "required_evidence_types": [],
-            },
+            {"ref": "q1", "text": "产品", "supported_topics": ["产品与应用"]},
+            {"ref": "q2", "text": "融资", "supported_topics": ["融资进展"]},
         ]
         with TemporaryDirectory() as temp_dir:
             outline = report_tools.commit_report_outline(temp_dir, "机器人公司", [
