@@ -1,4 +1,4 @@
-"""Run ten randomly sampled jobs from one benchmark concurrently."""
+"""Run ten unique randomly sampled jobs in waves of five."""
 
 from __future__ import annotations
 
@@ -61,26 +61,30 @@ def run_jobs(benchmark: str, sample_size: int, seed: int | None, run_root: Path 
     selected = sorted(rng.sample(item_ids, sample_size))
     print(json.dumps({"benchmark": benchmark, "seed": seed, "items": selected}, ensure_ascii=False))
 
-    processes = []
-    for item in selected:
-        command = [
-            sys.executable,
-            "-u",
-            str(ROOT / "scripts" / "run_sampled_benchmark_job.py"),
-            "--benchmark",
-            benchmark,
-            "--item",
-            str(item),
-            "--max-rounds",
-            str(max_rounds),
-            "--verbose",
-            verbose,
-        ]
-        if run_root:
-            command.extend(["--run-root", str(run_root)])
-        processes.append(subprocess.Popen(command, cwd=ROOT))
-    codes = [process.wait() for process in processes]
-    raise SystemExit(max(codes))
+    for wave_start in range(0, len(selected), 5):
+        wave = selected[wave_start : wave_start + 5]
+        processes = []
+        print(json.dumps({"benchmark": benchmark, "wave": wave_start // 5 + 1, "items": wave}, ensure_ascii=False))
+        for item in wave:
+            command = [
+                sys.executable,
+                "-u",
+                str(ROOT / "scripts" / "run_sampled_benchmark_job.py"),
+                "--benchmark",
+                benchmark,
+                "--item",
+                str(item),
+                "--max-rounds",
+                str(max_rounds),
+                "--verbose",
+                verbose,
+            ]
+            if run_root:
+                command.extend(["--run-root", str(run_root)])
+            processes.append(subprocess.Popen(command, cwd=ROOT))
+        codes = [process.wait() for process in processes]
+        if max(codes):
+            raise SystemExit(max(codes))
 
 
 def main() -> None:

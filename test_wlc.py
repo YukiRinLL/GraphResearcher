@@ -360,7 +360,7 @@ def main() -> None:
     opts = resolve_log_options(args)
     report_paths: list[Path] = []
 
-    with ProcessPoolExecutor(max_workers=10) as pool:
+    with ProcessPoolExecutor(max_workers=5) as pool:
         futures = {
             pool.submit(run_one, item, args.output_path, args.max_rounds, opts): item
             for item in items

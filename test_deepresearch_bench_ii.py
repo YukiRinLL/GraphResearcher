@@ -388,7 +388,7 @@ def main() -> None:
         else:
             items = sample_items(items, args.sample_size, args.seed)
         opts = resolve_log_options(args)
-        with ProcessPoolExecutor(max_workers=10) as pool:
+        with ProcessPoolExecutor(max_workers=5) as pool:
             futures = {
                 pool.submit(run_one, item, args.output_path, model_name, args.max_rounds, opts): item
                 for item in items
