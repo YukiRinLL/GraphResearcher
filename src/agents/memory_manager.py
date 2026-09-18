@@ -1583,6 +1583,27 @@ class MemoryManager:
                 break
         return streak
 
+    @staticmethod
+    def _is_unsearched_initial_child(query_id: str) -> bool:
+        """Keep a direct child of an initial Query searchable once.
+
+        Initial Query children are the first concrete follow-up paths created
+        from the root searches. They must get one Searcher attempt even when
+        their inherited Objective is already satisfied; deeper descendants
+        retain the normal portfolio/defer behavior.
+        """
+        parent_id = graph_tools.get_query_parent(query_id)
+        if not parent_id:
+            return False
+        parent = graph_tools.get_node(parent_id)
+        if parent.get("type") != NodeType.QUERY.value:
+            return False
+        grandparent_id = graph_tools.get_query_parent(parent_id)
+        if not grandparent_id:
+            return False
+        grandparent = graph_tools.get_node(grandparent_id)
+        return grandparent.get("type") == NodeType.USER_REQUEST.value
+
     def _gap_key_in_ancestors(self, query_id: str, gap_key: str) -> bool:
         """Return whether a gap fingerprint already exists on the ancestor path."""
         current = graph_tools.get_query_parent(query_id)
@@ -2194,7 +2215,15 @@ class MemoryManager:
                     for key in query.get("objective_keys") or []
                     if key in objective_by_key
                 ]
-                if linked and all(item.get("status") in {"satisfied", "blocked"} for item in linked):
+                protected_initial_child = (
+                    not int(query.get("successful_search_runs") or 0)
+                    and self._is_unsearched_initial_child(query["id"])
+                )
+                if (
+                    linked
+                    and all(item.get("status") in {"satisfied", "blocked"} for item in linked)
+                    and not protected_initial_child
+                ):
                     graph_tools.transition_query(query["id"], "deferred")
                     self._propagate_child_completion(query["id"], "deferred")
 
