@@ -185,6 +185,23 @@ def test_failed_run_without_evidence_is_not_authorized() -> None:
     assert "without evidence" in result["error"]
 
 
+def test_failed_run_can_transition_to_reporting_for_best_effort_delivery() -> None:
+    goal = {"id": "goal", "research_state": workflow.research_state.FAILED}
+    updated = {}
+
+    with (
+        patch.object(workflow.research_state, "get_goal", return_value=goal),
+        patch.object(workflow.graph_tools, "upsert_node", side_effect=lambda _type, attrs, _id: updated.update(attrs)),
+        patch.object(workflow.graph_tools, "get_node", side_effect=lambda _id: {**goal, **updated}),
+    ):
+        result = workflow.research_state.update_goal({
+            "research_state": workflow.research_state.REPORTING,
+            "reporting_from_state": workflow.research_state.FAILED,
+        })
+
+    assert result["research_state"] == workflow.research_state.REPORTING
+
+
 if __name__ == "__main__":
     test_prompt_contains_my_agent_final_writer_inputs()
     test_draft_citations_are_added_to_global_registry()

@@ -27,7 +27,9 @@ _TRANSITIONS = {
     BUDGET_EXHAUSTED: {BUDGET_EXHAUSTED, REPORTING, FAILED},
     REPORTING: {REPORTING, COMPLETED, FAILED},
     COMPLETED: {COMPLETED, FAILED},
-    FAILED: {FAILED},
+    # A failed run with retained evidence may be resumed by the best-effort
+    # Reporter; runs without evidence are still rejected by Reporter auth.
+    FAILED: {FAILED, REPORTING},
 }
 
 
