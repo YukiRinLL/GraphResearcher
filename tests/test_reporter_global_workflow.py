@@ -115,6 +115,76 @@ def test_packet_prioritizes_unmet_objective_queries() -> None:
     assert packet["findings"] == []
 
 
+def test_packet_deduplicates_evidence_and_limits_each_query() -> None:
+    context = {
+        "user_request": "request",
+        "research_goal": "brief",
+        "queries": [
+            {"ref": "q1", "objective_keys": []},
+            {"ref": "q2", "objective_keys": []},
+        ],
+        "objectives": [],
+        "disclosed_conflicts": [],
+    }
+    pages = {
+        "q1": {
+            "items": [
+                {"id": "e1", "type": "Evidence", "text": "same claim", "citations": [1]},
+                {"id": "e2", "type": "Evidence", "text": "x" * 2000, "citations": [2]},
+            ],
+            "next_offset": None,
+        },
+        "q2": {
+            "items": [
+                {"id": "e1", "type": "Evidence", "text": "same claim", "citations": [1]},
+                {"id": "e3", "type": "Evidence", "text": "unique claim", "citations": [3]},
+            ],
+            "next_offset": None,
+        },
+    }
+
+    with (
+        patch.object(workflow.report_tools, "get_report_evidence", side_effect=lambda ref, **_: pages[ref]),
+        patch.object(workflow.report_tools, "build_cited_evidence_report", return_value=""),
+        patch.object(workflow.report_tools, "build_reference_registry", return_value=[]),
+        patch.object(workflow.config, "GR_GLOBAL_PACKET_TOKENS", 1_000),
+    ):
+        packet = workflow._build_packet(context)
+
+    ids = [item["id"] for group in packet["findings"] for item in group["items"]]
+    assert ids.count("e1") == 1
+    assert "e3" in ids
+    assert packet["budget"]["deduplicated_items"] == len(set(ids))
+
+
+def test_failed_run_with_evidence_is_authorized_for_best_effort_report() -> None:
+    goal = {"research_state": workflow.research_state.FAILED, "request": "request"}
+    with (
+        patch.object(workflow.research_state, "get_goal", return_value=goal),
+        patch.object(workflow.graph_tools, "search_nodes", return_value=[{"successful_search_runs": 1}]),
+        patch.object(workflow.research_state, "update_goal") as update_goal,
+    ):
+        result = workflow._authorize()
+
+    assert result["error"] == ""
+    update_goal.assert_called_once_with({
+        "research_state": workflow.research_state.REPORTING,
+        "reporting_from_state": workflow.research_state.FAILED,
+        "report_authorized_reason": "best-effort report from partial research",
+    })
+
+
+def test_failed_run_without_evidence_is_not_authorized() -> None:
+    goal = {"research_state": workflow.research_state.FAILED, "request": "request"}
+    with (
+        patch.object(workflow.research_state, "get_goal", return_value=goal),
+        patch.object(workflow.graph_tools, "search_nodes", return_value=[]),
+    ):
+        result = workflow._authorize()
+
+    assert "without evidence" in result["error"]
+
+
 if __name__ == "__main__":
     test_prompt_contains_my_agent_final_writer_inputs()
     test_draft_citations_are_added_to_global_registry()

@@ -156,16 +156,49 @@ def _content_text(message: object) -> str:
 
 
 def _evidence_fallback_report(request: str, status_summary: dict) -> str:
-    """Build the last-resort deterministic evidence-list report."""
+    """Build a bounded deterministic report when Reporter has no artifact."""
     del status_summary
     try:
         from tools import report_tools
 
-        return report_tools.build_cited_evidence_report(request)
+        report = report_tools.build_context_fallback_report(request)
+        if not report:
+            report = report_tools.build_cited_evidence_report(request)
+        return _bound_fallback_report(report, request)
     except Exception:  # noqa: BLE001 - a minimal neutral report must always exist
         if re.search(r"[\u4e00-\u9fff]", request or ""):
             return "# 调研报告\n\n## 结论\n\n暂无可核实结论。\n"
         return "# Research Report\n\n## Conclusion\n\nNo verifiable findings are available.\n"
+
+
+_MAX_FALLBACK_REPORT_CHARS = 60_000
+_MAX_FALLBACK_REFERENCE_CHARS = 12_000
+
+
+def _bound_fallback_report(report: str, request: str = "") -> str:
+    """Limit fallback prose without dropping its reference section entirely."""
+    text = str(report or "").strip()
+    if len(text) <= _MAX_FALLBACK_REPORT_CHARS:
+        return text + ("\n" if text else "")
+    is_chinese = bool(re.search(r"[\u4e00-\u9fff]", request or ""))
+    headings = ("## 参考文献", "## References")
+    reference_heading = next((heading for heading in headings if heading in text), None)
+    if reference_heading:
+        body, references = text.split(reference_heading, 1)
+        reference_text = references[:_MAX_FALLBACK_REFERENCE_CHARS].rstrip()
+        remaining = max(0, _MAX_FALLBACK_REPORT_CHARS - len(reference_heading) - len(reference_text) - 80)
+        notice = (
+            "\n\n> 说明：研究未完整完成，以下仅保留部分已核实证据。"
+            if is_chinese
+            else "\n\n> Note: research did not complete; only a bounded subset of verified evidence is shown."
+        )
+        return body[:remaining].rstrip() + notice + "\n\n" + reference_heading + reference_text + "\n"
+    notice = (
+        "\n\n> 说明：研究未完整完成，报告已限制长度。"
+        if is_chinese
+        else "\n\n> Note: research did not complete and the fallback report was length-limited."
+    )
+    return text[: _MAX_FALLBACK_REPORT_CHARS - len(notice)].rstrip() + notice + "\n"
 
 
 def _delivery_contract_mode(status_summary: dict) -> str | None:

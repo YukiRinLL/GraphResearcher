@@ -5,6 +5,7 @@
 
 import json
 import sys
+from unittest.mock import patch
 from pathlib import Path
 
 src_dir = Path(__file__).parent.parent / "src"
@@ -26,6 +27,21 @@ class FakeTavilyClient:
         self.calls.append({"query": query, **kwargs})
         if self.error:
             raise self.error
+        return self.response
+
+
+class FlakyTavilyClient:
+    """Fail transiently before returning a successful response."""
+
+    def __init__(self, failures, response):
+        self.failures = list(failures)
+        self.response = response
+        self.calls = []
+
+    def search(self, query, **kwargs):
+        self.calls.append({"query": query, **kwargs})
+        if self.failures:
+            raise self.failures.pop(0)
         return self.response
 
 
@@ -74,6 +90,17 @@ def _test_tavily_tool_contract():
         search_tools._tavily_client = FakeTavilyClient(error=RuntimeError("offline"))
         failed = search_tools.tavily_search.invoke({"query": "failure"})
         assert failed["results"] == [] and "RuntimeError" in failed["error"], failed
+
+        flaky = FlakyTavilyClient(
+            [RuntimeError("HTTP 429 rate limit")],
+            {"query": "retry", "results": []},
+        )
+        search_tools._tavily_client = flaky
+        with patch.object(search_tools.time, "sleep") as sleep:
+            retried = search_tools.tavily_search.invoke({"query": "retry"})
+        assert retried["results"] == [], retried
+        assert len(flaky.calls) == 2, flaky.calls
+        sleep.assert_called_once_with(search_tools._TRANSIENT_SEARCH_BACKOFF_SECONDS[0])
     finally:
         search_tools._tavily_client = original_client
 

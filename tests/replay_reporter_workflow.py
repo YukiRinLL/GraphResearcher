@@ -64,9 +64,18 @@ class JsonlReplayGraph:
             "LIMITED_REPORT_READY",
             "BUDGET_EXHAUSTED",
         }:
-            raise ValueError(
-                "Completed replay graph does not retain an authorized reporting_from_state"
+            has_evidence = any(
+                int(query.get("successful_search_runs") or 0) > 0
+                for query in self.search_nodes("query", {})
             )
+            if goal.get("research_state") != "FAILED" or not has_evidence:
+                raise ValueError(
+                    "Replay graph does not retain an authorized reporting state or usable evidence"
+                )
+            # Replay-only normalization: the original failed run is immutable,
+            # but its retained evidence can be sent through Reporter again.
+            authorized_state = "REPORT_READY"
+            goal["reporting_from_state"] = authorized_state
         goal["research_state"] = authorized_state
 
     def get_node(self, node_id: str) -> dict[str, Any]:

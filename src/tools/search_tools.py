@@ -2,6 +2,7 @@
 
 import logging
 import os
+import time
 from typing import Literal, Optional
 
 from langchain_core.tools import tool
@@ -16,6 +17,8 @@ _tavily_client: Optional[TavilyClient] = None
 # 单条正文的上限既约束工具返回，也保护后续逐来源抽取的上下文。
 _MAX_RAW_CONTENT_CHARS = 20_000
 SEARCH_TIMEOUT = float(os.environ.get("SEARCH_TIMEOUT", "30"))
+_TRANSIENT_SEARCH_RETRIES = 2
+_TRANSIENT_SEARCH_BACKOFF_SECONDS = (1.0, 3.0)
 
 # Search profile domain whitelists. Live in code only — never exposed via
 # prompts or tool docstrings, so the LLM never sees concrete platform names
@@ -148,23 +151,50 @@ def tavily_search(
     )
 
     def _call(depth_override: Optional[str], domains: Optional[list[str]], stage: str = "single") -> dict:
+        search_kwargs = {
+            "max_results": max_results,
+            "include_raw_content": True,
+            "topic": topic,
+            "timeout": SEARCH_TIMEOUT,
+        }
+        effective_depth = depth_override if depth_override is not None else search_depth
+        if effective_depth:
+            search_kwargs["search_depth"] = effective_depth
+        if domains:
+            search_kwargs["include_domains"] = list(domains)
+        elif include_domains:
+            search_kwargs["include_domains"] = list(include_domains)
+        if exclude_domains:
+            search_kwargs["exclude_domains"] = list(exclude_domains)
+
+        for attempt in range(_TRANSIENT_SEARCH_RETRIES + 1):
+            try:
+                response = _client().search(query, **search_kwargs)
+                break
+            except Exception as exc:  # noqa: BLE001 - preserve existing empty-result behavior
+                error_text = f"{type(exc).__name__}: {exc}"
+                transient = any(
+                    marker in error_text.lower()
+                    for marker in ("429", "rate limit", "timeout", "timed out", "temporarily", "503", "502", "504")
+                )
+                if not transient or attempt >= _TRANSIENT_SEARCH_RETRIES:
+                    return {
+                        "error": error_text,
+                        "query": query,
+                        "results": [],
+                        "note": "Tavily search failed. Adjust the query or continue with evidence already collected.",
+                    }
+                delay = _TRANSIENT_SEARCH_BACKOFF_SECONDS[attempt]
+                logger.warning(
+                    "tavily_search transient failure stage=%s attempt=%s/%s retry_in=%.1fs error=%s",
+                    stage,
+                    attempt + 1,
+                    _TRANSIENT_SEARCH_RETRIES + 1,
+                    delay,
+                    error_text[:300],
+                )
+                time.sleep(delay)
         try:
-            search_kwargs = {
-                "max_results": max_results,
-                "include_raw_content": True,
-                "topic": topic,
-                "timeout": SEARCH_TIMEOUT,
-            }
-            effective_depth = depth_override if depth_override is not None else search_depth
-            if effective_depth:
-                search_kwargs["search_depth"] = effective_depth
-            if domains:
-                search_kwargs["include_domains"] = list(domains)
-            elif include_domains:
-                search_kwargs["include_domains"] = list(include_domains)
-            if exclude_domains:
-                search_kwargs["exclude_domains"] = list(exclude_domains)
-            response = _client().search(query, **search_kwargs)
             if isinstance(response, dict):
                 items = [
                     (index, item)

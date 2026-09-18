@@ -11,10 +11,12 @@ from typing import Any
 
 import config
 from tools import graph_manager_tools, report_tools, research_state
+from tools import graph_tools
 from tools.research_requirements import inspect_delivery_packet
 
 logger = logging.getLogger(__name__)
 _MAX_ATTEMPTS = 3
+_QUERY_PACKET_SHARE = 1 / 12
 _STRUCTURE_HEADING_RE = re.compile(r"(?m)^\s{0,3}(?:#{1,6}\s+)?(?:part|section|chapter|第[一二三四五六七八九十]+部分|[一二三四五六七八九十]+[、.)])\s*(.+?)\s*$", re.IGNORECASE)
 _NUMBERED_ITEM_RE = re.compile(r"(?m)^\s*(?:\d+[.)]|[一二三四五六七八九十]+[、.)])\s+(.+?)\s*$")
 _TABLE_SIGNAL_RE = re.compile(r"(?:表格|对比表|比较表|summary table|comparison table|table)", re.IGNORECASE)
@@ -55,6 +57,15 @@ def _estimate_tokens(value: Any) -> int:
     return max(1, len(json.dumps(value, ensure_ascii=False)) // 4)
 
 
+def _evidence_key(item: dict[str, Any]) -> str:
+    """Return a stable key for duplicate evidence exported by multiple queries."""
+    item_id = str(item.get("id") or "").strip()
+    if item_id:
+        return f"id:{item_id}"
+    text = re.sub(r"\s+", " ", str(item.get("text") or "")).strip().casefold()
+    return f"text:{text}" if text else ""
+
+
 def _derive_task_requirements(request: str) -> dict[str, Any]:
     """Extract explicit, surface-level delivery requirements from the request."""
     text = re.sub(r"\s+", " ", str(request or "")).strip()
@@ -85,7 +96,9 @@ def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
     export_errors: list[dict[str, Any]] = []
     used_numbers: set[int] = set()
     budget = config.GR_GLOBAL_PACKET_TOKENS * 4
+    query_budget = max(1, int(budget * _QUERY_PACKET_SHARE))
     used_chars = 0
+    seen_evidence: set[str] = set()
     objectives = {
         objective.get("objective_key"): objective
         for objective in context.get("objectives") or []
@@ -115,6 +128,7 @@ def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
         query_started_at = time.perf_counter()
         offset = 0
         query_items: list[dict[str, Any]] = []
+        query_chars = 0
         while True:
             page = report_tools.get_report_evidence(query_ref, offset=offset, limit=100)
             if page.get("error"):
@@ -144,13 +158,19 @@ def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
                     "target_components": query.get("target_components") or [],
                     "target_sections": query.get("target_sections") or [],
                 }
+                evidence_key = _evidence_key(compact)
+                if evidence_key and evidence_key in seen_evidence:
+                    continue
                 item_chars = len(json.dumps(compact, ensure_ascii=False))
-                if used_chars + item_chars > budget:
+                if query_chars + item_chars > query_budget or used_chars + item_chars > budget:
                     break
                 query_items.append(compact)
+                if evidence_key:
+                    seen_evidence.add(evidence_key)
+                query_chars += item_chars
                 used_chars += item_chars
                 used_numbers.update(int(number) for number in compact["citations"])
-            if used_chars >= budget or page.get("next_offset") is None:
+            if query_chars >= query_budget or used_chars >= budget or page.get("next_offset") is None:
                 break
             offset = int(page["next_offset"])
         if query_items:
@@ -161,7 +181,7 @@ def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
             len(ordered_queries),
             query_ref,
             len(query_items),
-            used_chars,
+            query_chars,
             time.perf_counter() - query_started_at,
         )
         if used_chars >= budget:
@@ -227,7 +247,13 @@ def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
         "citation_registry": registry,
         "blocked_sources": context.get("blocked_sources") or [],
         "export_errors": export_errors,
-        "budget": {"tokens": config.GR_GLOBAL_PACKET_TOKENS, "estimated_tokens": _estimate_tokens(findings)},
+        "budget": {
+            "tokens": config.GR_GLOBAL_PACKET_TOKENS,
+            "estimated_tokens": _estimate_tokens(findings),
+            "query_share": _QUERY_PACKET_SHARE,
+            "query_budget_chars": query_budget,
+            "deduplicated_items": len(seen_evidence),
+        },
     }
     if packet["rubrics"]:
         packet["atomic_diagnostics"] = inspect_delivery_packet(packet)
@@ -274,6 +300,22 @@ def _prompt(packet: dict[str, Any], feedback: str = "") -> str:
 def _authorize() -> dict[str, Any]:
     goal = research_state.get_goal()
     current = goal.get("research_state")
+    if current == research_state.FAILED:
+        # A failed run may still contain enough evidence for a bounded report.
+        # Do not discard that evidence solely because a later search failed.
+        successful_queries = [
+            query
+            for query in graph_tools.search_nodes("query", {})
+            if int(query.get("successful_search_runs") or 0) > 0
+        ]
+        if not successful_queries:
+            return {"error": "Reporter is not authorized from research state 'FAILED' without evidence"}
+        research_state.update_goal({
+            "research_state": research_state.REPORTING,
+            "reporting_from_state": current,
+            "report_authorized_reason": "best-effort report from partial research",
+        })
+        return {"error": "", "user_request": str(goal.get("request") or "")}
     if current not in research_state.REPORT_ALLOWED and current != research_state.REPORTING:
         return {"error": f"Reporter is not authorized from research state {current!r}"}
     if current != research_state.REPORTING:

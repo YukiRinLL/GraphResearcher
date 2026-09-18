@@ -17,6 +17,11 @@ from tools import graph_manager_tools, graph_tools, report_tools  # noqa: E402
 def main():
     query_id = "20260721093000123456_a1b2c3d4"
     request = "请按 Wikipedia 风格撰写机器人公司条目，并在每个事实段落就地引用。"
+    oversized = "# 调研报告\n\n" + ("证据内容。" * 20_000) + "\n\n## 参考文献\n\n[1] https://example.com\n"
+    bounded = app_main._bound_fallback_report(oversized, request)
+    assert len(bounded) <= app_main._MAX_FALLBACK_REPORT_CHARS
+    assert "## 参考文献" in bounded
+    assert "研究未完整完成" in bounded
     nodes = {
         "goal": {
             "id": "goal",
