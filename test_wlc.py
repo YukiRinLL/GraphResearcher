@@ -19,6 +19,7 @@ import re
 import shutil
 import subprocess
 import sys
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 
@@ -54,12 +55,12 @@ WLC_BENCHMARK = "2025_Mar_Nov"
 # 抽样数量：
 #   测试阶段建议保持较小，例如 5；设置为 <=0 表示跑完整数据集。
 #   如果数据量大且调用真实模型，建议先用小样本确认日志和输出格式。
-SAMPLE_SIZE = 5
+SAMPLE_SIZE = 10
 
 # 每条数据允许的 Searcher 调度轮数：
 #   测试阶段设置为 1 可以快速检查流程、日志和文件输出。
 #   正式跑质量评测时可调大，例如 6、12；设置为 0 表示不限制轮数。
-MAX_ROUNDS = 25
+MAX_ROUNDS = 40
 
 # 日志详细程度：
 #   debug 会在每条 run.log 中保留最完整的信息：
@@ -321,8 +322,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--eval-log-path", type=Path, default=None, help="Local file that mirrors official WLC output.")
     parser.add_argument("--wlc-python", default=sys.executable, help="Python executable used to run WLC scripts.")
     parser.add_argument("--json-steps", default="extract,fetch", help="WLC JSON generation steps.")
-    parser.add_argument("--json-concurrency", type=int, default=None, help="WLC JSON generation concurrency.")
-    parser.add_argument("--eval-max-workers", type=int, default=20, help="WLC evaluation max workers.")
+    parser.add_argument("--json-concurrency", type=int, default=10, help="WLC JSON generation concurrency.")
+    parser.add_argument("--eval-max-workers", type=int, default=10, help="WLC evaluation max workers.")
     parser.add_argument("--eval-top-k", type=int, default=10, help="Top-k similar statements for WLC verifiability.")
     parser.add_argument("--allow-tie", action="store_true", help="Allow tie results in WLC writing evaluation.")
     parser.add_argument(
@@ -359,15 +360,21 @@ def main() -> None:
     opts = resolve_log_options(args)
     report_paths: list[Path] = []
 
-    for item in tqdm(items, desc="Processing items"):
-        try:
-            report_path = run_one(item, args.output_path, args.max_rounds, opts)
-            if report_path is not None:
-                report_paths.append(report_path)
-        except KeyError as exc:
-            print(f"Skip malformed item missing {exc!s}: {item}")
-        except Exception as exc:  # noqa: BLE001 - keep long batch runs moving
-            print(f"Error processing id={item.get('id')}, title={item.get('title')}: {exc}")
+    with ProcessPoolExecutor(max_workers=10) as pool:
+        futures = {
+            pool.submit(run_one, item, args.output_path, args.max_rounds, opts): item
+            for item in items
+        }
+        for future in tqdm(as_completed(futures), total=len(futures), desc="Processing items"):
+            item = futures[future]
+            try:
+                report_path = future.result()
+                if report_path is not None:
+                    report_paths.append(report_path)
+            except KeyError as exc:
+                print(f"Skip malformed item missing {exc!s}: {item}")
+            except Exception as exc:  # noqa: BLE001 - keep long batch runs moving
+                print(f"Error processing id={item.get('id')}, title={item.get('title')}: {exc}")
 
     if args.evaluate:
         eval_work_dir = args.eval_work_dir or args.output_path / "_wlc_eval"

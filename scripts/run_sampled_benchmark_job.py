@@ -13,16 +13,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_RUN_ROOT = ROOT / "outputs" / "sampled_benchmark_runs"
-SAMPLES = {
-    "drb": [1, 17, 19, 31, 34, 40, 72, 79, 84, 97],
-    "drb2": [6, 11, 32, 39, 54, 55, 85, 96, 102, 124],
-    "wlc": [1, 4, 21, 38, 64, 68, 79, 80, 94, 98],
-}
-
-
+BENCHMARKS = {"drb", "drb2", "wlc"}
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--benchmark", choices=sorted(SAMPLES), required=True)
+    parser.add_argument("--benchmark", choices=sorted(BENCHMARKS), required=True)
     parser.add_argument("--item", type=int, required=True)
     parser.add_argument("--run-root", type=Path, default=DEFAULT_RUN_ROOT)
     parser.add_argument("--max-rounds", type=int, default=40)
@@ -72,7 +66,7 @@ def command_for(benchmark: str, item: int, output_root: Path, input_path: Path) 
             "--prompt-path", str(input_path),
             "--sample-size", "0", "--max-rounds", str(ARGS.max_rounds),
             "--verbose", ARGS.verbose, "--evaluate", "--eval-mode", "all",
-            "--eval-max-workers", "2",
+            "--eval-max-workers", "10",
         ], output
     if benchmark == "drb2":
         script = ROOT / "test_deepresearch_bench_ii.py"
@@ -96,16 +90,13 @@ def command_for(benchmark: str, item: int, output_root: Path, input_path: Path) 
         "--output-path", str(output), "--sample-size", "0", "--max-rounds", str(ARGS.max_rounds),
         "--verbose", ARGS.verbose, "--evaluate", "--eval-work-dir", str(work),
         "--eval-log-path", str(work / "official_output.log"), "--wlc-python", python,
-        "--eval-max-workers", "2",
+        "--eval-max-workers", "10",
     ], output
 
 
 def main() -> None:
     global ARGS
     ARGS = parse_args()
-    if ARGS.item not in SAMPLES[ARGS.benchmark]:
-        raise SystemExit(f"item={ARGS.item} is not in the fixed {ARGS.benchmark} sample")
-
     run_root = ARGS.run_root.resolve() / f"{ARGS.benchmark}-{ARGS.item}"
     run_root.mkdir(parents=True, exist_ok=True)
     output_root = run_root / "outputs"
@@ -115,7 +106,7 @@ def main() -> None:
         "started_at": datetime.now(timezone.utc).isoformat(),
         "benchmark": ARGS.benchmark,
         "item": ARGS.item,
-        "fixed_sample": SAMPLES[ARGS.benchmark],
+        "sample_size": 10,
         "command": command,
         "run_root": str(run_root),
         "output_root": str(output),

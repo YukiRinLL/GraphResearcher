@@ -109,6 +109,11 @@ def _test_searcher_pipeline():
     original_search = searcher._TAVILY_SEARCH
     original_model = searcher.config._model_cache.get("default")
     try:
+        class BlockResponse:
+            content = [{"type": "output_text", "text": '{"source": {}, "document": {}, "statements": [], "evidence": [], "conflicts": []}'}]
+
+        assert searcher._response_text(BlockResponse()).startswith('{"source"')
+
         normalized, reason = searcher._normalize_search_result({
             "url": "https://example.com/long",
             "raw_content": "x" * (searcher._MAX_SOURCE_RAW_CHARS + 1),

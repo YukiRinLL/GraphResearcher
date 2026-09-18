@@ -339,6 +339,22 @@ def web_search_node(state: SearcherState) -> dict:
     }
 
 
+def _response_text(response: Any) -> str:
+    """Normalize string and provider content-block responses to plain text."""
+    content = getattr(response, "content", response)
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts = []
+        for block in content:
+            if isinstance(block, dict):
+                parts.append(str(block.get("text") or block.get("content") or ""))
+            else:
+                parts.append(str(getattr(block, "text", block) or ""))
+        return "".join(parts)
+    return str(content or "")
+
+
 def _parse_source_packet(text: str) -> dict:
     """从模型文本中解析一个 source packet，失败时返回空 packet."""
     stripped = text.strip()
@@ -419,8 +435,7 @@ def _extract_source_packet(
         SystemMessage(content=config.analyzer_system_prompt),
         HumanMessage(content=json.dumps(analyzer_input, ensure_ascii=False)),
     ])
-    text = response.content if hasattr(response, "content") else str(response)
-    packet = _parse_source_packet(text)
+    packet = _parse_source_packet(_response_text(response))
     # 模型只提供概述与块选择；快照身份和定位状态由本次实际输入决定。
     for key in evidence_locations.SNAPSHOT_FIELDS:
         packet["document"].pop(key, None)

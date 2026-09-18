@@ -7,8 +7,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import sys
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 
@@ -21,8 +23,8 @@ from test_wlc import run_command_tee, sample_items
 BENCH_ROOT = Path(__file__).resolve().parent.parent / "deep_research_bench"
 OUTPUT_PATH = Path("outputs/deepresearch_bench")
 MODEL_NAME = "GraphResearcher"
-SAMPLE_SIZE = 5
-MAX_ROUNDS = 25
+SAMPLE_SIZE = 10
+MAX_ROUNDS = 40
 VERBOSE = "debug"
 
 
@@ -162,6 +164,9 @@ def run_bench_evaluation(
     if str(bench_root) not in sys.path:
         sys.path.insert(0, str(bench_root))
     env = bench_subprocess_env(bench_root, mode)
+    env["PYTHONPATH"] = os.pathsep.join(
+        filter(None, [str(bench_root), env.get("PYTHONPATH", "")])
+    )
     wrapper = Path(__file__).resolve().parent / "run_benchmark_background.py"
     raw_path = output_dir / "raw_data" / f"{model_name}.jsonl"
     work_dir = output_dir / "_evaluation" / model_name
@@ -233,7 +238,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--evaluate-only", action="store_true", help="Export and evaluate existing reports without running the agent.")
     parser.add_argument("--eval-mode", choices=["all", "race", "fact"], default="all")
     parser.add_argument("--bench-python", default=sys.executable, help="Existing Python executable for official scripts.")
-    parser.add_argument("--eval-max-workers", type=int, default=5)
+    parser.add_argument("--eval-max-workers", type=int, default=10)
     args = parser.parse_args()
     if args.eval_max_workers <= 0:
         parser.error("--eval-max-workers must be positive")
@@ -255,11 +260,17 @@ def main() -> None:
     if not args.evaluate_only:
         opts = resolve_log_options(args)
         selected = sample_items(items, args.sample_size, args.seed)
-        for item in tqdm(selected, desc="Processing items"):
-            try:
-                run_one(item, args.output_path, model_name, args.max_rounds, opts)
-            except Exception as exc:  # noqa: BLE001
-                print(f"Error processing id={item['id']}: {exc}")
+        with ProcessPoolExecutor(max_workers=10) as pool:
+            futures = {
+                pool.submit(run_one, item, args.output_path, model_name, args.max_rounds, opts): item
+                for item in selected
+            }
+            for future in tqdm(as_completed(futures), total=len(futures), desc="Processing items"):
+                item = futures[future]
+                try:
+                    future.result()
+                except Exception as exc:  # noqa: BLE001
+                    print(f"Error processing id={item['id']}: {exc}")
     export_reports(items, args.output_path, model_name)
     if args.evaluate or args.evaluate_only:
         run_bench_evaluation(

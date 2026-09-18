@@ -18,6 +18,7 @@ import random
 import re
 import shutil
 import subprocess
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 
@@ -34,8 +35,8 @@ dotenv.load_dotenv(".env")
 BENCH_ROOT = Path("/Users/yindq/projects/DeepResearch/DeepResearch-Bench-II")
 OUTPUT_PATH = Path("outputs/deepresearch_bench_ii")
 MODEL_NAME = "GraphResearcher"
-SAMPLE_SIZE = 5
-MAX_ROUNDS = 12
+SAMPLE_SIZE = 10
+MAX_ROUNDS = 40
 VERBOSE = "debug"
 RANDOM_SEED: int | None = None
 
@@ -387,11 +388,17 @@ def main() -> None:
         else:
             items = sample_items(items, args.sample_size, args.seed)
         opts = resolve_log_options(args)
-        for item in tqdm(items, desc="Processing items"):
-            try:
-                run_one(item, args.output_path, model_name, args.max_rounds, opts)
-            except Exception as exc:  # noqa: BLE001 - keep long benchmark runs moving
-                print(f"Error processing idx={item.get('idx')}, id={item.get('id')}: {exc}")
+        with ProcessPoolExecutor(max_workers=10) as pool:
+            futures = {
+                pool.submit(run_one, item, args.output_path, model_name, args.max_rounds, opts): item
+                for item in items
+            }
+            for future in tqdm(as_completed(futures), total=len(futures), desc="Processing items"):
+                item = futures[future]
+                try:
+                    future.result()
+                except Exception as exc:  # noqa: BLE001 - keep long benchmark runs moving
+                    print(f"Error processing idx={item.get('idx')}, id={item.get('id')}: {exc}")
 
     if args.evaluate or args.evaluate_only:
         run_bench_evaluation(
