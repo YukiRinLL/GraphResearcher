@@ -387,11 +387,22 @@ class MemoryManager:
 
             max_search_rounds = middleware.get_max_search_rounds()
             initial_query_limit = _initial_query_limit(max_search_rounds)
-            if self.run_plan.get("rubrics"):
-                # Requirement-linked queries are the acceptance contract;
-                # truncating them by the generic discovery cap drops coverage.
-                initial_query_limit = max(initial_query_limit, len(self.run_plan["rubrics"]))
-            parsed = self.run_plan or self._plan_initial_queries(user_request, initial_query_limit)
+            parsed = dict(self.run_plan) if self.run_plan else self._plan_initial_queries(user_request, initial_query_limit)
+            parsed.pop("rubrics", None)
+            generated_rubrics = self._generate_agent_rubrics(parsed)
+            parsed["rubrics"] = generated_rubrics
+            parsed["objectives"] = [
+                {
+                    **objective,
+                    "rubric_ids": [rubric["rubric_id"] for rubric in generated_rubrics
+                                    if rubric["statement"] in {
+                                        str(value).strip()
+                                        for value in objective.get("acceptance_criteria") or []
+                                    }],
+                }
+                for objective in (parsed.get("objectives") or [])
+                if isinstance(objective, dict)
+            ]
             excluded_domains = list(dict.fromkeys(filter(None, (
                 _normalize_domain(item) for item in _string_list(parsed.get("excluded_domains"))
             ))))
@@ -3680,6 +3691,35 @@ class MemoryManager:
     # -----------------------------
     # Internal LLM helpers
     # -----------------------------
+    def _generate_agent_rubrics(self, parsed: dict[str, Any]) -> list[dict[str, Any]]:
+        """Derive atomic rubric records only from the agent-authored plan."""
+        requirements: list[str] = []
+        for objective in parsed.get("objectives") or []:
+            if not isinstance(objective, dict):
+                continue
+            values = [objective.get("description"), *(objective.get("acceptance_criteria") or [])]
+            requirements.extend(str(value).strip() for value in values if str(value or "").strip())
+        for query in parsed.get("initial_queries") or []:
+            if isinstance(query, dict):
+                requirements.extend(str(value).strip() for value in query.get("acceptance_criteria") or [] if str(value or "").strip())
+        seen: set[str] = set()
+        rubrics: list[dict[str, Any]] = []
+        for index, statement in enumerate(requirements, start=1):
+            if statement in seen:
+                continue
+            seen.add(statement)
+            rubrics.append({
+                "rubric_id": f"agent-rubric-{index:03d}",
+                "source": "agent_generated",
+                "statement": statement,
+                "requirement": "must",
+                "status": "uncovered",
+                "weight": 1.0,
+                "target_sections": ["Answer"],
+                "evidence_requirements": ["direct evidence", "citation"],
+            })
+        return rubrics
+
     def _plan_initial_queries(
         self,
         user_request: str,

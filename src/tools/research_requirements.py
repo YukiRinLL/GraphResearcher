@@ -44,93 +44,64 @@ def _split_atomic_statement(statement: str) -> list[str]:
 
 
 def build_rubrics(task: dict[str, Any]) -> list[dict[str, Any]]:
-    """Build stable, auditable rubric records from one research task."""
-    content = task.get("content") if isinstance(task.get("content"), dict) else {}
-    rubric = content.get("rubric") if isinstance(content.get("rubric"), dict) else task.get("rubric") or {}
-    prompt = str(task.get("prompt") or task.get("description") or "")
-    sections = [
-        line.strip(" -*#：:")
-        for line in prompt.splitlines()
-        if re.match(r"^\s*(?:#{1,6}\s+|第[一二三四五六七八九十]+部分|Part\s+\w+)", line, re.IGNORECASE)
-    ]
+    """Build atomic, agent-authored rubric records from research requirements."""
+    requirements = task.get("requirements") or task.get("acceptance_criteria") or []
+    if isinstance(requirements, str):
+        requirements = [requirements]
     atomic: list[dict[str, Any]] = []
-    for index, (dimension, original) in enumerate(_flatten_rubric_values(rubric), start=1):
-        statements = _split_atomic_statement(original)
-        for part_index, statement in enumerate(statements, start=1):
-            numbers = _NUMERIC_RE.findall(statement)
-            years = _YEAR_RE.findall(statement)
-            answer_type = "numeric" if numbers or years else "fact"
-            if _TABLE_RE.search(statement):
-                answer_type = "table"
-            elif re.search(r"why|cause|effect|mechanism|原因|机制|影响|后果", statement, re.IGNORECASE):
-                answer_type = "analysis"
-            elif re.search(r"define|definition|what is|定义|什么是", statement, re.IGNORECASE):
-                answer_type = "definition"
-            rubric_id = f"task-{task.get('idx', task.get('id', 'task'))}-{dimension}-{index:03d}-{part_index:02d}"
-            atomic.append({
-                "rubric_id": rubric_id,
-                "source_dimension": dimension,
-                "dimension": {
-                    "info_recall": "information_recall",
-                    "information_recall": "information_recall",
-                    "analysis": "analysis",
-                    "presentation": "presentation",
-                }.get(dimension, dimension),
-                "requirement": "must",
-                "statement": statement,
-                "source_statement": original,
-                "answer_type": answer_type,
-                "expected_numbers": numbers,
-                "expected_years": years,
-                "target_sections": sections or ["Answer"],
-                "evidence_requirements": ["direct evidence", "citation"],
-                "blocked_source_policy": "reject",
-                "weight": 1.0,
-                "status": "uncovered",
-            })
+    for index, requirement in enumerate(requirements, start=1):
+        statement = str(requirement or "").strip()
+        if not statement:
+            continue
+        numbers = _NUMERIC_RE.findall(statement)
+        years = _YEAR_RE.findall(statement)
+        answer_type = "numeric" if numbers or years else "fact"
+        if _TABLE_RE.search(statement):
+            answer_type = "table"
+        elif re.search(r"why|cause|effect|mechanism|原因|机制|影响|后果", statement, re.IGNORECASE):
+            answer_type = "analysis"
+        elif re.search(r"define|definition|what is|定义|什么是", statement, re.IGNORECASE):
+            answer_type = "definition"
+        atomic.append({
+            "rubric_id": f"agent-rubric-{index:03d}",
+            "source": "agent_generated",
+            "dimension": answer_type,
+            "requirement": "must",
+            "statement": statement,
+            "source_statement": statement,
+            "answer_type": answer_type,
+            "expected_numbers": numbers,
+            "expected_years": years,
+            "target_sections": ["Answer"],
+            "evidence_requirements": ["direct evidence", "citation"],
+            "blocked_source_policy": "reject",
+            "weight": 1.0,
+            "status": "uncovered",
+        })
     return atomic
 
 
 def project_task_requirements(task: dict[str, Any]) -> dict[str, Any]:
-    """Project one task into generic GraphResearcher delivery metadata."""
+    """Project agent-authored research requirements into delivery metadata."""
     prompt = str(task.get("prompt") or task.get("description") or "")
-    content = task.get("content") if isinstance(task.get("content"), dict) else {}
-    rubric = content.get("rubric") if isinstance(content.get("rubric"), dict) else task.get("rubric") or {}
-    rubric_values = [item[1] for item in _flatten_rubric_values(rubric)]
-    text = " ".join([prompt, *rubric_values])
-    analysis_mode = "none"
-    if re.search(r"compare|comparison|对比|比较", text, re.IGNORECASE):
-        analysis_mode = "compare"
-    elif re.search(r"why|cause|causal|原因|机制|影响", text, re.IGNORECASE):
-        analysis_mode = "causal"
-    elif re.search(r"categor|分类|归类", text, re.IGNORECASE):
-        analysis_mode = "classification"
-    elif re.search(r"analy|分析|synthesi|综合", text, re.IGNORECASE):
-        analysis_mode = "synthesis"
-    blocked_sources = []
-    for match in _URL_RE.finditer(prompt):
-        url = match.group(0).rstrip(".,，。);）")
-        if re.search(r"not allowed|do not|ignore|不得|禁止|不能|不允许", prompt[max(0, match.start() - 180): match.end() + 80], re.IGNORECASE):
-            if url not in blocked_sources:
-                blocked_sources.append(url)
+    requirements = task.get("requirements") or task.get("acceptance_criteria") or []
+    if isinstance(requirements, str):
+        requirements = [requirements]
+    rubric_values = [str(value).strip() for value in requirements if str(value).strip()]
     return {
         "task_id": task.get("id"),
         "language": task.get("language") or ("zh" if re.search(r"[\u4e00-\u9fff]", prompt) else "en"),
-        "analysis_mode": analysis_mode,
+        "analysis_mode": "synthesis",
         "required_components": rubric_values,
-        "target_sections": [
-            line.strip(" -*#：:")
-            for line in prompt.splitlines()
-            if re.match(r"^\s*(?:#{1,6}\s+|第[一二三四五六七八九十]+部分|Part\s+\w+)", line, re.IGNORECASE)
-        ],
-        "blocked_sources": blocked_sources,
-        "rubric_dimensions": sorted(rubric),
+        "target_sections": [],
+        "blocked_sources": [],
+        "rubric_dimensions": sorted({item["dimension"] for item in build_rubrics(task)}),
         "rubrics": build_rubrics(task),
     }
 
 
 def load_task_records(path: str | Path) -> list[dict[str, Any]]:
-    """Load and project JSONL task records without touching runtime state."""
+    """Load generic agent-authored requirement records, never benchmark metadata."""
     tasks = []
     for line in Path(path).read_text(encoding="utf-8").splitlines():
         if line.strip():
