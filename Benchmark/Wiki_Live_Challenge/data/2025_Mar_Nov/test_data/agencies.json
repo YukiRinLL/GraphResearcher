@@ -1,0 +1,72 @@
+{
+  "description": "Registered agencies for Wiki Live Challenge evaluation",
+  "version": "1.0",
+  "agencies": {
+    "deep_researcher": {
+      "name": "Deep Researcher",
+      "description": "GAIR-NLP deep research agent",
+      "has_citations": false,
+      "enabled": true
+    },
+    "doubao": {
+      "name": "Doubao",
+      "description": "ByteDance Doubao model",
+      "has_citations": true,
+      "enabled": true
+    },
+    "gemini_2.5_pro": {
+      "name": "Gemini 2.5 Pro",
+      "description": "Google Gemini 2.5 Pro model",
+      "has_citations": true,
+      "enabled": true
+    },
+    "gemini_3_pro": {
+      "name": "Gemini 3 Pro",
+      "description": "Google Gemini 3 Pro model",
+      "has_citations": true,
+      "enabled": true
+    },
+    "grok": {
+      "name": "Grok",
+      "description": "xAI Grok model",
+      "has_citations": true,
+      "enabled": true
+    },
+    "langchain_w_gpt4.1": {
+      "name": "LangChain with GPT-4.1",
+      "description": "LangChain agent with GPT-4.1",
+      "has_citations": true,
+      "enabled": true
+    },
+    "langchain_w_gpt5": {
+      "name": "LangChain with GPT-5",
+      "description": "LangChain agent with GPT-5",
+      "has_citations": true,
+      "enabled": true
+    },
+    "openai": {
+      "name": "OpenAI",
+      "description": "OpenAI o3 model",
+      "has_citations": true,
+      "enabled": true
+    },
+    "perplexity": {
+      "name": "Perplexity",
+      "description": "Perplexity AI search model",
+      "has_citations": true,
+      "enabled": true
+    },
+    "qwen": {
+      "name": "Qwen",
+      "description": "Alibaba Qwen model",
+      "has_citations": true,
+      "enabled": true
+    },
+    "tongyi": {
+      "name": "Tongyi Qianwen",
+      "description": "Alibaba Tongyi Qianwen model",
+      "has_citations": false,
+      "enabled": true
+    }
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "name": "Wiki Fact Criteria",
+  "description": "Wikipedia article factual accuracy and citation evaluation criteria",
+  "version": "1.0",
+  "dimensions": {
+    "verifiability": {
+      "name": "Verifiability",
+      "description": "Evaluates the factual consistency between generated article and Wikipedia ground truth article",
+      "metrics": {
+        "gen_to_wiki": {
+          "name": "Gen → Wiki Direction",
+          "description": "Verifies how well statements in the generated article are supported by Wikipedia",
+          "items": [
+            {
+              "id": "gen_supported_by_wiki",
+              "name": "Supported by Wiki",
+              "description": "Proportion of Gen statements that are supported by Wiki content"
+            },
+            {
+              "id": "gen_not_supported_by_wiki",
+              "name": "Not Supported by Wiki",
+              "description": "Proportion of Gen statements that Wiki does not mention"
+            },
+            {
+              "id": "gen_conflict_with_wiki",
+              "name": "Conflict with Wiki",
+              "description": "Proportion of Gen statements that contradict Wiki content"
+            }
+          ]
+        },
+        "wiki_to_gen": {
+          "name": "Wiki → Gen Direction",
+          "description": "Verifies how well the generated article covers Wikipedia content",
+          "items": [
+            {
+              "id": "wiki_covered_by_gen",
+              "name": "Covered by Gen",
+              "description": "Proportion of Wiki statements that are covered by Gen content"
+            },
+            {
+              "id": "wiki_not_covered_by_gen",
+              "name": "Not Covered by Gen",
+              "description": "Proportion of Wiki statements that Gen does not mention"
+            },
+            {
+              "id": "wiki_conflict_with_gen",
+              "name": "Conflict with Gen",
+              "description": "Proportion of Wiki statements that contradict Gen content"
+            }
+          ]
+        }
+      },
+      "verdict_options": ["consistent", "inconsistent", "not_support"],
+      "prompts": {
+        "system": "You are a professional data annotator. Given a sentence and a paragraph composed of several gold factual support sentences, your task is to verify whether the sentence is consistent with the facts. Matching any single support sentence is enough for consistency.",
+        "decision_policy": {
+          "consistent": "At least one support sentence directly entails or clearly confirms the statement.",
+          "inconsistent": "At least one support sentence clearly contradicts the statement.",
+          "not_support": "No support sentence clearly confirms or contradicts the statement (insufficient evidence)."
+        }
+      }
+    },
+    "citation": {
+      "name": "Citation",
+      "description": "Evaluates whether statements in the generated article are supported by their cited sources",
+      "metrics": {
+        "support_ratio": {
+          "name": "Support Ratio",
+          "description": "Proportion of statements that are supported by their cited sources"
+        },
+        "conflict_ratio": {
+          "name": "Conflict Ratio",
+          "description": "Proportion of statements that contradict their cited sources"
+        },
+        "coverage_ratio": {
+          "name": "Coverage Ratio",
+          "description": "Proportion of statements that have citations"
+        }
+      },
+      "verdict_options": ["support", "not_support", "conflict"],
+      "prompts": {
+        "system": "You are a fact verification expert. Follow the instructions carefully and output only valid JSON.",
+        "decision_policy": {
+          "support": "The citation content clearly supports or is consistent with the statement.",
+          "not_support": "The citation content does not provide enough information to support the statement.",
+          "conflict": "The citation content contradicts the statement."
+        }
+      }
+    }
+  }
+}

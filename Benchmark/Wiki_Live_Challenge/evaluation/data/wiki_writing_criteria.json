@@ -1,0 +1,246 @@
+{
+  "name": "Wiki Writing Criteria",
+  "description": "Wikipedia article writing quality evaluation criteria based on Wikipedia Manual of Style",
+  "version": "1.0",
+  "categories": [
+    {
+      "id": "well_written",
+      "name": "Well-written",
+      "description": "The prose is clear, concise, and understandable to an appropriately broad audience; spelling and grammar are correct.",
+      "subcategories": [
+        {
+          "id": "clear_concise",
+          "name": "Clear & Concise",
+          "description": "The prose is clear, concise, and understandable to an appropriately broad audience; spelling and grammar are correct.",
+          "criteria": [
+            {
+              "id": "ww_cc_1",
+              "index": 0,
+              "text": "Articles should be written in encyclopedic style, which differs from the technically dense style found in scholarly writing aimed at specialists."
+            },
+            {
+              "id": "ww_cc_2",
+              "index": 1,
+              "text": "Articles should address the topic without twisting the truth or telling \"lies-to-children\", but should also minimize (unexplained) jargon and not take prior knowledge for granted."
+            },
+            {
+              "id": "ww_cc_3",
+              "index": 2,
+              "text": "Articles should be self-contained as much as possible, rather than relying on excessive links to explain unfamiliar concepts."
+            }
+          ]
+        },
+        {
+          "id": "lead_section",
+          "name": "Lead section",
+          "description": "In Wikipedia, the lead section is an introduction to an article and a summary of its most important contents. It is located at the beginning of the article, before the first heading. It is not a news-style lead or \"lede\" paragraph.",
+          "criteria": [
+            {
+              "id": "ww_ls_1",
+              "index": 3,
+              "text": "An article's content should begin with an introductory lead section – a concise summary of the article – which is never divided into sections. The remainder of the article is typically divided into sections."
+            },
+            {
+              "id": "ww_ls_2",
+              "index": 4,
+              "text": "The lead section gives the basics in a nutshell, introduces the article, and cultivates interest in reading on—though not by teasing the reader or hinting at what follows."
+            },
+            {
+              "id": "ww_ls_3",
+              "index": 5,
+              "text": "The lead section should be written in a clear, accessible style with a neutral point of view."
+            },
+            {
+              "id": "ww_ls_4",
+              "index": 6,
+              "text": "The lead should stand on its own as a concise overview of the article's topic. It should identify the topic, establish context, explain why the topic is notable, and summarize the most important points, including any prominent controversies. The notability of the article's subject is usually established in the first few sentences."
+            },
+            {
+              "id": "ww_ls_5",
+              "index": 7,
+              "text": "As in the body of the article itself, the emphasis given to material in the lead should roughly reflect its importance to the topic, according to reliable, published sources. Apart from basic facts, significant information should not appear in the lead if it is not covered in the remainder of the article."
+            },
+            {
+              "id": "ww_ls_6",
+              "index": 8,
+              "text": "A lead section should be carefully sourced as appropriate, although it is common for citations to appear in the body and not the lead."
+            },
+            {
+              "id": "ww_ls_7",
+              "index": 9,
+              "text": "Significant information should not appear in the lead, apart from basic facts, if it is not covered in the remainder of the article, although not everything in the lead must be repeated in the body of the text. Exceptions include specific facts such as quotations, examples, birth dates, taxonomic names and typological classifications, case numbers, and titles."
+            }
+          ]
+        },
+        {
+          "id": "words_to_watch",
+          "name": "Words to Watch",
+          "description": "There are no forbidden words or expressions on Wikipedia, but certain expressions should be used with caution because they may introduce bias or imprecise meaning. Strive to eliminate expressions that are flattering, disparaging, vague, clichéd, or endorsing of a particular viewpoint.",
+          "criteria": [
+            {
+              "id": "ww_wtw_1",
+              "index": 10,
+              "text": "Puffery: Words such as legendary, best, great, greatest, acclaimed, iconic, visionary, outstanding, leading, celebrated, popular, award-winning, landmark, cutting-edge, innovative, revolutionary, extraordinary, brilliant, hit, famous, renowned, remarkable, prestigious, world-class, respected, notable, virtuoso, honorable, awesome, unique, pioneering, phenomenal, prominent are often used without attribution to promote the subject of an article. Instead of making subjective proclamations about a subject's importance, use facts and attribution to demonstrate it."
+            },
+            {
+              "id": "ww_wtw_2",
+              "index": 11,
+              "text": "Contentious labels: Value-laden labels – such as calling an organization a cult, an individual a racist, sexist, terrorist, or freedom fighter, or a sexual practice a perversion – may express contentious opinion and are best avoided unless widely used by reliable sources to describe the subject, in which case use in-text attribution."
+            },
+            {
+              "id": "ww_wtw_3",
+              "index": 12,
+              "text": "Unsupported attributions: Words like \"some people say\", \"many scholars state\", \"it is believed/regarded/considered\", \"experts declare\", \"it is widely thought\", \"research has shown\" may disguise a biased view. Claims about what people say, think, feel, or believe should be clearly attributed."
+            },
+            {
+              "id": "ww_wtw_4",
+              "index": 13,
+              "text": "Expressions of doubt: When words like supposed, apparent, purported, alleged, accused, so-called are used, ensure that the source of the accusation is clear. Also avoid scare-quoting and undue emphasis."
+            },
+            {
+              "id": "ww_wtw_5",
+              "index": 14,
+              "text": "Editorializing: Words like notably, it should be noted, arguably, interestingly, essentially, utterly, actually, only, clearly, absolutely, of course, without a doubt, indeed, happily, sadly, tragically, aptly, fortunately, unfortunately, untimely should usually be avoided to maintain an impartial tone."
+            },
+            {
+              "id": "ww_wtw_6",
+              "index": 15,
+              "text": "Synonyms for said: Words like reveal, point out, clarify, expose, explain, find, note, observe, insist, speculate, surmise, claim, assert, admit, confess, deny, confirm may make undue implications. On Wikipedia, it is more important to avoid language that makes undue implications."
+            },
+            {
+              "id": "ww_wtw_7",
+              "index": 16,
+              "text": "Euphemisms: Euphemisms like passed away, gave her life, eternal rest, make love, an issue with, collateral damage, differently abled should generally be avoided in favor of more neutral and precise terms."
+            },
+            {
+              "id": "ww_wtw_8",
+              "index": 17,
+              "text": "Clichés and idioms: Clichés and idioms like lion's share, tip of the iceberg, white elephant, gild the lily, take the plunge, ace up the sleeve should generally be avoided in favor of direct, literal expressions."
+            },
+            {
+              "id": "ww_wtw_9",
+              "index": 18,
+              "text": "Relative time references: Prefer specific statements to general ones. Words like recently, lately, currently, today, presently, to date, X years ago, formerly, in the past, traditionally should be avoided."
+            },
+            {
+              "id": "ww_wtw_10",
+              "index": 19,
+              "text": "Unspecified places or events: Prefer specific statements to general ones. Words like this country, here, there, somewhere, sometimes, often, occasionally, somehow should be avoided."
+            },
+            {
+              "id": "ww_wtw_11",
+              "index": 20,
+              "text": "Survived by: Phrasing such as \"Smith died in 1982, survived by her husband Jack and two sons\" should be avoided; this information can be made more complete and spread out through the article."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "broad_coverage",
+      "name": "Broad in its coverage",
+      "description": "The article addresses the main aspects of the topic and stays focused without going into unnecessary detail.",
+      "subcategories": [],
+      "criteria": [
+        {
+          "id": "bc_1",
+          "index": 21,
+          "text": "It addresses the main aspects of the topic."
+        },
+        {
+          "id": "bc_2",
+          "index": 22,
+          "text": "The lead, ideally the introductory sentence or at least introductory paragraph, of an article, should make clear what the scope of the article is."
+        },
+        {
+          "id": "bc_3",
+          "index": 23,
+          "text": "All material that is notable, referenced, and that a reader would be likely to agree matches the specified scope must be covered (at least in a summarized fashion)."
+        },
+        {
+          "id": "bc_4",
+          "index": 24,
+          "text": "What reliable sources say about material that is out of scope for the decided-upon subject is largely irrelevant to that article and can be removed."
+        },
+        {
+          "id": "bc_5",
+          "index": 25,
+          "text": "It stays focused on the topic without going into unnecessary detail."
+        },
+        {
+          "id": "bc_6",
+          "index": 26,
+          "text": "The lead contains a quick summary of the topic's most important points."
+        },
+        {
+          "id": "bc_7",
+          "index": 27,
+          "text": "Each major subtopic is detailed in its own section of the article."
+        },
+        {
+          "id": "bc_8",
+          "index": 28,
+          "text": "It contains no irrelevant (nor only loosely relevant) information."
+        }
+      ]
+    },
+    {
+      "id": "neutral",
+      "name": "Neutral",
+      "description": "Achieving neutrality means carefully and critically analyzing a variety of reliable sources and then attempting to convey to the reader the information contained in them fairly, proportionately, and as far as possible without editorial bias.",
+      "subcategories": [],
+      "criteria": [
+        {
+          "id": "n_1",
+          "index": 29,
+          "text": "It represents viewpoints fairly and without editorial bias, giving due weight to each."
+        },
+        {
+          "id": "n_2",
+          "index": 30,
+          "text": "Avoid stating opinions as facts. Opinions should be attributed in the text to particular sources, or where justified, described as widespread views, etc."
+        },
+        {
+          "id": "n_3",
+          "index": 31,
+          "text": "Avoid stating seriously contested assertions as facts. If different reliable sources make conflicting assertions about a matter, treat these assertions as opinions rather than facts."
+        },
+        {
+          "id": "n_4",
+          "index": 32,
+          "text": "Avoid stating facts as opinions. Uncontested and uncontroversial factual assertions made by reliable sources should normally be directly stated in Wikipedia's voice."
+        },
+        {
+          "id": "n_5",
+          "index": 33,
+          "text": "Prefer nonjudgmental language. A neutral point of view neither sympathizes with nor disparages its subject. Present opinions and conflicting findings in a disinterested tone. Do not editorialize."
+        },
+        {
+          "id": "n_6",
+          "index": 34,
+          "text": "Indicate the relative prominence of opposing views. Ensure that the reporting of different views on a subject adequately reflects the relative levels of support for those views and does not give a false impression of parity."
+        },
+        {
+          "id": "n_7",
+          "index": 35,
+          "text": "An article should not give undue weight to minor aspects of its subject but should strive to treat each aspect with a weight proportional to its treatment in the body of reliable, published material on the subject."
+        },
+        {
+          "id": "n_8",
+          "index": 36,
+          "text": "Any inclusion of fringe or pseudoscientific views should not give them undue weight. The fringe or pseudoscientific view should be clearly described as such."
+        },
+        {
+          "id": "n_9",
+          "index": 37,
+          "text": "In the case of beliefs and practices, Wikipedia content should not only encompass what motivates individuals who hold these beliefs and practices but also account for how such beliefs and practices developed."
+        },
+        {
+          "id": "n_10",
+          "index": 38,
+          "text": "Article titles that combine alternative names are discouraged. Alternative names should be given their due prominence within the article itself, and redirects created as appropriate."
+        }
+      ]
+    }
+  ]
+}

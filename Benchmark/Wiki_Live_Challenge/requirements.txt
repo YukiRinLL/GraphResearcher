@@ -1,0 +1,13 @@
+# Wiki Live Challenge Dependencies
+
+# Core dependencies (required for all functionality)
+requests>=2.28.0
+numpy>=1.24.0
+tqdm>=4.65.0
+
+# Evaluation dependencies
+openai>=1.0.0          # For text embeddings (verifiability evaluation)
+tiktoken>=0.5.0        # For token counting
+
+# Optional: Data analysis
+# pandas>=2.0.0        # Uncomment for data analysis features

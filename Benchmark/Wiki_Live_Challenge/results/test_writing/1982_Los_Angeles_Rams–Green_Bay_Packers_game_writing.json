@@ -1,0 +1,394 @@
+{
+  "topic": "1982_Los_Angeles_Rams–Green_Bay_Packers_game",
+  "mode": "winrate",
+  "allow_tie": false,
+  "aggregate": {
+    "Neutral": {
+      "gen_wins": 0,
+      "gt_wins": 10,
+      "ties": 0,
+      "total": 10,
+      "gen_win_rate": 0.0
+    },
+    "Broad in its coverage": {
+      "gen_wins": 1,
+      "gt_wins": 7,
+      "ties": 0,
+      "total": 8,
+      "gen_win_rate": 0.125
+    },
+    "Well-written": {
+      "gen_wins": 1,
+      "gt_wins": 20,
+      "ties": 0,
+      "total": 21,
+      "gen_win_rate": 0.047619047619047616
+    },
+    "overall": {
+      "gen_wins": 2,
+      "gt_wins": 37,
+      "ties": 0,
+      "total": 39,
+      "gen_win_rate": 0.05128205128205128
+    }
+  },
+  "details": {
+    "Neutral": [
+      {
+        "criterion_id": "n_1",
+        "criterion_index": 29,
+        "criterion_text": "It represents viewpoints fairly and without editorial bias, giving due weight to each.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 presents a balanced, factual account of the game from both teams' perspectives. Article 2 is written with a strong pro-Packers bias, framing the entire event as the 'Milwaukee Miracle' and using language that lionizes the Packers' comeback while dramatizing the Rams' loss."
+      },
+      {
+        "criterion_id": "n_2",
+        "criterion_index": 30,
+        "criterion_text": "Avoid stating opinions as facts. Opinions should be attributed in the text to particular sources, or where justified, described as widespread views, etc.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 properly attributes opinions and analysis to specific sources like historians and authors in its 'Legacy' section. Article 2 is replete with the author's own unattributed opinions stated as fact, such as calling a specific play the 'total psychological collapse of the Rams.'"
+      },
+      {
+        "criterion_id": "n_3",
+        "criterion_index": 31,
+        "criterion_text": "Avoid stating seriously contested assertions as facts. If different reliable sources make conflicting assertions about a matter, treat these assertions as opinions rather than facts.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 sticks to the verifiable facts of the game and attributes interpretations. Article 2 makes strong, potentially contestable assertions in its own voice, such as declaring the win a 'mathematical necessity' for the Packers' playoff chances, which is an interpretation, not an undisputed fact."
+      },
+      {
+        "criterion_id": "n_4",
+        "criterion_index": 32,
+        "criterion_text": "Avoid stating facts as opinions. Uncontested and uncontroversial factual assertions made by reliable sources should normally be directly stated in Wikipedia's voice.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 presents facts in a direct and unadorned manner, which is appropriate for an encyclopedia. Article 2 often dresses up facts in opinionated language, such as calling the Packers' turnovers a 'Turnover Epidemic,' which blurs the line between fact and opinion."
+      },
+      {
+        "criterion_id": "n_5",
+        "criterion_index": 33,
+        "criterion_text": "Prefer nonjudgmental language. A neutral point of view neither sympathizes with nor disparages its subject. Present opinions and conflicting findings in a disinterested tone. Do not editorialize.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 uses objective, nonjudgmental language throughout. Article 2 is highly editorialized, using loaded and dramatic terms like 'crucible,' 'nightmare scenario,' 'ineptitude,' and 'avalanche,' which violates the principle of a disinterested tone."
+      },
+      {
+        "criterion_id": "n_6",
+        "criterion_index": 34,
+        "criterion_text": "Indicate the relative prominence of opposing views. Ensure that the reporting of different views on a subject adequately reflects the relative levels of support for those views and does not give a false impression of parity.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1's 'Analysis' section provides a balanced look at the factors contributing to the outcome for both teams, such as Packers turnovers and Rams penalties. Article 2's narrative is overwhelmingly focused on the Packers' comeback, failing to give adequate weight to the Rams' perspective beyond their 'collapse.'"
+      },
+      {
+        "criterion_id": "n_7",
+        "criterion_index": 35,
+        "criterion_text": "An article should not give undue weight to minor aspects of its subject but should strive to treat each aspect with a weight proportional to its treatment in the body of reliable, published material on the subject.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 maintains a standard and proportional structure, focusing on the game itself. Article 2 gives undue weight to contextual elements, with an entire major section dedicated to the 'Geopolitical Landscape of the NFL,' which is disproportionate for an article about a single game."
+      },
+      {
+        "criterion_id": "n_8",
+        "criterion_index": 36,
+        "criterion_text": "Any inclusion of fringe or pseudoscientific views should not give them undue weight. The fringe or pseudoscientific view should be clearly described as such.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "This criterion is not directly applicable, but in spirit, Article 1 is more rigorously sourced and factual. Article 2 gives significant narrative weight to an anecdotal piece of 'lore' (the 'Honky-Tonk' incident), which is less encyclopedic than the sourced analysis in Article 1."
+      },
+      {
+        "criterion_id": "n_9",
+        "criterion_index": 37,
+        "criterion_text": "In the case of beliefs and practices, Wikipedia content should not only encompass what motivates individuals who hold these beliefs and practices but also account for how such beliefs and practices developed.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Interpreting 'beliefs' as the belief in the game's legacy, Article 1 better explains how this belief developed by citing historians who identified the game as a key moment. Article 2 simply asserts the belief from the outset by calling it a 'Miracle' without explaining the origin of that perception."
+      },
+      {
+        "criterion_id": "n_10",
+        "criterion_index": 38,
+        "criterion_text": "Article titles that combine alternative names are discouraged. Alternative names should be given their due prominence within the article itself, and redirects created as appropriate.",
+        "category": "Neutral",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1's title, '1982 Los Angeles Rams–Green Bay Packers game,' is neutral, standard, and encyclopedic. Article 2's title is editorialized ('The Milwaukee Miracle'), excessively long, and violates Wikipedia's naming conventions by using a non-neutral nickname as the primary identifier."
+      }
+    ],
+    "Broad in its coverage": [
+      {
+        "criterion_id": "bc_1",
+        "criterion_index": 21,
+        "criterion_text": "It addresses the main aspects of the topic.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 is more effective at addressing the main aspects of the topic because it is focused and presents the key information—background, game events, and aftermath—clearly and concisely. Article 2, while more detailed, dilutes these main aspects with extensive tangential context."
+      },
+      {
+        "criterion_id": "bc_2",
+        "criterion_index": 22,
+        "criterion_text": "The lead, ideally the introductory sentence or at least introductory paragraph, of an article, should make clear what the scope of the article is.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1's lead is a model of an encyclopedic introduction. It immediately identifies the subject and its key features, clearly defining the scope of the article as the game itself. Article 2's introduction sets the scope for a historical essay, which is less direct and appropriate for this format."
+      },
+      {
+        "criterion_id": "bc_3",
+        "criterion_index": 23,
+        "criterion_text": "All material that is notable, referenced, and that a reader would be likely to agree matches the specified scope must be covered (at least in a summarized fashion).",
+        "category": "Broad in its coverage",
+        "winner": "gen",
+        "winner_code": 2,
+        "reason": "Article 2 provides a much more thorough and impactful explanation of the 1982 NFL players' strike, correctly framing it as a critical piece of context that magnified the game's importance. Article 1 only mentions this notable material briefly in the aftermath section."
+      },
+      {
+        "criterion_id": "bc_4",
+        "criterion_index": 24,
+        "criterion_text": "What reliable sources say about material that is out of scope for the decided-upon subject is largely irrelevant to that article and can be removed.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 is tightly focused on the game. Article 2 includes extensive sections on the broader league labor situation and deep franchise histories, which contain material that is arguably out of scope for an article about a single sporting event."
+      },
+      {
+        "criterion_id": "bc_5",
+        "criterion_index": 25,
+        "criterion_text": "It stays focused on the topic without going into unnecessary detail.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 excels at staying focused, providing details directly relevant to the game. Article 2 includes unnecessary details, such as the Milwaukee Brewers' concurrent pennant race and the specifics of Vince Ferragamo's career detour to the CFL."
+      },
+      {
+        "criterion_id": "bc_6",
+        "criterion_index": 26,
+        "criterion_text": "The lead contains a quick summary of the topic's most important points.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1's lead provides a superior summary of the most important points. It is more factual and direct, including the specific score progression (23-0 lead, 35 unanswered points) and the record-setting nature of the comeback, which Article 2's more narrative lead omits."
+      },
+      {
+        "criterion_id": "bc_7",
+        "criterion_index": 27,
+        "criterion_text": "Each major subtopic is detailed in its own section of the article.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 uses a clear, logical, and standard encyclopedic structure (Background, Game Summary, Aftermath, Legacy) that effectively organizes the information. Article 2's sectioning is more interpretive and narrative (e.g., 'The Locker Room Interlude', 'The Crucible...'), which is less objective."
+      },
+      {
+        "criterion_id": "bc_8",
+        "criterion_index": 28,
+        "criterion_text": "It contains no irrelevant (nor only loosely relevant) information.",
+        "category": "Broad in its coverage",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 is lean and purposeful, containing only information directly pertinent to the game. Article 2 includes loosely relevant information, such as descriptions of the stadium's crowd atmosphere and a potentially apocryphal anecdote from the halftime huddle."
+      }
+    ],
+    "Well-written": [
+      {
+        "criterion_id": "ww_cc_1",
+        "criterion_index": 0,
+        "criterion_text": "Articles should be written in encyclopedic style, which differs from the technically dense style found in scholarly writing aimed at specialists.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 is written in a direct, factual, and neutral encyclopedic style. Article 2 adopts the tone of a feature-length historical analysis, with dramatic headings and a narrative voice, which is less aligned with Wikipedia's standard."
+      },
+      {
+        "criterion_id": "ww_cc_2",
+        "criterion_index": 1,
+        "criterion_text": "Articles should address the topic without twisting the truth or telling \"lies-to-children\", but should also minimize (unexplained) jargon and not take prior knowledge for granted.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 presents the game's events in straightforward terms. Article 2 uses more complex and analytical language (e.g., 'strategic calculus', 'aerial potency') that assumes a higher level of prior knowledge from the reader."
+      },
+      {
+        "criterion_id": "ww_cc_3",
+        "criterion_index": 2,
+        "criterion_text": "Articles should be self-contained as much as possible, rather than relying on excessive links to explain unfamiliar concepts.",
+        "category": "Well-written",
+        "winner": "gen",
+        "winner_code": 2,
+        "reason": "Article 2 is more self-contained because it dedicates entire sections to explaining the broader context, such as the looming players' strike and its impact on the playoff format, reducing the need for the reader to consult other articles."
+      },
+      {
+        "criterion_id": "ww_ls_1",
+        "criterion_index": 3,
+        "criterion_text": "An article's content should begin with an introductory lead section – a concise summary of the article – which is never divided into sections. The remainder of the article is typically divided into sections.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 perfectly follows Wikipedia's structure with a concise, un-sectioned lead followed by distinct sections. Article 2 incorrectly places its lead under a numbered heading ('1. Introduction'), which violates the guideline."
+      },
+      {
+        "criterion_id": "ww_ls_2",
+        "criterion_index": 4,
+        "criterion_text": "The lead section gives the basics in a nutshell, introduces the article, and cultivates interest in reading on—though not by teasing the reader or hinting at what follows.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1's lead is a direct summary of the article's key facts. Article 2's lead is more stylistic, using phrases like 'gathering storm clouds' to build interest, which borders on the 'teasing' that the guideline advises against."
+      },
+      {
+        "criterion_id": "ww_ls_3",
+        "criterion_index": 5,
+        "criterion_text": "The lead section should be written in a clear, accessible style with a neutral point of view.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1's lead is written with a neutral point of view. Article 2's lead immediately adopts a non-neutral moniker ('Milwaukee Miracle') and uses subjective, dramatic language ('profound inflection point')."
+      },
+      {
+        "criterion_id": "ww_ls_4",
+        "criterion_index": 6,
+        "criterion_text": "The lead should stand on its own as a concise overview of the article's topic. It should identify the topic, establish context, explain why the topic is notable, and summarize the most important points, including any prominent controversies. The notability of the article's subject is usually established in the first few sentences.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1's lead functions as a perfect standalone summary, establishing notability by citing the comeback as a team record. Article 2's lead is more of a thesis statement for its subsequent analysis."
+      },
+      {
+        "criterion_id": "ww_ls_5",
+        "criterion_index": 7,
+        "criterion_text": "As in the body of the article itself, the emphasis given to material in the lead should roughly reflect its importance to the topic, according to reliable, published sources. Apart from basic facts, significant information should not appear in the lead if it is not covered in the remainder of the article.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "The emphasis in Article 1's lead on the game's flow and historical record is perfectly mirrored in the body. Article 2's lead emphasizes its analytical framework, but Article 1's focus is more appropriate for a standard encyclopedia article."
+      },
+      {
+        "criterion_id": "ww_ls_6",
+        "criterion_index": 8,
+        "criterion_text": "A lead section should be carefully sourced as appropriate, although it is common for citations to appear in the body and not the lead.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "While neither lead has citations, Article 1's lead consists of basic facts that are clearly supported and expanded upon in the body. Article 2's lead makes more interpretive claims that would ideally require more immediate support."
+      },
+      {
+        "criterion_id": "ww_ls_7",
+        "criterion_index": 9,
+        "criterion_text": "Significant information should not appear in the lead, apart from basic facts, if it is not covered in the remainder of the article, although not everything in the lead must be repeated in the body of the text. Exceptions include specific facts such as quotations, examples, birth dates, taxonomic names and typological classifications, case numbers, and titles.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Both articles are internally consistent, but Article 1's structure is a textbook example of the lead summarizing the body. All key facts mentioned in its lead are present and expanded upon in the article."
+      },
+      {
+        "criterion_id": "ww_wtw_1",
+        "criterion_index": 10,
+        "criterion_text": "Puffery: Words such as legendary, best, great, greatest, acclaimed, iconic, visionary, outstanding, leading, celebrated, popular, award-winning, landmark, cutting-edge, innovative, revolutionary, extraordinary, brilliant, hit, famous, renowned, remarkable, prestigious, world-class, respected, notable, virtuoso, honorable, awesome, unique, pioneering, phenomenal, prominent are often used without attribution to promote the subject of an article. Instead of making subjective proclamations about a subject's importance, use facts and attribution to demonstrate it.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 is objective and avoids puffery, correctly attributing claims of importance to sources. Article 2 is replete with non-encyclopedic, promotional language such as 'masterclass,' 'nightmare scenario,' and 'The Awakening.'"
+      },
+      {
+        "criterion_id": "ww_wtw_2",
+        "criterion_index": 11,
+        "criterion_text": "Contentious labels: Value-laden labels – such as calling an organization a cult, an individual a racist, sexist, terrorist, or freedom fighter, or a sexual practice a perversion – may express contentious opinion and are best avoided unless widely used by reliable sources to describe the subject, in which case use in-text attribution.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 avoids value-laden labels. Article 2's analysis uses phrases like 'psychological collapse' and 'defensive frailty,' which are contentious, interpretive labels applied to the teams."
+      },
+      {
+        "criterion_id": "ww_wtw_3",
+        "criterion_index": 12,
+        "criterion_text": "Unsupported attributions: Words like \"some people say\", \"many scholars state\", \"it is believed/regarded/considered\", \"experts declare\", \"it is widely thought\", \"research has shown\" may disguise a biased view. Claims about what people say, think, feel, or believe should be clearly attributed.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 correctly attributes opinions to specific sources like Lee Remmel. Article 2 uses unsupported attributions like 'referenced in some lore' and 'a retrospective analysis reveals,' which are classic examples of what to avoid."
+      },
+      {
+        "criterion_id": "ww_wtw_4",
+        "criterion_index": 13,
+        "criterion_text": "Expressions of doubt: When words like supposed, apparent, purported, alleged, accused, so-called are used, ensure that the source of the accusation is clear. Also avoid scare-quoting and undue emphasis.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 avoids speculation. Article 2 includes expressions of doubt and speculation, for instance, stating that Bart Starr 'likely appealed to the team's pride' in the locker room."
+      },
+      {
+        "criterion_id": "ww_wtw_5",
+        "criterion_index": 14,
+        "criterion_text": "Editorializing: Words like notably, it should be noted, arguably, interestingly, essentially, utterly, actually, only, clearly, absolutely, of course, without a doubt, indeed, happily, sadly, tragically, aptly, fortunately, unfortunately, untimely should usually be avoided to maintain an impartial tone.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 maintains an impartial tone. Article 2 is filled with editorializing, using words like 'Crucially,' 'profound,' 'dramatic,' and 'nightmare scenario' to inject opinion and emotion into the narrative."
+      },
+      {
+        "criterion_id": "ww_wtw_6",
+        "criterion_index": 15,
+        "criterion_text": "Synonyms for said: Words like reveal, point out, clarify, expose, explain, find, note, observe, insist, speculate, surmise, claim, assert, admit, confess, deny, confirm may make undue implications. On Wikipedia, it is more important to avoid language that makes undue implications.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 uses neutral words for attribution like 'noted.' Article 2's authorial voice makes its own claims and assertions, such as stating a touchdown 'validated the Rams' offseason strategy,' which makes an undue implication."
+      },
+      {
+        "criterion_id": "ww_wtw_7",
+        "criterion_index": 16,
+        "criterion_text": "Euphemisms: Euphemisms like passed away, gave her life, eternal rest, make love, an issue with, collateral damage, differently abled should generally be avoided in favor of more neutral and precise terms.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "While neither article uses obvious euphemisms, Article 1's language is consistently more direct and precise. Article 2's use of metaphorical section titles like 'The Setting Sun' is less direct than encyclopedic writing should be."
+      },
+      {
+        "criterion_id": "ww_wtw_8",
+        "criterion_index": 17,
+        "criterion_text": "Clichés and idioms: Clichés and idioms like lion's share, tip of the iceberg, white elephant, gild the lily, take the plunge, ace up the sleeve should generally be avoided in favor of direct, literal expressions.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 is written in direct, literal language. Article 2 frequently uses clichés and idioms, such as 'nail in the coffin,' 'went for the throat,' and 'dagger that sealed the contest.'"
+      },
+      {
+        "criterion_id": "ww_wtw_9",
+        "criterion_index": 18,
+        "criterion_text": "Relative time references: Prefer specific statements to general ones. Words like recently, lately, currently, today, presently, to date, X years ago, formerly, in the past, traditionally should be avoided.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Both articles are strong on this point, but Article 2's reference to 'the modern era' is a slightly vague, relative time reference that Article 1 successfully avoids."
+      },
+      {
+        "criterion_id": "ww_wtw_10",
+        "criterion_index": 19,
+        "criterion_text": "Unspecified places or events: Prefer specific statements to general ones. Words like this country, here, there, somewhere, sometimes, often, occasionally, somehow should be avoided.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "Article 1 is consistently specific in its references. Article 2 contains an unspecified reference to 'some lore' regarding a halftime anecdote, which violates the principle of specificity."
+      },
+      {
+        "criterion_id": "ww_wtw_11",
+        "criterion_index": 20,
+        "criterion_text": "Survived by: Phrasing such as \"Smith died in 1982, survived by her husband Jack and two sons\" should be avoided; this information can be made more complete and spread out through the article.",
+        "category": "Well-written",
+        "winner": "gt",
+        "winner_code": 1,
+        "reason": "This criterion is not directly applicable. However, interpreting its spirit as 'proper encyclopedic presentation of information,' Article 1 wins. Its structure and flow are far more aligned with Wikipedia's guidelines than Article 2's essayistic format."
+      }
+    ]
+  }
+}

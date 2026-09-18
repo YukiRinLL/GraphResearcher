@@ -1,0 +1,74 @@
+version: 1
+mode: run_and_evaluate
+seed: 20260918
+sample_count: 5
+
+agent:
+  name: graphresearcher
+  max_rounds: 30
+  timeout_seconds: 7200
+  max_workers: 1
+  verbosity: quiet
+
+execution:
+  resume: true
+  fail_fast: false
+  # 同时评测的样本数；Benchmark 内部并发由各自 max_workers 控制。
+  evaluation_max_workers: 1
+
+output:
+  root: outputs/evaluations
+  run_id: null
+  markdown_summary: true
+
+# evaluate 模式优先读取统一运行目录。也可以不设置 run_dir，
+# 改为提供一个或多个 Benchmark 原生报告路径。
+input:
+  run_dir: null
+  native:
+    deep_research_bench_jsonl: null
+    wiki_live_challenge_markdown_dir: null
+    deep_research_bench_ii_report_dir: null
+
+benchmarks:
+  deep_research_bench:
+    enabled: true
+    sample_count: null
+    selection:
+      languages: [zh, en]
+      topics: []
+    evaluation:
+      dimensions: [race, fact]
+      max_workers: 5
+      fact:
+        processes: 5
+
+  wiki_live_challenge:
+    enabled: true
+    sample_count: null
+    selection:
+      dataset: 2025_Mar_Nov
+      categories: []
+    preprocessing:
+      normalize_markdown: true
+      steps: [extract, fetch]
+    evaluation:
+      dimensions: [writing, verifiability, citation]
+      max_workers: 5
+      writing:
+        allow_tie: true
+        categories: []
+      verifiability:
+        top_k: 10
+
+  deep_research_bench_ii:
+    enabled: true
+    sample_count: null
+    selection:
+      languages: [zh, en]
+      themes: []
+    evaluation:
+      chunk_size: 50
+      max_workers: 5
+      max_retries: 10
+      max_paper_chars: 150000

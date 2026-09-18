@@ -1,0 +1,1576 @@
+{
+  "title": "2007_NFC_Championship_Game",
+  "status": "completed",
+  "total_statements": 202,
+  "total_citations": 19,
+  "valid_citations": 15,
+  "evaluated_statements": 195,
+  "skipped_statements": 7,
+  "support": 95,
+  "not_support": 86,
+  "conflict": 14,
+  "support_ratio": 0.48717948717948717,
+  "conflict_ratio": 0.07179487179487179,
+  "results": [
+    {
+      "statement_index": 0,
+      "statement": "The 2007 NFC Championship Game was a National Football League (NFL) postseason game played on January 20, 2008, to determine the National Football Conference (NFC) champion for the 2007 NFL season.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content explicitly states the game was the '2007 National Football Conference (NFC) Championship Game' played on 'January 20, 2008' and that the Giants winning sent them to the Super Bowl, implying it determined the NFC champion for the 2007 NFL season."
+    },
+    {
+      "statement_index": 1,
+      "statement": "The contest featured the visiting New York Giants, the NFC's fifth seed, facing the second-seeded Green Bay Packers at Lambeau Field in Green Bay, Wisconsin.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content identifies the teams as the 'New York Giants (5)' and 'Green Bay Packers (2)' and states 'The game was played at Lambeau Field in Green Bay, Wisconsin', with the Packers having home field advantage due to higher seeding."
+    },
+    {
+      "statement_index": 2,
+      "statement": "In a game characterized by sub-zero temperatures and dramatic momentum shifts, the Giants defeated the Packers 23–20 in overtime.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content describes 'cold weather' and 'teams went back and forth' (momentum shifts), and the score table and text confirm 'The Giants won the game on a walk-off field goal... 23–20' in overtime."
+    },
+    {
+      "statement_index": 4,
+      "statement": "The game is historically notable for several reasons, primarily the extreme weather conditions.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content states the game 'was notable for its competitiveness, cold weather, and impact on each team' and that 'Post-game analysis focused on... the impacts of the weather'."
+    },
+    {
+      "statement_index": 5,
+      "statement": "With a kickoff temperature of −1 °F (−18 °C) and a wind chill of −23 °F (−31 °C), the 2007 NFC Championship Game stands as the second-coldest game in the history of Lambeau Field, trailing only the 1967 \"Ice Bowl\".",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "not_support",
+      "reason": "The citation confirms the kickoff temperature was −1°F (−18°C) and it was the 'second coldest game in Lambeau Field history', but it does not explicitly state the wind chill at kickoff was −23°F (−31°C) nor does it explicitly mention the '1967 Ice Bowl' as the coldest."
+    },
+    {
+      "statement_index": 6,
+      "statement": "The harsh elements profoundly influenced the gameplay, affecting ball security, kicking mechanics, and player endurance.",
+      "citation_num": "4",
+      "citation_url": "https://www.nfl.com/100/originals/100-greatest/games-54",
+      "verdict": "not_support",
+      "reason": "The citation content is an error message indicating a missing resource and contains no information about gameplay, elements, ball security, kicking mechanics, or player endurance."
+    },
+    {
+      "statement_index": 7,
+      "statement": "The image of Giants head coach Tom Coughlin, his face flushed red from the freezing wind, became an enduring symbol of the match.",
+      "citation_num": "4",
+      "citation_url": "https://www.nfl.com/100/originals/100-greatest/games-54",
+      "verdict": "not_support",
+      "reason": "The citation content is an error message and does not provide any information about Tom Coughlin, his appearance, or his symbolic image."
+    },
+    {
+      "statement_index": 8,
+      "statement": "NFL Films and media outlets have subsequently dubbed the match \"The Chilling Championship\".",
+      "citation_num": "4",
+      "citation_url": "https://www.nfl.com/100/originals/100-greatest/games-54",
+      "verdict": "not_support",
+      "reason": "The citation content is an error message and does not mention NFL Films, media outlets, or any nicknames for a match."
+    },
+    {
+      "statement_index": 9,
+      "statement": "Beyond the weather, the game marked a pivotal transition in NFL history involving Green Bay quarterback Brett Favre.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content states that for Favre, the game 'became the last he would play for the Packers' and he was 'traded during the offseason to the New York Jets, with Aaron Rodgers being named starting quarterback', indicating a pivotal transition."
+    },
+    {
+      "statement_index": 10,
+      "statement": "The game served as Brett Favre's final appearance for the Packers.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content explicitly states that for Favre, the game 'became the last he would play for the Packers'."
+    },
+    {
+      "statement_index": 11,
+      "statement": "Brett Favre had spent 16 seasons with the Packers.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "conflict",
+      "reason": "The citation content states 'Brett Favre... completed his 18th season with the Packers', which contradicts the statement that he spent 16 seasons."
+    },
+    {
+      "statement_index": 12,
+      "statement": "Brett Favre won three MVP awards with the Packers.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "not_support",
+      "reason": "The citation content mentions Favre finishing 'in second place in MVP voting' for the 2007 season but does not provide information on how many MVP awards he won in total with the Packers."
+    },
+    {
+      "statement_index": 13,
+      "statement": "Brett Favre captured Super Bowl XXXI with the Packers.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "not_support",
+      "reason": "The citation content does not mention Brett Favre capturing Super Bowl XXXI with the Packers."
+    },
+    {
+      "statement_index": 14,
+      "statement": "Brett Favre's final pass attempt as a Packer was an interception in overtime.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content explicitly states that the NFC Championship 'ensured that his last pass as a Packer was an interception'."
+    },
+    {
+      "statement_index": 15,
+      "statement": "Brett Favre's interception in overtime set up the Giants' winning drive.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content states 'The Giants won the game on a walk-off field goal by Lawrence Tynes four plays after Favre's interception', directly supporting that the interception set up the winning drive."
+    },
+    {
+      "statement_index": 16,
+      "statement": "The game is viewed as a defining moment for Giants quarterback Eli Manning.",
+      "citation_num": "6",
+      "citation_url": "https://www.packers.com/news/ap-story-giants-beat-packers-23-20-in-overtime-2424075",
+      "verdict": "support",
+      "reason": "The citation describes Eli Manning's performance as a 'revelation' and his 'best work of his four-year career' after his moxie was questioned, indicating it was a defining moment."
+    },
+    {
+      "statement_index": 17,
+      "statement": "Eli Manning orchestrated his third consecutive road playoff victory.",
+      "citation_num": "6",
+      "citation_url": "https://www.packers.com/news/ap-story-giants-beat-packers-23-20-in-overtime-2424075",
+      "verdict": "support",
+      "reason": "The citation states the Giants won at Tampa, Dallas, and then Lambeau Field (Green Bay), which are three consecutive road playoff victories."
+    },
+    {
+      "statement_index": 18,
+      "statement": "Eli Manning's performance dispelled criticisms regarding his consistency and leadership.",
+      "citation_num": "6",
+      "citation_url": "https://www.packers.com/news/ap-story-giants-beat-packers-23-20-in-overtime-2424075",
+      "verdict": "support",
+      "reason": "The citation explicitly mentions 'Manning's inconsistency' and his 'moxie was being questioned' before stating he 'has been a revelation in the playoffs' with 'calm leadership,' directly supporting the dispelling of criticisms."
+    },
+    {
+      "statement_index": 19,
+      "statement": "The game was broadcast in the United States by the Fox network.",
+      "citation_num": "7",
+      "citation_url": "https://www.sportsmediawatch.com/2008/12/2008-in-review-nfl/",
+      "verdict": "not_support",
+      "reason": "The citation content states the NFC Championship Game drew 53.9 million viewers but does not specify which network broadcast it, nor does it mention Fox."
+    },
+    {
+      "statement_index": 20,
+      "statement": "The game was watched by approximately 53.9 million viewers.",
+      "citation_num": "7",
+      "citation_url": "https://www.sportsmediawatch.com/2008/12/2008-in-review-nfl/",
+      "verdict": "support",
+      "reason": "The citation explicitly states, 'The NFC Championship Game, between the Giants and Packers, drew 53.9 million viewers'."
+    },
+    {
+      "statement_index": 21,
+      "statement": "The game was one of the most-watched television programs in American history at the time.",
+      "citation_num": "7",
+      "citation_url": "https://www.sportsmediawatch.com/2008/12/2008-in-review-nfl/",
+      "verdict": "support",
+      "reason": "The citation states the game was 'the most for any non-Super Bowl television program since the series finale of Seinfeld ten years earlier,' indicating it was one of the most-watched programs historically at that time."
+    },
+    {
+      "statement_index": 22,
+      "statement": "The game surpassed viewership for major cultural events and previous playoff contests.",
+      "citation_num": "7",
+      "citation_url": "https://www.sportsmediawatch.com/2008/12/2008-in-review-nfl/",
+      "verdict": "support",
+      "reason": "The citation indicates it surpassed 'any non-Super Bowl television program since the series finale of Seinfeld' (a major cultural event) and also surpassed the viewership of the Divisional Round games mentioned earlier in the text (previous playoff contests)."
+    },
+    {
+      "statement_index": 23,
+      "statement": "The Green Bay Packers finished the 2007 regular season with a record of 13–3.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content explicitly states 'The Packers finished the season 13–3' and 'They finished the 2007 season with a record with of 13–3'."
+    },
+    {
+      "statement_index": 24,
+      "statement": "The Green Bay Packers earned the NFC North division title in the 2007 season.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content explicitly states the Packers 'winning the NFC North' and 'They won the NFC North division'."
+    },
+    {
+      "statement_index": 25,
+      "statement": "The Green Bay Packers earned the number two seed in the conference playoffs in the 2007 season.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content explicitly states the Packers 'securing the second seed in the playoffs' and 'the Packers were given the second seed'."
+    },
+    {
+      "statement_index": 26,
+      "statement": "Under the direction of head coach Mike McCarthy, the Green Bay Packers team rebounded from an 8–8 campaign in 2006.",
+      "citation_num": "8",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_Green_Bay_Packers_season",
+      "verdict": "support",
+      "reason": "The citation states that Mike McCarthy was the head coach, and the Packers finished the regular season with a 13–3 record, clinching their first winning season and playoff appearance since 2004, after Brett Favre noted they were '8–8 last year' (2006)."
+    },
+    {
+      "statement_index": 27,
+      "statement": "The Green Bay Packers offense was led by 38-year-old quarterback Brett Favre, who experienced a renaissance season.",
+      "citation_num": "8",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_Green_Bay_Packers_season",
+      "verdict": "support",
+      "reason": "The citation mentions Brett Favre was a '37-year-old quarterback' returning for the 2007 season, making him 38 during the season, and details his numerous record-breaking achievements and awards (e.g., Sports Illustrated Sportsman of the Year, FedEx Air Player of the Year, multiple NFC Offensive Player of the Week awards), which collectively describe a highly successful or 'renaissance' season."
+    },
+    {
+      "statement_index": 28,
+      "statement": "Brett Favre was selected to the Pro Bowl.",
+      "citation_num": "8",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_Green_Bay_Packers_season",
+      "verdict": "support",
+      "reason": "The '2008 Pro Bowl selections' section explicitly lists 'Quarterback | Brett Favre | Starter'."
+    },
+    {
+      "statement_index": 29,
+      "statement": "Brett Favre was named a second-team All-Pro.",
+      "citation_num": "8",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_Green_Bay_Packers_season",
+      "verdict": "support",
+      "reason": "The '2007 All-Pro selections' section explicitly lists 'Quarterback | Brett Favre | Second'."
+    },
+    {
+      "statement_index": 30,
+      "statement": "Brett Favre revitalized an offense that featured a potent passing attack with wide receivers Donald Driver and Greg Jennings.",
+      "citation_num": "8",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_Green_Bay_Packers_season",
+      "verdict": "support",
+      "reason": "Brett Favre's numerous awards and record-breaking passing statistics (4,155 passing yards, 28 touchdowns) indicate a potent passing attack, and Donald Driver led the team in receiving yards (1,048) while Greg Jennings led in receiving touchdowns (12)."
+    },
+    {
+      "statement_index": 31,
+      "statement": "Defensively, the Packers were anchored by defensive end Aaron Kampman and cornerback Al Harris.",
+      "citation_num": "8",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_Green_Bay_Packers_season",
+      "verdict": "support",
+      "reason": "Aaron Kampman led the team in sacks with 12 and was named NFC Defensive Player of the Month for October, while Al Harris was a Pro Bowl starter and a second-team All-Pro, indicating their anchoring roles on defense."
+    },
+    {
+      "statement_index": 32,
+      "statement": "Aaron Kampman and Al Harris both received Pro Bowl or All-Pro recognition.",
+      "citation_num": "8",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_Green_Bay_Packers_season",
+      "verdict": "support",
+      "reason": "The '2008 Pro Bowl selections' and '2007 All-Pro selections' sections confirm that Aaron Kampman was a Pro Bowl starter and second-team All-Pro, and Al Harris was also a Pro Bowl starter and second-team All-Pro."
+    },
+    {
+      "statement_index": 33,
+      "statement": "In the Divisional Round, played on January 12, 2008, at Lambeau Field, the Packers faced snowy conditions in a matchup often referred to as the \"Snow Globe Game\".",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "not_support",
+      "reason": "The citation content confirms the 'Snow Globe Game' against the Seahawks in the Divisional Round at Lambeau Field, but does not specify the date as January 12, 2008, nor explicitly mention snowy conditions."
+    },
+    {
+      "statement_index": 34,
+      "statement": "The Packers fell behind early, 14–0, but rallied emphatically to defeat Seattle 42–20.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "not_support",
+      "reason": "The citation content states 'The Packers blew out the Seahawks 42–20' but does not mention them falling behind early 14–0."
+    },
+    {
+      "statement_index": 35,
+      "statement": "The New York Giants entered the 2007 season facing significant scrutiny.",
+      "citation_num": "3",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_New_York_Giants_season",
+      "verdict": "support",
+      "reason": "The text states that \"expectations for the Giants were generally low\" and Tom Coughlin \"came under intense criticism,\" with many believing he \"deserved to be fired,\" indicating significant scrutiny."
+    },
+    {
+      "statement_index": 36,
+      "statement": "Head coach Tom Coughlin was widely considered to be on the \"hot seat\" following an 8–8 finish in 2006 and a Wild Card round exit.",
+      "citation_num": "3",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_New_York_Giants_season",
+      "verdict": "not_support",
+      "reason": "The text confirms Tom Coughlin was under intense criticism and on the 'hot seat' after an 8–8 finish in 2006, but it does not explicitly state a 'Wild Card round exit' for the 2006 season."
+    },
+    {
+      "statement_index": 37,
+      "statement": "The New York Giants team started the 2007 season poorly, losing their first two games.",
+      "citation_num": "9",
+      "citation_url": "https://www.giants.com/news/giants-vs-packers-stats-anecdotes-6813782",
+      "verdict": "not_support",
+      "reason": "The citation content does not provide information about the Giants' performance in the first two games of the 2007 season."
+    },
+    {
+      "statement_index": 38,
+      "statement": "The New York Giants lost 35–13 to the Green Bay Packers in Week 2 of the 2007 season.",
+      "citation_num": "9",
+      "citation_url": "https://www.giants.com/news/giants-vs-packers-stats-anecdotes-6813782",
+      "verdict": "not_support",
+      "reason": "The citation content mentions a 38-35 loss to the Packers on Dec. 4, but not a 35-13 loss in Week 2 of the 2007 season."
+    },
+    {
+      "statement_index": 39,
+      "statement": "The Giants rallied to win six consecutive games.",
+      "citation_num": "3",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_New_York_Giants_season",
+      "verdict": "support",
+      "reason": "The text explicitly states, 'The Giants have won six in a row for the first time since 1994' and 'With their sixth-straight win, the Giants entered their bye week at 6–2.'"
+    },
+    {
+      "statement_index": 40,
+      "statement": "The Giants eventually finished the regular season with a 10–6 record.",
+      "citation_num": "3",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_New_York_Giants_season",
+      "verdict": "support",
+      "reason": "Both the table and the main text explicitly state that 'The Giants finished the regular season 10–6.'"
+    },
+    {
+      "statement_index": 41,
+      "statement": "The Giants finished second in the NFC East behind the Dallas Cowboys.",
+      "citation_num": "3",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_New_York_Giants_season",
+      "verdict": "support",
+      "reason": "The text states they finished 'second place in the NFC East,' and the NFC East standings table shows the Dallas Cowboys in first place."
+    },
+    {
+      "statement_index": 42,
+      "statement": "The Giants entered the playoffs as the number five seed.",
+      "citation_num": "3",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_New_York_Giants_season",
+      "verdict": "support",
+      "reason": "The text explicitly states, 'They qualified for the playoffs as a wild-card team as the #5 seed.'"
+    },
+    {
+      "statement_index": 43,
+      "statement": "The Giants' number five seeding necessitated that they play all their postseason games on the road.",
+      "citation_num": "9",
+      "citation_url": "https://www.giants.com/news/giants-vs-packers-stats-anecdotes-6813782",
+      "verdict": "conflict",
+      "reason": "The citation states the Giants were the 'first No. 4 seed in the NFC to defeat a No. 1 seed in the divisional round', contradicting the statement that they were a 'number five seeding'."
+    },
+    {
+      "statement_index": 44,
+      "statement": "The Giants' team identity was forged in Week 17 of the regular season when, despite having already clinched a playoff spot, they played their starters against the undefeated New England Patriots.",
+      "citation_num": "9",
+      "citation_url": "https://www.giants.com/news/giants-vs-packers-stats-anecdotes-6813782",
+      "verdict": "not_support",
+      "reason": "The citation content mentions the regular season finale loss to New England but does not discuss the forging of the team's identity, playoff clinching status, or playing of starters."
+    },
+    {
+      "statement_index": 45,
+      "statement": "The Giants lost 38–35 to the New England Patriots in Week 17.",
+      "citation_num": "9",
+      "citation_url": "https://www.giants.com/news/giants-vs-packers-stats-anecdotes-6813782",
+      "verdict": "support",
+      "reason": "The citation states, 'In 2007, they lost the regular season finale to 16-0 New England, 38-35,' which supports the score and opponent for Week 17."
+    },
+    {
+      "statement_index": 46,
+      "statement": "The competitive nature of the Week 17 game provided the Giants team with a confidence boost heading into the postseason.",
+      "citation_num": "9",
+      "citation_url": "https://www.giants.com/news/giants-vs-packers-stats-anecdotes-6813782",
+      "verdict": "not_support",
+      "reason": "The citation content does not mention whether the Week 17 game provided a confidence boost to the Giants."
+    },
+    {
+      "statement_index": 47,
+      "statement": "The Giants' road to the NFC Championship was characterized by upsets over higher-seeded opponents.",
+      "citation_num": "6",
+      "citation_url": "https://www.packers.com/news/ap-story-giants-beat-packers-23-20-in-overtime-2424075",
+      "verdict": "not_support",
+      "reason": "The citation mentions road wins at Tampa, Dallas, and Lambeau Field, but does not explicitly state these were 'upsets over higher-seeded opponents'."
+    },
+    {
+      "statement_index": 48,
+      "statement": "The Giants earned the moniker \"Road Warriors\".",
+      "citation_num": "6",
+      "citation_url": "https://www.packers.com/news/ap-story-giants-beat-packers-23-20-in-overtime-2424075",
+      "verdict": "not_support",
+      "reason": "While the citation highlights the Giants' road winning streak, it does not use the specific moniker 'Road Warriors'."
+    },
+    {
+      "statement_index": 49,
+      "statement": "On January 6, 2008, the Giants traveled to Raymond James Stadium and defeated the NFC South champion Tampa Bay Buccaneers, 24–14, in the Wild Card Round.",
+      "citation_num": "3",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_New_York_Giants_season",
+      "verdict": "support",
+      "reason": "The playoff schedule table and the 'NFC Wild Card Game' section confirm the date, opponent, venue, score, and round of the game."
+    },
+    {
+      "statement_index": 50,
+      "statement": "On January 13, 2008, the Giants faced their division rivals and the NFC's number one seed, the Dallas Cowboys, at Texas Stadium in the Divisional Round.",
+      "citation_num": "9",
+      "citation_url": "https://www.giants.com/news/giants-vs-packers-stats-anecdotes-6813782",
+      "verdict": "not_support",
+      "reason": "While the citation mentions a 21-17 defeat of the Cowboys in Dallas on Jan. 13, 2008, it does not specify if the Cowboys were division rivals, the NFC's number one seed, or if that specific game was the Divisional Round."
+    },
+    {
+      "statement_index": 51,
+      "statement": "The Giants won 21–17 against the Dallas Cowboys.",
+      "citation_num": "9",
+      "citation_url": "https://www.giants.com/news/giants-vs-packers-stats-anecdotes-6813782",
+      "verdict": "support",
+      "reason": "The citation states, 'They won their last two road games, including a 21-17 defeat the Cowboys in Dallas on Jan. 13, 2008,' directly supporting the win and score."
+    },
+    {
+      "statement_index": 52,
+      "statement": "The Giants' win marked the first time in NFL history that an NFC number four seed or lower defeated a number one seed in the divisional round.",
+      "citation_num": "9",
+      "citation_url": "https://www.giants.com/news/giants-vs-packers-stats-anecdotes-6813782",
+      "verdict": "support",
+      "reason": "The citation states, 'The Giants became the first No. 4 seed in the NFC to defeat a No. 1 seed in the divisional round of the playoffs,' which directly supports the statement."
+    },
+    {
+      "statement_index": 53,
+      "statement": "By defeating Dallas, the Giants extended their road winning streak to nine games.",
+      "citation_num": "6",
+      "citation_url": "https://www.packers.com/news/ap-story-giants-beat-packers-23-20-in-overtime-2424075",
+      "verdict": "support",
+      "reason": "The citation states the win against the Packers was the '10th straight road win,' implying the win against Dallas (the game before Packers) was the 9th, thus extending the streak to nine games at that point."
+    },
+    {
+      "statement_index": 54,
+      "statement": "By defeating Dallas, the Giants set up a rematch with the Packers.",
+      "citation_num": "6",
+      "citation_url": "https://www.packers.com/news/ap-story-giants-beat-packers-23-20-in-overtime-2424075",
+      "verdict": "support",
+      "reason": "The citation lists the Giants' road wins as 'at Tampa and Dallas since, and now at Lambeau Field,' indicating that defeating Dallas preceded and thus set up the game with the Packers."
+    },
+    {
+      "statement_index": 55,
+      "statement": "The 2007 NFC Championship Game was the seventh postseason meeting between the Giants and the Packers.",
+      "citation_num": "9",
+      "citation_url": "https://www.giants.com/news/giants-vs-packers-stats-anecdotes-6813782",
+      "verdict": "conflict",
+      "reason": "The citation states that the *current* game (37-20 victory over Packers) was the seventh postseason meeting, and the 2007 title game was one of the *earlier* meetings."
+    },
+    {
+      "statement_index": 56,
+      "statement": "The rivalry between the two franchises dates back to the league's early years.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content states the game 'was a continuation of the two teams' rivalry, which included five NFL Championship Games from the 1930s to the 1960s', implying it dates back to the league's early years."
+    },
+    {
+      "statement_index": 57,
+      "statement": "The rivalry featured five NFL Championship Games played between 1938 and 1962.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content states the rivalry 'included five NFL Championship Games from the 1930s to the 1960s', which is consistent with games played between 1938 and 1962."
+    },
+    {
+      "statement_index": 58,
+      "statement": "In the 1938 NFL Championship, the Giants defeated the Packers 23–17.",
+      "citation_num": "5",
+      "citation_url": "https://archive.jsonline.com/sports/packers/290992541.html",
+      "verdict": "not_support",
+      "reason": "The citation content does not provide any information about the 1938 NFL Championship or its outcome."
+    },
+    {
+      "statement_index": 59,
+      "statement": "In the 1939 NFL Championship, the Packers defeated the Giants 27–0.",
+      "citation_num": "5",
+      "citation_url": "https://archive.jsonline.com/sports/packers/290992541.html",
+      "verdict": "not_support",
+      "reason": "The citation content does not provide any information about the 1939 NFL Championship or its outcome."
+    },
+    {
+      "statement_index": 60,
+      "statement": "In the 1944 NFL Championship, the Packers defeated the Giants 14–7.",
+      "citation_num": "5",
+      "citation_url": "https://archive.jsonline.com/sports/packers/290992541.html",
+      "verdict": "not_support",
+      "reason": "The citation content does not provide any information about the 1944 NFL Championship or its outcome."
+    },
+    {
+      "statement_index": 61,
+      "statement": "In the 1961 NFL Championship, the Packers defeated the Giants 37–0.",
+      "citation_num": "5",
+      "citation_url": "https://archive.jsonline.com/sports/packers/290992541.html",
+      "verdict": "not_support",
+      "reason": "The citation content does not provide any information about the 1961 NFL Championship or its outcome."
+    },
+    {
+      "statement_index": 62,
+      "statement": "In the 1962 NFL Championship, the Packers defeated the Giants 16–7.",
+      "citation_num": "5",
+      "citation_url": "https://archive.jsonline.com/sports/packers/290992541.html",
+      "verdict": "not_support",
+      "reason": "The citation content does not provide any information about the 1962 NFL Championship or its outcome."
+    },
+    {
+      "statement_index": 63,
+      "statement": "In more recent history, the Giants had defeated the Packers in the 2002 Wild Card playoffs.",
+      "citation_num": "5",
+      "citation_url": "https://archive.jsonline.com/sports/packers/290992541.html",
+      "verdict": "conflict",
+      "reason": "The citation states that the Packers lost to Atlanta in 2002 and Minnesota in 2004 at the wild-card level, not the Giants in 2002."
+    },
+    {
+      "statement_index": 64,
+      "statement": "The Packers had not lost a playoff game at Lambeau Field prior to the 2002 season.",
+      "citation_num": "5",
+      "citation_url": "https://archive.jsonline.com/sports/packers/290992541.html",
+      "verdict": "support",
+      "reason": "The citation explicitly states that the Green Bay Packers 'had never lost a playoff at home in their first eight decades of existence' before being toppled three times in the last six years (starting in 2002)."
+    },
+    {
+      "statement_index": 65,
+      "statement": "The Packers lost to the Atlanta Falcons in the 2002 season.",
+      "citation_num": "5",
+      "citation_url": "https://archive.jsonline.com/sports/packers/290992541.html",
+      "verdict": "support",
+      "reason": "The citation clearly states that the Packers were beaten by 'the Falcons in '02 (a 27-7 defeat)'."
+    },
+    {
+      "statement_index": 66,
+      "statement": "Entering the 2007 NFC Championship, the Packers were considered the favorites.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content explicitly states 'Favorite Packers by 7.5' and 'The Packers were 7.5 point favorites'."
+    },
+    {
+      "statement_index": 67,
+      "statement": "Oddsmakers established Green Bay as a 7.5-point favorite.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content explicitly states 'Favorite Packers by 7.5' and 'The Packers were 7.5 point favorites'."
+    },
+    {
+      "statement_index": 68,
+      "statement": "The Packers' 35–13 victory over the Giants in Week 2 of the regular season was cited as a primary reason for the confidence in Green Bay.",
+      "citation_num": "9",
+      "citation_url": "https://www.giants.com/news/giants-vs-packers-stats-anecdotes-6813782",
+      "verdict": "not_support",
+      "reason": "The citation content does not mention a 35-13 victory by the Packers in Week 2 or any reasons for confidence in Green Bay."
+    },
+    {
+      "statement_index": 69,
+      "statement": "Observers noted that the Giants had evolved significantly as a team since September.",
+      "citation_num": "9",
+      "citation_url": "https://www.giants.com/news/giants-vs-packers-stats-anecdotes-6813782",
+      "verdict": "not_support",
+      "reason": "The citation content provides statistics and facts but does not include observations from 'observers' about the team's evolution."
+    },
+    {
+      "statement_index": 70,
+      "statement": "The weather forecast for Green Bay, Wisconsin, dominated the pre-game narrative.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content mentions the 'Green Bay Press-Gazette predicted cold weather' and the 'National Weather Service issued a wind chill advisory prior to the start of the game', indicating weather was a dominant pre-game narrative."
+    },
+    {
+      "statement_index": 71,
+      "statement": "The National Weather Service issued a wind chill advisory for the region, predicting dangerous cold.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content explicitly states 'the National Weather Service issued a wind chill advisory prior to the start of the game' due to predicted low temperatures, implying dangerous cold."
+    },
+    {
+      "statement_index": 72,
+      "statement": "The conditions at kickoff confirmed fears, creating one of the most hostile environments in NFL playoff history.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "not_support",
+      "reason": "The citation content describes the extreme cold but does not explicitly state that the conditions at kickoff 'confirmed fears' or created 'one of the most hostile environments in NFL playoff history'."
+    },
+    {
+      "statement_index": 73,
+      "statement": "The temperature at kickoff was −1 °F (−18 °C).",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content explicitly states 'temperatures dropping from −1°F (−18°C) at kick-off'."
+    },
+    {
+      "statement_index": 74,
+      "statement": "The wind chill at kickoff was −23 °F (−31 °C).",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "not_support",
+      "reason": "The citation content mentions the wind chill 'bringing the temperature down to −23°F (−31°C)' generally and dropping 'as low as −24°F (−31°C) by the end of the game', but does not specify the wind chill *at kickoff*."
+    },
+    {
+      "statement_index": 75,
+      "statement": "The wind speed at kickoff was 12 miles per hour.",
+      "citation_num": "10",
+      "citation_url": "https://www.youtube.com/watch?v=B-glOi2jMoI",
+      "verdict": "support",
+      "reason": "The citation states, \"The temperature at game time was minus-one degree with winds of 12 miles-an-hour – a numbing wind chill of minus-23.\""
+    },
+    {
+      "statement_index": 76,
+      "statement": "The conditions at kickoff included clear skies and frozen turf.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "not_support",
+      "reason": "The citation content describes the cold weather but does not mention 'clear skies' or 'frozen turf' as conditions at kickoff."
+    },
+    {
+      "statement_index": 77,
+      "statement": "These conditions made the game the second-coldest in the history of Lambeau Field.",
+      "citation_num": "4",
+      "citation_url": "https://www.nfl.com/100/originals/100-greatest/games-54",
+      "verdict": "not_support",
+      "reason": "The citation content is an error message and contains no information about game conditions, Lambeau Field, or its historical temperature rankings."
+    },
+    {
+      "statement_index": 78,
+      "statement": "Lambeau Field is a stadium renowned for its \"frozen tundra\" lore.",
+      "citation_num": "4",
+      "citation_url": "https://www.nfl.com/100/originals/100-greatest/games-54",
+      "verdict": "not_support",
+      "reason": "The citation content is an error message and does not provide any information about Lambeau Field or its lore."
+    },
+    {
+      "statement_index": 79,
+      "statement": "Only the 1967 \"Ice Bowl\" against the Dallas Cowboys was colder than the 2007 NFC Championship Game.",
+      "citation_num": "4",
+      "citation_url": "https://www.nfl.com/100/originals/100-greatest/games-54",
+      "verdict": "not_support",
+      "reason": "The citation content is an error message and does not mention the 1967 'Ice Bowl', Dallas Cowboys, or the 2007 NFC Championship Game temperatures."
+    },
+    {
+      "statement_index": 80,
+      "statement": "The 1967 \"Ice Bowl\" featured a temperature of −13 °F (−25 °C) and a wind chill of −48 °F.",
+      "citation_num": "4",
+      "citation_url": "https://www.nfl.com/100/originals/100-greatest/games-54",
+      "verdict": "not_support",
+      "reason": "The citation content is an error message and does not provide any information about the 1967 'Ice Bowl' or its specific temperatures."
+    },
+    {
+      "statement_index": 81,
+      "statement": "The extreme cold had tangible effects on the game and the stadium experience.",
+      "citation_num": "4",
+      "citation_url": "https://www.nfl.com/100/originals/100-greatest/games-54",
+      "verdict": "not_support",
+      "reason": "The citation content is an error message and contains no information about extreme cold, its effects on a game, or stadium experiences."
+    },
+    {
+      "statement_index": 82,
+      "statement": "Reports indicated that beer sold in the stands froze inside the bottles before it could be consumed.",
+      "citation_num": "4",
+      "citation_url": "https://www.nfl.com/100/originals/100-greatest/games-54",
+      "verdict": "not_support",
+      "reason": "The citation content is an error message and does not provide any information about beer sales, freezing, or consumption in stands."
+    },
+    {
+      "statement_index": 83,
+      "statement": "Hand warmers were distributed to the 72,740 fans in attendance.",
+      "citation_num": "4",
+      "citation_url": "https://www.nfl.com/100/originals/100-greatest/games-54",
+      "verdict": "not_support",
+      "reason": "The citation content is an error message and does not mention hand warmers, fans, or attendance figures."
+    },
+    {
+      "statement_index": 84,
+      "statement": "On the sidelines, massive heaters were used to keep players warm, but the exposure to the elements was unavoidable.",
+      "citation_num": "4",
+      "citation_url": "https://www.nfl.com/100/originals/100-greatest/games-54",
+      "verdict": "not_support",
+      "reason": "The citation content is an error message and contains no information about sidelines, heaters, players, or exposure to elements."
+    },
+    {
+      "statement_index": 85,
+      "statement": "Giants head coach Tom Coughlin opted not to wear a face mask or scarf.",
+      "citation_num": "4",
+      "citation_url": "https://www.nfl.com/100/originals/100-greatest/games-54",
+      "verdict": "not_support",
+      "reason": "The citation content is an error message and does not provide any information about Tom Coughlin or his attire choices."
+    },
+    {
+      "statement_index": 86,
+      "statement": "Television cameras frequently captured Tom Coughlin's face turning a deep, frostbitten red.",
+      "citation_num": "4",
+      "citation_url": "https://www.nfl.com/100/originals/100-greatest/games-54",
+      "verdict": "not_support",
+      "reason": "The citation content is an error message and does not mention television cameras, Tom Coughlin, or his face's appearance."
+    },
+    {
+      "statement_index": 87,
+      "statement": "Tom Coughlin's frostbitten red face became a visual emblematic of the game's intensity.",
+      "citation_num": "4",
+      "citation_url": "https://www.nfl.com/100/originals/100-greatest/games-54",
+      "verdict": "not_support",
+      "reason": "The citation content is an error message and does not provide any information about Tom Coughlin's face or its symbolic meaning."
+    },
+    {
+      "statement_index": 88,
+      "statement": "Giants center Shaun O'Hara later remarked, \"I've never felt pain like that in my fingertips before\".",
+      "citation_num": "4",
+      "citation_url": "https://www.nfl.com/100/originals/100-greatest/games-54",
+      "verdict": "not_support",
+      "reason": "The citation content is an error message and does not contain any remarks from Shaun O'Hara or details about his experience."
+    },
+    {
+      "statement_index": 89,
+      "statement": "The game was held at Lambeau Field, the historic home of the Green Bay Packers.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content states 'The game was played at Lambeau Field' and refers to 'Lambeau Field history', consistent with it being the historic home of the Packers."
+    },
+    {
+      "statement_index": 90,
+      "statement": "The stadium's natural grass surface was frozen hard, impacting footing and the behavior of the ball when it hit the ground.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "not_support",
+      "reason": "The citation content mentions the cold weather and its impact on players but does not specifically describe the stadium's 'natural grass surface was frozen hard' or its impact on 'footing and the behavior of the ball'."
+    },
+    {
+      "statement_index": 91,
+      "statement": "The attendance was a sellout of 72,740.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "not_support",
+      "reason": "The citation content states 'Attendance 72,740' but does not explicitly mention it was a 'sellout'."
+    },
+    {
+      "statement_index": 92,
+      "statement": "The game was officiated by referee Terry McAulay and his crew.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "not_support",
+      "reason": "The citation content lists 'Referee Terry McAulay' but does not mention 'his crew'."
+    },
+    {
+      "statement_index": 93,
+      "statement": "The game began with the Packers winning the coin toss and electing to receive, looking to establish early dominance at home.",
+      "citation_num": "12",
+      "citation_url": "https://www.pro-football-reference.com/boxscores/200801200gnb.htm",
+      "verdict": "not_support",
+      "reason": "The citation supports that the Packers won the coin toss and elected to receive, but does not mention their motivation or if they were playing at home."
+    },
+    {
+      "statement_index": 94,
+      "statement": "The first quarter was defined by defensive stalemates as both teams adjusted to the frozen ball and footing.",
+      "citation_num": "12",
+      "citation_url": "https://www.pro-football-reference.com/boxscores/200801200gnb.htm",
+      "verdict": "not_support",
+      "reason": "The citation lists plays in the first quarter but does not describe the overall nature of the quarter as defensive stalemates or mention frozen ball and footing."
+    },
+    {
+      "statement_index": 95,
+      "statement": "The Giants managed to construct the first scoring drive of the game late in the quarter.",
+      "citation_num": "12",
+      "citation_url": "https://www.pro-football-reference.com/boxscores/200801200gnb.htm",
+      "verdict": "support",
+      "reason": "The citation shows Lawrence Tynes' 29-yard field goal at 4:53 in the 1st quarter, which was the first scoring play of the game and occurred late in the quarter."
+    },
+    {
+      "statement_index": 96,
+      "statement": "Utilizing the running back tandem of Brandon Jacobs and Ahmad Bradshaw, New York moved into scoring position.",
+      "citation_num": "12",
+      "citation_url": "https://www.pro-football-reference.com/boxscores/200801200gnb.htm",
+      "verdict": "conflict",
+      "reason": "The first scoring drive involved Brandon Jacobs, but Ahmad Bradshaw is not mentioned in any plays during that specific drive in the citation."
+    },
+    {
+      "statement_index": 97,
+      "statement": "The drive stalled in the red zone, leading to a field goal attempt.",
+      "citation_num": "12",
+      "citation_url": "https://www.pro-football-reference.com/boxscores/200801200gnb.htm",
+      "verdict": "support",
+      "reason": "The citation shows the Giants' drive reaching the GNB 11-yard line (red zone) and then failing to convert on 2nd and 3rd down, leading to a field goal attempt."
+    },
+    {
+      "statement_index": 98,
+      "statement": "Kicker Lawrence Tynes successfully converted a 29-yard field goal with 4:50 remaining in the first quarter, giving the Giants a 3–0 lead.",
+      "citation_num": "12",
+      "citation_url": "https://www.pro-football-reference.com/boxscores/200801200gnb.htm",
+      "verdict": "conflict",
+      "reason": "The citation states Lawrence Tynes converted a 29-yard field goal at 4:53 remaining in the first quarter, not 4:50."
+    },
+    {
+      "statement_index": 99,
+      "statement": "The score at the end of the First Quarter was New York Giants 3, Green Bay Packers 0.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The score table in the citation content shows 'NYG' with 3 points and 'GB' with 0 points in the '1' (First Quarter) column."
+    },
+    {
+      "statement_index": 100,
+      "statement": "The Giants extended their lead early in the second period.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content states 'Tynes made a 37-yard field goal to increase the Giants' lead to 6–0' after the first quarter, indicating an extension of the lead early in the second period."
+    },
+    {
+      "statement_index": 101,
+      "statement": "After a drive spanning 7 plays and 38 yards, the offense was halted again by the Packers' defense.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "not_support",
+      "reason": "The citation content describes the drive leading to the 6-0 score but does not specify it spanned '7 plays and 38 yards'."
+    },
+    {
+      "statement_index": 102,
+      "statement": "Tynes entered the game and kicked a 37-yard field goal at the 11:41 mark, extending the lead to 6–0.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "not_support",
+      "reason": "The citation content states 'Tynes made a 37-yard field goal to increase the Giants' lead to 6–0' but does not mention it occurred 'at the 11:41 mark'."
+    },
+    {
+      "statement_index": 103,
+      "statement": "The Packers responded immediately and explosively.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content states 'On the first play of the ensuing drive, Brett Favre completed a 90-yard touchdown pass to Donald Driver, giving the Packers a 7–6 lead', which describes an immediate and explosive response."
+    },
+    {
+      "statement_index": 104,
+      "statement": "On the very first play of their ensuing possession, Brett Favre dropped back and launched a deep pass down the sideline to wide receiver Donald Driver.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content states 'On the first play of the ensuing drive, Brett Favre completed a 90-yard touchdown pass to Donald Driver', which implies he dropped back and launched a deep pass."
+    },
+    {
+      "statement_index": 105,
+      "statement": "Driver caught the ball and outran the Giants' secondary for a 90-yard touchdown reception.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content states 'Brett Favre completed a 90-yard touchdown pass to Donald Driver', which implies Driver caught the ball and outran the secondary for the score."
+    },
+    {
+      "statement_index": 106,
+      "statement": "This play stands as the longest pass play in Green Bay Packers postseason history.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content explicitly states 'Favre's 90-yard touchdown pass to Donald Driver, which was the longest in Packers' playoff history at that time'."
+    },
+    {
+      "statement_index": 107,
+      "statement": "Mason Crosby’s extra point gave Green Bay their first lead of the game at 7–6 with 11:18 remaining in the half.",
+      "citation_num": "12",
+      "citation_url": "https://www.pro-football-reference.com/boxscores/200801200gnb.htm",
+      "verdict": "conflict",
+      "reason": "The citation shows Mason Crosby's extra point after a touchdown at 11:33 in the 2nd quarter, not 11:18, and it gave Green Bay a 7-6 lead."
+    },
+    {
+      "statement_index": 108,
+      "statement": "Following the touchdown, the game settled back into a defensive rhythm until the final minutes of the half.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content states 'The next three drives ended in punts' after the touchdown, indicating a defensive rhythm, followed by further scoring activity in the 'final minutes of the half'."
+    },
+    {
+      "statement_index": 109,
+      "statement": "The Packers mounted another scoring drive, covering 29 yards in 8 plays.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "not_support",
+      "reason": "The citation content mentions the Packers' scoring drive for a field goal but does not specify it covered '29 yards in 8 plays'."
+    },
+    {
+      "statement_index": 110,
+      "statement": "The short field, set up by field position, allowed Green Bay to add to their lead.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content states the Packers 'regaining possession at mid-field' led to 'a short drive' and a field goal, indicating a short field allowed them to add to their lead."
+    },
+    {
+      "statement_index": 111,
+      "statement": "With 1:30 remaining in the second quarter, Mason Crosby converted a 36-yard field goal, making the score 10–6.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "not_support",
+      "reason": "The citation content states 'Mason Crosby converted a 36-yard field goal, bringing the score to 10–6' and 'With just over a minute left in the half', but does not specify '1:30 remaining'."
+    },
+    {
+      "statement_index": 112,
+      "statement": "The Giants attempted a two-minute drill to narrow the gap before halftime.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content states 'With just over a minute left in the half, the Giants drove 40 yards', which is consistent with attempting a two-minute drill."
+    },
+    {
+      "statement_index": 113,
+      "statement": "The Giants drove 40 yards downfield, but the drive ended when the Packers' defense recorded a sack on fourth down, resulting in a turnover on downs.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content explicitly states 'the Giants drove 40 yards but a sack on fourth down forced a turnover on downs'."
+    },
+    {
+      "statement_index": 114,
+      "statement": "The Packers ran one play to exhaust the clock.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content explicitly states 'The Packers ran one play before halftime'."
+    },
+    {
+      "statement_index": 115,
+      "statement": "The Halftime Score was Green Bay Packers 10, New York Giants 6.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The score table in the citation content shows the total score for NYG as 6 (3+3) and GB as 10 (0+10) at halftime."
+    },
+    {
+      "statement_index": 116,
+      "statement": "The Giants emerged from the halftime break with a renewed commitment to the running game.",
+      "citation_num": "12",
+      "citation_url": "https://www.pro-football-reference.com/boxscores/200801200gnb.htm",
+      "verdict": "not_support",
+      "reason": "The citation lists plays for the Giants' opening possession of the second half, which included runs, but does not explicitly state a 'renewed commitment to the running game' or describe their strategy."
+    },
+    {
+      "statement_index": 117,
+      "statement": "The cold weather began to fatigue the defense.",
+      "citation_num": "12",
+      "citation_url": "https://www.pro-football-reference.com/boxscores/200801200gnb.htm",
+      "verdict": "not_support",
+      "reason": "The citation does not provide any information about weather conditions or player fatigue."
+    },
+    {
+      "statement_index": 118,
+      "statement": "The Giants' physical offensive line began to open lanes for Jacobs and Bradshaw.",
+      "citation_num": "12",
+      "citation_url": "https://www.pro-football-reference.com/boxscores/200801200gnb.htm",
+      "verdict": "not_support",
+      "reason": "The citation lists running plays but does not describe the performance of the Giants' offensive line or mention them opening lanes."
+    },
+    {
+      "statement_index": 119,
+      "statement": "New York regained the lead on their opening possession of the second half.",
+      "citation_num": "12",
+      "citation_url": "https://www.pro-football-reference.com/boxscores/200801200gnb.htm",
+      "verdict": "support",
+      "reason": "The Giants' opening possession of the second half resulted in a touchdown and extra point, changing the score from NYG 6 GNB 10 to NYG 13 GNB 10, thus regaining the lead."
+    },
+    {
+      "statement_index": 120,
+      "statement": "The drive culminated in a 1-yard touchdown run by the 264-pound running back Brandon Jacobs with 7:56 remaining in the quarter.",
+      "citation_num": "12",
+      "citation_url": "https://www.pro-football-reference.com/boxscores/200801200gnb.htm",
+      "verdict": "conflict",
+      "reason": "The citation states Brandon Jacobs scored a 1-yard touchdown run at 8:01 remaining in the quarter, not 7:56, and does not mention his weight."
+    },
+    {
+      "statement_index": 121,
+      "statement": "Lawrence Tynes added the extra point, putting the Giants ahead 13–10.",
+      "citation_num": "12",
+      "citation_url": "https://www.pro-football-reference.com/boxscores/200801200gnb.htm",
+      "verdict": "support",
+      "reason": "The citation explicitly states 'Lawrence Tynes kicks extra point good' after Brandon Jacobs' touchdown, and the score changed to NYG 13 GNB 10."
+    },
+    {
+      "statement_index": 122,
+      "statement": "The lead changed hands again quickly.",
+      "citation_num": "12",
+      "citation_url": "https://www.pro-football-reference.com/boxscores/200801200gnb.htm",
+      "verdict": "support",
+      "reason": "The Giants took a 13-10 lead at 8:01, and the Packers scored a touchdown and extra point at 5:07, taking a 17-13 lead, indicating the lead changed hands quickly."
+    },
+    {
+      "statement_index": 123,
+      "statement": "Favre, displaying the improvisation that defined his career, led the Packers downfield.",
+      "citation_num": "12",
+      "citation_url": "https://www.pro-football-reference.com/boxscores/200801200gnb.htm",
+      "verdict": "not_support",
+      "reason": "The citation shows Favre leading the Packers downfield for a touchdown but does not describe his playing style as 'displaying the improvisation that defined his career'."
+    },
+    {
+      "statement_index": 124,
+      "statement": "Favre capped the drive with a 12-yard touchdown pass to tight end Donald Lee with 5:00 remaining in the quarter.",
+      "citation_num": "12",
+      "citation_url": "https://www.pro-football-reference.com/boxscores/200801200gnb.htm",
+      "verdict": "conflict",
+      "reason": "The citation states Favre's 12-yard touchdown pass to Donald Lee occurred at 5:07 remaining in the quarter, not 5:00, and does not specify Lee's position as tight end."
+    },
+    {
+      "statement_index": 125,
+      "statement": "Crosby's extra point restored the Packers' lead at 17–13.",
+      "citation_num": "12",
+      "citation_url": "https://www.pro-football-reference.com/boxscores/200801200gnb.htm",
+      "verdict": "support",
+      "reason": "After Favre's touchdown, Mason Crosby's extra point made the score NYG 13 GNB 17, which restored the Packers' lead."
+    },
+    {
+      "statement_index": 126,
+      "statement": "Refusing to fold, the Giants responded with another touchdown drive.",
+      "citation_num": "12",
+      "citation_url": "https://www.pro-football-reference.com/boxscores/200801200gnb.htm",
+      "verdict": "not_support",
+      "reason": "The citation shows the Giants responded with a touchdown drive, but the phrase 'Refusing to fold' is an interpretation not supported by the text."
+    },
+    {
+      "statement_index": 127,
+      "statement": "Ahmad Bradshaw finished the drive with a 4-yard touchdown run at the 2:12 mark.",
+      "citation_num": "12",
+      "citation_url": "https://www.pro-football-reference.com/boxscores/200801200gnb.htm",
+      "verdict": "conflict",
+      "reason": "The citation states Ahmad Bradshaw finished the drive with a 4-yard touchdown run at 2:19 remaining in the quarter, not 2:12."
+    },
+    {
+      "statement_index": 128,
+      "statement": "The successful conversion gave the Giants a 20–17 lead heading into the final quarter, setting up a dramatic finish.",
+      "citation_num": "12",
+      "citation_url": "https://www.pro-football-reference.com/boxscores/200801200gnb.htm",
+      "verdict": "not_support",
+      "reason": "The citation supports the score becoming 20-17 after the extra point and that this occurred in the 3rd quarter, but 'setting up a dramatic finish' is an interpretation."
+    },
+    {
+      "statement_index": 129,
+      "statement": "The score at the end of the Third Quarter was New York Giants 20, Green Bay Packers 17.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The score table in the citation content shows the total score for NYG as 20 (3+3+14) and GB as 17 (0+10+7) at the end of the 3rd quarter."
+    },
+    {
+      "statement_index": 130,
+      "statement": "The fourth quarter was a tense affair filled with missed opportunities and special teams drama.",
+      "citation_num": "12",
+      "citation_url": "https://www.pro-football-reference.com/boxscores/200801200gnb.htm",
+      "verdict": "not_support",
+      "reason": "The citation lists plays in the fourth quarter, including a missed field goal and punts, but does not describe the quarter as a 'tense affair' or 'special teams drama'."
+    },
+    {
+      "statement_index": 132,
+      "statement": "Mason Crosby kicked a 37-yard field goal with 11:46 remaining, leveling the score at 20–20.",
+      "citation_num": "12",
+      "citation_url": "https://www.pro-football-reference.com/boxscores/200801200gnb.htm",
+      "verdict": "conflict",
+      "reason": "The citation states Mason Crosby kicked a 37-yard field goal at 11:51 remaining in the fourth quarter, not 11:46, which did level the score at 20-20."
+    },
+    {
+      "statement_index": 133,
+      "statement": "For the remainder of regulation, the Giants had multiple chances to secure the victory, but special teams execution faltered in the freezing conditions.",
+      "citation_num": "6",
+      "citation_url": "https://www.packers.com/news/ap-story-giants-beat-packers-23-20-in-overtime-2424075",
+      "verdict": "support",
+      "reason": "The citation states Lawrence Tynes 'missed two fourth-quarter field goals' and mentions a 'bad snap' for one of them, confirming multiple chances and special teams faltering in freezing conditions."
+    },
+    {
+      "statement_index": 134,
+      "statement": "With 6:49 remaining in regulation, the Giants drove into field goal range.",
+      "citation_num": "6",
+      "citation_url": "https://www.packers.com/news/ap-story-giants-beat-packers-23-20-in-overtime-2424075",
+      "verdict": "support",
+      "reason": "The citation explicitly states, 'When Tynes missed a 43-yard field goal with 6:49 remaining,' indicating the Giants were in field goal range at that time."
+    },
+    {
+      "statement_index": 135,
+      "statement": "Lawrence Tynes attempted a 43-yard field goal.",
+      "citation_num": "6",
+      "citation_url": "https://www.packers.com/news/ap-story-giants-beat-packers-23-20-in-overtime-2424075",
+      "verdict": "support",
+      "reason": "The citation explicitly states, 'When Tynes missed a 43-yard field goal with 6:49 remaining,' confirming the attempt."
+    },
+    {
+      "statement_index": 136,
+      "statement": "Tynes later admitted he misplayed the wind, which was gusting at 15 mph, and the kick hooked wide left.",
+      "citation_num": "6",
+      "citation_url": "https://www.packers.com/news/ap-story-giants-beat-packers-23-20-in-overtime-2424075",
+      "verdict": "not_support",
+      "reason": "The citation mentions Tynes saying 'I screwed it up twice' but does not include details about him admitting to misplaying the wind, the wind speed, or the kick hooking wide left for that specific attempt."
+    },
+    {
+      "statement_index": 137,
+      "statement": "In the final minute of the game, Eli Manning connected with rookie wide receiver Steve Smith on passes of 15, 14, and 11 yards, moving the Giants deep into Packers territory.",
+      "citation_num": "13",
+      "citation_url": "https://www.nfl.com/news/it-took-three-tries-but-tynes-finally-sends-giants-to-super-bow-09000d5d806231dd",
+      "verdict": "support",
+      "reason": "The citation states that Eli Manning hit rookie Steve Smith with passes of 15, 14, and 11 yards with :04 left in regulation, setting up a 36-yard field goal attempt, which places the Giants deep in Packers territory."
+    },
+    {
+      "statement_index": 138,
+      "statement": "With just 4 seconds remaining on the clock, the Giants lined up for a game-winning 36-yard field goal.",
+      "citation_num": "6",
+      "citation_url": "https://www.packers.com/news/ap-story-giants-beat-packers-23-20-in-overtime-2424075",
+      "verdict": "not_support",
+      "reason": "The citation states Tynes missed a 'potential game-winning 36-yarder as regulation expired' but does not specify 'just 4 seconds remaining on the clock'."
+    },
+    {
+      "statement_index": 139,
+      "statement": "The snap from rookie long snapper Jay Alford was high, disrupting the timing of holder Jeff Feagles.",
+      "citation_num": "6",
+      "citation_url": "https://www.packers.com/news/ap-story-giants-beat-packers-23-20-in-overtime-2424075",
+      "verdict": "not_support",
+      "reason": "The citation mentions a 'bad snap' for the 36-yard field goal but does not identify the long snapper as Jay Alford, state he was a rookie, describe the snap as high, or mention Jeff Feagles' timing being disrupted."
+    },
+    {
+      "statement_index": 140,
+      "statement": "Tynes managed to kick the ball, but the disruption resulted in a low \"knuckleball\" trajectory that hooked wide left as time expired.",
+      "citation_num": "6",
+      "citation_url": "https://www.packers.com/news/ap-story-giants-beat-packers-23-20-in-overtime-2424075",
+      "verdict": "not_support",
+      "reason": "The citation only states Tynes 'missed' the 36-yard field goal but does not describe its trajectory as a 'low 'knuckleball'' or that it 'hooked wide left'."
+    },
+    {
+      "statement_index": 141,
+      "statement": "Tynes was visibly distraught, having missed two potential game-winning kicks in the fourth quarter of a conference championship game.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "not_support",
+      "reason": "The citation content confirms Tynes missed two field goals in the fourth quarter, including a potential game-winner, but does not explicitly state he was 'visibly distraught'."
+    },
+    {
+      "statement_index": 142,
+      "statement": "The game headed to overtime tied at 20.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The score table shows the total score for NYG as 20 and GB as 20 at the end of the 4th quarter, indicating the game was tied at 20 heading into overtime."
+    },
+    {
+      "statement_index": 143,
+      "statement": "The score at the end of Regulation was New York Giants 20, Green Bay Packers 20.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The score table in the citation content shows the total score for NYG as 20 and GB as 20 at the end of the 4th quarter (Regulation)."
+    },
+    {
+      "statement_index": 144,
+      "statement": "The game utilized the sudden-death overtime rules in effect at the time, meaning the first team to score any points would be declared the winner.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "not_support",
+      "reason": "The citation content describes the overtime sequence consistent with sudden-death rules but does not explicitly state or define 'sudden-death overtime rules in effect at the time, meaning the first team to score any points would be declared the winner'."
+    },
+    {
+      "statement_index": 145,
+      "statement": "The Packers won the coin toss and elected to receive, giving Brett Favre and the offense the first opportunity to win the game.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content explicitly states 'The Packers won the coin toss before overtime and chose to receive the ball first', which implies they had the first opportunity to win."
+    },
+    {
+      "statement_index": 146,
+      "statement": "The Packers began their drive at their own 26-yard line.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "not_support",
+      "reason": "The citation content does not specify that the Packers began their overtime drive at their own 26-yard line."
+    },
+    {
+      "statement_index": 147,
+      "statement": "On the first play, Ryan Grant rushed for a minimal gain.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "not_support",
+      "reason": "The citation content mentions 'after a short rush' on the first play of overtime but does not name 'Ryan Grant' as the rusher."
+    },
+    {
+      "statement_index": 148,
+      "statement": "On the second play of overtime, Favre dropped back and looked for Donald Driver.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content states 'On the second play of the drive, after a short rush, Favre threw a pass intended for Driver', implying he dropped back and looked for him."
+    },
+    {
+      "statement_index": 149,
+      "statement": "Favre threw a pass intended for the receiver, but Giants cornerback Corey Webster read the play, jumped the route, and intercepted the ball.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "not_support",
+      "reason": "The citation content states 'Favre threw a pass intended for Driver but was intercepted by Corey Webster' but does not explicitly state Webster 'read the play, jumped the route'."
+    },
+    {
+      "statement_index": 150,
+      "statement": "Webster returned the interception to the Green Bay 34-yard line, placing the Giants immediately in scoring range.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "not_support",
+      "reason": "The citation content states Webster intercepted the ball, leading to a 47-yard field goal attempt, but does not specify he returned it to the 'Green Bay 34-yard line'."
+    },
+    {
+      "statement_index": 151,
+      "statement": "This interception would historically stand as Brett Favre's final pass attempt as a member of the Green Bay Packers.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content explicitly states that the NFC Championship 'ensured that his last pass as a Packer was an interception'."
+    },
+    {
+      "statement_index": 152,
+      "statement": "The Giants took over with excellent field position.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content states that after Favre's interception, the Giants were 'setting up a 47-yard field goal attempt', which implies excellent field position."
+    },
+    {
+      "statement_index": 153,
+      "statement": "Unlike regulation, where they moved the ball aggressively, they ran three conservative plays that netted only five yards, setting up a fourth down.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "not_support",
+      "reason": "The citation content states 'the Giants only gained five yards' on the ensuing drive but does not explicitly mention 'three conservative plays' or 'setting up a fourth down'."
+    },
+    {
+      "statement_index": 154,
+      "statement": "Despite Tynes' two previous misses, head coach Tom Coughlin sent the kicking unit onto the field for a 47-yard attempt—longer than the 43-yarder Tynes had missed earlier.",
+      "citation_num": "6",
+      "citation_url": "https://www.packers.com/news/ap-story-giants-beat-packers-23-20-in-overtime-2424075",
+      "verdict": "not_support",
+      "reason": "The citation confirms Tynes' two previous misses and the successful 47-yard attempt, which was longer than the 43-yard miss, but it does not mention head coach Tom Coughlin by name."
+    },
+    {
+      "statement_index": 155,
+      "statement": "With 2:35 elapsed in overtime, Tynes approached the ball.",
+      "citation_num": "6",
+      "citation_url": "https://www.packers.com/news/ap-story-giants-beat-packers-23-20-in-overtime-2424075",
+      "verdict": "not_support",
+      "reason": "The citation confirms the kick happened in overtime but does not specify that 2:35 had elapsed."
+    },
+    {
+      "statement_index": 156,
+      "statement": "The snap and hold were clean.",
+      "citation_num": "6",
+      "citation_url": "https://www.packers.com/news/ap-story-giants-beat-packers-23-20-in-overtime-2424075",
+      "verdict": "not_support",
+      "reason": "The citation mentions a 'bad snap' for a previous attempt but does not explicitly state that the snap and hold for the overtime 47-yard field goal were clean."
+    },
+    {
+      "statement_index": 157,
+      "statement": "Tynes struck the ball firmly, and it sailed through the uprights, good for a 47-yard field goal.",
+      "citation_num": "6",
+      "citation_url": "https://www.packers.com/news/ap-story-giants-beat-packers-23-20-in-overtime-2424075",
+      "verdict": "support",
+      "reason": "The citation states Tynes 'redeemed himself in overtime, connecting from 47 yards' and 'nailed a 47-yarder,' implying the ball went through the uprights successfully."
+    },
+    {
+      "statement_index": 158,
+      "statement": "Tynes immediately sprinted toward the locker room tunnel in celebration as his teammates mobbed him on the field.",
+      "citation_num": "6",
+      "citation_url": "https://www.packers.com/news/ap-story-giants-beat-packers-23-20-in-overtime-2424075",
+      "verdict": "support",
+      "reason": "The citation states Tynes 'sprinted directly to the locker room as the rest of his frozen teammates celebrated on the field,' which directly supports the statement."
+    },
+    {
+      "statement_index": 159,
+      "statement": "The Giants had won 23–20.",
+      "citation_num": "6",
+      "citation_url": "https://www.packers.com/news/ap-story-giants-beat-packers-23-20-in-overtime-2424075",
+      "verdict": "support",
+      "reason": "The title and body of the citation explicitly state 'Giants Beat Packers 23-20 In Overtime' and 'A frostbitten 23-20 overtime victory'."
+    },
+    {
+      "statement_index": 160,
+      "statement": "The following table details the scoring plays of the game.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content includes a score table and a section titled 'Giants 23, Packers 20, OT: How They Scored', which details scoring plays."
+    },
+    {
+      "statement_index": 161,
+      "statement": "The Giants rushed for 134 yards.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "conflict",
+      "reason": "The citation content states the Giants outgained the Packers in rushing yards '114 to 28' and that Jacobs and Bradshaw combined for '130 yards', both of which conflict with '134 yards'."
+    },
+    {
+      "statement_index": 162,
+      "statement": "The Packers were held to just 28 yards on the ground.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content explicitly states the Giants 'outgaining the Packers in rushing yards 114 to 28', confirming the Packers had 28 rushing yards."
+    },
+    {
+      "statement_index": 163,
+      "statement": "This disparity allowed New York to control the tempo and keep the Packers' offense off the field.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "not_support",
+      "reason": "The citation content mentions the rushing disparity and the Packers being one-dimensional but does not explicitly state this allowed New York to 'control the tempo and keep the Packers' offense off the field'."
+    },
+    {
+      "statement_index": 164,
+      "statement": "The Giants played a clean game with zero turnovers.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "not_support",
+      "reason": "The citation content mentions the Packers had three turnovers but does not explicitly state the Giants had zero turnovers."
+    },
+    {
+      "statement_index": 165,
+      "statement": "The Packers committed two turnovers, including the fatal interception in overtime.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "conflict",
+      "reason": "The citation content explicitly states 'The Packers had three turnovers', which contradicts the statement that they committed two turnovers."
+    },
+    {
+      "statement_index": 166,
+      "statement": "Plaxico Burress was a dominant force, recording 11 receptions, which proved vital for the Giants' ball-control strategy.",
+      "citation_num": "14",
+      "citation_url": "https://www.youtube.com/watch?v=51f789CeKyI",
+      "verdict": "not_support",
+      "reason": "The citation content discusses Tom Coughlin's appearance during a cold weather game and his discussion with Rich Eisen, but it does not mention Plaxico Burress, his receptions, or the Giants' ball-control strategy."
+    },
+    {
+      "statement_index": 167,
+      "statement": "The running back duo of Brandon Jacobs and Ahmad Bradshaw combined for the bulk of the Giants' 134 rushing yards and scored both of the team's touchdowns.",
+      "citation_num": "12",
+      "citation_url": "https://www.pro-football-reference.com/boxscores/200801200gnb.htm",
+      "verdict": "not_support",
+      "reason": "The citation confirms Brandon Jacobs and Ahmad Bradshaw scored both of the Giants' touchdowns, but it does not provide information on their combined rushing yards or the total team rushing yards."
+    },
+    {
+      "statement_index": 168,
+      "statement": "Despite missing two field goals in the fourth quarter, Lawrence Tynes finished 3-for-5 on field goal attempts, including the game-winner.",
+      "citation_num": "13",
+      "citation_url": "https://www.nfl.com/news/it-took-three-tries-but-tynes-finally-sends-giants-to-super-bow-09000d5d806231dd",
+      "verdict": "conflict",
+      "reason": "The citation explicitly details Lawrence Tynes' three field goal attempts (two misses and one game-winning make), indicating he was 1-for-3, not 3-for-5 as stated."
+    },
+    {
+      "statement_index": 169,
+      "statement": "Donald Driver was the standout performer for Green Bay, catching 5 passes for 141 yards and a touchdown.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "not_support",
+      "reason": "The citation content mentions Donald Driver's 90-yard touchdown pass but does not provide his total catches or yards for the game."
+    },
+    {
+      "statement_index": 170,
+      "statement": "The game was broadcast nationally in the United States on the Fox network.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content explicitly states 'Network Fox' under 'TV in the United States'."
+    },
+    {
+      "statement_index": 171,
+      "statement": "The commentary team consisted of Joe Buck providing play-by-play, Troy Aikman providing color commentary, and Pam Oliver and Chris Myers serving as sideline reporters.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "not_support",
+      "reason": "The citation content lists 'Joe Buck, Troy Aikman, Pam Oliver, and Chris Myers' as announcers but does not specify their individual roles (play-by-play, color commentary, sideline reporters)."
+    },
+    {
+      "statement_index": 172,
+      "statement": "The broadcast averaged 53.9 million viewers.",
+      "citation_num": "7",
+      "citation_url": "https://www.sportsmediawatch.com/2008/12/2008-in-review-nfl/",
+      "verdict": "support",
+      "reason": "The citation states, 'The NFC Championship Game, between the Giants and Packers, drew 53.9 million viewers,' which implies the broadcast averaged that many viewers."
+    },
+    {
+      "statement_index": 173,
+      "statement": "Other reports cite the viewership figure at 48.6 million viewers.",
+      "citation_num": "15",
+      "citation_url": "https://www.sportsmediawatch.com/2008/01/giants-packers-power-fox-to-huge-night/",
+      "verdict": "support",
+      "reason": "The citation states that FOX drew 48.6 million viewers for the game, directly supporting the viewership figure."
+    },
+    {
+      "statement_index": 174,
+      "statement": "The game was the most-watched television program since the series finale of the sitcom Seinfeld in 1998.",
+      "citation_num": "7",
+      "citation_url": "https://www.sportsmediawatch.com/2008/12/2008-in-review-nfl/",
+      "verdict": "support",
+      "reason": "The citation states the game was 'the most for any non-Super Bowl television program since the series finale of Seinfeld ten years earlier,' and the article is from 2008, making 'ten years earlier' 1998."
+    },
+    {
+      "statement_index": 175,
+      "statement": "The game earned a 31.7 overnight rating and a 46 share.",
+      "citation_num": "15",
+      "citation_url": "https://www.sportsmediawatch.com/2008/01/giants-packers-power-fox-to-huge-night/",
+      "verdict": "support",
+      "reason": "The citation explicitly states, 'The game drew a 31.7/46 overnight rating in prime time,' which matches the statement."
+    },
+    {
+      "statement_index": 176,
+      "statement": "Nearly half of all televisions in use at the time were tuned to the game.",
+      "citation_num": "15",
+      "citation_url": "https://www.sportsmediawatch.com/2008/01/giants-packers-power-fox-to-huge-night/",
+      "verdict": "support",
+      "reason": "The citation mentions a '31.7/46 overnight rating,' where '46' represents the share, meaning 46% of televisions in use were tuned to the game, which is consistent with 'nearly half'."
+    },
+    {
+      "statement_index": 177,
+      "statement": "The viewership represented a significant increase over the previous year's NFC Championship Game (43.2 million) and the AFC Championship Game played earlier the same day (Patriots vs. Chargers).",
+      "citation_num": "7",
+      "citation_url": "https://www.sportsmediawatch.com/2008/12/2008-in-review-nfl/",
+      "verdict": "not_support",
+      "reason": "The citation provides the viewership for the NFC Championship Game (53.9 million) but does not mention the viewership for the previous year's NFC Championship Game or the AFC Championship Game played earlier the same day."
+    },
+    {
+      "statement_index": 178,
+      "statement": "The game is frequently cited in NFL media as one of the most memorable playoff games of the 2000s.",
+      "citation_num": "4",
+      "citation_url": "https://www.nfl.com/100/originals/100-greatest/games-54",
+      "verdict": "not_support",
+      "reason": "The citation content is an error message and does not provide any information about NFL media, memorable playoff games, or the 2000s."
+    },
+    {
+      "statement_index": 179,
+      "statement": "The visuals of the frozen breath of the players, the red face of Tom Coughlin, and the snow-hardened Lambeau Field turf have been used extensively in NFL Films productions.",
+      "citation_num": "4",
+      "citation_url": "https://www.nfl.com/100/originals/100-greatest/games-54",
+      "verdict": "not_support",
+      "reason": "The citation content is an error message and does not mention visuals of players, Tom Coughlin, Lambeau Field turf, or NFL Films productions."
+    },
+    {
+      "statement_index": 180,
+      "statement": "The game's nickname, \"The Chilling Championship,\" reflects both the temperature and the dramatic tension of the overtime finish.",
+      "citation_num": "4",
+      "citation_url": "https://www.nfl.com/100/originals/100-greatest/games-54",
+      "verdict": "not_support",
+      "reason": "The citation content is an error message and does not provide any information about game nicknames, temperatures, or dramatic tension."
+    },
+    {
+      "statement_index": 184,
+      "statement": "The Giants' win over Green Bay was their 10th consecutive road victory of the season, a streak that spanned both the regular season and the playoffs.",
+      "citation_num": "6",
+      "citation_url": "https://www.packers.com/news/ap-story-giants-beat-packers-23-20-in-overtime-2424075",
+      "verdict": "support",
+      "reason": "The citation explicitly states the Giants were guided to their '10th straight road win' in the game against the Packers, and the context implies this streak includes both regular season and playoffs."
+    },
+    {
+      "statement_index": 187,
+      "statement": "On March 6, 2008, less than two months after the loss, Favre held an emotional press conference announcing his retirement from professional football.",
+      "citation_num": "17",
+      "citation_url": "https://www.packers.com/news/favre-emotional-yet-graceful-as-he-walks-away-2423903",
+      "verdict": "support",
+      "reason": "The citation states the article was published on 'Mar 05, 2008' and refers to 'Thursday's official retirement press conference,' which would be March 6, 2008, and mentions the team came close to the Super Bowl 'less than two months ago,' with Favre being 'overcome with emotion' during the announcement."
+    },
+    {
+      "statement_index": 188,
+      "statement": "Brett Favre cited mental fatigue and a desire to leave the game on his own terms.",
+      "citation_num": "17",
+      "citation_url": "https://www.packers.com/news/favre-emotional-yet-graceful-as-he-walks-away-2423903",
+      "verdict": "support",
+      "reason": "Favre stated, 'I know I can play, but I don't think I want to,' and described the extensive work and studying required, which was 'taking some of the fun' out of it, indicating mental fatigue and a personal decision to retire."
+    },
+    {
+      "statement_index": 189,
+      "statement": "In the summer of 2008, Favre expressed a desire to return to the team.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content states 'Just a few months later, Favre rescinded his retirement and publicly stated his desire to return to the Packers for the 2008 NFL season'."
+    },
+    {
+      "statement_index": 190,
+      "statement": "The Packers management, led by General Manager Ted Thompson and Head Coach Mike McCarthy, had committed to moving forward with quarterback Aaron Rodgers.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "not_support",
+      "reason": "The citation content states 'The Packers publicly committed to Aaron Rodgers as Favre's successor' but does not explicitly name 'General Manager Ted Thompson' or state that management was 'led by' him and McCarthy."
+    },
+    {
+      "statement_index": 191,
+      "statement": "This led to a tense standoff and Favre's eventual trade to the New York Jets in August 2008.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "not_support",
+      "reason": "The citation content states 'After much discussion, Favre agreed to a trade to the New York Jets' in 2008, but does not explicitly use the phrase 'tense standoff' or specify 'August 2008'."
+    },
+    {
+      "statement_index": 192,
+      "statement": "The interception thrown by Favre in overtime to Corey Webster remains the final play of his storied career in Green Bay.",
+      "citation_num": "1",
+      "citation_url": "https://en.wikipedia.org/wiki/2007_NFC_Championship_Game",
+      "verdict": "support",
+      "reason": "The citation content explicitly states that the NFC Championship 'became the last game Favre would play in his career with the Packers and ensured that his last pass as a Packer was an interception' by Corey Webster."
+    },
+    {
+      "statement_index": 193,
+      "statement": "For Giants head coach Tom Coughlin, the victory was a vindication.",
+      "citation_num": "9",
+      "citation_url": "https://www.giants.com/news/giants-vs-packers-stats-anecdotes-6813782",
+      "verdict": "not_support",
+      "reason": "The citation content provides statistics about Tom Coughlin's coaching record but does not offer subjective interpretations like the victory being a 'vindication'."
+    },
+    {
+      "statement_index": 194,
+      "statement": "Entering the season on the \"hot seat,\" Coughlin's job status was a constant subject of media speculation.",
+      "citation_num": "9",
+      "citation_url": "https://www.giants.com/news/giants-vs-packers-stats-anecdotes-6813782",
+      "verdict": "not_support",
+      "reason": "The citation content provides facts about Coughlin's record but does not mention his job status, being on the 'hot seat,' or media speculation."
+    },
+    {
+      "statement_index": 195,
+      "statement": "The playoff run, characterized by discipline and physical play in adverse conditions, secured Tom Coughlin's tenure with the team.",
+      "citation_num": "9",
+      "citation_url": "https://www.giants.com/news/giants-vs-packers-stats-anecdotes-6813782",
+      "verdict": "not_support",
+      "reason": "The citation content does not describe the playoff run's characteristics or state that it secured Tom Coughlin's tenure with the team."
+    },
+    {
+      "statement_index": 196,
+      "statement": "Tom Coughlin would go on to coach the Giants to another Super Bowl victory (Super Bowl XLVI) four years later.",
+      "citation_num": "9",
+      "citation_url": "https://www.giants.com/news/giants-vs-packers-stats-anecdotes-6813782",
+      "verdict": "not_support",
+      "reason": "The citation is a contemporaneous report of a game during the 2011-2012 playoff run (leading to Super Bowl XLVI) and does not make a retrospective statement about Coughlin coaching to another Super Bowl victory 'four years later'."
+    },
+    {
+      "statement_index": 197,
+      "statement": "Tom Coughlin again defeated the Packers at Lambeau Field in the playoffs along the way to Super Bowl XLVI.",
+      "citation_num": "9",
+      "citation_url": "https://www.giants.com/news/giants-vs-packers-stats-anecdotes-6813782",
+      "verdict": "support",
+      "reason": "The citation describes the Giants' 37-20 NFC Divisional Playoff Game victory over the Green Bay Packers in Lambeau Field, which moved them into the NFC Championship Game, and notes Coughlin's 2-0 playoff record against McCarthy, indicating he again defeated the Packers in the playoffs on the way to the Super Bowl."
+    },
+    {
+      "statement_index": 198,
+      "statement": "Kicker Lawrence Tynes' performance in the game—missing two fourth-quarter field goals before making the winner in overtime—became a defining moment of his career.",
+      "citation_num": "19",
+      "citation_url": "https://www.giants.com/news/2007-flashback-q-a-with-kicker-lawrence-tynes-20276939",
+      "verdict": "support",
+      "reason": "The article extensively details Tynes' performance in the 2007 NFC Championship game, including his two misses and the game-winning kick, and refers to him as a '2007 hero,' indicating it was a defining moment."
+    },
+    {
+      "statement_index": 199,
+      "statement": "Lawrence Tynes is the only kicker in NFL history to have two postseason game-winning field goals in overtime.",
+      "citation_num": "19",
+      "citation_url": "https://www.giants.com/news/2007-flashback-q-a-with-kicker-lawrence-tynes-20276939",
+      "verdict": "support",
+      "reason": "The citation explicitly states that Tynes is the only kicker in NFL history with two postseason game-winning field goals in overtime."
+    },
+    {
+      "statement_index": 200,
+      "statement": "Lawrence Tynes kicked another game-winning field goal in the 2011 NFC Championship Game against the San Francisco 49ers.",
+      "citation_num": "19",
+      "citation_url": "https://www.giants.com/news/2007-flashback-q-a-with-kicker-lawrence-tynes-20276939",
+      "verdict": "support",
+      "reason": "The citation states that Tynes won an NFC Championship Game with an overtime field goal in San Francisco four years after Jan. 20, 2008, which corresponds to the 2011 season's championship game."
+    },
+    {
+      "statement_index": 201,
+      "statement": "Lawrence Tynes' resilience in the 2007 title game is often cited by coaches and players as an example of mental toughness.",
+      "citation_num": "19",
+      "citation_url": "https://www.giants.com/news/2007-flashback-q-a-with-kicker-lawrence-tynes-20276939",
+      "verdict": "not_support",
+      "reason": "While Tynes discusses mental toughness and his own resilience in the game, the citation does not state that his performance is 'often cited by coaches and players' as an example of mental toughness."
+    }
+  ]
+}
