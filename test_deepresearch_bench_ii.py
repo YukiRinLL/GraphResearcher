@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
-import inspect
 import json
 import os
 import random
@@ -26,7 +25,6 @@ import dotenv
 from tqdm import tqdm
 
 from main import VERBOSITY_PRESETS, resolve_log_options, run
-from tools.research_requirements import build_research_plan
 
 dotenv.load_dotenv(".env")
 
@@ -143,13 +141,10 @@ def run_one(
 
     print(f"Processing: idx={idx}, id={task_id}")
     print(f"Detailed artifacts: {run_dir}")
-    run_plan = build_research_plan(item) if isinstance(item.get("content"), dict) else None
-    if run_plan and "run_plan" in inspect.signature(run).parameters:
-        run(prompt, run_dir, max_rounds, opts, run_plan=run_plan)
-    else:
-        # Keep the generic batch helper compatible with lightweight test doubles
-        # and non-DRB2 callers that do not provide rubric metadata.
-        run(prompt, run_dir, max_rounds, opts)
+    # Generation is intentionally blind to evaluation-only metadata such as
+    # content.rubric. The evaluator reads the full task file after the report
+    # has been produced.
+    run(prompt, run_dir, max_rounds, opts)
 
     report_path = run_dir / "report.md"
     if not report_path.exists():
@@ -343,6 +338,7 @@ def parse_args() -> argparse.Namespace:
     """Parse generation and optional evaluation arguments."""
     parser = argparse.ArgumentParser(description="Batch-test GraphResearcher on DeepResearch Bench II.")
     parser.add_argument("--prompt-path", type=Path, default=None, help="Tasks JSONL; defaults to tasks_and_rubrics.jsonl under --bench-root.")
+    parser.add_argument("--evaluation-tasks-path", type=Path, default=None, help="Evaluator-only task metadata; defaults to --prompt-path.")
     parser.add_argument("--output-path", type=Path, default=OUTPUT_PATH, help="Output root for reports and artifacts.")
     parser.add_argument("--sample-size", type=int, default=SAMPLE_SIZE, help="Random sample size; <=0 means all.")
     parser.add_argument("--seed", type=int, default=RANDOM_SEED, help="Optional random seed for sampling.")
@@ -368,6 +364,7 @@ def parse_args() -> argparse.Namespace:
     )
     args = parser.parse_args()
     args.prompt_path = args.prompt_path or args.bench_root / "tasks_and_rubrics.jsonl"
+    args.evaluation_tasks_path = args.evaluation_tasks_path or args.prompt_path
     args.show_tool_calls = None
     args.subgraphs = None
     args.log_level = None
@@ -398,7 +395,7 @@ def main() -> None:
 
     if args.evaluate or args.evaluate_only:
         run_bench_evaluation(
-            args.output_path, args.bench_root, model_name, args.prompt_path, args.bench_python,
+            args.output_path, args.bench_root, model_name, args.evaluation_tasks_path, args.bench_python,
         )
 
 
