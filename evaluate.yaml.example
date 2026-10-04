@@ -1,77 +1,74 @@
-version: 1
-mode: run_and_evaluate
-seed: 20260918
-sample_count: 5
+# 模型、密钥和单次请求超时在根目录 .env 中配置。
+version: 1  # 配置版本，目前只支持 1。
+mode: run_and_evaluate  # run：只生成；evaluate：只评分；run_and_evaluate：生成后评分。
+seed: 20260918  # 随机抽样种子，用于复现样本选择。
+sample_count: 5  # 每个 Benchmark 的样本数；null 表示全部。
 
 agent:
-  name: graphresearcher
-  max_rounds: 30
-  # 每条样本研究与报告生成的总耗时上限（秒）；-1 表示不限时。
-  timeout_seconds: 7200
-  # 每次模型调用首次请求失败后的 HTTP 自动重试次数；0 表示不重试。
-  max_retries: 3
-  max_workers: 1
-  verbosity: quiet
+  name: graphresearcher  # Agent 名称，用于自动生成运行目录名。
+  max_rounds: 30  # 每条样本的搜索派发次数上限；0 表示不限。
+  timeout_seconds: 7200  # 每条样本生成报告的总时限（秒）；-1 表示不限。
+  max_retries: 3  # 每次模型调用的额外重试次数；0 表示不重试。
+  max_workers: 1  # 同时运行的样本数；默认 1，表示串行。
+  verbosity: quiet  # quiet：简略；normal：进度；debug：工具调用及详细日志。
 
 execution:
-  resume: true
-  fail_fast: false
-  # 同时评测的样本数；Benchmark 内部并发由各自 max_workers 控制。
-  evaluation_max_workers: 1
+  resume: true  # 跳过同一运行目录中已完成且有报告的样本；评分仍会重跑。
+  fail_fast: false  # 编排异常时退出；已记录的失败状态不一定触发退出。
+  evaluation_max_workers: 1  # 同时评分的样本数；默认 1，表示串行。
 
 output:
-  root: outputs/evaluations
-  run_id: null
-  markdown_summary: true
+  root: outputs/evaluations  # 结果根目录。
+  run_id: null  # 运行目录名；null 自动生成，固定名称可用于续跑。
+  markdown_summary: true  # 生成 Markdown 汇总；JSON 汇总始终生成。
 
-# evaluate 模式优先读取统一运行目录。也可以不设置 run_dir，
-# 改为提供一个或多个 Benchmark 原生报告路径。
-input:
-  run_dir: null
+input:  # evaluate 模式需指定 run_dir 或 native 报告路径。
+  run_dir: null  # 已有运行目录；使用其中记录的样本，不重新抽样。
   native:
-    deep_research_bench_jsonl: null
-    wiki_live_challenge_markdown_dir: null
-    deep_research_bench_ii_report_dir: null
+    deep_research_bench_jsonl: null  # 原生 JSONL 报告，包含 id、prompt、article。
+    wiki_live_challenge_markdown_dir: null  # 原生报告目录，文件名为 <文章名称>.md。
+    deep_research_bench_ii_report_dir: null  # 原生报告目录，文件名为 idx-<样本编号>.md。
 
-benchmarks:
+benchmarks:  # 至少启用一个 Benchmark；仅测试 Bench I 时关闭另外两个。
+
   deep_research_bench:
-    enabled: true
-    sample_count: null
+    enabled: true  # 是否启用 DeepResearch Bench I。
+    sample_count: null  # 覆盖顶层样本数；null 表示继承。
     selection:
-      languages: [zh, en]
-      topics: []
+      languages: [zh, en]  # 语言筛选：zh、en；[] 表示不限。
+      topics: []  # 按数据集 topic 精确筛选；[] 表示不限。
     evaluation:
-      dimensions: [race, fact]
-      max_workers: 5
+      dimensions: [race, fact]  # race：报告质量；fact：引用事实验证；可选子集。
+      max_workers: 5  # RACE 评测器内部线程数。
       fact:
-        processes: 5
+        processes: 5  # FACT 各阶段的进程数。
 
   wiki_live_challenge:
-    enabled: true
-    sample_count: null
+    enabled: true  # 是否启用 Wiki Live Challenge。
+    sample_count: null  # 覆盖顶层样本数；null 表示继承。
     selection:
-      dataset: 2025_Mar_Nov
-      categories: []
+      dataset: 2025_Mar_Nov  # 数据集子目录名。
+      categories: []  # 样本类别筛选；当前数据集保持 []。
     preprocessing:
-      normalize_markdown: true
-      steps: [extract, fetch]
+      normalize_markdown: true  # 评分前规范化 Markdown 副本。
+      steps: [extract, fetch]  # extract：抽取陈述；fetch：抓取引用网页。
     evaluation:
-      dimensions: [writing, verifiability, citation]
-      max_workers: 5
+      dimensions: [writing, verifiability, citation]  # 写作、陈述核验、引用支持三项评分，可选子集。
+      max_workers: 5  # 陈述核验内部并发数；citation 当前有参数兼容问题。
       writing:
-        allow_tie: true
-        categories: []
+        allow_tie: true  # 写作比较是否允许打平。
+        categories: []  # 写作评分类别：well_written、broad_coverage、neutral；[] 表示全部。
       verifiability:
-        top_k: 10
+        top_k: 10  # 每条陈述选取的相似候选陈述数。
 
   deep_research_bench_ii:
-    enabled: true
-    sample_count: null
+    enabled: true  # 是否启用 DeepResearch Bench II。
+    sample_count: null  # 覆盖顶层样本数；null 表示继承。
     selection:
-      languages: [zh, en]
-      themes: []
+      languages: [zh, en]  # 语言筛选：zh、en；[] 表示不限。
+      themes: []  # 按数据集 theme 精确筛选；[] 表示不限。
     evaluation:
-      chunk_size: 50
-      max_workers: 5
-      max_retries: 10
-      max_paper_chars: 150000
+      chunk_size: 50  # 每批评分条目数；0 表示不分批。
+      max_workers: 5  # 原生评测器的报告处理线程数。
+      max_retries: 10  # 每批评分的总尝试次数，包含首次；须大于 0。
+      max_paper_chars: 150000  # 送入评分模型的报告字符数上限。

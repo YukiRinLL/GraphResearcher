@@ -53,6 +53,26 @@ uv run python evaluate.py --config evaluate.yaml
   `input.native` 中的 Benchmark 原生报告。
 - `run_and_evaluate`：运行 Agent 后立即评测。
 
+### 并行运行样本
+
+`agent.max_workers` 控制同时运行 Agent 的样本数，默认是 `1`，表示串行运行。
+例如，抽取 5 条样本、最多同时运行 3 条，可以设置：
+
+```yaml
+sample_count: 5
+agent:
+  max_workers: 3
+execution:
+  evaluation_max_workers: 1
+```
+
+每条样本在独立子进程中运行，报告、日志和图谱 context 使用各自的样本目录。
+`agent.timeout_seconds` 和 `agent.max_retries` 也分别应用于每条样本。
+
+`execution.evaluation_max_workers` 控制后续同时评分的样本数，默认同样是 `1`。
+在 `run_and_evaluate` 模式下，统一入口先等待这一批 Agent 运行结束，再开始评分。
+Benchmark 配置中的 `evaluation.max_workers` 控制评测器内部并发，可与样本评分并发叠加。
+
 结果默认保存在 `outputs/evaluations/<run_id>/`。每个样本的
 `sample_result.json` 记录运行时间、评测时间、状态和指标。每次评测会在
 `evaluations/<evaluation_id>/` 下生成独立的 `summary.json` 和可选的

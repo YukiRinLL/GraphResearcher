@@ -222,3 +222,5 @@ outputs/
 api-test-*
 openai_api_test.py
 test_extraction_latency.py
+trace-371613a33080d945a4e286d4ca0e6392.json
+evaluate.yaml
