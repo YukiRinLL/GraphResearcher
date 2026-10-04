@@ -18,6 +18,7 @@ import json
 import logging
 import re
 import threading
+from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Optional
 from urllib.parse import urlsplit
 
@@ -322,6 +323,77 @@ def _query_text_issue(text: Any) -> Optional[str]:
     return None
 
 
+def _claim_normalization_input(query: dict, nodes: list[dict]) -> dict:
+    """从当前 Query 的自有材料构造稳定的规范化模型输入."""
+    statements = sorted(
+        (node for node in nodes if node.get("type") == NodeType.STATEMENT.value),
+        key=lambda node: node["id"],
+    )
+    evidence = sorted(
+        (node for node in nodes if node.get("type") == NodeType.EVIDENCE.value),
+        key=lambda node: node["id"],
+    )
+    source_credibility = {
+        node.get("id"): node.get("credibility_score", 0.5)
+        for node in nodes if node.get("type") == NodeType.SOURCE.value
+    }
+
+    def _get_source_credibility(source_id: Optional[str]) -> float:
+        # 来源没有可信度记录时，沿用现有的中等默认值。
+        return source_credibility.get(source_id, 0.5) if source_id else 0.5
+
+    compact = {
+        "statements": [
+            {
+                "id": item.get("id"),
+                "text": item.get("text") or item.get("statement"),
+                "document_id": item.get("document_id"),
+                "source_id": item.get("source_id"),
+                "source_credibility": _get_source_credibility(item.get("source_id")),
+                "qualifiers": item.get("qualifiers") or [],
+                "limitations": item.get("limitations") or [],
+                "confidence": item.get("confidence"),
+            }
+            for item in statements
+        ],
+        "evidence": [
+            {
+                "id": item.get("id"),
+                "text": item.get("text") or item.get("claim"),
+                "document_id": item.get("document_id"),
+                "source_id": item.get("source_id"),
+                "source_credibility": _get_source_credibility(item.get("source_id")),
+                "statement_ref": item.get("statement_ref"),
+                "statement_refs": item.get("statement_refs") or [],
+                "claim_ref": item.get("claim_ref"),
+                "stance": item.get("stance"),
+                "qualifiers": item.get("qualifiers") or [],
+                "limitations": item.get("limitations") or [],
+                "confidence": item.get("confidence"),
+            }
+            for item in evidence
+        ],
+    }
+    return {
+        "query": {
+            "id": query.get("id"),
+            "text": query.get("text"),
+            "objective_keys": query.get("objective_keys") or [],
+            "acceptance_criteria": query.get("acceptance_criteria") or [],
+        },
+        "evidence_subgraph": compact,
+    }
+
+
+def _claim_normalization_prompt(normalization_input: dict) -> str:
+    """用同一份稳定输入渲染 prompt，供模型调用和指纹计算共用."""
+    return (
+        mm_prompts.normalize_claims
+        .replace("{query}", json.dumps(normalization_input["query"], ensure_ascii=False, sort_keys=True))
+        .replace("{evidence_subgraph}", json.dumps(normalization_input["evidence_subgraph"], ensure_ascii=False, sort_keys=True))
+    )
+
+
 class MemoryManager:
     """LLM-powered manager of the Research Graph."""
 
@@ -344,6 +416,9 @@ class MemoryManager:
         self.user_request = user_request
         self.run_plan = run_plan or {}
         self._state_lock = threading.RLock()
+        # 每个运行内的 Query 只保存最近一次完整写入结果，模型调用由独立锁保护。
+        self._claim_normalization_cache: dict[tuple[Optional[str], str], dict] = {}
+        self._claim_normalization_locks: dict[tuple[Optional[str], str], Any] = {}
         # Track consecutive cool-down rounds per owner so the LLM can see when a
         # branch has been parked for a while and decide whether to revive it.
         self._cooldown_streaks: dict[str, int] = {}
@@ -1079,83 +1154,83 @@ class MemoryManager:
         return specs
 
     def normalize_claims(self, query_id: str) -> dict:
-        """Create or update canonical Claims for one Query's owned materials."""
+        """在当前运行内复用输入和图谱绑定均未变化的规范化结果."""
+        key = (graph_tools.get_current_context(), query_id)
+        with self._state_lock:
+            lock = self._claim_normalization_locks.setdefault(key, threading.Lock())
+        with lock:
+            return self._normalize_claims(query_id, key)
+
+    def _normalize_claims(self, query_id: str, cache_key: tuple[Optional[str], str]) -> dict:
+        """在 Query 专用锁内读取材料、检查缓存并完成规范化."""
         query = graph_tools.get_node(query_id)
         evaluation = graph_tools.get_query_evaluation_subgraph(query_id)
         nodes = evaluation.get("nodes", [])
-        statements = [
-            node for node in nodes
-            if node.get("type") == NodeType.STATEMENT.value
-        ]
-        evidence = [
-            node for node in nodes
-            if node.get("type") == NodeType.EVIDENCE.value
-        ]
+        statements = [node for node in nodes if node.get("type") == NodeType.STATEMENT.value]
+        evidence = [node for node in nodes if node.get("type") == NodeType.EVIDENCE.value]
         if not statements and not evidence:
+            self._claim_normalization_cache.pop(cache_key, None)
             return {"created_or_updated_claim_ids": [], "claim_count": 0}
+
+        prompt = _claim_normalization_prompt(_claim_normalization_input(query, nodes))
+        fingerprint = hashlib.sha256(("claim-normalization-v1\n" + prompt).encode("utf-8")).hexdigest()
+        model = self.model
+        cached = self._claim_normalization_cache.get(cache_key)
+        if (
+            cached is not None
+            and cached["fingerprint"] == fingerprint
+            and cached["model"] is model
+            and self._claim_normalization_bindings_exist(cached, evaluation)
+        ):
+            logger.info("[claim_normalization] cache_hit query=%s context=%s", query_id, cache_key[0])
+            return deepcopy(cached["result"])
+        self._claim_normalization_cache.pop(cache_key, None)
+
         if not statements:
             specs = self._fallback_claim_specs(query, statements, evidence)
-            return self._write_claim_specs(query, specs, statements, evidence)
+            cacheable = True
+        else:
+            verdict = self._invoke_json(prompt)
+            raw_specs = verdict.get("claims") if isinstance(verdict, dict) else None
+            specs = [item for item in raw_specs or [] if isinstance(item, dict)]
+            cacheable = bool(specs)
+            if not specs:
+                specs = self._fallback_claim_specs(query, statements, evidence)
+        bindings: dict[tuple[str, str, str], str] = {}
+        result = self._write_claim_specs(query, specs, statements, evidence, written_bindings=bindings)
+        if cacheable and result["claim_count"] and all(bindings.values()) and self.model is model:
+            self._claim_normalization_cache[cache_key] = {
+                "fingerprint": fingerprint,
+                "model": model,
+                "result": deepcopy(result),
+                "bindings": set(bindings),
+            }
+        return result
 
-        # Build source credibility lookup
-        source_credibility = {}
-        for node in nodes:
-            if node.get("type") == NodeType.SOURCE.value:
-                source_credibility[node.get("id")] = node.get("credibility_score", 0.5)
-
-        def _get_source_credibility(source_id: Optional[str]) -> float:
-            if source_id and source_id in source_credibility:
-                return source_credibility[source_id]
-            return 0.5  # Default moderate credibility
-
-        compact = {
-            "statements": [
-                {
-                    "id": item.get("id"),
-                    "text": item.get("text") or item.get("statement"),
-                    "document_id": item.get("document_id"),
-                    "source_id": item.get("source_id"),
-                    "source_credibility": _get_source_credibility(item.get("source_id")),
-                    "qualifiers": item.get("qualifiers") or [],
-                    "limitations": item.get("limitations") or [],
-                    "confidence": item.get("confidence"),
-                }
-                for item in statements
-            ],
-            "evidence": [
-                {
-                    "id": item.get("id"),
-                    "text": item.get("text") or item.get("claim"),
-                    "document_id": item.get("document_id"),
-                    "source_id": item.get("source_id"),
-                    "source_credibility": _get_source_credibility(item.get("source_id")),
-                    "statement_ref": item.get("statement_ref"),
-                    "statement_refs": item.get("statement_refs") or [],
-                    "claim_ref": item.get("claim_ref"),
-                    "stance": item.get("stance"),
-                    "qualifiers": item.get("qualifiers") or [],
-                    "limitations": item.get("limitations") or [],
-                    "confidence": item.get("confidence"),
-                }
-                for item in evidence
-            ],
+    @staticmethod
+    def _claim_normalization_bindings_exist(cached: dict, evaluation: dict) -> bool:
+        """检查缓存引用的 Claim、自有材料绑定和 Objective 绑定仍然存在."""
+        claim_ids = {
+            node["id"] for node in evaluation.get("nodes", [])
+            if node.get("type") == NodeType.CLAIM.value
         }
-        prompt = (
-            mm_prompts.normalize_claims
-            .replace("{query}", json.dumps({
-                "id": query.get("id"),
-                "text": query.get("text"),
-                "objective_keys": query.get("objective_keys") or [],
-                "acceptance_criteria": query.get("acceptance_criteria") or [],
-            }, ensure_ascii=False))
-            .replace("{evidence_subgraph}", json.dumps(compact, ensure_ascii=False))
-        )
-        verdict = self._invoke_json(prompt)
-        raw_specs = verdict.get("claims") if isinstance(verdict, dict) else None
-        specs = [item for item in raw_specs or [] if isinstance(item, dict)]
-        if not specs:
-            specs = self._fallback_claim_specs(query, statements, evidence)
-        return self._write_claim_specs(query, specs, statements, evidence)
+        if not set(cached["result"]["created_or_updated_claim_ids"]).issubset(claim_ids):
+            return False
+        current_bindings = {
+            (edge["source"], edge["target"], str(edge["type"]).lower())
+            for edge in evaluation.get("edges", [])
+        }
+        provenance = {binding for binding in cached["bindings"] if binding[2] != "covers_objective"}
+        if not provenance.issubset(current_bindings):
+            return False
+        objectives = cached["bindings"] - provenance
+        if not objectives:
+            return True
+        all_bindings = {
+            (edge["source"], edge["target"], str(edge["type"]).lower())
+            for edge in graph_tools.get_all_edges()
+        }
+        return objectives.issubset(all_bindings)
 
     def _write_claim_specs(
         self,
@@ -1163,8 +1238,15 @@ class MemoryManager:
         specs: list[dict],
         statements: list[dict],
         evidence: list[dict],
+        *,
+        written_bindings: Optional[dict[tuple[str, str, str], str]] = None,
     ) -> dict:
         """Persist normalized Claim specs and their provenance edges."""
+        def bind(source_id: str, target_id: str, edge_type: EdgeType) -> None:
+            edge_id = graph_tools.add_edge(source_id, target_id, edge_type)
+            if written_bindings is not None:
+                written_bindings[(source_id, target_id, edge_type.value.lower())] = edge_id
+
         node_by_id = {node.get("id"): node for node in statements + evidence if node.get("id")}
         objective_by_key = {item["objective_key"]: item for item in self.get_research_objectives()}
         claim_ids: list[str] = []
@@ -1193,7 +1275,7 @@ class MemoryManager:
             claim_ids.append(claim_id)
             for statement_id in spec.get("statement_refs") or []:
                 if node_by_id.get(statement_id, {}).get("type") == NodeType.STATEMENT.value:
-                    graph_tools.add_edge(statement_id, claim_id, EdgeType.NORMALIZED_TO)
+                    bind(statement_id, claim_id, EdgeType.NORMALIZED_TO)
             for item in spec.get("evidence_refs") or []:
                 if isinstance(item, str):
                     evidence_id, stance = item, "supports"
@@ -1203,9 +1285,9 @@ class MemoryManager:
                 else:
                     continue
                 if node_by_id.get(evidence_id, {}).get("type") == NodeType.EVIDENCE.value:
-                    graph_tools.add_edge(evidence_id, claim_id, self._stance_edge_type(stance))
+                    bind(evidence_id, claim_id, self._stance_edge_type(stance))
             for key in objective_keys:
-                graph_tools.add_edge(claim_id, objective_by_key[key]["id"], EdgeType.COVERS_OBJECTIVE)
+                bind(claim_id, objective_by_key[key]["id"], EdgeType.COVERS_OBJECTIVE)
         return {
             "created_or_updated_claim_ids": list(dict.fromkeys(claim_ids)),
             "claim_count": len(set(claim_ids)),

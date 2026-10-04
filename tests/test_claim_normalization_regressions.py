@@ -262,6 +262,8 @@ class ClaimNormalizationRegressionTests(unittest.TestCase):
         manager = MemoryManager(model=model)
 
         manager.normalize_claims("q1")
+        # 新证据必须触发第二次规范化，才能继续检查 key 碰撞而不被缓存遮蔽。
+        self.graph.nodes["e1"]["text"] = "该项目在 2025 年完成部署。"
         manager.normalize_claims("q1")
 
         self.assertEqual(
