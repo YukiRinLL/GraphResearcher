@@ -219,3 +219,6 @@ test_queries.md
 
 .*
 outputs/
+api-test-*
+openai_api_test.py
+test_extraction_latency.py

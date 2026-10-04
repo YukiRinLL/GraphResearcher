@@ -24,6 +24,7 @@ DEFAULTS: dict[str, Any] = {
         "name": "graphresearcher",
         "max_rounds": 30,
         "timeout_seconds": 7200,
+        "max_retries": 3,
         "max_workers": 1,
         "verbosity": "quiet",
     },
@@ -84,8 +85,12 @@ def validate_config(config: dict[str, Any]) -> None:
             raise ValueError(f"{name}.sample_count 必须是正整数或 null。")
     if config["agent"]["max_workers"] <= 0:
         raise ValueError("agent.max_workers 必须大于 0。")
-    if config["agent"]["timeout_seconds"] <= 0:
-        raise ValueError("agent.timeout_seconds 必须大于 0。")
+    timeout = config["agent"]["timeout_seconds"]
+    if timeout != -1 and timeout <= 0:
+        raise ValueError("agent.timeout_seconds 必须大于 0，或设为 -1 取消总耗时限制。")
+    max_retries = config["agent"]["max_retries"]
+    if isinstance(max_retries, bool) or not isinstance(max_retries, int) or max_retries < 0:
+        raise ValueError("agent.max_retries 必须是非负整数，0 表示不重试。")
     if config["execution"]["evaluation_max_workers"] <= 0:
         raise ValueError("execution.evaluation_max_workers 必须大于 0。")
     if config["mode"] == "evaluate":

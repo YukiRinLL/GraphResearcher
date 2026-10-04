@@ -72,7 +72,7 @@ NEO4J_DATABASE = os.environ.get("NEO4J_DATABASE", "neo4j")
 def build_model(
     model_name: Optional[str] = None,
     temperature: float = 0.7,
-    max_retries: int = 3,
+    max_retries: Optional[int] = None,
     timeout: Optional[float] = None,
 ) -> ChatOpenAI:
     """Build a chat model bound to the configured OpenAI-compatible endpoint.
@@ -83,13 +83,21 @@ def build_model(
     Args:
         model_name: Model identifier; defaults to ``GR_MODEL`` / ``DEFAULT_MODEL``.
         temperature: Sampling temperature.
-        max_retries: Number of automatic retries on transient API errors.
+        max_retries: 每次模型调用遇到暂时性错误时的自动重试次数；未指定时
+            读取 ``GR_MODEL_MAX_RETRIES``，默认是 3。
         timeout: Per-request timeout in seconds; defaults to ``GR_MODEL_TIMEOUT``
             or 180 seconds.
 
     Returns:
         A configured ``ChatOpenAI`` instance.
     """
+    if max_retries is None:
+        try:
+            max_retries = int(os.environ.get("GR_MODEL_MAX_RETRIES", "3"))
+        except ValueError as exc:
+            raise ValueError("GR_MODEL_MAX_RETRIES 必须是非负整数。") from exc
+        if max_retries < 0:
+            raise ValueError("GR_MODEL_MAX_RETRIES 必须是非负整数。")
     kwargs = {
         "model": model_name or DEFAULT_MODEL,
         "temperature": temperature,

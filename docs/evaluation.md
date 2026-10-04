@@ -16,6 +16,24 @@ cp .env.example .env
 `.env` 保存 Agent 和评测器的密钥、API 地址与模型名称。统一入口会忽略
 Benchmark 子目录中的 `.env`。
 
+`agent.timeout_seconds` 控制每条样本从启动 Agent 到生成报告的总耗时上限，
+默认是 7200 秒。正数表示限时秒数；设为 `-1` 时，统一入口会等待 Agent
+子进程运行结束。`0` 和其他负数是无效配置。该设置不包含后续 Benchmark 评分，
+单次模型请求超时、搜索超时、重试次数和 `agent.max_rounds` 仍各自生效。
+
+`agent.max_retries` 设置 Agent 每次模型调用的 HTTP 自动重试次数，默认是 `3`。
+该值必须是非负整数；`0` 表示仅发送首次请求，`1` 表示首次请求失败后最多
+再尝试一次。它适用于证据抽取、证据评估和报告生成等使用模型工厂的调用。
+统一入口将该值通过 `GR_MODEL_MAX_RETRIES` 传给 Agent 子进程，覆盖根目录
+`.env` 中的同名值。Query 搜索与 Reporter 工作流的外层尝试次数、后续
+Benchmark 评分的重试配置仍各自生效。
+
+```yaml
+agent:
+  timeout_seconds: -1
+  max_retries: 1
+```
+
 在消耗 API 配额前检查配置、密钥和样本数：
 
 ```bash

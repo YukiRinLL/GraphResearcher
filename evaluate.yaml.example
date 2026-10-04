@@ -6,7 +6,10 @@ sample_count: 5
 agent:
   name: graphresearcher
   max_rounds: 30
+  # 每条样本研究与报告生成的总耗时上限（秒）；-1 表示不限时。
   timeout_seconds: 7200
+  # 每次模型调用首次请求失败后的 HTTP 自动重试次数；0 表示不重试。
+  max_retries: 3
   max_workers: 1
   verbosity: quiet
 

@@ -152,12 +152,14 @@ def _run_agent(
         "--verbose",
         config["agent"]["verbosity"],
     ]
+    timeout = float(config["agent"]["timeout_seconds"])
+    agent_env = {**env, "GR_MODEL_MAX_RETRIES": str(config["agent"]["max_retries"])}
     duration, error = run_command(
         command,
         repo_root,
-        env,
+        agent_env,
         sample_dir / "agent_process.log",
-        timeout=float(config["agent"]["timeout_seconds"]),
+        timeout=None if timeout == -1 else timeout,
     )
     if error is None and not report_path.is_file():
         error = "Agent 进程结束后未生成 report.md。"
