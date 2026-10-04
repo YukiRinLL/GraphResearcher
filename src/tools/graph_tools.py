@@ -163,6 +163,11 @@ class AmbiguousQueryReference(ValueError):
         self.matches = matches
 
 
+def get_current_context() -> Optional[str]:
+    """返回当前图谱 context，供报告视图校验运行隔离."""
+    return _context
+
+
 def set_context(context: Optional[str]) -> None:
     """Scope all graph access to a per-run ``context``.
 
@@ -247,7 +252,17 @@ def resolve_query_reference(reference: str) -> Optional[str]:
     node = get_node(reference) or {}
     if str(node.get("type") or "").lower() == "query":
         return reference
-    queries = search_nodes("query", {})
+    return _resolve_query_reference_from_nodes(reference, node, search_nodes("query", {}))
+
+
+def _resolve_query_reference_from_nodes(
+    reference: str, node: dict, queries: list[dict],
+) -> Optional[str]:
+    """按既有优先级从已读取的节点解析 Query 引用."""
+    if not reference:
+        return None
+    if str(node.get("type") or "").lower() == "query":
+        return reference
 
     def unique(matches: list[dict[str, Any]]) -> Optional[str]:
         ids = [item.get("id") for item in matches if item.get("id")]
@@ -910,6 +925,16 @@ def get_query_evaluation_subgraph(query_id: str) -> dict[str, Any]:
 
     nodes = {n["id"]: n for n in get_all_nodes()}
     edges = get_all_edges()
+    return _project_query_evaluation_subgraph(query, nodes, edges, get_query_children(query_id))
+
+
+def _project_query_evaluation_subgraph(
+    query: dict, nodes: dict[str, dict], edges: list[dict], child_ids: list[str],
+) -> dict[str, Any]:
+    """从内存数据投影既有 Query 自有证据和直接子 Query 摘要."""
+    if query.get("type") != NodeType.QUERY.value:
+        return {"query": query, "nodes": [], "edges": [], "children": []}
+    query_id = query["id"]
     selected_ids = {query_id}
     selected_edges: list[dict[str, Any]] = []
 
@@ -961,7 +986,7 @@ def get_query_evaluation_subgraph(query_id: str) -> dict[str, Any]:
         deduped_edges.append(edge)
 
     children = []
-    for child_id in get_query_children(query_id):
+    for child_id in child_ids:
         child = nodes.get(child_id, {})
         gap_ids = [
             e["target"] for e in edges

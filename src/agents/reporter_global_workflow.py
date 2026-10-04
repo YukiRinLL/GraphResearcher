@@ -10,8 +10,7 @@ from pathlib import Path
 from typing import Any
 
 import config
-from tools import graph_manager_tools, report_tools, research_state
-from tools import graph_tools
+from tools import graph_manager_tools, graph_tools, report_tools, research_state
 from tools.research_requirements import inspect_delivery_packet
 
 logger = logging.getLogger(__name__)
@@ -89,8 +88,12 @@ def _build_answer_contract(context: dict[str, Any]) -> dict[str, Any]:
     )
 
 
-def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
+def _build_packet(
+    context: dict[str, Any], *, read_view: report_tools.ReportReadView | None = None,
+) -> dict[str, Any]:
     started_at = time.perf_counter()
+    view_kwargs = {"read_view": read_view} if read_view is not None else {}
+    global_budget_full = False
     findings: list[dict[str, Any]] = []
     research_notes: list[dict[str, Any]] = []
     export_errors: list[dict[str, Any]] = []
@@ -129,8 +132,9 @@ def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
         offset = 0
         query_items: list[dict[str, Any]] = []
         query_chars = 0
+        query_budget_full = False
         while True:
-            page = report_tools.get_report_evidence(query_ref, offset=offset, limit=100)
+            page = report_tools.get_report_evidence(query_ref, offset=offset, limit=100, **view_kwargs)
             if page.get("error"):
                 error = str(page["error"])
                 export_errors.append({"query": query_ref, "offset": offset, "error": error})
@@ -162,7 +166,11 @@ def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
                 if evidence_key and evidence_key in seen_evidence:
                     continue
                 item_chars = len(json.dumps(compact, ensure_ascii=False))
-                if query_chars + item_chars > query_budget or used_chars + item_chars > budget:
+                if used_chars + item_chars > budget:
+                    global_budget_full = True
+                    break
+                if query_chars + item_chars > query_budget:
+                    query_budget_full = True
                     break
                 query_items.append(compact)
                 if evidence_key:
@@ -170,7 +178,7 @@ def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
                 query_chars += item_chars
                 used_chars += item_chars
                 used_numbers.update(int(number) for number in compact["citations"])
-            if query_chars >= query_budget or used_chars >= budget or page.get("next_offset") is None:
+            if query_budget_full or global_budget_full or query_chars >= query_budget or used_chars >= budget or page.get("next_offset") is None:
                 break
             offset = int(page["next_offset"])
         if query_items:
@@ -184,7 +192,7 @@ def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
             query_chars,
             time.perf_counter() - query_started_at,
         )
-        if used_chars >= budget:
+        if global_budget_full or used_chars >= budget:
             logger.info(
                 "[reporter.global] packet_budget_reached query=%s used_chars=%s budget_chars=%s",
                 query_ref,
@@ -194,14 +202,14 @@ def _build_packet(context: dict[str, Any]) -> dict[str, Any]:
             break
 
     draft_report = report_tools.build_cited_evidence_report(
-        str(context.get("user_request") or "")
+        str(context.get("user_request") or ""), **view_kwargs
     )
     used_numbers.update(
         int(match.group(1))
         for match in re.finditer(r"\[(\d+)\]", draft_report)
     )
     registry = [
-        entry for entry in report_tools.build_reference_registry()
+        entry for entry in report_tools.build_reference_registry(**view_kwargs)
         if int(entry["n"]) in used_numbers
     ]
     answer_contract = _build_answer_contract(context)
@@ -332,7 +340,8 @@ def run_global_report_workflow() -> dict[str, Any]:
         logger.error("[reporter.global] authorization_failed error=%s", auth["error"])
         return {"success": False, "delivered": False, "validated": False, "error": auth["error"]}
     logger.info("[reporter.global] authorization_succeeded")
-    context = graph_manager_tools.export_report_context()
+    read_view = report_tools.ReportReadView.load()
+    context = graph_manager_tools.export_report_context(read_view=read_view)
     logger.info(
         "[reporter.global] context_exported queries=%s objectives=%s rubrics=%s conflicts=%s",
         len(context.get("queries") or []),
@@ -343,7 +352,7 @@ def run_global_report_workflow() -> dict[str, Any]:
     if not context.get("user_request"):
         logger.error("[reporter.global] context_invalid reason=missing_user_request")
         return {"success": False, "delivered": False, "validated": False, "error": "Reporter context has no user request"}
-    packet = _build_packet(context)
+    packet = _build_packet(context, read_view=read_view)
     logger.info(
         "[reporter.global] packet_ready findings=%s estimated_tokens=%s",
         sum(len(group["items"]) for group in packet.get("findings") or []),
@@ -395,7 +404,7 @@ def run_global_report_workflow() -> dict[str, Any]:
             if attempt == 1:
                 _try_write_artifact(artifact_dir, "raw_report.md", raw_report)
             _try_write_artifact(artifact_dir, f"attempt_{attempt}.md", raw_report)
-            last_result = graph_manager_tools.deliver_global_report(raw_report)
+            last_result = graph_manager_tools.deliver_global_report(raw_report, read_view=read_view)
             logger.info(
                 "[reporter.global] report_compilation_finished attempt=%s delivered=%s validated=%s hard_issues=%s soft_issues=%s elapsed=%.2fs",
                 attempt,

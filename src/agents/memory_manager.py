@@ -18,7 +18,7 @@ import json
 import logging
 import re
 import threading
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
 from urllib.parse import urlsplit
 
 import config
@@ -26,6 +26,9 @@ import prompts.memory_manager_prompts as mm_prompts
 from memory import evidence_locations, source_snapshots
 from memory.graph import EdgeType, NodeType
 from tools import graph_tools
+
+if TYPE_CHECKING:
+    from tools.report_tools import ReportReadView
 
 logger = logging.getLogger(__name__)
 AmbiguousQueryReference = graph_tools.AmbiguousQueryReference
@@ -597,9 +600,12 @@ class MemoryManager:
                 break
         return selected
 
-    def get_research_objectives(self, goal_id: Optional[str] = None) -> list[dict]:
+    def get_research_objectives(
+        self, goal_id: Optional[str] = None, *, read_view: Optional["ReportReadView"] = None,
+    ) -> list[dict]:
         """Return report-level objectives ordered by requirement and weight."""
-        objectives = graph_tools.search_nodes("analysis", {"analysis_type": "objective"})
+        reader = read_view if read_view is not None else graph_tools
+        objectives = reader.search_nodes("analysis", {"analysis_type": "objective"})
         return sorted(
             objectives,
             key=lambda item: (
@@ -3500,11 +3506,15 @@ class MemoryManager:
     # -----------------------------
     # Reporter-facing
     # -----------------------------
-    def export_report_context(self, goal_id: Optional[str] = None) -> dict:
+    def export_report_context(
+        self, goal_id: Optional[str] = None, *, read_view: Optional["ReportReadView"] = None,
+    ) -> dict:
         """Export compact outline-planning metadata; evidence is fetched per chapter."""
-        goal = graph_tools.get_node(goal_id) if goal_id else {}
+        reader = read_view if read_view is not None else graph_tools
+        view_kwargs = {"read_view": read_view} if read_view is not None else {}
+        goal = reader.get_node(goal_id) if goal_id else {}
         if not goal:
-            requests = graph_tools.search_nodes("user_request", {})
+            requests = reader.search_nodes("user_request", {})
             if requests:
                 goal = requests[0]
                 goal_id = goal["id"]
@@ -3519,7 +3529,7 @@ class MemoryManager:
         report_queries = sorted(
             (
                 query
-                for query in graph_tools.search_nodes("query", {})
+                for query in reader.search_nodes("query", {})
                 if int(query.get("successful_search_runs") or 0) > 0
             ),
             key=_query_handle_sort_key,
@@ -3546,10 +3556,10 @@ class MemoryManager:
                 "rubric_id": objective.get("rubric_id"),
                 "rubric_status": objective.get("rubric_status") or objective.get("status") or "uncovered",
             }
-            for objective in self.get_research_objectives(goal_id)
+            for objective in self.get_research_objectives(goal_id, **view_kwargs)
             if objective.get("objective_key")
         ]
-        disclosed_conflicts = report_tools.get_disclosed_conflicts()
+        disclosed_conflicts = report_tools.get_disclosed_conflicts(**view_kwargs)
         return {
             "user_request": request_text,
             "research_goal": goal.get("research_goal") or request_text,

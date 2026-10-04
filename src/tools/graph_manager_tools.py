@@ -4,12 +4,15 @@ import json
 import logging
 from pathlib import Path
 from threading import Lock
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 from langchain_core.tools import tool
 
 from agents.memory_manager import MemoryManager
 from tools.graph_tools import AmbiguousQueryReference
+
+if TYPE_CHECKING:
+    from tools.report_tools import ReportReadView
 
 _manager: Optional[MemoryManager] = None
 _cache_dir: Optional[str] = None
@@ -373,9 +376,12 @@ def submit_search_result(search_run_id: str, query_id: str, evidence_package: di
     return _mm().submit_search_result(search_run_id, query_id, evidence_package)
 
 
-def export_report_context(goal_id: Optional[str] = None) -> dict:
+def export_report_context(
+    goal_id: Optional[str] = None, *, read_view: Optional["ReportReadView"] = None,
+) -> dict:
     """Export compact outline metadata after the reporter gate authorizes writing."""
-    return _mm().export_report_context(goal_id)
+    view_kwargs = {"read_view": read_view} if read_view is not None else {}
+    return _mm().export_report_context(goal_id, **view_kwargs)
 
 
 def commit_report_outline(title: str, chapters: list[dict]) -> dict:
@@ -580,15 +586,17 @@ def deliver_global_report(
     body: str,
     *,
     issues: Optional[list[dict[str, Any]]] = None,
+    read_view: Optional["ReportReadView"] = None,
 ) -> dict[str, Any]:
     """Compile and persist a report produced by the global Reporter writer."""
     global _report_submit_count
     from tools import report_tools
 
     _report_submit_count += 1
+    view_kwargs = {"read_view": read_view} if read_view is not None else {}
     answer_contract = report_tools.build_answer_contract(_user_request or "")
     try:
-        context = export_report_context()
+        context = export_report_context(**view_kwargs)
         # Rubric-aware validation permits paraphrases instead of requiring
         # every requirement to appear as an exact sentence.
         if not context.get("rubrics"):
@@ -605,6 +613,7 @@ def deliver_global_report(
         _cache_dir,
         body,
         answer_contract=answer_contract,
+        **view_kwargs,
     )
     compiler_issues = [
         {"code": "global_report_validation", "severity": "hard", "message": message}

@@ -1,0 +1,282 @@
+{
+  "registry": [
+    {
+      "n": 1,
+      "source_id": "s1",
+      "title": "Source A",
+      "url": "https://example.com/a"
+    },
+    {
+      "n": 2,
+      "source_id": "s2",
+      "title": "Source B",
+      "url": "https://example.com/b"
+    }
+  ],
+  "context": {
+    "user_request": "Write a cited report.",
+    "research_goal": "Write a cited report.",
+    "language": "en",
+    "objectives": [
+      {
+        "objective_key": "topic",
+        "description": "",
+        "requirement": "must",
+        "acceptance_criteria": [],
+        "status": "open",
+        "coverage": 0.0,
+        "confidence": 0.0,
+        "unmet_acceptance_criteria": [],
+        "supported_boundary": "",
+        "rubric_id": null,
+        "rubric_status": "uncovered"
+      }
+    ],
+    "rubrics": [],
+    "blocked_sources": [],
+    "queries": [
+      {
+        "ref": "q1",
+        "text": "Research topic",
+        "supported_topics": [],
+        "objective_keys": [],
+        "target_components": [],
+        "target_sections": [],
+        "analysis_mode": "none",
+        "required_evidence_types": [],
+        "rubric_ids": []
+      }
+    ],
+    "disclosed_conflicts": [
+      {
+        "description": "Disclosed disagreement",
+        "conflict_type": null
+      }
+    ]
+  },
+  "pages": {
+    "query_aaaa": [
+      {
+        "query": {
+          "id": "query_aaaa",
+          "handle": "q1",
+          "text": "Research topic",
+          "importance": null,
+          "target_components": null,
+          "target_sections": null,
+          "analysis_mode": null,
+          "required_evidence_types": null
+        },
+        "items": [
+          {
+            "id": "c1",
+            "type": "Claim",
+            "text": "Canonical finding",
+            "confidence": 0.9,
+            "qualifiers": [],
+            "limitations": [],
+            "locator": null,
+            "claim_relations": [],
+            "evidence_relations": [
+              {
+                "evidence_id": "e1",
+                "stance": "supports"
+              },
+              {
+                "evidence_id": "e2",
+                "stance": "contradicts"
+              }
+            ],
+            "source_ids": [
+              "s1",
+              "s2"
+            ],
+            "citations": [
+              1,
+              2
+            ],
+            "sources": [
+              {
+                "source_id": "s1",
+                "title": "Source A",
+                "url": "https://example.com/a",
+                "source_type": null,
+                "published_at": null
+              },
+              {
+                "source_id": "s2",
+                "title": "Source B",
+                "url": "https://example.com/b",
+                "source_type": null,
+                "published_at": null
+              }
+            ]
+          },
+          {
+            "_source_location": {
+              "snapshot_id": "snapshot",
+              "chunker_version": "v1",
+              "capture_id": "capture",
+              "block_refs": [
+                "b1"
+              ],
+              "location_status": "valid",
+              "url": "https://example.com/a",
+              "title": "Source A",
+              "citation": "[1]"
+            },
+            "id": "e1",
+            "type": "Evidence",
+            "text": "Direct finding",
+            "confidence": null,
+            "qualifiers": [
+              "qualified"
+            ],
+            "limitations": [],
+            "locator": null,
+            "claim_relations": [
+              {
+                "claim_id": "c1",
+                "stance": "supports"
+              }
+            ],
+            "evidence_relations": [],
+            "source_ids": [
+              "s1"
+            ],
+            "citations": [
+              1
+            ],
+            "sources": [
+              {
+                "source_id": "s1",
+                "title": "Source A",
+                "url": "https://example.com/a",
+                "source_type": null,
+                "published_at": null
+              }
+            ]
+          },
+          {
+            "id": "e2",
+            "type": "Evidence",
+            "text": "Second finding",
+            "confidence": null,
+            "qualifiers": [],
+            "limitations": [],
+            "locator": null,
+            "claim_relations": [
+              {
+                "claim_id": "c1",
+                "stance": "contradicts"
+              }
+            ],
+            "evidence_relations": [],
+            "source_ids": [
+              "s2"
+            ],
+            "citations": [
+              2
+            ],
+            "sources": [
+              {
+                "source_id": "s2",
+                "title": "Source B",
+                "url": "https://example.com/b",
+                "source_type": null,
+                "published_at": null
+              }
+            ]
+          }
+        ],
+        "offset": 0,
+        "limit": 100,
+        "total": 3,
+        "next_offset": null,
+        "research_notes": {
+          "query_ref": "q1",
+          "target_components": [],
+          "target_sections": [],
+          "analysis_mode": "none",
+          "required_evidence_types": [],
+          "confirmed_facts": [
+            "e1",
+            "e2"
+          ],
+          "claim_refs": [
+            "c1"
+          ],
+          "source_ids": [
+            "s1",
+            "s2"
+          ],
+          "analysis": {
+            "mode": "none",
+            "status": "ready",
+            "evidence_count": 2,
+            "claim_count": 1,
+            "comparison_candidates": [
+              "c1",
+              "e1",
+              "e2"
+            ],
+            "limitations": [],
+            "interpretation_boundary": "Do not infer beyond the cited evidence and stated qualifiers."
+          },
+          "gaps": []
+        }
+      }
+    ],
+    "child_bbbb": [
+      {
+        "query": {
+          "id": "child_bbbb",
+          "handle": "q1.1",
+          "text": "Child topic",
+          "importance": null,
+          "target_components": null,
+          "target_sections": null,
+          "analysis_mode": null,
+          "required_evidence_types": null
+        },
+        "items": [],
+        "offset": 0,
+        "limit": 100,
+        "total": 0,
+        "next_offset": null,
+        "research_notes": {
+          "query_ref": "q1.1",
+          "target_components": [],
+          "target_sections": [],
+          "analysis_mode": "none",
+          "required_evidence_types": [],
+          "confirmed_facts": [],
+          "claim_refs": [],
+          "source_ids": [],
+          "analysis": {
+            "mode": "none",
+            "status": "gap",
+            "evidence_count": 0,
+            "claim_count": 0,
+            "comparison_candidates": [],
+            "limitations": [],
+            "interpretation_boundary": "Do not infer beyond the cited evidence and stated qualifiers."
+          },
+          "gaps": [
+            "No citation-ready evidence was exported for this query."
+          ]
+        }
+      }
+    ]
+  },
+  "draft": "# Research Report\n\n## Research topic\n\n- Canonical finding [1][2]\n\n- Direct finding [1]\n\n- Second finding [2]\n\n## References\n\n[1] Source A https://example.com/a\n\n[2] Source B https://example.com/b\n",
+  "compiled": {
+    "report": "# Findings\n\nA supported finding.[1][2]\n\n## References\n\n[1] Source A https://example.com/a\n\n[2] Source B https://example.com/b\n",
+    "hard_issues": [],
+    "soft_issues": [],
+    "cited_numbers": [
+      1,
+      2
+    ]
+  }
+}

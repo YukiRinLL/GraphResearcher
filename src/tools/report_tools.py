@@ -15,6 +15,9 @@ import hashlib
 import json
 import logging
 import re
+from collections import defaultdict
+from copy import deepcopy
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Optional
 
@@ -309,74 +312,98 @@ def validate_rubrics(report_text: str, rubrics: list[dict[str, Any]]) -> list[st
     return issues
 
 
-def build_reference_registry() -> list[dict]:
-    """Return the canonical, URL-deduped, stably-numbered reference registry.
+@dataclass
+class ReportReadView:
+    """保存当前报告的图谱读取结果和确定性投影，不跨运行复用."""
 
-    Reads every ``Source`` node for the current run context, drops entries
-    without a URL or that are not transitively referenced by any Statement
-    (ghost sources from login-wall/catalog pages are excluded), deduplicates by
-    URL (first node in id order wins), and sorts by node id.  Assigns 1-based
-    numbers.
+    nodes_by_id: dict[str, dict]
+    edges: list[dict]
+    context: Optional[str]
+    incoming_edges: dict[str, list[dict]] = field(init=False, repr=False)
+    outgoing_edges: dict[str, list[dict]] = field(init=False, repr=False)
+    _reference_registry: Optional[list[dict]] = field(default=None, init=False, repr=False)
+    _query_evidence_cache: dict[str, dict] = field(default_factory=dict, init=False, repr=False)
 
-    Chapter bundles, review contexts, and final report compilation build the
-    registry through this one function, so the ``n``→source mapping remains
-    identical throughout citation validation and rendering.
+    def __post_init__(self) -> None:
+        """复制输入并建立保留原边顺序的邻接索引."""
+        self.nodes_by_id = deepcopy(self.nodes_by_id)
+        self.edges = deepcopy(self.edges)
+        self.incoming_edges = defaultdict(list)
+        self.outgoing_edges = defaultdict(list)
+        for edge in self.edges:
+            self.incoming_edges[edge.get("target")].append(edge)
+            self.outgoing_edges[edge.get("source")].append(edge)
 
-    Returns:
-        A list of ``{"n", "source_id", "title", "url"}`` dicts.
-    """
-    all_sources = [s for s in graph_tools.search_nodes("source", {}) if s.get("url")]
+    @classmethod
+    def load(cls) -> "ReportReadView":
+        """各读取一次当前 context 的完整节点与边."""
+        context = graph_tools.get_current_context()
+        nodes = graph_tools.get_all_nodes()
+        edges = graph_tools.get_all_edges()
+        view = cls({node["id"]: node for node in nodes}, edges, context)
+        view.ensure_current_context()
+        return view
+
+    def ensure_current_context(self) -> None:
+        """拒绝把报告视图用于其他 context."""
+        if self.context != graph_tools.get_current_context():
+            raise ValueError("ReportReadView belongs to a different graph context")
+
+    def get_node(self, node_id: str) -> dict:
+        """返回独立的节点副本."""
+        self.ensure_current_context()
+        return deepcopy(self.nodes_by_id.get(node_id, {}))
+
+    def search_nodes(self, node_type: str, filters: dict) -> list[dict]:
+        """按类型和属性从当前视图筛选节点."""
+        self.ensure_current_context()
+        normalized = str(getattr(node_type, "value", node_type)).replace("_", "").lower()
+        return deepcopy([
+            node for node in self.nodes_by_id.values()
+            if str(node.get("type") or "").replace("_", "").lower() == normalized
+            and all(node.get(key) == value for key, value in filters.items())
+        ])
+
+
+def _report_read_view(read_view: Optional[ReportReadView]) -> ReportReadView:
+    """取得本次调用的读取视图，未提供时重新加载当前图谱."""
+    view = read_view if read_view is not None else ReportReadView.load()
+    view.ensure_current_context()
+    return view
+
+
+def build_reference_registry(*, read_view: Optional[ReportReadView] = None) -> list[dict]:
+    """返回按既有来源过滤和 URL 去重规则生成的稳定引用表副本."""
+    view = _report_read_view(read_view)
+    if view._reference_registry is None:
+        view._reference_registry = _project_reference_registry(view)
+    return deepcopy(view._reference_registry)
+
+
+def _project_reference_registry(view: ReportReadView) -> list[dict]:
+    """用邻接索引生成引用表，保留 Statement 的间接来源路径."""
+    nodes = view.nodes_by_id
     referenced_source_ids: set[str] = set()
-    # direction="in" returns edges where target == stmt_id; edge["source"] is the
-    # upstream node (Document or Source). Walk Statement -> Document -> Source.
-    for stmt in graph_tools.search_nodes("statement", {}):
-        stmt_id = stmt.get("id")
-        if not stmt_id:
+    for node in nodes.values():
+        node_type = str(node.get("type") or "").lower()
+        if node_type not in {"statement", "evidence", "claim"}:
             continue
-        for edge in graph_tools.get_node_edges(stmt_id, direction="in") or []:
-            src_node_id = edge.get("source")
-            if not src_node_id:
-                continue
-            src_node = graph_tools.get_node(src_node_id)
-            if not src_node:
-                continue
-            node_type = str(src_node.get("type") or "").lower()
-            if node_type == "document":
-                for doc_edge in graph_tools.get_node_edges(src_node_id, direction="in") or []:
-                    doc_src_id = doc_edge.get("source")
-                    if not doc_src_id:
-                        continue
-                    doc_src_node = graph_tools.get_node(doc_src_id)
-                    if doc_src_node and str(doc_src_node.get("type") or "").lower() == "source":
-                        referenced_source_ids.add(doc_src_node.get("id"))
-            elif node_type == "source":
-                referenced_source_ids.add(src_node_id)
-    # Some lightweight and legacy graphs bind Source directly to Evidence or
-    # Claim without a Statement/Document intermediary. Keep those citations
-    # visible when the evidence itself is otherwise report-ready.
-    for item_type in ("evidence", "claim"):
-        for item in graph_tools.search_nodes(item_type, {}):
-            item_id = item.get("id")
-            if not item_id:
-                continue
-            for edge in graph_tools.get_node_edges(item_id, direction="in") or []:
-                source_id = edge.get("source")
-                source = graph_tools.get_node(source_id) if source_id else {}
-                if source and str(source.get("type") or "").lower() == "source":
-                    referenced_source_ids.add(source_id)
-    all_nodes_by_id = {
-        node.get("id"): node for node in graph_tools.get_all_nodes() if node.get("id")
-    }
-    for edge in graph_tools.get_all_edges() or []:
-        source = all_nodes_by_id.get(edge.get("source"), {})
-        target = all_nodes_by_id.get(edge.get("target"), {})
-        if (
-            str(source.get("type") or "").lower() == "source"
-            and str(target.get("type") or "").lower() in {"evidence", "claim"}
-        ):
-            referenced_source_ids.add(source.get("id"))
-    sources = [s for s in all_sources if s.get("id") in referenced_source_ids]
-    sources.sort(key=lambda s: s.get("id") or "")
+        for edge in view.incoming_edges.get(node["id"], []):
+            source = nodes.get(edge.get("source"), {})
+            source_type = str(source.get("type") or "").lower()
+            if source_type == "source":
+                referenced_source_ids.add(source["id"])
+            elif node_type == "statement" and source_type == "document":
+                for document_edge in view.incoming_edges.get(source["id"], []):
+                    document_source = nodes.get(document_edge.get("source"), {})
+                    if str(document_source.get("type") or "").lower() == "source":
+                        referenced_source_ids.add(document_source["id"])
+    sources = sorted(
+        (node for node in nodes.values()
+         if str(node.get("type") or "").lower() == "source"
+         and node.get("url") and node.get("id") in referenced_source_ids),
+        key=lambda node: node.get("id") or "",
+    )
     registry: list[dict] = []
     seen: set[str] = set()
     for source in sources:
@@ -398,7 +425,10 @@ def get_reference_registry() -> list[dict]:
     return build_reference_registry()
 
 
-def _source_ids_for_item(item_id: str, nodes: dict[str, dict], edges: list[dict]) -> list[str]:
+def _source_ids_for_item(
+    item_id: str, nodes: dict[str, dict], edges: list[dict],
+    *, incoming_edges: Optional[dict[str, list[dict]]] = None,
+) -> list[str]:
     """Return URL-bearing Source IDs that support one Claim or Evidence node."""
     def is_type(node_id: str, expected: str) -> bool:
         return str(nodes.get(node_id, {}).get("type") or "").lower() == expected.lower()
@@ -407,7 +437,7 @@ def _source_ids_for_item(item_id: str, nodes: dict[str, dict], edges: list[dict]
     document_ids: set[str] = set()
     statement_ids: set[str] = set()
     evidence_ids: set[str] = set()
-    for edge in edges:
+    for edge in (incoming_edges.get(item_id, []) if incoming_edges is not None else edges):
         source = edge.get("source")
         target = edge.get("target")
         if target == item_id and is_type(source, "Source"):
@@ -418,7 +448,13 @@ def _source_ids_for_item(item_id: str, nodes: dict[str, dict], edges: list[dict]
             statement_ids.add(source)
         if target == item_id and is_type(source, "Evidence"):
             evidence_ids.add(source)
-    for edge in edges:
+    # 第三遍处理第二遍从 Statement 或 Evidence 新发现的 Document。
+    related_ids = statement_ids | document_ids | evidence_ids
+    related_edges = (
+        edges if incoming_edges is None
+        else [edge for node_id in related_ids for edge in incoming_edges.get(node_id, [])]
+    )
+    for edge in related_edges:
         source = edge.get("source")
         target = edge.get("target")
         if target in statement_ids and is_type(source, "Source"):
@@ -431,7 +467,11 @@ def _source_ids_for_item(item_id: str, nodes: dict[str, dict], edges: list[dict]
             source_ids.add(source)
         if target in evidence_ids and is_type(source, "Document"):
             document_ids.add(source)
-    for edge in edges:
+    document_edges = (
+        edges if incoming_edges is None
+        else [edge for document_id in document_ids for edge in incoming_edges.get(document_id, [])]
+    )
+    for edge in document_edges:
         source = edge.get("source")
         target = edge.get("target")
         if target in document_ids and is_type(source, "Source"):
@@ -442,27 +482,55 @@ def _source_ids_for_item(item_id: str, nodes: dict[str, dict], edges: list[dict]
     )
 
 
-def get_report_evidence(query_id: str, offset: int = 0, limit: int = 20) -> dict:
-    """Return one compact, citation-ready page of a Query's evidence."""
+def get_report_evidence(
+    query_id: str, offset: int = 0, limit: int = 20,
+    *, read_view: Optional[ReportReadView] = None,
+) -> dict:
+    """从共享投影返回一页独立的、可直接引用的 Query 证据."""
+    view = _report_read_view(read_view)
     try:
-        resolved_query_id = graph_tools.resolve_query_reference(query_id)
+        resolved_query_id = graph_tools._resolve_query_reference_from_nodes(
+            query_id, view.nodes_by_id.get(query_id, {}), view.search_nodes("query", {}),
+        )
     except graph_tools.AmbiguousQueryReference as exc:
         return {"error": str(exc)}
     if resolved_query_id is None:
         return {"error": f"Unknown query reference: {query_id!r}"}
     offset = max(0, int(offset or 0))
     limit = min(100, max(1, int(limit or 20)))
-    nodes = {node["id"]: node for node in graph_tools.get_all_nodes()}
-    edges = graph_tools.get_all_edges()
-    registry = build_reference_registry()
+    if resolved_query_id not in view._query_evidence_cache:
+        view._query_evidence_cache[resolved_query_id] = _project_report_evidence(view, resolved_query_id)
+    projection = view._query_evidence_cache[resolved_query_id]
+    items = projection["items"]
+    page = items[offset : offset + limit]
+    next_offset = offset + len(page)
+    return deepcopy({
+        "query": projection["query"],
+        "items": page,
+        "offset": offset,
+        "limit": limit,
+        "total": len(items),
+        "next_offset": next_offset if next_offset < len(items) else None,
+        "research_notes": projection["research_notes"] if offset == 0 else {},
+    })
+
+
+def _project_report_evidence(view: ReportReadView, query_id: str) -> dict:
+    """投影一个 Query 的完整证据；分页和草稿复用同一结果."""
+    nodes, edges = view.nodes_by_id, view.edges
+    registry = build_reference_registry(read_view=view)
     registry_by_source = {entry["source_id"]: entry for entry in registry}
-    evaluation = graph_tools.get_query_evaluation_subgraph(resolved_query_id)
+    child_ids = [
+        edge["target"] for edge in view.outgoing_edges.get(query_id, [])
+        if str(edge.get("type") or "").lower() in graph_tools._PARENT_EDGE_TYPES
+    ]
+    evaluation = graph_tools._project_query_evaluation_subgraph(nodes[query_id], nodes, edges, child_ids)
     items: list[dict] = []
     for node in evaluation.get("nodes", []):
         if str(node.get("type") or "").lower() not in {"claim", "evidence"}:
             continue
         source_ids = [
-            source_id for source_id in _source_ids_for_item(node["id"], nodes, edges)
+            source_id for source_id in _source_ids_for_item(node["id"], nodes, edges, incoming_edges=view.incoming_edges)
             if source_id in registry_by_source
         ]
         if not source_ids:
@@ -480,7 +548,7 @@ def get_report_evidence(query_id: str, offset: int = 0, limit: int = 20) -> dict
                 "claim_id": edge.get("target"),
                 "stance": stance_by_edge[str(edge.get("type") or "").lower()],
             }
-            for edge in edges
+            for edge in view.outgoing_edges.get(node["id"], [])
             if edge.get("source") == node["id"]
             and nodes.get(edge.get("target"), {}).get("type") == "Claim"
             and str(edge.get("type") or "").lower() in {
@@ -492,7 +560,7 @@ def get_report_evidence(query_id: str, offset: int = 0, limit: int = 20) -> dict
                 "evidence_id": edge.get("source"),
                 "stance": stance_by_edge[str(edge.get("type") or "").lower()],
             }
-            for edge in edges
+            for edge in view.incoming_edges.get(node["id"], [])
             if edge.get("target") == node["id"]
             and nodes.get(edge.get("source"), {}).get("type") == "Evidence"
             and str(edge.get("type") or "").lower() in {
@@ -541,10 +609,7 @@ def get_report_evidence(query_id: str, offset: int = 0, limit: int = 20) -> dict
             ],
         })
     items.sort(key=lambda item: item["id"])
-    page = items[offset : offset + limit]
-    next_offset = offset + len(page)
     query_node = evaluation.get("query", {})
-    notes = build_research_notes(query_node, items)
     return {
         "query": {
             key: query_node.get(key)
@@ -553,12 +618,8 @@ def get_report_evidence(query_id: str, offset: int = 0, limit: int = 20) -> dict
                 "target_sections", "analysis_mode", "required_evidence_types",
             )
         },
-        "items": page,
-        "offset": offset,
-        "limit": limit,
-        "total": len(items),
-        "next_offset": next_offset if next_offset < len(items) else None,
-        "research_notes": notes if offset == 0 else {},
+        "items": items,
+        "research_notes": build_research_notes(query_node, items),
     }
 
 
@@ -1452,13 +1513,14 @@ def compile_global_writer_report(
     body: str,
     *,
     answer_contract: Optional[dict[str, Any]] = None,
+    read_view: Optional[ReportReadView] = None,
 ) -> dict[str, Any]:
     """Compile one global-writer body against the canonical citation registry."""
     del output_dir
     raw = _CITE_WRAPPER_RE.sub(r"\1", str(body or "").strip())
     ref_match = _REF_HEADING_RE.search(raw)
     body_text = raw[: ref_match.start()] if ref_match else raw
-    registry = build_reference_registry()
+    registry = build_reference_registry(read_view=read_view)
     by_number = {int(entry["n"]): entry for entry in registry}
     cited_numbers = list(dict.fromkeys(int(match.group(1)) for match in _CITE_TOKEN_RE.finditer(body_text)))
     invalid = [number for number in cited_numbers if number not in by_number]
@@ -1714,12 +1776,12 @@ def _conflict_source_ids(conflict_id: str, nodes: dict[str, dict], edges: list[d
     return list(dict.fromkeys(source_id for source_id in source_ids if source_id in nodes))
 
 
-def get_disclosed_conflicts() -> list[dict[str, Any]]:
+def get_disclosed_conflicts(*, read_view: Optional[ReportReadView] = None) -> list[dict[str, Any]]:
     """Return disclosed conflicts with stable IDs and citation-ready source bindings."""
-    nodes = {node["id"]: node for node in graph_tools.get_all_nodes()}
-    edges = graph_tools.get_all_edges()
+    view = _report_read_view(read_view)
+    nodes, edges = view.nodes_by_id, view.edges
     conflicts = []
-    for item in graph_tools.search_nodes("conflict", {}):
+    for item in view.search_nodes("conflict", {}):
         if item.get("resolution_status") != "disclosed":
             continue
         conflicts.append({
@@ -2386,20 +2448,21 @@ def compile_structured_report(title: str, sections: list[dict], *, persist: bool
     }
 
 
-def build_cited_evidence_report(request: str = "") -> str:
+def build_cited_evidence_report(request: str = "", *, read_view: Optional[ReportReadView] = None) -> str:
     """Build a deterministic cited report from every citation-ready evidence item."""
-    registry = build_reference_registry()
+    view = _report_read_view(read_view)
+    registry = build_reference_registry(read_view=view)
     cited_source_ids: set[str] = set()
     seen_items: set[str] = set()
     is_chinese = bool(re.search(r"[\u4e00-\u9fff]", request or ""))
     parts = ["# 调研报告" if is_chinese else "# Research Report"]
-    queries = graph_tools.search_nodes("query", {})
+    queries = view.search_nodes("query", {})
     queries.sort(key=lambda query: (query.get("handle") or "", query.get("id") or ""))
     for query in queries:
         items: list[dict] = []
         offset = 0
         while True:
-            page = get_report_evidence(query["id"], offset=offset, limit=100)
+            page = get_report_evidence(query["id"], offset=offset, limit=100, read_view=view)
             items.extend(item for item in page["items"] if item["id"] not in seen_items)
             if page["next_offset"] is None:
                 break
