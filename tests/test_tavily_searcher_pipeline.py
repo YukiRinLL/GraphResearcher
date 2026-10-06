@@ -5,8 +5,9 @@
 
 import json
 import sys
-from unittest.mock import patch
 from pathlib import Path
+from threading import Lock
+from unittest.mock import patch
 
 src_dir = Path(__file__).parent.parent / "src"
 sys.path.insert(0, str(src_dir))
@@ -46,15 +47,18 @@ class FlakyTavilyClient:
 
 
 class FakeModel:
-    """依次返回预置 source packet，并保留实际输入 prompt。"""
+    """按来源返回预置 packet，并保留并发抽取时的实际输入。"""
 
-    def __init__(self, payloads):
-        self.payloads = list(payloads)
+    def __init__(self, payloads, urls):
+        self.payloads = dict(zip(urls, payloads))
         self.prompts = []
+        self.lock = Lock()
 
     def invoke(self, messages):
-        self.prompts.append(messages[-1].content)
-        payload = self.payloads.pop(0)
+        prompt = messages[-1].content
+        with self.lock:
+            self.prompts.append(prompt)
+        payload = self.payloads[json.loads(prompt)["source"]["url"]]
 
         class Response:
             content = json.dumps(payload, ensure_ascii=False)
@@ -230,6 +234,12 @@ def _test_searcher_pipeline():
                 "evidence": [],
                 "conflicts": [],
             },
+        ], urls=[
+            "https://example.com/article?a=1&b=2",
+            "https://example.org/other",
+            "https://example.edu/empty-packet",
+            "https://blocked.example/domain-result",
+            "https://allowed.example/forbidden",
         ])
         searcher.config._model_cache["default"] = model
 
@@ -267,7 +277,10 @@ def _test_searcher_pipeline():
         extracted = searcher.extract_evidence_package_node(state)
         package = extracted["evidence_package"]
         assert len(model.prompts) == 5, model.prompts
-        analyzer_inputs = [json.loads(prompt) for prompt in model.prompts]
+        inputs_by_url = {
+            item["source"]["url"]: item for item in map(json.loads, model.prompts)
+        }
+        analyzer_inputs = [inputs_by_url[source["url"]] for source in results["results"]]
         assert all(item["query"]["role"] == "discovery" for item in analyzer_inputs), analyzer_inputs
         assert all(
             item["query"]["acceptance_criteria"] == ["identify the subject"]
@@ -276,8 +289,8 @@ def _test_searcher_pipeline():
         assert all("content" not in item["source"] for item in analyzer_inputs), analyzer_inputs
         assert analyzer_inputs[0]["source"]["raw_content"] == "FULL_BODY_A", analyzer_inputs[0]
         assert analyzer_inputs[1]["source"]["raw_content"] == "FULL_BODY_B", analyzer_inputs[1]
-        assert "FORBIDDEN_DOMAIN_BODY" in model.prompts[3], model.prompts
-        assert "FORBIDDEN_URL_BODY" in model.prompts[4], model.prompts
+        assert "FORBIDDEN_DOMAIN_BODY" in analyzer_inputs[3]["source"]["raw_content"], analyzer_inputs
+        assert "FORBIDDEN_URL_BODY" in analyzer_inputs[4]["source"]["raw_content"], analyzer_inputs
         assert len(package["sources"]) == 1 and len(package["documents"]) == 1, package
         assert all("raw_content" not in document for document in package["documents"]), package
         assert [item["local_ref"] for item in package["statements"]] == ["st1", "st2"], package

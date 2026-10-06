@@ -91,6 +91,11 @@ def validate_config(config: dict[str, Any]) -> None:
     max_retries = config["agent"]["max_retries"]
     if isinstance(max_retries, bool) or not isinstance(max_retries, int) or max_retries < 0:
         raise ValueError("agent.max_retries 必须是非负整数，0 表示不重试。")
+    for field in ("search_dispatch_concurrency", "source_extraction_concurrency"):
+        if field in config["agent"]:
+            concurrency = config["agent"][field]
+            if isinstance(concurrency, bool) or not isinstance(concurrency, int) or concurrency <= 0:
+                raise ValueError(f"agent.{field} 必须是正整数。")
     if config["execution"]["evaluation_max_workers"] <= 0:
         raise ValueError("execution.evaluation_max_workers 必须大于 0。")
     if config["mode"] == "evaluate":

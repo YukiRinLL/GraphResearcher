@@ -11,6 +11,9 @@ Orchestrator 通过 ``dispatch_searcher`` 注入 ``query_id``、``search_run_id`
 import json
 import logging
 import re
+from concurrent.futures import FIRST_EXCEPTION, ThreadPoolExecutor, wait
+from contextvars import copy_context
+from threading import BoundedSemaphore
 from typing import Annotated, Any, Optional, TypedDict
 from urllib.parse import urlsplit
 
@@ -25,6 +28,9 @@ from tools.graph_manager_tools import submit_search_result
 from tools.search_tools import tavily_search
 
 logger = logging.getLogger(__name__)
+
+# 名额按模型调用动态获取和释放，所有 Query 共用同一个进程内上限。
+_source_analyzer_slots = BoundedSemaphore(config.SOURCE_EXTRACTION_CONCURRENCY)
 
 
 class SearcherState(TypedDict):
@@ -431,10 +437,11 @@ def _extract_source_packet(
         "research_context": research_context,
         "source": source_view,
     }
-    response = config.searcher_model.invoke([
-        SystemMessage(content=config.analyzer_system_prompt),
-        HumanMessage(content=json.dumps(analyzer_input, ensure_ascii=False)),
-    ])
+    with _source_analyzer_slots:
+        response = config.searcher_model.invoke([
+            SystemMessage(content=config.analyzer_system_prompt),
+            HumanMessage(content=json.dumps(analyzer_input, ensure_ascii=False)),
+        ])
     packet = _parse_source_packet(_response_text(response))
     # 模型只提供概述与块选择；快照身份和定位状态由本次实际输入决定。
     for key in evidence_locations.SNAPSHOT_FIELDS:
@@ -705,8 +712,47 @@ def _merge_source_packets(search_results: dict, packets: list[dict]) -> dict:
     return package
 
 
+def _extract_source_packets(
+    query: dict[str, Any],
+    research_context: dict[str, Any],
+    sources: list[dict],
+    *,
+    query_id: Optional[str],
+    search_run_id: Optional[str],
+) -> list[dict]:
+    """并行抽取来源，按输入顺序返回结果并在失败时回收任务."""
+    if len(sources) <= 1 or config.SOURCE_EXTRACTION_CONCURRENCY == 1:
+        return [
+            _extract_source_packet(
+                query, research_context, source,
+                query_id=query_id, search_run_id=search_run_id,
+            )
+            for source in sources
+        ]
+    with ThreadPoolExecutor(
+        max_workers=min(len(sources), config.SOURCE_EXTRACTION_CONCURRENCY),
+    ) as pool:
+        futures = [
+            pool.submit(
+                copy_context().run, _extract_source_packet,
+                query, research_context, source,
+                query_id=query_id, search_run_id=search_run_id,
+            )
+            for source in sources
+        ]
+        try:
+            completed, _ = wait(futures, return_when=FIRST_EXCEPTION)
+            for future in completed:
+                future.result()
+            return [future.result() for future in futures]
+        except BaseException:
+            for future in futures:
+                future.cancel()
+            raise
+
+
 def extract_evidence_package_node(state: SearcherState) -> dict:
-    """逐个抽取保留来源，并合并为 evidence_package."""
+    """并行抽取保留来源，再按来源顺序合并为 evidence_package."""
     search_results = state.get("search_results") or {}
     sources = search_results.get("results") or []
     if not isinstance(sources, list) or not sources:
@@ -724,14 +770,10 @@ def extract_evidence_package_node(state: SearcherState) -> dict:
         "time_window": None,
         "region_scope": None,
     }
-    packets = [
-        _extract_source_packet(
-            query, research_context, source,
-            query_id=state.get("query_id"), search_run_id=state.get("search_run_id"),
-        )
-        for source in sources
-        if isinstance(source, dict)
-    ]
+    packets = _extract_source_packets(
+        query, research_context, [source for source in sources if isinstance(source, dict)],
+        query_id=state.get("query_id"), search_run_id=state.get("search_run_id"),
+    )
     package = _merge_source_packets(search_results, packets)
     # Summarize extraction log per stage for quick diagnosis
     log_entries = package.get("extraction_log") or []

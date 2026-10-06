@@ -10,6 +10,8 @@ agent:
   timeout_seconds: 7200  # 每条样本生成报告的总时限（秒）；-1 表示不限。
   max_retries: 3  # 每次模型调用的额外重试次数；0 表示不重试。
   max_workers: 1  # 同时运行的样本数；默认 1，表示串行。
+  search_dispatch_concurrency: 3  # 每个 Agent 进程同时派发的 Query 数量上限；1 表示串行。省略时使用 .env 或默认值 3。
+  source_extraction_concurrency: 3  # 每个 Agent 进程的来源模型调用总并发上限，所有 Query 共用；1 表示串行。省略时使用 .env 或默认值 3。
   verbosity: quiet  # quiet：简略；normal：进度；debug：工具调用及详细日志。
 
 execution:

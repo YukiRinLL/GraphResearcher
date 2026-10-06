@@ -154,6 +154,12 @@ def _run_agent(
     ]
     timeout = float(config["agent"]["timeout_seconds"])
     agent_env = {**env, "GR_MODEL_MAX_RETRIES": str(config["agent"]["max_retries"])}
+    for field, env_name in (
+        ("search_dispatch_concurrency", "GR_SEARCH_DISPATCH_CONCURRENCY"),
+        ("source_extraction_concurrency", "GR_SOURCE_EXTRACTION_CONCURRENCY"),
+    ):
+        if field in config["agent"]:
+            agent_env[env_name] = str(config["agent"][field])
     duration, error = run_command(
         command,
         repo_root,

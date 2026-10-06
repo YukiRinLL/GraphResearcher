@@ -51,6 +51,11 @@ SEARCH_DISPATCH_CONCURRENCY = _positive_int_from_env(
     3,
 )
 
+# 所有 Query 共用来源 analyzer 的进程内并发上限；值为 1 时模型调用串行。
+SOURCE_EXTRACTION_CONCURRENCY = _positive_int_from_env(
+    "GR_SOURCE_EXTRACTION_CONCURRENCY", 3
+)
+
 # Max number of concurrent assess_query evaluations per superstep. Each
 # assess_query call involves 1-2 LLM passes (normalize_claims + sufficiency
 # evaluation) that read only the query's own evidence subgraph; they are
