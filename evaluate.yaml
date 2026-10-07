@@ -15,12 +15,16 @@ agent:
     packet_tokens: 48000
     output_tokens: 40000
   max_rounds: 30
-  max_workers: 1 # 同时抽取样本的数量
+  max_workers: 2 # 同时运行的样本数
   search_dispatch_concurrency: 3 # 同时并行 query 的数量
   source_extraction_concurrency: 10 # 同时并行 source extraction 的数量，在 query 间共享
   timeout_seconds: -1 # 无上限
   max_retries: 5
   verbosity: debug
+
+execution:
+  pipeline: true # 每条报告生成结束后即可评估，同时继续生成后续样本。
+  evaluation_max_workers: 1 # 同时评估的样本数，可独立于生成并发设置。
 
 output:
   root: outputs/evaluations/drb1

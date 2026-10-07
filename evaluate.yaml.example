@@ -26,6 +26,7 @@ agent:
 execution:
   resume: true  # 跳过同一运行目录中已完成且有报告的样本；评分仍会重跑。
   fail_fast: false  # 编排异常时退出；已记录的失败状态不一定触发退出。
+  pipeline: false  # true：每条报告生成结束即进入评估；false：整批生成后再评估。仅影响 run_and_evaluate。
   evaluation_max_workers: 1  # 同时评分的样本数；默认 1，表示串行。
 
 output:

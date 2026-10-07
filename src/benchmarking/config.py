@@ -26,7 +26,7 @@ DEFAULTS: dict[str, Any] = {
     "seed": 42,
     "sample_count": None,
     "agent": deepcopy(AGENT_DEFAULTS),
-    "execution": {"resume": True, "fail_fast": False, "evaluation_max_workers": 1},
+    "execution": {"resume": True, "fail_fast": False, "pipeline": False, "evaluation_max_workers": 1},
     "output": {"root": "outputs/evaluations", "run_id": None, "markdown_summary": True},
     "input": {
         "run_dir": None,
@@ -82,6 +82,8 @@ def validate_config(config: dict[str, Any]) -> None:
         resolve_benchmark_config(name, settings.get("runtime", {}), {})
     if config["execution"]["evaluation_max_workers"] <= 0:
         raise ValueError("execution.evaluation_max_workers 必须大于 0。")
+    if not isinstance(config["execution"]["pipeline"], bool):
+        raise ValueError("execution.pipeline 必须是布尔值。")
     if config["mode"] == "evaluate":
         native = config["input"]["native"]
         if not config["input"].get("run_dir") and not any(native.values()):

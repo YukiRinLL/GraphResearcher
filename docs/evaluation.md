@@ -121,15 +121,29 @@ sample_count: 5
 agent:
   max_workers: 3
 execution:
+  pipeline: true
   evaluation_max_workers: 1
 ```
 
 每条样本在独立子进程中运行，报告、日志和图谱 context 使用各自的样本目录。
 `agent.timeout_seconds` 和 `agent.max_retries` 也分别应用于每条样本。
 
-`execution.evaluation_max_workers` 控制后续同时评分的样本数，默认同样是 `1`。
-在 `run_and_evaluate` 模式下，统一入口先等待这一批 Agent 运行结束，再开始评分。
+`execution.evaluation_max_workers` 控制同时评分的样本数，默认同样是 `1`。
+生成和评估使用独立线程池，两个并发参数都支持大于 `1`。
 Benchmark 配置中的 `evaluation.max_workers` 控制评测器内部并发，可与样本评分并发叠加。
+
+`execution.pipeline` 默认是 `false`，表示在 `run_and_evaluate` 模式下等待整批
+Agent 运行结束后再评分。设为 `true` 时，每条生成任务结束并写完报告及状态后，
+即可进入评估池，同时生成池继续处理其他样本。评估等待不占用生成名额，最终汇总
+等待两个池全部结束。该开关不改变单独 `run` 或 `evaluate` 模式的行为。
+
+续跑跳过的已完成报告也会进入评估；生成失败或超时后若留下报告，仍按原规则评分并
+保留生成状态。没有报告的生成任务不进入评估。每条样本的状态按生成、评估的顺序
+写入，评估以生成任务返回作为交接点。
+
+来源抽取并发上限作用于单个 Agent 进程，不限制评估请求。增加生成样本并发会同时
+启动多个 Agent 进程；增加评估样本并发也会叠加评测器内部并发。启用流水线后，可
+结合整批耗时、请求延迟和失败率调整这两个上限。
 
 结果默认保存在 `outputs/evaluations/<run_id>/`。每个样本的
 `sample_result.json` 记录运行时间、评测时间、状态和指标。每次评测会在

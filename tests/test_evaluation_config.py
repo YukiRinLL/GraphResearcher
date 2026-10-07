@@ -32,8 +32,20 @@ benchmarks:
         assert "max_retries" not in config["agent"]
         assert resolve_agent_config(config["agent"], {})["max_retries"] == 3
         assert config["output"]["markdown_summary"] is True
+        assert config["execution"]["pipeline"] is False
 
         base_yaml = path.read_text(encoding="utf-8")
+        for value in ("true", "false"):
+            path.write_text(f"{base_yaml}execution:\n  pipeline: {value}\n", encoding="utf-8")
+            assert load_config(path)["execution"]["pipeline"] is (value == "true")
+        for value in ("0", "1", "null", '"true"', "[]"):
+            path.write_text(f"{base_yaml}execution:\n  pipeline: {value}\n", encoding="utf-8")
+            try:
+                load_config(path)
+            except ValueError as exc:
+                assert "execution.pipeline" in str(exc)
+            else:
+                raise AssertionError(f"应拒绝非布尔流水线配置：{value}")
         for timeout in (-1, 1, 0.5, 7200):
             path.write_text(
                 f"{base_yaml}agent:\n  timeout_seconds: {timeout}\n",

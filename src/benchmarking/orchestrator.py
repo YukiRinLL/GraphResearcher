@@ -301,6 +301,74 @@ def _warn_nested_envs(repo_root: Path) -> None:
         logger.warning("已忽略 Benchmark 子目录的 .env：%s", ", ".join(existing))
 
 
+def _execute_samples(
+    repo_root: Path,
+    run_dir: Path,
+    evaluation_dir: Path | None,
+    tasks: list[BenchmarkTask],
+    config: dict[str, Any],
+    env: dict[str, str],
+) -> dict[tuple[str, str], dict[str, Any]]:
+    """在独立生成池与评估池之间按样本交接，保持同一样本的状态写入顺序."""
+    results: dict[tuple[str, str], dict[str, Any]] = {}
+    pipeline = config["mode"] == "run_and_evaluate" and config["execution"]["pipeline"]
+    evaluation_workers = int(config["execution"]["evaluation_max_workers"])
+    with ThreadPoolExecutor(max_workers=evaluation_workers) as evaluation_pool:
+        evaluation_futures = {}
+        if config["mode"] in {"run", "run_and_evaluate"}:
+            with ThreadPoolExecutor(max_workers=int(config["agent"]["max_workers"])) as pool:
+                futures = {pool.submit(_run_agent, repo_root, run_dir, task, config, env): task for task in tasks}
+                for future in as_completed(futures):
+                    task = futures[future]
+                    try:
+                        result = future.result()
+                        results[(task.benchmark, task.sample_id)] = result
+                        if config["execution"]["fail_fast"] and result["evaluation"]["status"] == "failed":
+                            raise RuntimeError(result["evaluation"]["error"])
+                    except Exception as exc:  # noqa: BLE001 - 保留批次中其他样本
+                        result = _base_result(task)
+                        result["run"].update({"status": "failed", "error": str(exc)})
+                        results[(task.benchmark, task.sample_id)] = result
+                        write_json(_sample_dir(run_dir, task) / "sample_result.json", result)
+                        if config["execution"]["fail_fast"]:
+                            raise
+                    if pipeline and _sample_dir(run_dir, task).joinpath("report.md").is_file():
+                        evaluation_futures[evaluation_pool.submit(
+                            _evaluate, repo_root, run_dir, evaluation_dir, task, config, env,
+                        )] = task
+
+        if evaluation_dir is not None:
+            if not pipeline:
+                evaluation_futures = {
+                    evaluation_pool.submit(_evaluate, repo_root, run_dir, evaluation_dir, task, config, env): task
+                    for task in tasks
+                    if _sample_dir(run_dir, task).joinpath("report.md").is_file()
+                    or config["mode"] == "evaluate"
+                }
+            # 评估线程已可在生成期间工作；在此收集结果，避免旧的生成结果覆盖评分。
+            for future in as_completed(evaluation_futures):
+                task = evaluation_futures[future]
+                try:
+                    results[(task.benchmark, task.sample_id)] = future.result()
+                except Exception as exc:  # noqa: BLE001 - 保留批次中其他样本
+                    result = _read_result(_sample_dir(run_dir, task) / "sample_result.json", task)
+                    result["evaluation"] = {
+                        "status": "failed",
+                        "duration_seconds": 0.0,
+                        "phases": {},
+                        "error": str(exc),
+                    }
+                    results[(task.benchmark, task.sample_id)] = result
+                    write_json(_sample_dir(run_dir, task) / "sample_result.json", result)
+                    if config["execution"]["fail_fast"]:
+                        raise
+            for task in tasks:
+                key = (task.benchmark, task.sample_id)
+                if key not in results:
+                    results[key] = _read_result(_sample_dir(run_dir, task) / "sample_result.json", task)
+    return results
+
+
 def execute(config_path: Path, check_only: bool = False) -> None:
     """执行配置校验、Agent 运行、Benchmark 评测和汇总."""
     repo_root = Path(__file__).resolve().parents[2]
@@ -353,58 +421,15 @@ def execute(config_path: Path, check_only: bool = False) -> None:
         }
     write_json(manifest_path, manifest)
 
-    results: dict[tuple[str, str], dict[str, Any]] = {}
-    if config["mode"] in {"run", "run_and_evaluate"}:
-        with ThreadPoolExecutor(max_workers=int(config["agent"]["max_workers"])) as pool:
-            futures = {pool.submit(_run_agent, repo_root, run_dir, task, config, env): task for task in tasks}
-            for future in as_completed(futures):
-                task = futures[future]
-                try:
-                    result = future.result()
-                    results[(task.benchmark, task.sample_id)] = result
-                    if config["execution"]["fail_fast"] and result["evaluation"]["status"] == "failed":
-                        raise RuntimeError(result["evaluation"]["error"])
-                except Exception as exc:  # noqa: BLE001 - 保留批次中其他样本
-                    result = _base_result(task)
-                    result["run"].update({"status": "failed", "error": str(exc)})
-                    results[(task.benchmark, task.sample_id)] = result
-                    write_json(_sample_dir(run_dir, task) / "sample_result.json", result)
-                    if config["execution"]["fail_fast"]:
-                        raise
-
+    evaluation_dir = None
     if config["mode"] in {"evaluate", "run_and_evaluate"}:
         evaluation_id = datetime.now().strftime("eval-%Y%m%d-%H%M%S-%f")
         evaluation_dir = run_dir / "evaluations" / evaluation_id
         evaluation_dir.mkdir(parents=True, exist_ok=True)
         write_json(evaluation_dir / "evaluator.snapshot.json", _evaluator_snapshot(config, env))
-        evaluation_workers = int(config["execution"]["evaluation_max_workers"])
-        with ThreadPoolExecutor(max_workers=evaluation_workers) as pool:
-            futures = {
-                pool.submit(_evaluate, repo_root, run_dir, evaluation_dir, task, config, env): task
-                for task in tasks
-                if _sample_dir(run_dir, task).joinpath("report.md").is_file()
-                or config["mode"] == "evaluate"
-            }
-            for future in as_completed(futures):
-                task = futures[future]
-                try:
-                    results[(task.benchmark, task.sample_id)] = future.result()
-                except Exception as exc:  # noqa: BLE001 - 保留批次中其他样本
-                    result = _read_result(_sample_dir(run_dir, task) / "sample_result.json", task)
-                    result["evaluation"] = {
-                        "status": "failed",
-                        "duration_seconds": 0.0,
-                        "phases": {},
-                        "error": str(exc),
-                    }
-                    results[(task.benchmark, task.sample_id)] = result
-                    write_json(_sample_dir(run_dir, task) / "sample_result.json", result)
-                    if config["execution"]["fail_fast"]:
-                        raise
-        for task in tasks:
-            key = (task.benchmark, task.sample_id)
-            if key not in results:
-                results[key] = _read_result(_sample_dir(run_dir, task) / "sample_result.json", task)
+
+    results = _execute_samples(repo_root, run_dir, evaluation_dir, tasks, config, env)
+    if evaluation_dir is not None:
         summary = build_summary(list(results.values()))
         summary.update({"run_id": run_dir.name, "seed": config["seed"], "mode": config["mode"]})
         write_json(evaluation_dir / "summary.json", summary)
