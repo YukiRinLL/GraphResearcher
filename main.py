@@ -20,6 +20,7 @@ Usage:
 import argparse
 import json
 import logging
+import os
 import re
 import sys
 import traceback
@@ -30,8 +31,9 @@ from dotenv import load_dotenv
 # Repo import convention: `src/` must be on sys.path (see CLAUDE.md).
 SRC_DIR = Path(__file__).parent / "src"
 sys.path.insert(0, str(SRC_DIR))
+DEFAULT_CONFIG_PATH = Path(__file__).resolve().parent / "evaluate.yaml"
 
-load_dotenv()
+load_dotenv(Path(__file__).resolve().parent / ".env")
 
 try:  # Use system trust store for TLS when behind a proxy.
     import truststore
@@ -44,6 +46,12 @@ from rich.console import Console  # noqa: E402  (import after sys.path setup)
 from rich.markdown import Markdown  # noqa: E402
 
 from observability import LangfuseRun, start_langfuse_run  # noqa: E402
+from run_config import (  # noqa: E402
+    agent_environment,
+    read_config_file,
+    resolve_agent_config,
+    write_agent_snapshot,
+)
 
 console = Console()
 
@@ -504,13 +512,14 @@ def main() -> None:
     """Parse arguments and run the research loop."""
     parser = argparse.ArgumentParser(description="GraphResearcher — graph-driven deep research agent.")
     parser.add_argument("request", nargs="*", help="The research request.")
+    parser.add_argument("--config", type=Path, help="从 YAML 的 agent 区块读取配置；默认读取仓库根目录 evaluate.yaml（若存在）。")
     parser.add_argument(
         "-r",
         "--max-rounds",
         type=int,
-        default=30,
+        default=None,
         help="Maximum number of Searcher dispatches (search rounds); 0 means no limit. "
-        "Default: 30 — leaves ample budget for depth-breadth balanced expansion.",
+        "Overrides agent.max_rounds in YAML; the fallback default is 30.",
     )
     parser.add_argument(
         "-o",
@@ -523,9 +532,9 @@ def main() -> None:
         "-v",
         "--verbose",
         choices=list(VERBOSITY_PRESETS),
-        default="normal",
-        help="Verbosity preset: quiet (only the final report), normal (default, current behaviour), "
-        "or debug (subgraphs, tool calls, INFO logs, no truncation). Individual flags below override it.",
+        default=None,
+        help="Verbosity preset: quiet, normal or debug. Overrides agent.verbosity in YAML; "
+        "without a config file the default is normal. Individual flags below override it.",
     )
     parser.add_argument(
         "--show-tool-calls",
@@ -553,12 +562,30 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    try:
+        config_path = args.config or (DEFAULT_CONFIG_PATH if DEFAULT_CONFIG_PATH.is_file() else None)
+        raw_config = read_config_file(config_path) if config_path else {"agent": {"verbosity": "normal"}}
+        if raw_config.get("version", 1) != 1:
+            raise ValueError("当前只支持配置 version: 1。")
+        overrides = {
+            key: value for key, value in {"max_rounds": args.max_rounds, "verbosity": args.verbose}.items()
+            if value is not None
+        }
+        agent = resolve_agent_config(raw_config.get("agent", {}), os.environ, overrides)
+    except ValueError as exc:
+        parser.error(str(exc))
+    # 在导入工作流、模型和图存储前固定本进程的运行参数。
+    os.environ.update(agent_environment(agent))
+    args.max_rounds = agent["max_rounds"]
+    args.verbose = agent["verbosity"]
+
     request = " ".join(args.request).strip() or console.input("[bold]Enter your research request:[/] ").strip()
     if not request:
         console.print("[red]No request provided.[/]")
         return
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
+    write_agent_snapshot(args.output_dir / "agent.effective.yaml", agent)
     run(request, args.output_dir, args.max_rounds, resolve_log_options(args))
 
 

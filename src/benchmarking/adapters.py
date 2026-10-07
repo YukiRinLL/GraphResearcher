@@ -57,7 +57,7 @@ def _evaluate_drb(
     root_env: dict[str, str],
 ) -> tuple[dict[str, float], dict[str, float]]:
     bench = repo_root / "Benchmark/deep_research_bench"
-    env = benchmark_environment(root_env, task.benchmark)
+    env = benchmark_environment(root_env, task.benchmark, settings.get("runtime"))
     evaluation = settings.get("evaluation", {})
     dimensions = set(evaluation.get("dimensions", ["race", "fact"]))
     workers = int(evaluation.get("max_workers", 5))
@@ -158,7 +158,7 @@ def _evaluate_wlc(
     root_env: dict[str, str],
 ) -> tuple[dict[str, float], dict[str, float]]:
     bench = repo_root / "Benchmark/Wiki_Live_Challenge"
-    env = benchmark_environment(root_env, task.benchmark)
+    env = benchmark_environment(root_env, task.benchmark, settings.get("runtime"))
     evaluation = settings.get("evaluation", {})
     dimensions = set(evaluation.get("dimensions", ["writing", "verifiability", "citation"]))
     preprocessing = settings.get("preprocessing", {})
@@ -248,7 +248,7 @@ def _evaluate_drb2(
     root_env: dict[str, str],
 ) -> tuple[dict[str, float], dict[str, float]]:
     bench = repo_root / "Benchmark/DeepResearch-Bench-II"
-    env = benchmark_environment(root_env, task.benchmark)
+    env = benchmark_environment(root_env, task.benchmark, settings.get("runtime"))
     evaluation = settings.get("evaluation", {})
     report_dir = output_dir / "native" / "report" / "graphresearcher"
     report_dir.mkdir(parents=True, exist_ok=True)

@@ -25,6 +25,13 @@ from benchmarking.runtime import (
 )
 from benchmarking.summary import build_summary, render_markdown
 from benchmarking.tasks import BenchmarkTask, load_tasks, select_tasks
+from run_config import (
+    agent_environment,
+    benchmark_runtime_environment,
+    resolve_agent_config,
+    resolve_run_config,
+    write_agent_snapshot,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -65,6 +72,15 @@ def _dataset_hashes(repo_root: Path, config: dict[str, Any]) -> dict[str, str]:
 
 
 def _evaluator_snapshot(config: dict[str, Any], env: dict[str, str]) -> dict[str, Any]:
+    config = resolve_run_config(config, env)
+    env = {
+        **env,
+        **{
+            key: value
+            for name, settings in config["benchmarks"].items()
+            for key, value in benchmark_runtime_environment(name, settings["runtime"]).items()
+        },
+    }
     return {
         "benchmarks": config["benchmarks"],
         "models": {
@@ -141,25 +157,24 @@ def _run_agent(
         return result
     write_json(sample_dir / "request.json", task.to_dict())
     started_at = now_iso()
+    agent = resolve_agent_config(config["agent"], env)
+    snapshot_path = sample_dir / "agent.effective.yaml"
+    write_agent_snapshot(snapshot_path, agent)
     command = [
         sys.executable,
         str(repo_root / "main.py"),
         task.prompt,
+        "--config",
+        str(snapshot_path),
         "--output-dir",
         str(sample_dir),
         "--max-rounds",
-        str(config["agent"]["max_rounds"]),
+        str(agent["max_rounds"]),
         "--verbose",
-        config["agent"]["verbosity"],
+        agent["verbosity"],
     ]
-    timeout = float(config["agent"]["timeout_seconds"])
-    agent_env = {**env, "GR_MODEL_MAX_RETRIES": str(config["agent"]["max_retries"])}
-    for field, env_name in (
-        ("search_dispatch_concurrency", "GR_SEARCH_DISPATCH_CONCURRENCY"),
-        ("source_extraction_concurrency", "GR_SOURCE_EXTRACTION_CONCURRENCY"),
-    ):
-        if field in config["agent"]:
-            agent_env[env_name] = str(config["agent"][field])
+    timeout = float(agent["timeout_seconds"])
+    agent_env = {**env, **agent_environment(agent)}
     duration, error = run_command(
         command,
         repo_root,
@@ -291,6 +306,7 @@ def execute(config_path: Path, check_only: bool = False) -> None:
     repo_root = Path(__file__).resolve().parents[2]
     config = load_config(config_path)
     env = load_root_environment(repo_root)
+    config = resolve_run_config(config, env)
     validate_evaluator_environment(config, env)
     _warn_nested_envs(repo_root)
 

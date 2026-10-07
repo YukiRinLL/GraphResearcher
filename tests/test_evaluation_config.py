@@ -8,6 +8,7 @@ SRC_DIR = Path(__file__).parent.parent / "src"
 sys.path.insert(0, str(SRC_DIR))
 
 from benchmarking.config import load_config  # noqa: E402
+from run_config import resolve_agent_config  # noqa: E402
 
 
 def main() -> None:
@@ -28,7 +29,8 @@ benchmarks:
         assert config["seed"] == 7
         assert config["agent"]["max_rounds"] == 30
         assert config["agent"]["timeout_seconds"] == 7200
-        assert config["agent"]["max_retries"] == 3
+        assert "max_retries" not in config["agent"]
+        assert resolve_agent_config(config["agent"], {})["max_retries"] == 3
         assert config["output"]["markdown_summary"] is True
 
         base_yaml = path.read_text(encoding="utf-8")

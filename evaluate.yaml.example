@@ -1,4 +1,4 @@
-# 模型、密钥和单次请求超时在根目录 .env 中配置。
+# 运行参数在本文件配置，密钥和服务连接信息在根目录 .env 中配置。
 version: 1  # 配置版本，目前只支持 1。
 mode: run_and_evaluate  # run：只生成；evaluate：只评分；run_and_evaluate：生成后评分。
 seed: 20260918  # 随机抽样种子，用于复现样本选择。
@@ -6,13 +6,22 @@ sample_count: 5  # 每个 Benchmark 的样本数；null 表示全部。
 
 agent:
   name: graphresearcher  # Agent 名称，用于自动生成运行目录名。
+  model: gpt-5.1  # 搜索抽取、证据评估等环节使用的模型。
+  model_timeout_seconds: 180  # 单次模型请求的超时秒数。
+  search_timeout_seconds: 30  # 单次搜索请求的超时秒数。
   max_rounds: 30  # 每条样本的搜索派发次数上限；0 表示不限。
   timeout_seconds: 7200  # 每条样本生成报告的总时限（秒）；-1 表示不限。
   max_retries: 3  # 每次模型调用的额外重试次数；0 表示不重试。
   max_workers: 1  # 同时运行的样本数；默认 1，表示串行。
   search_dispatch_concurrency: 3  # 每个 Agent 进程同时派发的 Query 数量上限；1 表示串行。省略时使用 .env 或默认值 3。
   source_extraction_concurrency: 3  # 每个 Agent 进程的来源模型调用总并发上限，所有 Query 共用；1 表示串行。省略时使用 .env 或默认值 3。
+  assess_query_concurrency: 3  # 每个 Agent 进程同时执行的 Query 证据评估数。
   verbosity: quiet  # quiet：简略；normal：进度；debug：工具调用及详细日志。
+  reporter:
+    model: ""  # 留空时继承 agent.model。
+    model_timeout_seconds: 600  # 全局报告写作模型的单次请求超时秒数。
+    packet_tokens: 48000  # 报告证据包的 token 预算。
+    output_tokens: 40000  # 报告写作模型的最大输出 token 数。
 
 execution:
   resume: true  # 跳过同一运行目录中已完成且有报告的样本；评分仍会重跑。
@@ -36,6 +45,12 @@ benchmarks:  # 至少启用一个 Benchmark；仅测试 Bench I 时关闭另外�
   deep_research_bench:
     enabled: true  # 是否启用 DeepResearch Bench I。
     sample_count: null  # 覆盖顶层样本数；null 表示继承。
+    runtime:
+      backend: openai  # 可选 openai 或 openrouter，对应凭据从 .env 读取。
+      race_model: gpt-5.5
+      fact_model: gpt-5.4-mini
+      model_timeout_seconds: 600
+      max_output_tokens: 64000
     selection:
       languages: [zh, en]  # 语言筛选：zh、en；[] 表示不限。
       topics: []  # 按数据集 topic 精确筛选；[] 表示不限。
@@ -48,6 +63,14 @@ benchmarks:  # 至少启用一个 Benchmark；仅测试 Bench I 时关闭另外�
   wiki_live_challenge:
     enabled: true  # 是否启用 Wiki Live Challenge。
     sample_count: null  # 覆盖顶层样本数；null 表示继承。
+    runtime:
+      extract_model: gemini-2.5-flash
+      verifier_model: gemini-2.5-flash
+      writing_model: gemini-2.5-pro
+      embedding_model: text-embedding-3-small
+      model_timeout_seconds: 300
+      max_retries: 3  # 原生评测客户端的重试参数。
+      concurrency: 10  # 原生预处理等环节使用的并发数，与 evaluation.max_workers 分别生效。
     selection:
       dataset: 2025_Mar_Nov  # 数据集子目录名。
       categories: []  # 样本类别筛选；当前数据集保持 []。
@@ -66,6 +89,11 @@ benchmarks:  # 至少启用一个 Benchmark；仅测试 Bench I 时关闭另外�
   deep_research_bench_ii:
     enabled: true  # 是否启用 DeepResearch Bench II。
     sample_count: null  # 覆盖顶层样本数；null 表示继承。
+    runtime:
+      model: gpt-5.5
+      reasoning_effort: medium
+      max_output_tokens: 32768
+      model_timeout_seconds: 600
     selection:
       languages: [zh, en]  # 语言筛选：zh、en；[] 表示不限。
       themes: []  # 按数据集 theme 精确筛选；[] 表示不限。

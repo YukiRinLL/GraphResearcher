@@ -12,6 +12,8 @@ from typing import Any
 
 from dotenv import dotenv_values
 
+from run_config import benchmark_runtime_environment, resolve_benchmark_config
+
 CONFIG_PREFIXES = ("DRB_", "DRB2_", "WLC_", "GR_", "NEO4J_", "LANGFUSE_")
 CONFIG_NAMES = {
     "OPENAI_API_KEY",
@@ -55,7 +57,7 @@ def now_iso() -> str:
 
 
 def load_root_environment(repo_root: Path) -> dict[str, str]:
-    """以根目录 `.env` 为评估配置的唯一来源."""
+    """读取根目录服务凭据和兼容配置，并隔离外部评测环境."""
     env_path = repo_root / ".env"
     if not env_path.is_file():
         raise ValueError(f"缺少根目录环境文件：{env_path}")
@@ -69,8 +71,12 @@ def load_root_environment(repo_root: Path) -> dict[str, str]:
     return inherited
 
 
-def benchmark_environment(base: dict[str, str], benchmark: str) -> dict[str, str]:
-    """将根目录命名空间映射为原生评测器变量."""
+def benchmark_environment(
+    base: dict[str, str], benchmark: str, runtime: dict | None = None,
+) -> dict[str, str]:
+    """将 YAML 运行参数和根目录凭据映射为原生评测器变量."""
+    resolved = resolve_benchmark_config(benchmark, runtime or {}, base)
+    base = {**base, **benchmark_runtime_environment(benchmark, resolved)}
     env = dict(base)
     mappings = {
         "deep_research_bench": {
@@ -115,43 +121,27 @@ def benchmark_environment(base: dict[str, str], benchmark: str) -> dict[str, str
     }
     defaults = {
         "deep_research_bench": {
-            "LLM_BACKEND": "openai",
             "OPENAI_API_KEY": base.get("OPENAI_API_KEY", ""),
             "OPENAI_BASE_URL": base.get("OPENAI_BASE_URL", "https://api.openai.com/v1"),
             "OPENROUTER_API_KEY": "",
             "OPENROUTER_BASE_URL": "https://openrouter.ai/api/v1",
-            "RACE_MODEL": "gpt-5.5",
-            "FACT_MODEL": "gpt-5.4-mini",
-            "LLM_HTTP_TIMEOUT": "600",
-            "MAX_OUTPUT_TOKENS": "64000",
             "JINA_API_KEY": base.get("JINA_API_KEY", ""),
         },
         "wiki_live_challenge": {
             "JINA_API_KEY": "",
             "JINA_BASE_URL": "https://r.jina.ai/",
-            "EXTRACT_MODEL": "gemini-2.5-flash",
             "EXTRACT_API_KEY": "",
             "EXTRACT_BASE_URL": "",
-            "VERIFIER_MODEL": "gemini-2.5-flash",
             "VERIFIER_API_KEY": "",
             "VERIFIER_BASE_URL": "",
-            "WRITING_MODEL": "gemini-2.5-pro",
             "WRITING_API_KEY": "",
             "WRITING_BASE_URL": "",
-            "EMBEDDING_MODEL": "text-embedding-3-small",
             "OPENAI_API_KEY": "",
             "OPENAI_BASE_URL": "https://api.openai.com/v1",
-            "API_TIMEOUT": "300",
-            "MAX_RETRIES": "3",
-            "CONCURRENCY": "10",
         },
         "deep_research_bench_ii": {
             "OPENAI_API_URL": "https://api.openai.com/v1/chat/completions",
             "OPENAI_API_KEY": base.get("OPENAI_API_KEY", ""),
-            "OPENAI_MODEL": "gpt-5.5",
-            "OPENAI_REASONING_EFFORT": "medium",
-            "OPENAI_MAX_OUTPUT_TOKENS": "32768",
-            "OPENAI_TIMEOUT": "600",
         },
     }
     env.update(defaults.get(benchmark, {}))
@@ -182,7 +172,7 @@ def validate_evaluator_environment(config: dict[str, Any], root_env: dict[str, s
         }
         dimensions = set(evaluation.get("dimensions", default_dimensions[benchmark]))
         if benchmark == "deep_research_bench":
-            backend = root_env.get("DRB_LLM_BACKEND", "openai")
+            backend = resolve_benchmark_config(benchmark, settings.get("runtime", {}), root_env)["backend"]
             key = "DRB_OPENROUTER_API_KEY" if backend == "openrouter" else "DRB_OPENAI_API_KEY"
             if not root_env.get(key) and not (backend == "openai" and root_env.get("OPENAI_API_KEY")):
                 missing.append(key)

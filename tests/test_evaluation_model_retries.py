@@ -69,7 +69,7 @@ output_dir = Path(sys.argv[sys.argv.index("--output-dir") + 1])
             assert result["run"]["status"] == "completed", result
             report_path = run_dir / result["run"]["report_path"]
             actual = json.loads(report_path.read_text(encoding="utf-8"))
-            expected = 3 if max_retries is None else max_retries
+            expected = 9 if max_retries is None else max_retries
             for name in ("default", "searcher", "reporter", "reviewer"):
                 assert actual[name] == [expected] * 3, actual
             assert actual["explicit"] == [2] * 3
