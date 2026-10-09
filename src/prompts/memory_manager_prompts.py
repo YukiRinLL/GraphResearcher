@@ -235,6 +235,11 @@ Rules:
 - Return one `criteria` entry for every Query acceptance criterion, copying its
   text exactly. Mark it satisfied only when the cited Query-owned Claim or
   Evidence directly entails the requested fact.
+- When `prior_criterion_results` is present, it is this Query's own previous
+  verdict (the Query is being re-assessed after child branches completed).
+  Carry every previously `satisfied` criterion forward as satisfied unless
+  the current subgraph or child summaries contradict it; focus fresh judgment
+  on the previously unmet criteria. Still return one entry per criterion.
 - A search miss, a source that does not mention the fact, or general topical
   background is not evidence. Absence counts only when a source explicitly
   states that the information is unknown, unavailable, unpublished, or does
@@ -645,6 +650,11 @@ Use the validated `criterion_results` as the sole Query-level record of whether
 an acceptance criterion is satisfied. If the supplied results leave an
 Objective criterion unmet, return that exact criterion in
 `unmet_acceptance_criteria` regardless of aggregate coverage scores.
+Terminal Queries (sufficient/blocked/failed/deferred/paused) are supplied with
+`material_counts` instead of raw Claim/Evidence text: their validated
+`criterion_results`, `sufficiency_score` and `covered` are the distilled
+record — do not treat the missing raw text as absent evidence. Only active
+Queries carry raw Claim/Evidence/Conflict fields.
 Raise coverage or confidence when the supplied Claim/Evidence/Conflict and
 Source fields substantiate the Objective, directly or indirectly; do not fill
 missing facts from memory.

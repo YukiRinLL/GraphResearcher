@@ -156,6 +156,26 @@ _MIN_EXPANDED_QUERIES_FOR_CONVERGENCE = 3
 _DEPTH_FREE_TIER = 3          # levels 1-3 incur no penalty (root + 2 expansions)
 _DEPTH_PENALTY_FACTOR = 0.3   # each level beyond free tier: discount = 1/(1+0.3*n)
 
+# LLM 上下文压缩：进入 portfolio / assessor 的图节点文本按字符截断。
+# portfolio 只在 Query 仍活跃时需要 Claim/Evidence 原文做客观度判断；
+# assessor 需要原文做蕴含判定，限额更宽。重复字段（evidence.text 与
+# evidence.claim、claim.statement 与 claim.canonical_text）只保留一份。
+_PORTFOLIO_CLAIM_TEXT_LIMIT = 600
+_PORTFOLIO_EVIDENCE_TEXT_LIMIT = 240
+_ASSESS_QUERY_TEXT_LIMIT = 1200
+_ASSESS_CLAIM_TEXT_LIMIT = 1200
+_ASSESS_EVIDENCE_TEXT_LIMIT = 800
+_ASSESS_DOCUMENT_TEXT_LIMIT = 600
+_ASSESS_ANALYSIS_TEXT_LIMIT = 600
+
+
+def _truncate_text(value: Any, limit: int) -> str:
+    """把任意值转成字符串并截断到 ``limit`` 字符，超长时加省略标记."""
+    text = str(value or "")
+    if len(text) <= limit:
+        return text
+    return text[:limit].rstrip() + " …[truncated]"
+
 
 def _strip_internal_fields(node: dict) -> dict:
     """Return a copy of a node dict without internal scheduling fields.
@@ -422,6 +442,10 @@ class MemoryManager:
         # 每个运行内的 Query 只保存最近一次完整写入结果，模型调用由独立锁保护。
         self._claim_normalization_cache: dict[tuple[Optional[str], str], dict] = {}
         self._claim_normalization_locks: dict[tuple[Optional[str], str], Any] = {}
+        # Portfolio 全局评估的"决策相关指纹 → LLM verdict"单条缓存：
+        # 图的叙述性字段（assessment_reason 等）变化不触发重算，只有状态、
+        # 评分、criteria 裁决或材料集合变化才重新调用模型。
+        self._portfolio_cache: Optional[tuple[str, dict]] = None
         # Track consecutive cool-down rounds per owner so the LLM can see when a
         # branch has been parked for a while and decide whether to revive it.
         self._cooldown_streaks: dict[str, int] = {}
@@ -1307,6 +1331,111 @@ class MemoryManager:
             "claim_count": len(set(claim_ids)),
         }
 
+    @staticmethod
+    def _compact_evaluation_subgraph(evaluation: dict) -> dict:
+        """投影一份只保留 LLM 裁决所需字段的评估子图.
+
+        完整子图里的节点带有内部簿记字段（*_key / document_id / source_id /
+        locator / block_refs 等）和成对重复的全文（evidence.text 与
+        evidence.claim、claim.statement 与 claim.canonical_text）。这些内容
+        在多 Query、多来源的后期运行里会把单次 assessor 输入推到 10 万 token
+        以上。此处：
+
+        - 每类节点只保留白名单字段，所有长文本按字符截断；
+        - 重复全文只保留一份（canonical_text / text）；
+        - 边只保留 source/target/type；
+        - 节点 id 全部保留，模型输出的 supporting_refs / trigger_refs
+          校验仍基于未压缩的完整子图进行。
+        """
+
+        def compact_node(node: dict) -> dict:
+            node_type = node.get("type")
+            base = {"id": node.get("id"), "type": node_type}
+            if node_type == NodeType.QUERY.value:
+                base.update({
+                    "handle": node.get("handle"),
+                    "status": node.get("status"),
+                })
+            elif node_type == NodeType.STATEMENT.value:
+                base.update({
+                    "text": _truncate_text(node.get("text"), _ASSESS_QUERY_TEXT_LIMIT),
+                    "confidence": node.get("confidence"),
+                    "qualifiers": node.get("qualifiers") or [],
+                    "limitations": node.get("limitations") or [],
+                })
+            elif node_type == NodeType.EVIDENCE.value:
+                base.update({
+                    "text": _truncate_text(
+                        node.get("text") or node.get("claim"),
+                        _ASSESS_EVIDENCE_TEXT_LIMIT,
+                    ),
+                    "confidence": node.get("confidence"),
+                    "qualifiers": node.get("qualifiers") or [],
+                    "limitations": node.get("limitations") or [],
+                })
+            elif node_type == NodeType.CLAIM.value:
+                base.update({
+                    "canonical_text": _truncate_text(
+                        node.get("canonical_text") or node.get("statement"),
+                        _ASSESS_CLAIM_TEXT_LIMIT,
+                    ),
+                    "confidence": node.get("confidence"),
+                    "qualifiers": node.get("qualifiers") or [],
+                    "limitations": node.get("limitations") or [],
+                    "objective_keys": node.get("objective_keys") or [],
+                })
+            elif node_type == NodeType.SOURCE.value:
+                base.update({
+                    "url": node.get("url"),
+                    "title": node.get("title"),
+                    "source_type": node.get("source_type"),
+                    "published_at": node.get("published_at") or node.get("publication_date"),
+                    "credibility_score": node.get("credibility_score"),
+                })
+            elif node_type == NodeType.DOCUMENT.value:
+                base.update({
+                    "text": _truncate_text(node.get("text"), _ASSESS_DOCUMENT_TEXT_LIMIT),
+                })
+            elif node_type == NodeType.CONFLICT.value:
+                base.update({
+                    "description": node.get("description"),
+                    "conflict_type": node.get("conflict_type"),
+                    "resolution_status": node.get("resolution_status"),
+                })
+            elif node_type == NodeType.ANALYSIS.value:
+                base.update({
+                    "analysis_type": node.get("analysis_type"),
+                    "text": _truncate_text(node.get("text"), _ASSESS_ANALYSIS_TEXT_LIMIT),
+                    "description": _truncate_text(
+                        node.get("description"), _ASSESS_ANALYSIS_TEXT_LIMIT
+                    ),
+                    "status": node.get("status"),
+                    "importance": node.get("importance"),
+                    "gap_category": node.get("gap_category"),
+                    "objective_keys": node.get("objective_keys") or [],
+                    "expansion_mode": node.get("expansion_mode"),
+                })
+            elif node_type == NodeType.SEARCH_RUN.value:
+                base.update({"status": node.get("status")})
+            else:
+                base.update({"status": node.get("status")})
+            return base
+
+        compact_edges = [
+            {
+                "source": edge.get("source"),
+                "target": edge.get("target"),
+                "type": str(edge.get("type", "")).lower(),
+            }
+            for edge in evaluation.get("edges", [])
+        ]
+        return {
+            "query": compact_node(evaluation["query"]) if evaluation.get("query") else {},
+            "nodes": [compact_node(node) for node in evaluation.get("nodes", [])],
+            "edges": compact_edges,
+            "children": evaluation.get("children", []),
+        }
+
     def assess_query(self, query_id: str) -> dict:
         """Assess one Query's owned evidence and automatically advance its state."""
         from tools import research_state
@@ -1343,23 +1472,33 @@ class MemoryManager:
                 "source_preferences", "excluded_domains", "excluded_urls", "scope_mode",
             )
         }
+        query_payload = {
+            "text": query.get("text"),
+            "query_role": query.get("query_role") or "research",
+            "objective_keys": query.get("objective_keys") or [],
+            "acceptance_criteria": query.get("acceptance_criteria") or [],
+            "normalized_claims": normalization,
+        }
+        # 父 Query 等子 Query 完成后会整体复评，但它自有的证据子图没有变化。
+        # 把上一轮 criteria 裁决带给模型，让 satisfied 项直接延续，只重新判断
+        # 未满足项（子 Query 摘要可能改变它们）。
+        prior_criterion_results = query.get("criterion_results") or []
+        if query.get("status") == "waiting_children" and prior_criterion_results:
+            query_payload["prior_criterion_results"] = prior_criterion_results
         prompt = (
-            mm_prompts.assess_query.replace("{query}", json.dumps({
-                "text": query.get("text"),
-                "query_role": query.get("query_role") or "research",
-                "objective_keys": query.get("objective_keys") or [],
-                "acceptance_criteria": query.get("acceptance_criteria") or [],
-                "normalized_claims": normalization,
-            }, ensure_ascii=False))
+            mm_prompts.assess_query.replace("{query}", json.dumps(query_payload, ensure_ascii=False))
             .replace("{request_context}", json.dumps(request_context, ensure_ascii=False))
             .replace("{objectives}", json.dumps(objectives, ensure_ascii=False))
             .replace("{existing_queries}", json.dumps([
                 {"id": item.get("id"), "text": item.get("text"), "status": item.get("status")}
                 for item in graph_tools.search_nodes("query", {})
             ], ensure_ascii=False))
-            .replace("{evaluation_subgraph}", json.dumps(evaluation, ensure_ascii=False))
+            .replace(
+                "{evaluation_subgraph}",
+                json.dumps(self._compact_evaluation_subgraph(evaluation), ensure_ascii=False),
+            )
         )
-        verdict = self._invoke_json(prompt)
+        verdict = self._invoke_json(prompt, purpose="query_assessor")
         acceptance_criteria = [
             str(item).strip()
             for item in query.get("acceptance_criteria") or []
@@ -1765,10 +1904,23 @@ class MemoryManager:
 
     @staticmethod
     def _portfolio_query_view(query: dict) -> dict:
-        """把 Query 投影成由证据支撑的紧凑组合评估输入."""
+        """把 Query 投影成由证据支撑的紧凑组合评估输入.
+
+        终态 Query（sufficient/blocked/failed/deferred/paused）只保留导航级
+        字段与材料计数：portfolio 的判定依据是已固化的 criterion_results 与
+        sufficiency_score，重发它们的 Claim/Evidence 原文只会膨胀上下文。
+        活跃 Query 保留 Claim/Evidence 原文但逐条截断，避免少数超长节点拖垮
+        整次调用的输入长度。
+        """
+        from tools import research_state
+
         evaluation = graph_tools.get_query_evaluation_subgraph(query["id"])
         nodes = evaluation.get("nodes", [])
-        return {
+        claims = [n for n in nodes if n.get("type") == NodeType.CLAIM.value]
+        evidence = [n for n in nodes if n.get("type") == NodeType.EVIDENCE.value]
+        conflicts = [n for n in nodes if n.get("type") == NodeType.CONFLICT.value]
+        sources = [n for n in nodes if n.get("type") == NodeType.SOURCE.value]
+        view = {
             "id": query.get("id"),
             "handle": query.get("handle"),
             "text": query.get("text"),
@@ -1778,40 +1930,93 @@ class MemoryManager:
             "criterion_results": query.get("criterion_results") or [],
             "covered": query.get("covered") or [],
             "assessment_reason": query.get("assessment_reason") or "",
-            "claims": [
-                {
-                    "id": node.get("id"),
-                    "text": node.get("canonical_text") or node.get("statement"),
-                    "confidence": node.get("confidence"),
-                    "objective_keys": node.get("objective_keys") or [],
-                }
-                for node in nodes if node.get("type") == NodeType.CLAIM.value
-            ],
-            "evidence": [
-                {
-                    "id": node.get("id"),
-                    "text": node.get("claim") or node.get("text"),
-                    "confidence": node.get("confidence"),
-                }
-                for node in nodes if node.get("type") == NodeType.EVIDENCE.value
-            ],
-            "conflicts": [
-                {
-                    "id": node.get("id"),
-                    "description": node.get("description"),
-                    "resolution_status": node.get("resolution_status"),
-                }
-                for node in nodes if node.get("type") == NodeType.CONFLICT.value
-            ],
-            "sources": [
-                {
-                    "id": node.get("id"),
-                    "url": node.get("url"),
-                    "published_at": node.get("published_at") or node.get("publication_date"),
-                }
-                for node in nodes if node.get("type") == NodeType.SOURCE.value
-            ],
         }
+        if query.get("status") in research_state.TERMINAL_QUERY_STATUSES:
+            # 终态：只给计数，不再回传任何证据原文。
+            view["material_counts"] = {
+                "claims": len(claims),
+                "evidence": len(evidence),
+                "conflicts": len(conflicts),
+                "sources": len(sources),
+            }
+            return view
+        view["claims"] = [
+            {
+                "id": node.get("id"),
+                "text": _truncate_text(
+                    node.get("canonical_text") or node.get("statement"),
+                    _PORTFOLIO_CLAIM_TEXT_LIMIT,
+                ),
+                "confidence": node.get("confidence"),
+                "objective_keys": node.get("objective_keys") or [],
+            }
+            for node in claims
+        ]
+        view["evidence"] = [
+            {
+                "id": node.get("id"),
+                "text": _truncate_text(
+                    node.get("claim") or node.get("text"),
+                    _PORTFOLIO_EVIDENCE_TEXT_LIMIT,
+                ),
+                "confidence": node.get("confidence"),
+            }
+            for node in evidence
+        ]
+        view["conflicts"] = [
+            {
+                "id": node.get("id"),
+                "description": node.get("description"),
+                "resolution_status": node.get("resolution_status"),
+            }
+            for node in conflicts
+        ]
+        view["sources"] = [
+            {
+                "id": node.get("id"),
+                "url": node.get("url"),
+                "published_at": node.get("published_at") or node.get("publication_date"),
+            }
+            for node in sources
+        ]
+        return view
+
+    @staticmethod
+    def _portfolio_view_signature(view: dict) -> tuple:
+        """从组合评估视图提炼"决策相关"结构指纹（忽略叙述性散文）.
+
+        ``covered`` / ``assessment_reason`` / evidence 原文等表述层差异不触发
+        重算；只有状态、评分、criteria 裁决、材料集合或置信度变化才失效。
+        """
+        return (
+            view.get("id"),
+            view.get("status"),
+            tuple(sorted(view.get("objective_keys") or [])),
+            round(float(view.get("sufficiency_score") or 0.0), 3),
+            tuple(
+                (c.get("criterion"), c.get("status"))
+                for c in (view.get("criterion_results") or [])
+                if isinstance(c, dict)
+            ),
+            tuple(
+                (
+                    c.get("id"),
+                    round(float(c.get("confidence") or 0.0), 2),
+                    tuple(sorted(c.get("objective_keys") or [])),
+                )
+                for c in view.get("claims", [])
+            ),
+            tuple(
+                (e.get("id"), round(float(e.get("confidence") or 0.0), 2))
+                for e in view.get("evidence", [])
+            ),
+            tuple(
+                (c.get("id"), c.get("resolution_status"))
+                for c in view.get("conflicts", [])
+            ),
+            tuple(s.get("id") for s in view.get("sources", [])),
+            tuple(sorted((view.get("material_counts") or {}).items())),
+        )
 
     @staticmethod
     def _linked_criteria_complete(objective_key: str, queries: list[dict]) -> bool:
@@ -1911,6 +2116,67 @@ class MemoryManager:
             )
         return "\n".join(lines) or "(no active owners with candidate gaps)"
 
+    def _portfolio_material_signature(
+        self,
+        goal: dict,
+        objectives: list[dict],
+        query_views: list[dict],
+        active_gaps: list[dict],
+        branch_summary_text: str,
+    ) -> str:
+        """计算 portfolio 决策相关输入的结构指纹.
+
+        只纳入会改变 LLM 裁决的状态：objective 状态/评分/未满足 criteria、
+        Query 结构指纹、活跃 Gap 的归属与评分、branch 健康信号、搜索轮次。
+        叙述性字段（reason、covered、evidence 原文）不参与，因此同一条研究
+        分支在无实质新增材料时的连续重评会命中缓存、跳过模型调用。
+        """
+
+        def objective_sig(item: dict) -> tuple:
+            return (
+                item.get("objective_key"),
+                item.get("status"),
+                item.get("requirement"),
+                round(float(item.get("weight") or 1.0), 3),
+                round(float(item.get("coverage") or 0.0), 3),
+                round(float(item.get("confidence") or 0.0), 3),
+                tuple(item.get("acceptance_criteria") or []),
+                tuple(item.get("unmet_acceptance_criteria") or []),
+                int(item.get("low_gain_streak") or 0),
+                int(item.get("last_evaluated_successful_rounds") or 0),
+            )
+
+        def gap_sig(gap: dict) -> tuple:
+            return (
+                gap.get("id"),
+                gap.get("status"),
+                gap.get("gap_category"),
+                gap.get("expansion_mode"),
+                gap.get("search_subject_key") or gap.get("gap_key"),
+                self._gap_owner_id(gap["id"]),
+                tuple(sorted(gap.get("objective_keys") or [])),
+                round(float(gap.get("decision_impact") or 0.0), 2),
+                round(float(gap.get("confidence_gain") or 0.0), 2),
+                int(gap.get("estimated_search_rounds") or 1),
+            )
+
+        model = self._model_for("portfolio")
+        model_tag = (
+            getattr(model, "model_name", None)
+            or getattr(model, "model", None)
+            or type(model).__name__
+        )
+        payload = {
+            "model": str(model_tag),
+            "successful_search_rounds": int(goal.get("successful_search_rounds") or 0),
+            "branch_summary": branch_summary_text,
+            "objectives": [objective_sig(item) for item in objectives],
+            "queries": [self._portfolio_view_signature(view) for view in query_views],
+            "gaps": [gap_sig(gap) for gap in active_gaps],
+        }
+        encoded = json.dumps(payload, ensure_ascii=False, sort_keys=True, default=str)
+        return hashlib.sha256(("portfolio-material-v1\n" + encoded).encode("utf-8")).hexdigest()
+
     def evaluate_research_portfolio(self, goal_id: Optional[str] = None) -> dict:
         """Select candidate gaps by report-level marginal utility."""
         from tools import research_state
@@ -1927,15 +2193,30 @@ class MemoryManager:
             if gap.get("status") in research_state.OPEN_GAP_STATUSES
         ]
         branch_summary_text = self._build_branch_summary(active_gaps)
+        query_views = [self._portfolio_query_view(query) for query in queries]
+        material_signature = self._portfolio_material_signature(
+            goal, objectives, query_views, active_gaps, branch_summary_text
+        )
         prompt = (
             mm_prompts.evaluate_portfolio
             .replace("{objectives}", json.dumps(objectives, ensure_ascii=False))
-            .replace("{queries}", json.dumps([
-                self._portfolio_query_view(query) for query in queries
-            ], ensure_ascii=False))
+            .replace("{queries}", json.dumps(query_views, ensure_ascii=False))
             .replace("{branch_summary}", branch_summary_text)
         )
-        verdict = self._invoke_json(prompt)
+        # 决策相关状态未变化时复用上一次 verdict：图每次写入都会 bump
+        # portfolio_revision 触发重评，但大部分触发只改了叙述性字段或
+        # portfolio 自身刚写入的 gap 状态，重发 10 万+ token 的全局视图是
+        # 纯浪费。确定性后处理（客观度写回、gap 选择、branch 冷却）照常重放。
+        cached = self._portfolio_cache
+        if cached is not None and cached[0] == material_signature:
+            verdict = deepcopy(cached[1])
+            logger.info(
+                "[portfolio] material signature unchanged (%s); reusing cached verdict",
+                material_signature[:12],
+            )
+        else:
+            verdict = self._invoke_json(prompt, purpose="portfolio")
+            self._portfolio_cache = (material_signature, deepcopy(verdict))
         scored = {
             item.get("objective_key"): item
             for item in verdict.get("objectives", [])
