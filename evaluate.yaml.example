@@ -16,9 +16,23 @@ agent:
   search_dispatch_concurrency: 3  # 每个 Agent 进程同时派发的 Query 数量上限；1 表示串行。省略时使用 .env 或默认值 3。
   source_extraction_concurrency: 3  # 每个 Agent 进程的来源模型调用总并发上限，所有 Query 共用；1 表示串行。省略时使用 .env 或默认值 3。
   assess_query_concurrency: 3  # 每个 Agent 进程同时执行的 Query 证据评估数。
+  llm_circuit_failures: 2  # 同一 (purpose, prompt) 连续失败多少次后熔断；须大于 0。
+  llm_circuit_cooldown_seconds: 600  # 熔断冷却窗口秒数；0 表示失败累计但不短路。
+  merge_normalize_assess: 1  # 1：首次 Query 评估把 Claim 规范化并入 assessor 单次调用；0：恢复 normalizer/assessor 双调用。
   verbosity: quiet  # quiet：简略；normal：进度；debug：工具调用及详细日志。
+  # 每个 LLM 环节可单独指定模型；留空或删除某个键时回退到上面的 agent.model。
+  models:
+    planner: deepseek-v4-pro # init：初始 Query 与研究目标规划
+    source_analyzer: deepseek-v4-pro # Searcher 逐网页来源的证据抽取（调用量最大）
+    query_reformulator: deepseek-v4-pro # 首轮搜索全部撞重时改写检索词
+    claim_normalizer: deepseek-v4-pro # Claim 规范化归并
+    query_assessor: deepseek-v4-pro # Query 证据充分性裁决
+    portfolio: deepseek-v4-pro # 全局组合评估与 gap 取舍
+    gap_expander: deepseek-v4-pro # follow-up 子 Query 撰写
+    convergence: deepseek-v4-pro # 收敛裁决
   reporter:
     model: ""  # 留空时继承 agent.model。
+    reviewer_model: ""  # 报告复核模型；留空时继承 agent.model。
     model_timeout_seconds: 600  # 全局报告写作模型的单次请求超时秒数。
     packet_tokens: 48000  # 报告证据包的 token 预算。
     output_tokens: 40000  # 报告写作模型的最大输出 token 数。

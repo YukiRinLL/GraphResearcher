@@ -21,6 +21,12 @@ AGENT_SETTINGS = {
     "search_dispatch_concurrency": ("GR_SEARCH_DISPATCH_CONCURRENCY", 3),
     "source_extraction_concurrency": ("GR_SOURCE_EXTRACTION_CONCURRENCY", 3),
     "assess_query_concurrency": ("GR_ASSESS_QUERY_CONCURRENCY", 3),
+    # LLM 同指纹失败熔断：连续失败次数阈值与熔断冷却秒数；0 秒表示
+    # 不进入冷却（阈值仍至少为 1）。
+    "llm_circuit_failures": ("GR_LLM_CIRCUIT_FAILURES", 2),
+    "llm_circuit_cooldown_seconds": ("GR_LLM_CIRCUIT_COOLDOWN_SECONDS", 600),
+    # 首次 Query 评估是否把 Claim 规范化并入 assessor 调用：1 合并、0 关闭。
+    "merge_normalize_assess": ("GR_MERGE_NORMALIZE_ASSESS", 1),
     "models.planner": ("GR_PLANNER_MODEL", ""),
     "models.source_analyzer": ("GR_SOURCE_ANALYZER_MODEL", ""),
     "models.query_reformulator": ("GR_QUERY_REFORMULATOR_MODEL", ""),
@@ -98,7 +104,15 @@ def _validated(value: Any, default: Any, field: str) -> Any:
         raise ValueError(f"{field} 必须是有限数值。")
     if field.endswith(".timeout_seconds") and value == -1:
         return value
-    minimum = 0 if field.rsplit(".", 1)[-1] in {"max_rounds", "max_retries"} else 1
+    leaf = field.rsplit(".", 1)[-1]
+    # 开关字段只接受 0/1；冷却秒数允许 0（关闭熔断冷却）。
+    if leaf == "merge_normalize_assess" and value not in (0, 1):
+        raise ValueError("agent.merge_normalize_assess 必须是 0 或 1。")
+    nonnegative = {
+        "max_rounds", "max_retries",
+        "llm_circuit_cooldown_seconds", "merge_normalize_assess",
+    }
+    minimum = 0 if leaf in nonnegative else 1
     if value < 0 or (minimum == 1 and value <= 0):
         raise ValueError(f"{field} 必须{'非负' if minimum == 0 else '大于 0'}。")
     return value

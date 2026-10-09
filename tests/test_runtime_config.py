@@ -48,7 +48,10 @@ def test_resolution():
     assert resolve_agent_config({}, {})["max_retries"] == 3
 
     for field, (env_name, default) in AGENT_SETTINGS.items():
-        value = "test-model" if isinstance(default, str) else 11
+        if field == "merge_normalize_assess":
+            value = 1  # 0/1 开关字段只能取 0 或 1。
+        else:
+            value = "test-model" if isinstance(default, str) else 11
         section, _, child = field.partition(".")
         supplied = {section: {child: value}} if child else {field: value}
         resolved = resolve_agent_config(supplied, {env_name: "ignored-invalid-value"})
