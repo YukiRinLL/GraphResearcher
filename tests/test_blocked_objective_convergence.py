@@ -16,7 +16,7 @@ from tools import graph_tools, research_state  # noqa: E402
 
 
 class FakeModel:
-    """依次返回组合评估与冲突分类结果。"""
+    """返回组合评估裁决（致命冲突分类已并入 portfolio）。"""
 
     def __init__(self):
         self.payloads = [
@@ -29,8 +29,8 @@ class FakeModel:
                     "supported_boundary": "Museum records establish the material but not the transfer history.",
                     "unmet_acceptance_criteria": ["Document the transfer history."],
                 }],
+                "fatal_unresolved_conflicts": [],
             },
-            {"fatal_unresolved_conflicts": [], "reason": "No conflicts were recorded."},
         ]
 
     def invoke(self, _prompt):
@@ -126,6 +126,7 @@ def test_blocked_objective_with_budget_authorizes_limited_report():
             "edges": [],
         },
         get_query_parent=lambda query_id: "goal" if query_id == "query" else None,
+        get_query_children=lambda _parent_id: [],
         get_node_edges=lambda _node_id, direction="both": [],
         validate_query_tree=lambda: {
             "valid": True,
@@ -152,7 +153,9 @@ def test_blocked_objective_with_budget_authorizes_limited_report():
         }
 
     assert observed["remaining_search_rounds"] == 12, observed
-    assert observed["report_completeness_score"] == 0.4667, observed
+    # 0.35 coverage / 0.60 coverage threshold = 0.5833 (confidence 0.8/0.5
+    # is non-limiting); the 0.4667 expectation predated the 0.60 thresholds.
+    assert observed["report_completeness_score"] == 0.5833, observed
     assert observed["research_state"] == research_state.LIMITED_REPORT_READY, observed
     assert observed["repeated_converged"] is True, observed
     assert observed["supported_boundary"] == (

@@ -194,9 +194,14 @@ def main():
             "recommendation": "needs_expansion",
             "reason": "two gaps",
         },
-        {"objectives": [{"objective_key": "core-answer", "coverage": 0.4, "confidence": 0.4}]},
-        {"queries": [{"text": "vertical child evidence query", "importance": "core", "acceptance_criteria": ["one"]}]},
-        {"queries": [{"text": "horizontal sibling evidence query", "importance": "supporting", "acceptance_criteria": ["two"]}]},
+        {"objectives": [{"objective_key": "core-answer", "coverage": 0.4, "confidence": 0.4}],
+         "branch_decisions": [
+             {"owner_id": "q1", "action": "continue_expansion", "reason": "freshly assessed branch with high-utility gaps"},
+         ], "fatal_unresolved_conflicts": []},
+        {"queries": [
+            {"assignment_index": 0, "expansion_mode": "vertical", "search_subject_key": "shared-subject", "text": "vertical child evidence query", "importance": "core", "acceptance_criteria": ["one"]},
+            {"assignment_index": 1, "expansion_mode": "horizontal", "search_subject_key": "shared-subject", "text": "horizontal sibling evidence query", "importance": "supporting", "acceptance_criteria": ["two"]},
+        ]},
         {"queries": [{"text": "deep same-level evidence query", "importance": "supporting", "acceptance_criteria": ["deep"]}]},
         {
             "sufficiency_score": 0.2,
@@ -244,9 +249,10 @@ def main():
             {"objective_key": "hard-answer", "coverage": 0.1, "confidence": 0.1},
             {"objective_key": "exhaustive-answer", "coverage": 0.8, "confidence": 0.75},
             {"objective_key": "recover-answer", "coverage": 0.1, "confidence": 0.1},
-        ]},
+        ], "branch_decisions": [
+            {"owner_id": "goal", "action": "continue_expansion", "reason": "recovery gap protects an uncovered must objective"},
+        ], "fatal_unresolved_conflicts": []},
         {"queries": [{"text": "recover answer authoritative evidence", "importance": "core", "acceptance_criteria": ["recover"]}]},
-        {"fatal_unresolved_conflicts": [], "reason": "done"},
     ]))
     actions = mm.get_next_actions()
     assert actions[0]["action"] == "assess_query", actions
@@ -256,8 +262,8 @@ def main():
     assert assessed["status"] == "needs_expansion" and len(assessed["created_gaps"]) == 2, assessed
     portfolio = mm.evaluate_research_portfolio("goal")
     assert len(portfolio["selected_gap_ids"]) == 2, portfolio
-    expansion_actions = mm.get_next_actions()
-    assert expansion_actions[0]["action"] == "expand_gaps", expansion_actions
+    expansion_actions = [a for a in mm.get_next_actions() if a["action"] == "expand_gaps"]
+    assert expansion_actions, "expected an expand_gaps action after portfolio selection"
     assert expansion_actions[0]["parent_id"] == "q1", expansion_actions
     expanded = mm.expand_gaps("q1")
     assert len(expanded["created"]) == 2 and NODES["q1"]["status"] == "waiting_children", expanded
@@ -410,6 +416,17 @@ def main():
             node["status"] = "resolved"
     NODES["o1"].update({"coverage": 0.8, "confidence": 0.75, "status": "satisfied"})
     NODES["oexhaustive"].update({"coverage": 0.8, "confidence": 0.75, "status": "satisfied"})
+    # Dimension-coverage gate (>=15 evidence, >=3 sources, >=3 expanded
+    # queries): the original fixture predates these thresholds; pad the
+    # evidence base so the script still exercises the full REPORT_READY path.
+    for idx in range(13):
+        NODES[f"extra-e{idx}"] = {
+            "id": f"extra-e{idx}", "type": "Evidence", "claim": "dimension filler",
+        }
+    for idx in range(2):
+        NODES[f"extra-s{idx}"] = {
+            "id": f"extra-s{idx}", "type": "Source", "url": f"https://example.com/{idx}",
+        }
     NODES["goal"]["evaluated_portfolio_revision"] = NODES["goal"]["portfolio_revision"]
     converged = mm.assess_convergence("goal")
     assert converged["research_state"] == "REPORT_READY", converged

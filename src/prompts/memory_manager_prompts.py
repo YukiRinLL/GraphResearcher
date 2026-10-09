@@ -593,6 +593,55 @@ Return only valid JSON, no Markdown, at most {max_new} queries:
 {"queries": [{"text": "...", "acceptance_criteria": ["..."], "search_mode": "general|news|finance|linkedin|github|academic"}]}
 """
 
+plan_followup_queries_batch = """You are the Query Planner for GraphResearcher.
+You receive MULTIPLE independent expansion assignments for the same parent
+topic. Author EXACTLY ONE self-contained web-search query per assignment —
+do not merge assignments and do not skip any.
+
+Research goal: {research_goal}
+Parent topic (the subject to deepen, or the parent whose dimensions to complete): {parent_text}
+Research constraints: {research_constraints}
+All existing Query texts (do NOT duplicate their coverage): {existing_query_texts}
+
+Expansion assignments (author one query for EACH item and copy its
+assignment_index verbatim into the output):
+{assignments}
+
+Requirements:
+- Inline the concrete subject BY VALUE into every new query. For a vertical
+  assignment the subject is the parent Query's research subject; for a
+  horizontal assignment it is the newly discovered parallel entity or new
+  topic named in the gaps. Use only the LITERAL NOUN PHRASE of the subject,
+  NOT any task or attribute words. Never reference another query: no
+  "上述/前述/该/这些/the above".
+- Each query must be a SHORT, TIGHT natural-language search phrase composed
+  of the entity name (1-3 words) plus ONE OR TWO specific dimension keywords
+  drawn from THAT assignment's gaps. Total length: 3-8 words maximum.
+- Queries authored for different assignments must be DISTINCT search phrases;
+  do not reuse one query text for two assignments.
+- Cover only the gaps of the assignment the query belongs to; do not repeat
+  any existing Query.
+- Preserve forbidden domains with `-site:domain`; do not print exact forbidden URLs into the query.
+- Author the query text in the language of the target literature for the subject, not necessarily the user request language.
+- Include concrete acceptance_criteria copied or refined from that assignment's gaps.
+- Copy expansion_mode and search_subject_key back into the output entry
+  exactly as given in the assignment.
+
+Search routing hint:
+- Each query also carries a `search_mode` field with exactly one value chosen from:
+  `general` (default; no domain or topic restriction), `news` (only for current
+  events / time-sensitive policy developments covered by mainstream media),
+  `finance` (only for market or company financial metrics), `linkedin` (only
+  when the gap is about a person's professional profile), `github` (only
+  when it is about a code repository, library, or developer artifact), `academic`
+  (only when it is about a scholarly publication, scientific claim, or research
+  finding).
+- Choose based on the gap's subject nature. When in doubt, use `general`.
+
+Return only valid JSON, no Markdown, with exactly one entry per assignment:
+{"queries": [{"assignment_index": 0, "expansion_mode": "vertical|horizontal", "search_subject_key": "copied from the assignment", "text": "...", "acceptance_criteria": ["..."], "search_mode": "general|news|finance|linkedin|github|academic"}]}
+"""
+
 reformulate_query = """You are the Query Reformulator for GraphResearcher.
 
 A web-search query failed to produce usable new evidence. The failure reason is: {empty_reason}. Reformulate the query to address this specific failure and retrieve usable sources.
@@ -613,31 +662,6 @@ Rules:
 
 Return only valid JSON:
 {"query_text": "..."}
-"""
-
-assess_convergence = """You are the Graph Manager for GraphResearcher. Classify unresolved conflicts before the deterministic Objective-based convergence gate runs.
-
-FATAL conflicts directly threaten a report-level conclusion and must receive one targeted resolution attempt. Non-fatal conflicts can be disclosed and explained in the report.
-
-Rules:
-- Return only valid JSON. Do not wrap it in Markdown.
-- Base the judgment only on the provided data; do not invent facts.
-- Copy fatal conflict descriptions exactly. Empty lists are expected when nothing qualifies.
-
-Return this JSON shape:
-{
-  "fatal_unresolved_conflicts": ["exact description of each fatal conflict"],
-  "reason": "short justification"
-}
-
-Query summaries:
-{core_queries}
-
-Still-open query summaries:
-{open_queries}
-
-Unresolved conflicts (description / type):
-{conflicts}
 """
 
 evaluate_portfolio = """You are the portfolio evaluator for GraphResearcher.
@@ -684,7 +708,8 @@ Return only JSON:
       "action": "continue_expansion|cool_down|pause",
       "reason": "cite the specific signals that drove the decision using key=value pairs from branch_summary (depth, child_queries, open_gaps, last_sufficiency, sufficiency_trend, source_trend, novelty_trend, cooldown_streak). For recovery decisions on previously cooled owners, cite the ending cooldown_streak and remaining open_gaps."
     }
-  ]
+  ],
+  "fatal_unresolved_conflicts": ["exact description of each fatal unresolved conflict"]
 }
 
 For each Objective, state the supported evidence boundary without mentioning
@@ -772,4 +797,26 @@ Query summaries:
 
 Branch summary (one line per active owner):
 {branch_summary}
+
+Unresolved conflicts under investigation:
+{unresolved_conflicts}
+
+## Unresolved-conflict classification
+
+The `unresolved_conflicts` block lists every conflict whose status is still
+`unresolved` or `investigating`, each with its owning Query and that query's
+current status. Classify each one in `fatal_unresolved_conflicts`:
+
+- A conflict is FATAL when the competing positions directly contradict each
+  other on a fact that a report-level MUST conclusion depends on, the existing
+  evidence does not resolve the disagreement, and one targeted independent
+  evidence search could plausibly resolve or clearly scope it. Such a conflict
+  must receive one resolution attempt before reporting is authorized.
+- A conflict is non-fatal when it concerns only optional/background material,
+  the difference is attributable to time window, scope or terminology rather
+  than a factual contradiction, or the report can disclose and qualify it
+  without changing any MUST conclusion.
+- Copy fatal conflict descriptions EXACTLY as listed; never invent or
+  paraphrase them. Return an empty list when no conflict qualifies or when
+  the block is empty.
 """

@@ -120,7 +120,17 @@ def _assess(
             "description": "core sources irreconcilably disagree",
             "resolution_status": "unresolved",
         }
+        # 致命性分类现在由 portfolio 写入 goal；冲突经 SearchRun 属主边
+        # 归属到 query，convergence 才能为它创建 targeted resolution gap。
+        nodes["goal"]["fatal_conflict_descriptions"] = [
+            "core sources irreconcilably disagree"
+        ]
     edges = []
+    if fatal_conflict:
+        edges.extend([
+            {"source": "query", "target": "run", "type": "SEARCHED_BY"},
+            {"source": "run", "target": "conflict", "type": "PRODUCED"},
+        ])
     if prior_recovery:
         nodes["recovery-gap"] = {
             "id": "recovery-gap",
@@ -170,12 +180,44 @@ def _assess(
             or (direction == "in" and edge["target"] == node_id)
         ]
 
+    created_seq = 0
+
+    def create_analysis(text, query_id=None, analysis_type="insight", **attrs):
+        nonlocal created_seq
+        created_seq += 1
+        node_id = f"created-{analysis_type}-{created_seq}"
+        nodes[node_id] = {
+            "id": node_id,
+            "type": "Analysis",
+            "text": text,
+            "analysis_type": analysis_type,
+            **attrs,
+        }
+        if query_id:
+            edges.append({
+                "source": query_id,
+                "target": node_id,
+                "type": "HAS_GAP" if analysis_type == "gap" else "HAS_ANALYSIS",
+            })
+        return node_id
+
+    def add_edge(source, target, edge_type, attributes=None):
+        edges.append({
+            "source": source,
+            "target": target,
+            "type": getattr(edge_type, "value", str(edge_type)),
+            **(attributes or {}),
+        })
+        return f"{source}_{target}"
+
     with patch.multiple(
         graph_tools,
         get_node=get_node,
         search_nodes=search_nodes,
         upsert_node=upsert_node,
         transition_query=transition_query,
+        create_analysis=create_analysis,
+        add_edge=add_edge,
         get_query_parent=lambda query_id: (
             "goal" if nodes.get(query_id, {}).get("type") == "Query" else None
         ),

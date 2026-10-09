@@ -2229,11 +2229,13 @@ class MemoryManager:
         query_views: list[dict],
         active_gaps: list[dict],
         branch_summary_text: str,
+        unresolved_conflicts: Optional[list[dict]] = None,
     ) -> str:
         """计算 portfolio 决策相关输入的结构指纹.
 
         只纳入会改变 LLM 裁决的状态：objective 状态/评分/未满足 criteria、
-        Query 结构指纹、活跃 Gap 的归属与评分、branch 健康信号、搜索轮次。
+        Query 结构指纹、活跃 Gap 的归属与评分、branch 健康信号、搜索轮次、
+        未解决冲突（致命性分类输入）。
         叙述性字段（reason、covered、evidence 原文）不参与，因此同一条研究
         分支在无实质新增材料时的连续重评会命中缓存、跳过模型调用。
         """
@@ -2279,9 +2281,71 @@ class MemoryManager:
             "objectives": [objective_sig(item) for item in objectives],
             "queries": [self._portfolio_view_signature(view) for view in query_views],
             "gaps": [gap_sig(gap) for gap in active_gaps],
+            "conflicts": [
+                (
+                    item.get("id"),
+                    item.get("description"),
+                    item.get("conflict_type"),
+                    item.get("resolution_status"),
+                    item.get("owner_id"),
+                    item.get("owner_status"),
+                )
+                for item in (unresolved_conflicts or [])
+            ],
         }
         encoded = json.dumps(payload, ensure_ascii=False, sort_keys=True, default=str)
-        return hashlib.sha256(("portfolio-material-v1\n" + encoded).encode("utf-8")).hexdigest()
+        return hashlib.sha256(("portfolio-material-v2\n" + encoded).encode("utf-8")).hexdigest()
+
+    def _portfolio_conflict_view(self) -> list[dict]:
+        """全图未解决冲突的紧凑视图，供 portfolio 做致命性分类.
+
+        终态/已披露/已解决的冲突不在收敛闸门的考虑范围内；每条未解决冲突
+        附带其属主 Query 与属主状态，让模型判断该冲突是否动摇 must 级结论。
+        """
+        view: list[dict] = []
+        for conflict in graph_tools.search_nodes("conflict", {}):
+            if conflict.get("resolution_status") not in {"unresolved", "investigating"}:
+                continue
+            owner_id = self._conflict_owner_query(conflict.get("id"))
+            owner = graph_tools.get_node(owner_id) if owner_id else {}
+            view.append(_drop_empty_fields({
+                "id": conflict.get("id"),
+                "description": conflict.get("description"),
+                "conflict_type": conflict.get("conflict_type"),
+                "resolution_status": conflict.get("resolution_status"),
+                "owner_id": owner_id,
+                "owner_handle": owner.get("handle"),
+                "owner_status": owner.get("status"),
+            }))
+        return view
+
+    @staticmethod
+    def _fatal_conflict_descriptions(
+        verdict: Any, unresolved_conflicts: list[dict]
+    ) -> list[str]:
+        """从 portfolio verdict 提取经图状态校验的致命冲突描述.
+
+        只接受逐字出现在当前未解决冲突视图里的描述，防止模型幻觉出不存在
+        的冲突；去重并保持模型给出的顺序。
+        """
+        if not isinstance(verdict, dict):
+            return []
+        raw = verdict.get("fatal_unresolved_conflicts")
+        if not isinstance(raw, list):
+            return []
+        valid = {
+            str(item.get("description") or "").strip()
+            for item in unresolved_conflicts
+            if str(item.get("description") or "").strip()
+        }
+        descriptions: list[str] = []
+        for item in raw:
+            if not isinstance(item, str):
+                continue
+            text = item.strip()
+            if text and text in valid and text not in descriptions:
+                descriptions.append(text)
+        return descriptions
 
     def evaluate_research_portfolio(self, goal_id: Optional[str] = None) -> dict:
         """Select candidate gaps by report-level marginal utility."""
@@ -2301,14 +2365,17 @@ class MemoryManager:
         branch_summary_text = self._build_branch_summary(active_gaps)
         query_views = [self._portfolio_query_view(query) for query in queries]
         objective_views = [self._portfolio_objective_view(item) for item in objectives]
+        unresolved_conflicts = self._portfolio_conflict_view()
         material_signature = self._portfolio_material_signature(
-            goal, objectives, query_views, active_gaps, branch_summary_text
+            goal, objectives, query_views, active_gaps, branch_summary_text,
+            unresolved_conflicts,
         )
         prompt = (
             mm_prompts.evaluate_portfolio
             .replace("{objectives}", json.dumps(objective_views, ensure_ascii=False))
             .replace("{queries}", json.dumps(query_views, ensure_ascii=False))
             .replace("{branch_summary}", branch_summary_text)
+            .replace("{unresolved_conflicts}", json.dumps(unresolved_conflicts, ensure_ascii=False))
         )
         # 决策相关状态未变化时复用上一次 verdict：图每次写入都会 bump
         # portfolio_revision 触发重评，但大部分触发只改了叙述性字段或
@@ -2758,15 +2825,20 @@ class MemoryManager:
             (float(item.get("marginal_utility") or 0.0) for item in selected + deferred),
             default=0.0,
         )
+        # 致命冲突分类随 portfolio verdict 一起产出（含缓存复用路径），
+        # assess_convergence 不再单独调用 LLM，直接读取这里落图的结果。
+        fatal_conflicts = self._fatal_conflict_descriptions(verdict, unresolved_conflicts)
         graph_tools.upsert_node(NodeType.USER_REQUEST, {
             "evaluated_portfolio_revision": revision,
             "last_max_marginal_utility": max_utility,
             "report_completeness_score": completeness,
+            "fatal_conflict_descriptions": fatal_conflicts,
         }, goal["id"])
         return {
             "selected_gap_ids": [item["id"] for item in selected],
             "deferred_gap_ids": [item["id"] for item in deferred],
             "objectives": objectives,
+            "fatal_unresolved_conflicts": fatal_conflicts,
             "report_completeness_score": completeness,
             "last_max_marginal_utility": max_utility,
             "next_action": "get_next_actions",
@@ -2851,7 +2923,6 @@ class MemoryManager:
                     "resolution_reason": "insufficient remaining search budget",
                 }, gap["id"])
 
-        created = []
         goal = research_state.get_goal()
         existing_query_texts = [
             query.get("text") for query in graph_tools.search_nodes("query", {}) if query.get("text")
@@ -2864,6 +2935,10 @@ class MemoryManager:
             )
         }
         objective_by_key = {item["objective_key"]: item for item in self.get_research_objectives()}
+        # Stage 1: run every deterministic per-group gate (ancestor duplicate,
+        # empty-run hard brake, strict-tree attach point) and collect the
+        # groups that actually need an LLM-authored child Query.
+        plannable: list[dict] = []
         for (mode, subject), group in grouped.items():
             if (
                 parent.get("type") == NodeType.QUERY.value
@@ -2923,12 +2998,12 @@ class MemoryManager:
                         "resolution_reason": "expansion mode has no valid strict-tree attach point",
                     }, gap["id"])
                 continue
-            followups = self._plan_followup_queries(
-                research_goal=goal.get("research_goal") or goal.get("request") or "",
-                parent_text=parent.get("text") or parent.get("request") or "",
-                research_constraints=research_constraints,
-                existing_query_texts=existing_query_texts,
-                gaps=[
+            plannable.append({
+                "mode": mode,
+                "subject": subject,
+                "group": group,
+                "attach_parent_id": attach_parent_id,
+                "gaps_payload": [
                     {
                         "id": gap["id"],
                         "description": gap.get("description") or gap.get("text"),
@@ -2936,17 +3011,78 @@ class MemoryManager:
                     }
                     for gap in group
                 ],
-                reason=f"Globally selected {mode} search subject: {subject}",
+                "reason": f"Globally selected {mode} search subject: {subject}",
+            })
+
+        # Stage 2: author one child Query per group. All groups share one
+        # parent, so a single batched LLM call replaces one call per group;
+        # any group the batch response misses falls back to the per-group
+        # planner so worst-case behaviour matches the old serial path.
+        spec_by_group: dict[int, dict] = {}
+        if len(plannable) == 1:
+            item = plannable[0]
+            followups = self._plan_followup_queries(
+                research_goal=goal.get("research_goal") or goal.get("request") or "",
+                parent_text=parent.get("text") or parent.get("request") or "",
+                research_constraints=research_constraints,
+                existing_query_texts=existing_query_texts,
+                gaps=item["gaps_payload"],
+                reason=item["reason"],
                 max_new=1,
             )
-            if not followups:
+            if followups:
+                spec_by_group[0] = followups[0]
+        elif len(plannable) > 1:
+            assignments = [
+                {
+                    "index": idx,
+                    "mode": item["mode"],
+                    "subject": item["subject"],
+                    "gaps": item["gaps_payload"],
+                    "reason": item["reason"],
+                }
+                for idx, item in enumerate(plannable)
+            ]
+            mapped = self._plan_followup_queries_batch(
+                research_goal=goal.get("research_goal") or goal.get("request") or "",
+                parent_text=parent.get("text") or parent.get("request") or "",
+                research_constraints=research_constraints,
+                existing_query_texts=existing_query_texts,
+                assignments=assignments,
+            )
+            fallback_existing = list(existing_query_texts)
+            for idx, item in enumerate(plannable):
+                spec = mapped.get(idx)
+                if spec is None:
+                    followups = self._plan_followup_queries(
+                        research_goal=goal.get("research_goal") or goal.get("request") or "",
+                        parent_text=parent.get("text") or parent.get("request") or "",
+                        research_constraints=research_constraints,
+                        existing_query_texts=fallback_existing,
+                        gaps=item["gaps_payload"],
+                        reason=item["reason"],
+                        max_new=1,
+                    )
+                    spec = followups[0] if followups else None
+                if spec is not None:
+                    spec_by_group[idx] = spec
+                    fallback_existing.append(spec["text"])
+
+        # Stage 3: persist the child Query nodes from the authored specs.
+        created = []
+        for idx, item in enumerate(plannable):
+            group = item["group"]
+            mode = item["mode"]
+            subject = item["subject"]
+            attach_parent_id = item["attach_parent_id"]
+            spec = spec_by_group.get(idx)
+            if spec is None:
                 for gap in group:
                     graph_tools.upsert_node(NodeType.ANALYSIS, {
                         "status": "blocked",
                         "resolution_reason": "query planner could not author a self-contained child query",
                     }, gap["id"])
                 continue
-            spec = followups[0]
             importance = "core" if any(gap.get("importance") == "core" for gap in group) else (
                 "supporting" if any(gap.get("importance") == "supporting" for gap in group) else "peripheral"
             )
@@ -3002,7 +3138,14 @@ class MemoryManager:
             graph_tools.transition_query(resolved, next_status)
             if next_status in {"sufficient", "blocked"}:
                 self._propagate_child_completion(resolved, next_status)
-        self._bump_portfolio_revision()
+        # 只有本轮没建成任何子 Query 时才强制 portfolio 重评：gap 被
+        # blocked/deferred 改变了决策面，需要重新选择/收敛。建成了子 Query
+        # 时不 bump——新 Query 还是 pending，没有任何新材料进场，立即重评
+        # 只会逐字重放一次 10 万+ token 的 portfolio 调用；后续搜索成功
+        # （submit_search_result）或评估完成（assess_query）都会 bump，
+        # 搜索/子 Query 全部终态时则由 recovery/convergence 兜底。
+        if not created:
+            self._bump_portfolio_revision()
         return {
             "parent_id": resolved,
             "parent_handle": parent.get("handle"),
@@ -3071,27 +3214,21 @@ class MemoryManager:
                     }
                 all_queries = graph_tools.search_nodes("query", {})
 
-        conflicts = [
-            {
-                "id": c.get("id"),
-                "description": c.get("description"),
-                "conflict_type": c.get("conflict_type"),
-            }
+        # 收敛闸门完全确定性化：未解决冲突的致命性分类已在最近一次 portfolio
+        # 评估时完成并写入 goal.fatal_conflict_descriptions（入口上方已保证
+        # portfolio_current，stale 时先同步评估）。这里只防御性地过滤掉在此
+        # 之后已经被解决/披露的冲突描述。
+        goal = research_state.get_goal(goal_id)
+        open_descriptions = {
+            c.get("description")
             for c in graph_tools.search_nodes("conflict", {})
             if c.get("resolution_status") not in {"resolved", "disclosed"}
+        }
+        fatal = [
+            description
+            for description in (goal.get("fatal_conflict_descriptions") or [])
+            if isinstance(description, str) and description in open_descriptions
         ]
-        prompt = (
-            mm_prompts.assess_convergence
-            .replace("{core_queries}", json.dumps(all_queries, ensure_ascii=False))
-            .replace("{open_queries}", json.dumps([
-                query for query in all_queries
-                if query.get("status") not in research_state.TERMINAL_QUERY_STATUSES
-            ], ensure_ascii=False))
-            .replace("{conflicts}", json.dumps(conflicts, ensure_ascii=False))
-        )
-        verdict = self._invoke_json(prompt, purpose="convergence")
-        fatal = verdict.get("fatal_unresolved_conflicts") or []
-        goal = research_state.get_goal(goal_id)
         objective_by_key = {
             item["objective_key"]: item for item in self.get_research_objectives(goal_id)
         }
@@ -3369,7 +3506,10 @@ class MemoryManager:
             "objectives": objectives,
             "portfolio_current": portfolio_current,
             "recommendation": recommendation,
-            "reason": verdict.get("reason", ""),
+            "reason": (
+                "deterministic convergence gate; fatal-conflict classification "
+                "provided by the latest portfolio evaluation"
+            ),
             "research_state": state,
             "tree_validation": tree,
             "next_actions": self.get_next_actions() if recommendation == "continue" else [],
@@ -4330,6 +4470,96 @@ class MemoryManager:
                         "search_mode": "general",
                     }]
         return queries[:max_new]
+
+    def _plan_followup_queries_batch(
+        self,
+        research_goal: str,
+        parent_text: str,
+        research_constraints: dict,
+        existing_query_texts: list,
+        assignments: list[dict],
+    ) -> dict[int, dict]:
+        """为同一 parent 的多个 (mode, subject) 组一次性规划子 Query.
+
+        一次 LLM 调用替代每组一次的 :meth:`_plan_followup_queries` 调用。
+        每组至多产出 1 条 spec，组间全局去重；校验未通过或模型漏返回的组
+        不会出现在结果中，由调用方逐组 fallback（最坏退化回旧行为）。
+
+        Args:
+            assignments: 每项形如 ``{"index": int, "mode": str,
+                "subject": str, "gaps": list, "reason": str}``。
+
+        Returns:
+            ``{assignment_index: query_spec}``。
+        """
+        if not assignments:
+            return {}
+        existing_keys = {
+            _normalize_query_text(text)
+            for text in existing_query_texts or []
+            if isinstance(text, str) and text.strip()
+        }
+        payload_assignments = [
+            {
+                "assignment_index": item["index"],
+                "expansion_mode": item["mode"],
+                "search_subject_key": item["subject"],
+                "gaps": item["gaps"],
+                "reason": item["reason"],
+            }
+            for item in assignments
+        ]
+
+        def author(extra: str = "") -> dict[int, dict]:
+            prompt = (
+                mm_prompts.plan_followup_queries_batch
+                .replace("{research_goal}", research_goal or "")
+                .replace("{parent_text}", parent_text or "")
+                .replace("{research_constraints}", json.dumps(research_constraints or {}, ensure_ascii=False))
+                .replace("{existing_query_texts}", json.dumps(existing_query_texts or [], ensure_ascii=False))
+                .replace("{assignments}", json.dumps(payload_assignments, ensure_ascii=False))
+            )
+            parsed = self._invoke_json(prompt + extra, purpose="gap_expander")
+            raw_queries = parsed.get("queries") if isinstance(parsed, dict) else None
+            if not isinstance(raw_queries, list):
+                return {}
+            mapped: dict[int, dict] = {}
+            authored_keys: set[str] = set()
+            for raw in raw_queries:
+                if not isinstance(raw, dict):
+                    continue
+                idx = raw.get("assignment_index")
+                if type(idx) is not int or not 0 <= idx < len(assignments):
+                    continue
+                if idx in mapped:
+                    continue
+                text, criteria, objective_keys, search_mode = _followup_query_spec(raw)
+                key = _normalize_query_text(text)
+                if _query_text_issue(text) or key in existing_keys or key in authored_keys:
+                    continue
+                authored_keys.add(key)
+                mapped[idx] = {
+                    "text": text,
+                    "acceptance_criteria": criteria,
+                    "objective_keys": objective_keys,
+                    "search_mode": search_mode,
+                    **_query_delivery_spec(raw),
+                }
+            return mapped
+
+        mapped = author()
+        if len(mapped) < len(assignments):
+            missing = [item["index"] for item in assignments if item["index"] not in mapped]
+            retry = (
+                "\n\nValidation rejected the previous response. Author exactly one "
+                "short literal search phrase for EACH assignment, including the "
+                f"missing assignment_index values: {missing}. Use concrete entities "
+                "and constraints only — no contextual references, report tasks, or "
+                "agent instructions — and make every query text distinct."
+            )
+            for idx, spec in author(retry).items():
+                mapped.setdefault(idx, spec)
+        return mapped
 
     def _reformulate_query_text(
         self,

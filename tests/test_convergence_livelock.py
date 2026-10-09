@@ -13,7 +13,7 @@ from tools import graph_tools, research_state  # noqa: E402
 
 
 class FakeModel:
-    """Return the required portfolio verdict before the convergence verdict."""
+    """Return the portfolio verdict (fatality classification now lives there)."""
 
     def __init__(self):
         self.payloads = [
@@ -26,8 +26,8 @@ class FakeModel:
                     "unmet_acceptance_criteria": [],
                     "reason": "The objective remains blocked after targeted recovery.",
                 }],
+                "fatal_unresolved_conflicts": [],
             },
-            {"fatal_unresolved_conflicts": [], "reason": "No fatal conflicts remain."},
         ]
         self.calls = 0
 
@@ -110,6 +110,7 @@ def test_stale_portfolio_is_evaluated_before_convergence():
             "edges": [],
             "children": [],
         },
+        get_query_children=lambda _parent_id: [],
         get_node_edges=lambda _node_id, direction="both": [],
         validate_query_tree=lambda: {
             "valid": True,
@@ -129,18 +130,17 @@ def test_stale_portfolio_is_evaluated_before_convergence():
             "evaluated_portfolio_revision": 2,
         })
         current_model = FakeModel()
-        current_model.payloads = [{
-            "fatal_unresolved_conflicts": [],
-            "reason": "No fatal conflicts remain.",
-        }]
+        current_model.payloads = []
         current_result = MemoryManager(model=current_model).assess_convergence("goal")
 
     assert result["research_state"] == research_state.LIMITED_REPORT_READY, result
     assert result["portfolio_current"] is True, result
     assert nodes["goal"]["evaluated_portfolio_revision"] == 2, nodes["goal"]
-    assert model.calls == 2
+    # Stale convergence triggers exactly ONE LLM call (portfolio, which now
+    # also classifies fatal conflicts); a current convergence triggers none.
+    assert model.calls == 1
     assert current_result["research_state"] == research_state.LIMITED_REPORT_READY
-    assert current_model.calls == 1
+    assert current_model.calls == 0
 
 
 if __name__ == "__main__":
