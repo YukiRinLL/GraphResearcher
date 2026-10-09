@@ -16,9 +16,12 @@ Notes:
 import hashlib
 import json
 import logging
+import os
 import re
 import threading
+import time
 from copy import deepcopy
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional
 from urllib.parse import urlsplit
 
@@ -148,6 +151,35 @@ _GAP_CATEGORIES = {
 _MIN_EVIDENCE_FOR_CONVERGENCE = 15
 _MIN_SOURCES_FOR_CONVERGENCE = 3
 _MIN_EXPANDED_QUERIES_FOR_CONVERGENCE = 3
+
+# LLM 同指纹失败熔断：当同一 (purpose, prompt) 连续失败达到阈值后，在冷却
+# 窗口内直接短路（不再把 180s timeout × 模型层 retries 烧在一个注定失败的
+# 请求上）。观测到的最坏形态是 GLM 持续返回错误时 assess 动作被 workflow
+# 原样重放 33 次；熔断后只有前 ``threshold`` 次真正请求模型，随后
+# normalizer 等具备确定性兜底的调用点直接降级，让状态机继续前进。
+_LLM_CIRCUIT_FAILURE_THRESHOLD = max(
+    1, int(os.environ.get("GR_LLM_CIRCUIT_FAILURES", "2"))
+)
+_LLM_CIRCUIT_COOLDOWN_SECONDS = max(
+    0.0, float(os.environ.get("GR_LLM_CIRCUIT_COOLDOWN_SECONDS", "600"))
+)
+# 成功 LLM 响应的落盘缓存目录（相对运行的 cache_dir），供断点续跑/进程
+# 重启后复用同指纹的 normalizer 与 portfolio 结果。
+_LLM_CACHE_SUBDIR = ".llm_cache"
+_LLM_CACHE_PURPOSES = {"claim_normalizer", "portfolio"}
+
+# 首次评估 Query 时把 Claim 规范化并入 assessor 单次调用（waiting_children
+# 复评仍走"normalizer 缓存命中 + 纯 assessor"原路径）。设为 0 可回退到
+# normalizer/assessor 双调用。
+_MERGE_NORMALIZE_ASSESS_ENABLED = os.environ.get(
+    "GR_MERGE_NORMALIZE_ASSESS", "1"
+).strip().lower() not in {"0", "false", "no", "off"}
+_MERGED_ASSESS_PURPOSE = "query_assessor"
+
+
+class LLMResponseCircuitOpenError(RuntimeError):
+    """同指纹 LLM 调用处于熔断冷却窗口，未实际发起模型请求."""
+
 # Depth-breadth balance: gradually discount the marginal utility of gaps on
 # deep query chains so the portfolio prefers breadth over excessive vertical
 # drilling. Not a hard cap — a gap with high raw utility (e.g. fatal conflict)
@@ -477,13 +509,16 @@ class MemoryManager:
         self.user_request = user_request
         self.run_plan = run_plan or {}
         self._state_lock = threading.RLock()
-        # 每个运行内的 Query 只保存最近一次完整写入结果，模型调用由独立锁保护。
-        self._claim_normalization_cache: dict[tuple[Optional[str], str], dict] = {}
-        self._claim_normalization_locks: dict[tuple[Optional[str], str], Any] = {}
+        # 每个运行内的 Query/purpose 只保存最近一次完整写入结果，模型调用由独立锁保护。
+        self._claim_normalization_cache: dict[tuple[Optional[str], str, str], dict] = {}
+        self._claim_normalization_locks: dict[tuple[Optional[str], str, str], Any] = {}
         # Portfolio 全局评估的"决策相关指纹 → LLM verdict"单条缓存：
         # 图的叙述性字段（assessment_reason 等）变化不触发重算，只有状态、
         # 评分、criteria 裁决或材料集合变化才重新调用模型。
         self._portfolio_cache: Optional[tuple[str, dict]] = None
+        # (purpose, prompt) 指纹 → 连续失败计数/熔断到期时间戳（time.monotonic）。
+        # 仅进程内有效：provider 侧故障恢复后，重新启动的进程应当获得正常重试。
+        self._llm_failure_tracker: dict[str, dict[str, float]] = {}
         # Track consecutive cool-down rounds per owner so the LLM can see when a
         # branch has been parked for a while and decide whether to revive it.
         self._cooldown_streaks: dict[str, int] = {}
@@ -506,11 +541,90 @@ class MemoryManager:
 
     def _invoke_json(self, prompt: str, purpose: Optional[str] = None) -> dict:
         """Invoke the model for the given purpose and parse a JSON response."""
-        response = self._model_for(purpose).invoke(prompt)
-        content = getattr(response, "content", response)
-        if isinstance(content, list):  # some providers return content parts
-            content = "".join(part.get("text", "") if isinstance(part, dict) else str(part) for part in content)
-        return _parse_json(str(content))
+        purpose_key = purpose or "default"
+        fingerprint = hashlib.sha256(
+            (purpose_key + "\x00" + prompt).encode("utf-8")
+        ).hexdigest()
+        record = self._llm_failure_tracker.get(fingerprint)
+        if (
+            record is not None
+            and int(record.get("failures") or 0) >= _LLM_CIRCUIT_FAILURE_THRESHOLD
+            and time.monotonic() < float(record.get("open_until") or 0.0)
+        ):
+            raise LLMResponseCircuitOpenError(
+                f"LLM circuit open for purpose={purpose_key} "
+                f"fingerprint={fingerprint[:12]} after "
+                f"{int(record.get('failures') or 0)} consecutive failures; "
+                f"retry allowed after the cooldown window"
+            )
+        try:
+            response = self._model_for(purpose).invoke(prompt)
+            content = getattr(response, "content", response)
+            if isinstance(content, list):  # some providers return content parts
+                content = "".join(part.get("text", "") if isinstance(part, dict) else str(part) for part in content)
+            parsed = _parse_json(str(content))
+        except Exception:
+            failures = int(record.get("failures") or 0) + 1 if record else 1
+            open_until = (
+                time.monotonic() + _LLM_CIRCUIT_COOLDOWN_SECONDS
+                if failures >= _LLM_CIRCUIT_FAILURE_THRESHOLD
+                else 0.0
+            )
+            self._llm_failure_tracker[fingerprint] = {
+                "failures": float(failures),
+                "open_until": open_until,
+            }
+            logger.warning(
+                "[llm] purpose=%s fingerprint=%s failed (%s/%s before circuit opens)",
+                purpose_key,
+                fingerprint[:12],
+                failures,
+                _LLM_CIRCUIT_FAILURE_THRESHOLD,
+                exc_info=True,
+            )
+            raise
+        if record is not None:
+            self._llm_failure_tracker.pop(fingerprint, None)
+        return parsed
+
+    @staticmethod
+    def _model_identity(model: Any) -> str:
+        """Return a stable, serializable identifier for a model handle."""
+        return str(getattr(model, "model_name", None) or type(model).__name__)
+
+    def _llm_cache_path(self, purpose: str, name: str) -> Optional[Path]:
+        """Return the on-disk path for a cached purpose payload, if enabled."""
+        if not self.cache_dir or purpose not in _LLM_CACHE_PURPOSES:
+            return None
+        return Path(self.cache_dir) / _LLM_CACHE_SUBDIR / purpose / name
+
+    def _llm_cache_write(self, purpose: str, payload: dict, name: str = "latest.json") -> None:
+        """Persist one successful LLM payload; cache I/O never breaks the run."""
+        path = self._llm_cache_path(purpose, name)
+        if path is None:
+            return
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            tmp_path = path.with_name(f".{path.name}.tmp")
+            tmp_path.write_text(
+                json.dumps(payload, ensure_ascii=False),
+                encoding="utf-8",
+            )
+            tmp_path.replace(path)
+        except OSError:
+            logger.warning("[llm_cache] write failed for purpose=%s", purpose, exc_info=True)
+
+    def _llm_cache_read(self, purpose: str, name: str = "latest.json") -> Optional[dict]:
+        """Load a persisted LLM payload, returning None on any miss/corruption."""
+        path = self._llm_cache_path(purpose, name)
+        if path is None or not path.exists():
+            return None
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            logger.warning("[llm_cache] read failed for purpose=%s", purpose, exc_info=True)
+            return None
+        return payload if isinstance(payload, dict) else None
 
     # -----------------------------
     # Orchestrator-facing
@@ -1229,15 +1343,37 @@ class MemoryManager:
             })
         return specs
 
-    def normalize_claims(self, query_id: str) -> dict:
-        """在当前运行内复用输入和图谱绑定均未变化的规范化结果."""
-        key = (graph_tools.get_current_context(), query_id)
+    def normalize_claims(
+        self,
+        query_id: str,
+        *,
+        allow_model_call: bool = True,
+        purpose: str = "claim_normalizer",
+    ) -> dict:
+        """在当前运行内复用输入和图谱绑定均未变化的规范化结果.
+
+        ``allow_model_call=False`` 时只查询缓存（内存/落盘），未命中则返回
+        ``source="skip"`` 且不写图、不发起模型调用，供合并调用路径先探测。
+        """
+        key = (graph_tools.get_current_context(), query_id, purpose)
         with self._state_lock:
             lock = self._claim_normalization_locks.setdefault(key, threading.Lock())
         with lock:
-            return self._normalize_claims(query_id, key)
+            return self._normalize_claims(
+                query_id,
+                key,
+                allow_model_call=allow_model_call,
+                purpose=purpose,
+            )
 
-    def _normalize_claims(self, query_id: str, cache_key: tuple[Optional[str], str]) -> dict:
+    def _normalize_claims(
+        self,
+        query_id: str,
+        cache_key: tuple[Optional[str], str, str],
+        *,
+        allow_model_call: bool = True,
+        purpose: str = "claim_normalizer",
+    ) -> dict:
         """在 Query 专用锁内读取材料、检查缓存并完成规范化."""
         query = graph_tools.get_node(query_id)
         evaluation = graph_tools.get_query_evaluation_subgraph(query_id)
@@ -1246,42 +1382,140 @@ class MemoryManager:
         evidence = [node for node in nodes if node.get("type") == NodeType.EVIDENCE.value]
         if not statements and not evidence:
             self._claim_normalization_cache.pop(cache_key, None)
-            return {"created_or_updated_claim_ids": [], "claim_count": 0}
+            return {"created_or_updated_claim_ids": [], "claim_count": 0, "source": "empty"}
 
         prompt = _claim_normalization_prompt(_claim_normalization_input(query, nodes))
-        fingerprint = hashlib.sha256(("claim-normalization-v2\n" + prompt).encode("utf-8")).hexdigest()
-        model = self._model_for("claim_normalizer")
+        fingerprint = hashlib.sha256(("claim-normalization-v3\n" + prompt).encode("utf-8")).hexdigest()
+        model = self._model_for(purpose)
+        model_identity = self._model_identity(model)
         cached = self._claim_normalization_cache.get(cache_key)
+        if cached is None:
+            # 进程重启/断点续跑：尝试读回上一次运行落盘的规范化结果，
+            # purpose、指纹、模型身份与图内绑定全部校验通过才复用。
+            disk = self._llm_cache_read(
+                "claim_normalizer", self._normalization_disk_name(query_id, purpose)
+            )
+            if (
+                isinstance(disk, dict)
+                and disk.get("purpose") == purpose
+                and disk.get("fingerprint") == fingerprint
+                and disk.get("model") == model_identity
+                and isinstance(disk.get("result"), dict)
+            ):
+                restored = {
+                    "fingerprint": fingerprint,
+                    "model": model,
+                    "result": disk["result"],
+                    "bindings": {
+                        tuple(binding)
+                        for binding in disk.get("bindings") or []
+                        if isinstance(binding, list) and len(binding) == 3
+                    },
+                }
+                if self._claim_normalization_bindings_exist(restored, evaluation):
+                    logger.info(
+                        "[claim_normalization] disk_cache_hit query=%s purpose=%s context=%s",
+                        query_id, purpose, cache_key[0],
+                    )
+                    self._claim_normalization_cache[cache_key] = restored
+                    cached = restored
         if (
             cached is not None
             and cached["fingerprint"] == fingerprint
             and cached["model"] is model
             and self._claim_normalization_bindings_exist(cached, evaluation)
         ):
-            logger.info("[claim_normalization] cache_hit query=%s context=%s", query_id, cache_key[0])
-            return deepcopy(cached["result"])
+            logger.info(
+                "[claim_normalization] cache_hit query=%s purpose=%s context=%s",
+                query_id, purpose, cache_key[0],
+            )
+            return {**deepcopy(cached["result"]), "source": "cache_hit"}
         self._claim_normalization_cache.pop(cache_key, None)
+
+        # 合并调用路径的缓存探测：未命中时不发模型请求、不写图，由调用方
+        # 在合并 verdict 返回后落 Claims 并自行写缓存。
+        if not allow_model_call:
+            return {
+                "created_or_updated_claim_ids": [],
+                "claim_count": 0,
+                "source": "skip",
+                "fingerprint": fingerprint,
+                "prompt": prompt,
+            }
 
         if not statements:
             specs = self._fallback_claim_specs(query, statements, evidence)
             cacheable = True
         else:
-            verdict = self._invoke_json(prompt, purpose="claim_normalizer")
+            degraded_by_circuit = False
+            try:
+                verdict = self._invoke_json(prompt, purpose=purpose)
+            except LLMResponseCircuitOpenError:
+                # 熔断窗口内不再请求模型：用确定性 statement-bound 兜底，
+                # 保证 assess 状态机前进；兜底结果不写缓存，冷却结束后会
+                # 重新尝试模型。
+                logger.warning(
+                    "[claim_normalization] circuit open for query=%s; using deterministic fallback specs",
+                    query_id,
+                )
+                verdict = None
+                degraded_by_circuit = True
             raw_specs = verdict.get("claims") if isinstance(verdict, dict) else None
             specs = [item for item in raw_specs or [] if isinstance(item, dict)]
-            cacheable = bool(specs)
+            cacheable = bool(specs) and not degraded_by_circuit
             if not specs:
                 specs = self._fallback_claim_specs(query, statements, evidence)
         bindings: dict[tuple[str, str, str], str] = {}
         result = self._write_claim_specs(query, specs, statements, evidence, written_bindings=bindings)
         if cacheable and result["claim_count"] and all(bindings.values()):
-            self._claim_normalization_cache[cache_key] = {
+            self._persist_normalization_cache(
+                cache_key=cache_key,
+                query_id=query_id,
+                purpose=purpose,
+                fingerprint=fingerprint,
+                model=model,
+                model_identity=model_identity,
+                result=result,
+                bindings=bindings,
+            )
+        return {**result, "source": "model" if cacheable else "fallback"}
+
+    @staticmethod
+    def _normalization_disk_name(query_id: str, purpose: str) -> str:
+        """Return the on-disk cache file name for one Query/purpose pair."""
+        raw = f"{purpose}\x00{query_id}".encode()
+        return hashlib.sha1(raw).hexdigest() + ".json"
+
+    def _persist_normalization_cache(
+        self,
+        *,
+        cache_key: tuple[Optional[str], str, str],
+        query_id: str,
+        purpose: str,
+        fingerprint: str,
+        model: Any,
+        model_identity: str,
+        result: dict,
+        bindings: dict[tuple[str, str, str], str],
+    ) -> None:
+        """Write one normalization result to the in-memory and on-disk caches."""
+        self._claim_normalization_cache[cache_key] = {
+            "fingerprint": fingerprint,
+            "model": model,
+            "result": deepcopy(result),
+            "bindings": set(bindings),
+        }
+        self._llm_cache_write(
+            "claim_normalizer",
+            {
+                "purpose": purpose,
                 "fingerprint": fingerprint,
-                "model": model,
+                "model": model_identity,
                 "result": deepcopy(result),
-                "bindings": set(bindings),
-            }
-        return result
+                "bindings": [list(binding) for binding in bindings],
+            },
+            name=self._normalization_disk_name(query_id, purpose),
+        )
 
     @staticmethod
     def _claim_normalization_bindings_exist(cached: dict, evaluation: dict) -> bool:
@@ -1513,10 +1747,28 @@ class MemoryManager:
             if any(c.get("status") not in research_state.TERMINAL_QUERY_STATUSES for c in children):
                 return {"error": f"Query {query.get('handle') or resolved} still has unfinished selected children"}
 
-        # 先固化规范化 Claim（含缓存复用），随后取到的评估子图才是最新的；
-        # 返回值本身不下发——assessor prompt 不引用它，Claim 已体现在子图里。
-        self.normalize_claims(resolved)
+        # Claim 固化策略：
+        # - 合并模式下先做"只查缓存"的规范化探测：命中（waiting_children
+        #   复评、断点续跑）时 Claims 已在图中，走原来的纯 assessor 调用；
+        #   未命中时把规范化指令并入本次 assessor 调用，一次返回 Claims 与
+        #   评估裁决，省掉每个 Query 首次评估的一次独立 LLM 调用。
+        # - 关闭合并（GR_MERGE_NORMALIZE_ASSESS=0）时保持双调用原路径。
         evaluation = graph_tools.get_query_evaluation_subgraph(resolved)
+        merged_norm: Optional[dict] = None
+        if _MERGE_NORMALIZE_ASSESS_ENABLED:
+            probe = self.normalize_claims(
+                resolved,
+                allow_model_call=False,
+                purpose=_MERGED_ASSESS_PURPOSE,
+            )
+            if probe.get("source") == "skip":
+                merged_norm = probe
+            else:
+                # cache_hit/empty：探测过程已确认缓存有效或本 Query 无材料。
+                evaluation = graph_tools.get_query_evaluation_subgraph(resolved)
+        else:
+            self.normalize_claims(resolved)
+            evaluation = graph_tools.get_query_evaluation_subgraph(resolved)
         goal = research_state.get_goal()
         objectives = self.get_research_objectives(goal.get("id"))
         objective_by_id = {item["id"]: item for item in objectives}
@@ -1561,19 +1813,98 @@ class MemoryManager:
                 json.dumps(self._compact_evaluation_subgraph(evaluation), ensure_ascii=False),
             )
         )
-        verdict = self._invoke_json(prompt, purpose="query_assessor")
+        invoke_prompt = (
+            mm_prompts.build_merged_assess_prompt(merged_norm["prompt"], prompt)
+            if merged_norm is not None
+            else prompt
+        )
         acceptance_criteria = [
             str(item).strip()
             for item in query.get("acceptance_criteria") or []
             if str(item).strip()
         ]
-        if not verdict or (acceptance_criteria and not verdict.get("criteria")):
-            verdict = self._invoke_json(
-                prompt
-                + "\n\nCorrection: return the complete valid JSON response. Include one "
-                "criteria result for every acceptance criterion and copy its text exactly.",
-                purpose="query_assessor",
+
+        def _invoke_assessor(merged: bool) -> Any:
+            correction_tail = (
+                "Also include the complete \"claims\" array from the normalization part."
+                if merged
+                else ""
             )
+            result = self._invoke_json(invoke_prompt, purpose="query_assessor")
+            if not result or (acceptance_criteria and not result.get("criteria")):
+                result = self._invoke_json(
+                    invoke_prompt
+                    + "\n\nCorrection: return the complete valid JSON response. Include one "
+                    "criteria result for every acceptance criterion and copy its text exactly. "
+                    + correction_tail,
+                    purpose="query_assessor",
+                )
+            return result
+
+        try:
+            verdict = _invoke_assessor(merged_norm is not None)
+        except LLMResponseCircuitOpenError:
+            # 合并调用被熔断时降级回老路径：normalizer 独立调用（内部有
+            # 确定性 statement-bound 兜底，不会再被熔断卡死），assessor
+            # 用纯评估 prompt 再试一次；仍熔断则异常上抛由 workflow 记失败。
+            if merged_norm is None:
+                raise
+            logger.warning(
+                "[assess] merged normalize+assess call circuit-open for %s; "
+                "falling back to separate normalizer/assessor calls",
+                resolved,
+            )
+            self.normalize_claims(resolved)
+            evaluation = graph_tools.get_query_evaluation_subgraph(resolved)
+            merged_norm = None
+            invoke_prompt = prompt
+            verdict = _invoke_assessor(False)
+        if merged_norm is not None:
+            # 合并调用：把同一份 verdict 里的 Claims 落图并写入规范化缓存。
+            # 空 Claims 沿用确定性 statement-bound 兜底（与独立 normalizer
+            # 路径完全相同）；刷新后的子图供后续 criteria 校验使用。
+            norm_nodes = evaluation.get("nodes", [])
+            norm_statements = [
+                node for node in norm_nodes if node.get("type") == NodeType.STATEMENT.value
+            ]
+            norm_evidence = [
+                node for node in norm_nodes if node.get("type") == NodeType.EVIDENCE.value
+            ]
+            raw_claim_specs = (
+                verdict.get("claims") if isinstance(verdict, dict) else None
+            )
+            claim_specs = [
+                item for item in raw_claim_specs or [] if isinstance(item, dict)
+            ]
+            if not claim_specs:
+                claim_specs = self._fallback_claim_specs(
+                    query, norm_statements, norm_evidence
+                )
+            claim_bindings: dict[tuple[str, str, str], str] = {}
+            norm_result = self._write_claim_specs(
+                query,
+                claim_specs,
+                norm_statements,
+                norm_evidence,
+                written_bindings=claim_bindings,
+            )
+            merged_model = self._model_for(_MERGED_ASSESS_PURPOSE)
+            if norm_result["claim_count"] and all(claim_bindings.values()):
+                self._persist_normalization_cache(
+                    cache_key=(
+                        graph_tools.get_current_context(),
+                        resolved,
+                        _MERGED_ASSESS_PURPOSE,
+                    ),
+                    query_id=resolved,
+                    purpose=_MERGED_ASSESS_PURPOSE,
+                    fingerprint=merged_norm["fingerprint"],
+                    model=merged_model,
+                    model_identity=self._model_identity(merged_model),
+                    result=norm_result,
+                    bindings=claim_bindings,
+                )
+            evaluation = graph_tools.get_query_evaluation_subgraph(resolved)
         criterion_results = self._validate_criterion_results(
             acceptance_criteria,
             verdict.get("criteria"),
@@ -2266,6 +2597,10 @@ class MemoryManager:
                 round(float(gap.get("decision_impact") or 0.0), 2),
                 round(float(gap.get("confidence_gain") or 0.0), 2),
                 int(gap.get("estimated_search_rounds") or 1),
+                # v3：草稿撰写依赖 gap 描述与验收标准文本，文本变化必须重评。
+                str(gap.get("description") or gap.get("text") or ""),
+                tuple(str(item) for item in (gap.get("acceptance_criteria") or [])),
+                str(gap.get("importance") or ""),
             )
 
         model = self._model_for("portfolio")
@@ -2294,7 +2629,7 @@ class MemoryManager:
             ],
         }
         encoded = json.dumps(payload, ensure_ascii=False, sort_keys=True, default=str)
-        return hashlib.sha256(("portfolio-material-v2\n" + encoded).encode("utf-8")).hexdigest()
+        return hashlib.sha256(("portfolio-material-v3\n" + encoded).encode("utf-8")).hexdigest()
 
     def _portfolio_conflict_view(self) -> list[dict]:
         """全图未解决冲突的紧凑视图，供 portfolio 做致命性分类.
@@ -2347,6 +2682,94 @@ class MemoryManager:
                 descriptions.append(text)
         return descriptions
 
+    def _store_portfolio_gap_drafts(
+        self,
+        verdict: Any,
+        active_gaps: list[dict],
+        selected_gaps: list[dict],
+        existing_query_texts: list[str],
+    ) -> None:
+        """校验 portfolio verdict 里的 gap_query_drafts 并落图.
+
+        只有**整组 gap 都在本轮 selected 集合中**、且通过自包含/去重/白名单
+        校验的草稿才会写入对应 Gap 节点（``drafted_*`` 字段），供
+        :meth:`expand_gaps` 免 LLM 直接消费；任何不确定的草稿一律拒绝，
+        由专门的 gap_expander 兜底。每轮先清空所有 active gap 上的旧草稿，
+        保证 verdict 不给草稿时不会残留上一轮的结果。
+        """
+        active_ids = {gap["id"] for gap in active_gaps}
+        selected_ids = {gap["id"] for gap in selected_gaps}
+        # 清空旧草稿（含缓存 verdict 重放路径），保证幂等。
+        for gap in active_gaps:
+            graph_tools.upsert_node(NodeType.ANALYSIS, {
+                "drafted_query_text": None,
+                "drafted_acceptance_criteria": [],
+                "drafted_search_mode": "",
+                "drafted_query_gap_ids": [],
+            }, gap["id"])
+        if not isinstance(verdict, dict):
+            return
+        raw_drafts = verdict.get("gap_query_drafts")
+        if not isinstance(raw_drafts, list) or not selected_ids:
+            return
+        existing_keys = {
+            _normalize_query_text(text)
+            for text in existing_query_texts or []
+            if isinstance(text, str) and text.strip()
+        }
+        assigned: set[str] = set()
+        drafted_count = 0
+        for raw in raw_drafts:
+            if not isinstance(raw, dict):
+                continue
+            raw_ids = raw.get("gap_ids")
+            text = str(raw.get("text") or "").strip()
+            if (
+                not isinstance(raw_ids, list)
+                or not raw_ids
+                or not all(isinstance(item, str) for item in raw_ids)
+            ):
+                continue
+            gap_ids = [item.strip() for item in raw_ids if item.strip()]
+            # 只接受 id 真实存在、全部 selected、且未被其他草稿占用的草稿。
+            if (
+                not gap_ids
+                or len(set(gap_ids)) != len(gap_ids)
+                or not set(gap_ids) <= active_ids
+                or not set(gap_ids) <= selected_ids
+                or assigned.intersection(gap_ids)
+            ):
+                continue
+            criteria = raw.get("acceptance_criteria")
+            if not isinstance(criteria, list):
+                criteria = []
+            criteria = [
+                str(item).strip()
+                for item in criteria
+                if isinstance(item, str) and item.strip()
+            ][:3]
+            mode = str(raw.get("search_mode") or "general").strip().lower()
+            if mode not in _FOLLOWUP_VALID_SEARCH_MODES:
+                mode = "general"
+            key = _normalize_query_text(text)
+            if not text or _query_text_issue(text) or key in existing_keys:
+                continue
+            existing_keys.add(key)
+            assigned.update(gap_ids)
+            for gap_id in gap_ids:
+                graph_tools.upsert_node(NodeType.ANALYSIS, {
+                    "drafted_query_text": text,
+                    "drafted_acceptance_criteria": criteria,
+                    "drafted_search_mode": mode,
+                    "drafted_query_gap_ids": gap_ids,
+                }, gap_id)
+            drafted_count += 1
+        if drafted_count:
+            logger.info(
+                "[portfolio] stored %d validated gap query draft(s) covering %d gap(s)",
+                drafted_count, len(assigned),
+            )
+
     def evaluate_research_portfolio(self, goal_id: Optional[str] = None) -> dict:
         """Select candidate gaps by report-level marginal utility."""
         from tools import research_state
@@ -2366,6 +2789,20 @@ class MemoryManager:
         query_views = [self._portfolio_query_view(query) for query in queries]
         objective_views = [self._portfolio_objective_view(item) for item in objectives]
         unresolved_conflicts = self._portfolio_conflict_view()
+        gap_draft_views = [
+            _drop_empty_fields({
+                "gap_id": gap.get("id"),
+                "owner_id": self._gap_owner_id(gap.get("id")),
+                "expansion_mode": gap.get("expansion_mode"),
+                "search_subject_key": gap.get("search_subject_key") or gap.get("gap_key"),
+                "gap_category": gap.get("gap_category"),
+                "importance": gap.get("importance"),
+                "description": gap.get("description") or gap.get("text"),
+                "acceptance_criteria": gap.get("acceptance_criteria") or [],
+                "objective_keys": gap.get("objective_keys") or [],
+            })
+            for gap in active_gaps
+        ]
         material_signature = self._portfolio_material_signature(
             goal, objectives, query_views, active_gaps, branch_summary_text,
             unresolved_conflicts,
@@ -2376,12 +2813,28 @@ class MemoryManager:
             .replace("{queries}", json.dumps(query_views, ensure_ascii=False))
             .replace("{branch_summary}", branch_summary_text)
             .replace("{unresolved_conflicts}", json.dumps(unresolved_conflicts, ensure_ascii=False))
+            .replace("{gap_draft_inputs}", json.dumps(gap_draft_views, ensure_ascii=False))
         )
         # 决策相关状态未变化时复用上一次 verdict：图每次写入都会 bump
         # portfolio_revision 触发重评，但大部分触发只改了叙述性字段或
         # portfolio 自身刚写入的 gap 状态，重发 10 万+ token 的全局视图是
         # 纯浪费。确定性后处理（客观度写回、gap 选择、branch 冷却）照常重放。
         cached = self._portfolio_cache
+        if cached is None:
+            # 进程重启/断点续跑：读回上一次运行落盘的 verdict，签名一致才
+            # 复用；确定性后处理照常基于当前图全部重放。
+            disk = self._llm_cache_read("portfolio")
+            if (
+                isinstance(disk, dict)
+                and disk.get("signature") == material_signature
+                and isinstance(disk.get("verdict"), dict)
+            ):
+                logger.info(
+                    "[portfolio] disk cache hit (%s); reusing persisted verdict",
+                    material_signature[:12],
+                )
+                cached = (material_signature, disk["verdict"])
+                self._portfolio_cache = cached
         if cached is not None and cached[0] == material_signature:
             verdict = deepcopy(cached[1])
             logger.info(
@@ -2391,6 +2844,10 @@ class MemoryManager:
         else:
             verdict = self._invoke_json(prompt, purpose="portfolio")
             self._portfolio_cache = (material_signature, deepcopy(verdict))
+            self._llm_cache_write(
+                "portfolio",
+                {"signature": material_signature, "verdict": verdict},
+            )
         scored = {
             item.get("objective_key"): item
             for item in verdict.get("objectives", [])
@@ -2765,6 +3222,15 @@ class MemoryManager:
                 else:
                     deferred.append(updated)
 
+        # ④′ 把 portfolio 同一次裁决中预撰写的子 Query 草稿落到 selected
+        # gaps 上；expand_gaps 可直接消费，未覆盖的组仍走 gap_expander。
+        self._store_portfolio_gap_drafts(
+            verdict,
+            active_gaps,
+            selected,
+            [item.get("text") for item in queries if item.get("text")],
+        )
+
         for query in queries:
             if query.get("status") == "needs_expansion":
                 selected_for_query = [
@@ -3014,13 +3480,27 @@ class MemoryManager:
                 "reason": f"Globally selected {mode} search subject: {subject}",
             })
 
-        # Stage 2: author one child Query per group. All groups share one
-        # parent, so a single batched LLM call replaces one call per group;
-        # any group the batch response misses falls back to the per-group
-        # planner so worst-case behaviour matches the old serial path.
+        # Stage 2: author one child Query per group. Groups whose selected
+        # gaps carry a validated portfolio draft need no LLM call; all
+        # remaining groups share one batched gap_expander call, and any group
+        # the batch misses falls back to the per-group planner so worst-case
+        # behaviour matches the old serial path.
         spec_by_group: dict[int, dict] = {}
-        if len(plannable) == 1:
-            item = plannable[0]
+        draft_existing_keys = {
+            _normalize_query_text(text)
+            for text in existing_query_texts
+            if isinstance(text, str) and text.strip()
+        }
+        pending: list[int] = []
+        for idx, item in enumerate(plannable):
+            spec = self._spec_from_portfolio_draft(item["group"], draft_existing_keys)
+            if spec is not None:
+                spec_by_group[idx] = spec
+            else:
+                pending.append(idx)
+        if len(pending) == 1:
+            orig_idx = pending[0]
+            item = plannable[orig_idx]
             followups = self._plan_followup_queries(
                 research_goal=goal.get("research_goal") or goal.get("request") or "",
                 parent_text=parent.get("text") or parent.get("request") or "",
@@ -3031,17 +3511,17 @@ class MemoryManager:
                 max_new=1,
             )
             if followups:
-                spec_by_group[0] = followups[0]
-        elif len(plannable) > 1:
+                spec_by_group[orig_idx] = followups[0]
+        elif len(pending) > 1:
             assignments = [
                 {
-                    "index": idx,
-                    "mode": item["mode"],
-                    "subject": item["subject"],
-                    "gaps": item["gaps_payload"],
-                    "reason": item["reason"],
+                    "index": r_idx,
+                    "mode": plannable[orig_idx]["mode"],
+                    "subject": plannable[orig_idx]["subject"],
+                    "gaps": plannable[orig_idx]["gaps_payload"],
+                    "reason": plannable[orig_idx]["reason"],
                 }
-                for idx, item in enumerate(plannable)
+                for r_idx, orig_idx in enumerate(pending)
             ]
             mapped = self._plan_followup_queries_batch(
                 research_goal=goal.get("research_goal") or goal.get("request") or "",
@@ -3051,8 +3531,9 @@ class MemoryManager:
                 assignments=assignments,
             )
             fallback_existing = list(existing_query_texts)
-            for idx, item in enumerate(plannable):
-                spec = mapped.get(idx)
+            for r_idx, orig_idx in enumerate(pending):
+                item = plannable[orig_idx]
+                spec = mapped.get(r_idx)
                 if spec is None:
                     followups = self._plan_followup_queries(
                         research_goal=goal.get("research_goal") or goal.get("request") or "",
@@ -3065,7 +3546,7 @@ class MemoryManager:
                     )
                     spec = followups[0] if followups else None
                 if spec is not None:
-                    spec_by_group[idx] = spec
+                    spec_by_group[orig_idx] = spec
                     fallback_existing.append(spec["text"])
 
         # Stage 3: persist the child Query nodes from the authored specs.
@@ -4560,6 +5041,56 @@ class MemoryManager:
             for idx, spec in author(retry).items():
                 mapped.setdefault(idx, spec)
         return mapped
+
+    def _spec_from_portfolio_draft(
+        self,
+        group: list[dict],
+        used_keys: set[str],
+    ) -> Optional[dict]:
+        """组内 Gap 被同一条 portfolio 草稿完整覆盖时返回免 LLM 的 Query spec.
+
+        严格条件（任一不满足返回 None，调用方改走 gap_expander）：
+        - 组内每个 gap 都带有相同的非空 ``drafted_query_text``；
+        - 草稿声明覆盖的 ``drafted_query_gap_ids`` 与当前整组严格相等
+          （草稿可能跨组合并，expand 按 parent/mode/subject 重新分组后，
+          部分覆盖一律不消费）；
+        - 文本通过自包含校验且与既有/已用 Query 不重复。
+        """
+        if not group:
+            return None
+        texts = [str(gap.get("drafted_query_text") or "").strip() for gap in group]
+        if any(not text for text in texts) or len(set(texts)) != 1:
+            return None
+        text = texts[0]
+        coverage = group[0].get("drafted_query_gap_ids") or []
+        group_ids = {gap["id"] for gap in group}
+        if not isinstance(coverage, list) or {str(item) for item in coverage} != group_ids:
+            return None
+        if _query_text_issue(text):
+            return None
+        key = _normalize_query_text(text)
+        if key in used_keys:
+            return None
+        criteria: list[str] = []
+        for gap in group:
+            raw_criteria = gap.get("drafted_acceptance_criteria")
+            if not isinstance(raw_criteria, list):
+                continue
+            for item in raw_criteria:
+                criterion = str(item).strip() if isinstance(item, str) else ""
+                if criterion and criterion not in criteria:
+                    criteria.append(criterion)
+        mode = str(group[0].get("drafted_search_mode") or "general").strip().lower()
+        if mode not in _FOLLOWUP_VALID_SEARCH_MODES:
+            mode = "general"
+        used_keys.add(key)
+        return {
+            "text": text,
+            "acceptance_criteria": criteria[:3],
+            "objective_keys": [],
+            "search_mode": mode,
+            **_query_delivery_spec(None),
+        }
 
     def _reformulate_query_text(
         self,

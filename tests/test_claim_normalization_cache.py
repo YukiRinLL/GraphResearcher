@@ -81,7 +81,7 @@ class CacheTests(unittest.TestCase):
         writes = (self.mocks["create_claim"].call_count, self.mocks["add_edge"].call_count)
         first["created_or_updated_claim_ids"].clear()
         second = self.manager.normalize_claims("q1")
-        self.assertEqual(second, {"created_or_updated_claim_ids": ["claim1"], "claim_count": 1})
+        self.assertEqual(second, {"created_or_updated_claim_ids": ["claim1"], "claim_count": 1, "source": "cache_hit"})
         self.assertEqual(len(self.model.prompts), 1)
         self.assertEqual(writes, (self.mocks["create_claim"].call_count, self.mocks["add_edge"].call_count))
 
@@ -157,7 +157,7 @@ class CacheTests(unittest.TestCase):
         statement = self.graph.nodes.pop("st1")
         evidence = self.graph.nodes.pop("e1")
         self.assertEqual(self.manager.normalize_claims("q1"), {
-            "created_or_updated_claim_ids": [], "claim_count": 0,
+            "created_or_updated_claim_ids": [], "claim_count": 0, "source": "empty",
         })
         self.graph.nodes.update(st1=statement, e1=evidence)
         self.manager.normalize_claims("q1")
@@ -201,7 +201,12 @@ class CacheTests(unittest.TestCase):
         del self.graph.nodes["st1"]
         first = self.manager.normalize_claims("q1")
         writes = self.mocks["create_claim"].call_count
-        self.assertEqual(self.manager.normalize_claims("q1"), first)
+        second = self.manager.normalize_claims("q1")
+        result_keys = ("created_or_updated_claim_ids", "claim_count")
+        self.assertEqual({key: first[key] for key in result_keys},
+                         {key: second[key] for key in result_keys})
+        self.assertEqual(first["source"], "model")
+        self.assertEqual(second["source"], "cache_hit")
         self.assertEqual(self.model.prompts, [])
         self.assertEqual(self.mocks["create_claim"].call_count, writes)
 
@@ -220,7 +225,13 @@ class CacheTests(unittest.TestCase):
             self.assertTrue(started.wait(2))
             second = pool.submit(self.manager.normalize_claims, "q1")
             release.set()
-            self.assertEqual(first.result(timeout=3), second.result(timeout=3))
+            first_result = first.result(timeout=3)
+            second_result = second.result(timeout=3)
+            result_keys = ("created_or_updated_claim_ids", "claim_count")
+            self.assertEqual({key: first_result[key] for key in result_keys},
+                             {key: second_result[key] for key in result_keys})
+            self.assertEqual({first_result["source"], second_result["source"]},
+                             {"model", "cache_hit"})
         self.assertEqual(len(self.model.prompts), 1)
 
     def test_different_queries_remain_parallel(self):
@@ -240,9 +251,18 @@ class CacheTests(unittest.TestCase):
         assessments = []
 
         def invoke(prompt):
+            # 合并模式开启时，首次评估把规范化与裁决合并在一次调用里
+            # （prompt 同时含两部分）；waiting_children 复评命中规范化缓存，
+            # 仍必须单独再调一次纯 assessor。
+            if "第二部分：Query 充分性评估" in prompt:
+                assessments.append(("merged", prompt))
+                return SimpleNamespace(content=json.dumps({
+                    "claims": [_claim_spec()],
+                    "sufficiency_score": 0.9, "recommendation": "sufficient", "gaps": [],
+                }))
             if "Claim 规范化器" in prompt:
                 return original(prompt)
-            assessments.append(prompt)
+            assessments.append(("plain", prompt))
             return SimpleNamespace(content=json.dumps({
                 "sufficiency_score": 0.9, "recommendation": "sufficient", "gaps": [],
             }))
@@ -262,8 +282,11 @@ class CacheTests(unittest.TestCase):
             self.manager.assess_query("q1")
             query["status"] = "waiting_children"
             self.manager.assess_query("q1")
-        self.assertEqual(len(self.model.prompts), 1)
+        # 首次合并调用 + 复评纯 assessor；两次都完成评估裁决，且全程没有
+        # 独立的规范化器调用（normalizer prompts 为 0）。
+        self.assertEqual([kind for kind, _ in assessments], ["merged", "plain"])
         self.assertEqual(len(assessments), 2)
+        self.assertEqual(len(self.model.prompts), 0)
 
 
 if __name__ == "__main__":

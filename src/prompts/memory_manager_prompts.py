@@ -554,6 +554,83 @@ Statements 和 Evidence：
 {evidence_subgraph}
 """
 
+# 桥接 Claim 规范化与 Query 评估的单次调用。两个模板各自仍是唯一事实源，
+# 合并只改变调用次数与外层返回结构，不复制规则正文，避免规则分叉。
+_MERGED_ASSESS_BRIDGE = """
+============================================================
+# 第二部分：Query 充分性评估
+
+在同一次回答中，你还要作为 Graph Manager 基于同一份材料完成下面这个 Query
+的充分性评估。第二部分列出的评估规则、裁决口径与 gap 拆分要求同样全部生效。
+注意：第一部分产出的 Claims 尚未落图，评估时直接依据 Statements/Evidence
+原文与已有的 Claims 节点，不要假设你新产出的 Claims 已经存在。
+"""
+
+_MERGED_OUTPUT_OVERRIDE = """
+============================================================
+# 统一输出格式（覆盖前面两个部分各自的输出格式）
+
+只返回一个 JSON 对象，不要 Markdown、代码围栏或任何解释文字。该对象必须
+同时包含两部分字段：
+
+{
+  "claims": [
+    {
+      "canonical_text": "规范化后的单一研究命题",
+      "claim_key": "稳定短键或 null",
+      "statement_refs": ["Statement 节点 ID"],
+      "evidence_refs": [{"id": "Evidence 节点 ID", "stance": "supports|contradicts|qualifies"}],
+      "objective_keys": ["受影响的 objective_key"],
+      "confidence": 0.0,
+      "qualifiers": ["范围、条件、例外或其他必要限定"],
+      "limitations": ["来源、证据、方法或核验能力的局限"]
+    }
+  ],
+  "sufficiency_score": 0.0,
+  "criteria": [
+    {
+      "criterion": "exact acceptance criterion text",
+      "status": "satisfied|unmet",
+      "supporting_refs": ["Claim-or-Evidence-node-id"],
+      "reason": "short evidence-grounded explanation"
+    }
+  ],
+  "covered": ["supported aspects"],
+  "gaps": [
+    {
+      "description": "one atomic missing fact or analysis",
+      "importance": "core|supporting|peripheral",
+      "gap_category": "missing_core_evidence|fatal_conflict|enrichment|additional_example|verification|detail",
+      "objective_keys": ["affected-report-objective-key"],
+      "search_subject_key": "stable-topic-key-for-grouping-related-gaps",
+      "decision_impact": 0.3,
+      "confidence_gain": 0.2,
+      "estimated_search_rounds": 1,
+      "acceptance_criteria": ["what evidence closes this gap"],
+      "expansion_mode": "horizontal|vertical",
+      "trigger_type": "graph_evidence|delivery_requirement",
+      "trigger_refs": ["graph-node-id"]
+    }
+  ],
+  "recommendation": "sufficient|needs_expansion|blocked",
+  "reason": "short justification"
+}
+
+两部分都必须完整：即使没有可规范化的 Claim，也要返回空数组形式的
+"claims"，并照常给出 criteria（每条 acceptance criterion 一项）与评估结论。
+"""
+
+
+def build_merged_assess_prompt(normalization_prompt: str, assessment_prompt: str) -> str:
+    """Merge the rendered normalization and assessment prompts into one call."""
+    return (
+        normalization_prompt
+        + _MERGED_ASSESS_BRIDGE
+        + "\n"
+        + assessment_prompt
+        + _MERGED_OUTPUT_OVERRIDE
+    )
+
 plan_followup_query = """You are the Query Planner for GraphResearcher.
 Author one self-contained web-search query that jointly covers the assigned
 atomic gaps sharing one search subject.
@@ -709,7 +786,15 @@ Return only JSON:
       "reason": "cite the specific signals that drove the decision using key=value pairs from branch_summary (depth, child_queries, open_gaps, last_sufficiency, sufficiency_trend, source_trend, novelty_trend, cooldown_streak). For recovery decisions on previously cooled owners, cite the ending cooldown_streak and remaining open_gaps."
     }
   ],
-  "fatal_unresolved_conflicts": ["exact description of each fatal unresolved conflict"]
+  "fatal_unresolved_conflicts": ["exact description of each fatal unresolved conflict"],
+  "gap_query_drafts": [
+    {
+      "gap_ids": ["exact gap_id(s) from the candidate gap list"],
+      "text": "one short, self-contained literal web-search phrase",
+      "acceptance_criteria": ["concrete checkable criteria copied or derived from the gap"],
+      "search_mode": "general"
+    }
+  ]
 }
 
 For each Objective, state the supported evidence boundary without mentioning
@@ -819,4 +904,32 @@ current status. Classify each one in `fatal_unresolved_conflicts`:
 - Copy fatal conflict descriptions EXACTLY as listed; never invent or
   paraphrase them. Return an empty list when no conflict qualifies or when
   the block is empty.
+
+Candidate expansion gaps (id, owner, mode, subject, description and
+acceptance criteria) that the deterministic dispatcher may select this round:
+{gap_draft_inputs}
+
+## Drafting expansion Queries (optional)
+
+To save a separate planning round, pre-draft the child web-search Query for
+each gap you expect the dispatcher to actually expand (i.e. gaps owned by
+branches you mark `continue_expansion`, with high marginal value). Gaps on
+`cool_down`/`pause` branches, or gaps you are unsure about, should be
+omitted — a dedicated query planner handles any gap without a draft.
+
+Drafting rules:
+- `gap_ids` must copy exact ids from the candidate gap list. You MAY merge
+  several gaps sharing the same `expansion_mode` and `search_subject_key`
+  into one draft, but then list EVERY covered gap id; each gap id may appear
+  in at most one draft.
+- `text` must be one short literal web-search phrase that inlines the
+  concrete entities, names and constraints needed to execute it standalone:
+  no references to other queries, the graph, reports, agents or prior
+  context, and no report-writing or agent instructions. Every draft text
+  must be distinct.
+- `acceptance_criteria`: copy or tightly derive concrete checkable criteria
+  from the covered gaps' acceptance_criteria; 1-3 short items.
+- `search_mode` is one of general, news, finance, linkedin, github,
+  academic; use general unless the gap clearly calls for another.
+- Return an empty `gap_query_drafts` list when no gap is worth drafting.
 """
