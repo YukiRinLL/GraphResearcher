@@ -139,6 +139,19 @@ reporter_global_system_prompt = load_prompt("reporter_global")
 report_reviewer_system_prompt = load_prompt("report_reviewer")
 analyzer_system_prompt = load_prompt("analyzer")
 
+# 每一类 LLM 调用使用的模型名环境变量。未设置或留空时回退到 DEFAULT_MODEL
+# （即 GR_MODEL / agent.model），与 evaluate.yaml 的 agent.models.* 一一对应。
+PURPOSE_MODEL_ENV: dict[str, str] = {
+    "planner": "GR_PLANNER_MODEL",
+    "source_analyzer": "GR_SOURCE_ANALYZER_MODEL",
+    "query_reformulator": "GR_QUERY_REFORMULATOR_MODEL",
+    "claim_normalizer": "GR_CLAIM_NORMALIZER_MODEL",
+    "query_assessor": "GR_QUERY_ASSESSOR_MODEL",
+    "portfolio": "GR_PORTFOLIO_MODEL",
+    "gap_expander": "GR_GAP_EXPANDER_MODEL",
+    "convergence": "GR_CONVERGENCE_MODEL",
+}
+
 # Model handles. Built lazily so importing the module (e.g. for assembly checks
 # or tests) does not require API credentials.
 _model_cache: dict[str, ChatOpenAI] = {}
@@ -148,6 +161,22 @@ def _shared_model() -> ChatOpenAI:
     if "default" not in _model_cache:
         _model_cache["default"] = build_model()
     return _model_cache["default"]
+
+
+def _purpose_model(purpose: str) -> ChatOpenAI:
+    """返回某类调用专用的模型句柄，未单独配置时回退到默认模型."""
+    if purpose not in PURPOSE_MODEL_ENV:
+        raise ValueError(f"Unknown model purpose: {purpose!r}")
+    cache_key = f"purpose.{purpose}"
+    if cache_key not in _model_cache:
+        model_name = os.environ.get(PURPOSE_MODEL_ENV[purpose], "").strip() or DEFAULT_MODEL
+        _model_cache[cache_key] = build_model(model_name=model_name)
+    return _model_cache[cache_key]
+
+
+def get_purpose_model(purpose: str) -> ChatOpenAI:
+    """供 MemoryManager 等调用方按调用类型取模型句柄."""
+    return _purpose_model(purpose)
 
 
 def _reporter_global_model() -> ChatOpenAI:
@@ -165,21 +194,33 @@ def _reporter_global_model() -> ChatOpenAI:
 
 def _report_reviewer_model() -> ChatOpenAI:
     if "report_reviewer" not in _model_cache:
-        _model_cache["report_reviewer"] = build_model(temperature=0.0)
+        # 留空时回退到 DEFAULT_MODEL；evaluate.yaml 的
+        # agent.reporter.reviewer_model 映射到这个环境变量。
+        model_name = os.environ.get("GR_REPORT_REVIEWER_MODEL", "").strip() or DEFAULT_MODEL
+        _model_cache["report_reviewer"] = build_model(
+            model_name=model_name,
+            temperature=0.0,
+        )
     return _model_cache["report_reviewer"]
 
 
 def __getattr__(name: str) -> ChatOpenAI:
     """Lazily provide the configured workflow model handles.
 
-    Building the model is deferred until first access so that importing
+    Building the model is deferred until first access so importing
     ``config`` (for prompt loading or assembly checks) does not require API
-    credentials to be present.
+    credentials.
     """
-    if name in ("default_model", "searcher_model"):
+    if name == "default_model":
         return _shared_model()
+    # searcher_model 作为 source_analyzer 的旧名保留，避免外部引用失效。
+    if name in ("searcher_model", "source_analyzer_model"):
+        return _purpose_model("source_analyzer")
     if name == "reporter_global_model":
         return _reporter_global_model()
     if name == "report_reviewer_model":
         return _report_reviewer_model()
+    for purpose_name in PURPOSE_MODEL_ENV:
+        if name == f"{purpose_name}_model":
+            return _purpose_model(purpose_name)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

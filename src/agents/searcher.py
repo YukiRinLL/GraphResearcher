@@ -438,7 +438,7 @@ def _extract_source_packet(
         "source": source_view,
     }
     with _source_analyzer_slots:
-        response = config.searcher_model.invoke([
+        response = config.source_analyzer_model.invoke([
             SystemMessage(content=config.analyzer_system_prompt),
             HumanMessage(content=json.dumps(analyzer_input, ensure_ascii=False)),
         ])

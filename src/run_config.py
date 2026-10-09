@@ -10,7 +10,9 @@ from typing import Any
 
 import yaml
 
-# 每项保存环境变量名和代码默认值。点号只用于 Reporter 的嵌套字段。
+# 每项保存环境变量名和代码默认值。点号用于 models / reporter 两个嵌套字段。
+# models.* 与 reporter.model / reporter.reviewer_model 默认空串，解析阶段会
+# 回退到顶层 agent.model，因此这里不直接写具体模型名。
 AGENT_SETTINGS = {
     "model": ("GR_MODEL", "gpt-5.1"),
     "model_timeout_seconds": ("GR_MODEL_TIMEOUT", 180.0),
@@ -19,7 +21,16 @@ AGENT_SETTINGS = {
     "search_dispatch_concurrency": ("GR_SEARCH_DISPATCH_CONCURRENCY", 3),
     "source_extraction_concurrency": ("GR_SOURCE_EXTRACTION_CONCURRENCY", 3),
     "assess_query_concurrency": ("GR_ASSESS_QUERY_CONCURRENCY", 3),
+    "models.planner": ("GR_PLANNER_MODEL", ""),
+    "models.source_analyzer": ("GR_SOURCE_ANALYZER_MODEL", ""),
+    "models.query_reformulator": ("GR_QUERY_REFORMULATOR_MODEL", ""),
+    "models.claim_normalizer": ("GR_CLAIM_NORMALIZER_MODEL", ""),
+    "models.query_assessor": ("GR_QUERY_ASSESSOR_MODEL", ""),
+    "models.portfolio": ("GR_PORTFOLIO_MODEL", ""),
+    "models.gap_expander": ("GR_GAP_EXPANDER_MODEL", ""),
+    "models.convergence": ("GR_CONVERGENCE_MODEL", ""),
     "reporter.model": ("GR_REPORTER_GLOBAL_MODEL", ""),
+    "reporter.reviewer_model": ("GR_REPORT_REVIEWER_MODEL", ""),
     "reporter.model_timeout_seconds": ("GR_REPORTER_GLOBAL_TIMEOUT", 600.0),
     "reporter.packet_tokens": ("GR_GLOBAL_PACKET_TOKENS", 48000),
     "reporter.output_tokens": ("GR_GLOBAL_WRITER_OUTPUT_TOKENS", 40000),
@@ -73,7 +84,11 @@ def read_config_file(path: Path) -> dict[str, Any]:
 
 def _validated(value: Any, default: Any, field: str) -> Any:
     if isinstance(default, str):
-        if not isinstance(value, str) or (not value.strip() and not field.endswith("reporter.model")):
+        # 默认值为空串的字段（reporter.model、reporter.reviewer_model、
+        # models.*）允许留空，留空时在 resolve_agent_config 中回退到
+        # 顶层 agent.model；其余字符串字段必须非空。
+        allow_empty = default == ""
+        if not isinstance(value, str) or (not value.strip() and not allow_empty):
             raise ValueError(f"{field} 必须是非空字符串。")
         return value.strip()
     integer = isinstance(default, int)
@@ -115,8 +130,18 @@ def resolve_agent_config(
     reporter = supplied.get("reporter", {})
     if not isinstance(reporter, dict):
         raise ValueError("agent.reporter 必须是映射。")
-    flattened = {key: value for key, value in supplied.items() if key != "reporter"}
+    models = supplied.get("models", {})
+    if models is None:
+        models = {}
+    if not isinstance(models, dict):
+        raise ValueError("agent.models 必须是映射。")
+    flattened = {
+        key: value
+        for key, value in supplied.items()
+        if key not in {"reporter", "models"}
+    }
     flattened.update({f"reporter.{key}": value for key, value in reporter.items()})
+    flattened.update({f"models.{key}": value for key, value in models.items()})
     unknown = set(flattened) - AGENT_SETTINGS.keys() - AGENT_DEFAULTS.keys()
     if unknown:
         raise ValueError(f"未知 Agent 配置字段：{', '.join(sorted(unknown))}")
@@ -127,15 +152,36 @@ def resolve_agent_config(
     })
     if values["verbosity"] not in {"quiet", "normal", "debug"}:
         raise ValueError("agent.verbosity 必须是 quiet、normal 或 debug。")
-    result = {key: value for key, value in values.items() if not key.startswith("reporter.")}
-    result["reporter"] = {key.split(".")[1]: value for key, value in values.items() if key.startswith("reporter.")}
+    nested_prefixes = ("reporter.", "models.")
+    result = {
+        key: value for key, value in values.items()
+        if not any(key.startswith(prefix) for prefix in nested_prefixes)
+    }
+    result["reporter"] = {
+        key.split(".", 1)[1]: value
+        for key, value in values.items() if key.startswith("reporter.")
+    }
+    result["models"] = {
+        key.split(".", 1)[1]: value
+        for key, value in values.items() if key.startswith("models.")
+    }
+    # 留空的模型选择统一回退到顶层 agent.model，让快照里保存的就是
+    # 本次运行实际生效的模型，避免环境变量层面再出现二次回退歧义。
     result["reporter"]["model"] = result["reporter"]["model"] or result["model"]
+    result["reporter"]["reviewer_model"] = result["reporter"]["reviewer_model"] or result["model"]
+    for purpose in list(result["models"]):
+        if not result["models"][purpose]:
+            result["models"][purpose] = result["model"]
     return result
 
 
 def agent_environment(agent: dict) -> dict[str, str]:
     """将已解析的 Agent 参数转换为 runtime 环境变量，不携带服务凭据."""
-    values = {**agent, **{f"reporter.{key}": value for key, value in agent["reporter"].items()}}
+    values = {
+        **agent,
+        **{f"reporter.{key}": value for key, value in agent.get("reporter", {}).items()},
+        **{f"models.{key}": value for key, value in agent.get("models", {}).items()},
+    }
     return {env_name: str(values[field]) for field, (env_name, _) in AGENT_SETTINGS.items()}
 
 

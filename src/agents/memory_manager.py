@@ -412,6 +412,9 @@ class MemoryManager:
             user_request: The verbatim request captured at the run boundary.
         """
         self.cache_dir = cache_dir
+        # 显式注入 model（主要用于测试）时，所有调用类型都使用该模型；
+        # 为 None 时按 purpose 从 config 的懒加载句柄取各自配置的模型。
+        self._explicit_model = model
         self.model = model if model is not None else config.build_model()
         self.user_request = user_request
         self.run_plan = run_plan or {}
@@ -428,9 +431,20 @@ class MemoryManager:
         # detect "stuck at 0.20 for 3+ consecutive assessments" tail chains.
         self._sufficiency_history: dict[str, list[float]] = {}
 
-    def _invoke_json(self, prompt: str) -> dict:
-        """Invoke the model and parse a JSON object from its response."""
-        response = self.model.invoke(prompt)
+    def _model_for(self, purpose: Optional[str]) -> Any:
+        """按调用类型返回模型句柄.
+
+        显式注入了模型（测试场景）或调用没有指定 purpose 时，使用构造时的
+        默认 ``self.model``；否则按 purpose 读取 ``config`` 中独立配置、
+        懒加载的模型句柄（见 ``config.PURPOSE_MODEL_ENV``）。
+        """
+        if self._explicit_model is not None or not purpose:
+            return self.model
+        return config.get_purpose_model(purpose)
+
+    def _invoke_json(self, prompt: str, purpose: Optional[str] = None) -> dict:
+        """Invoke the model for the given purpose and parse a JSON response."""
+        response = self._model_for(purpose).invoke(prompt)
         content = getattr(response, "content", response)
         if isinstance(content, list):  # some providers return content parts
             content = "".join(part.get("text", "") if isinstance(part, dict) else str(part) for part in content)
@@ -1174,7 +1188,7 @@ class MemoryManager:
 
         prompt = _claim_normalization_prompt(_claim_normalization_input(query, nodes))
         fingerprint = hashlib.sha256(("claim-normalization-v1\n" + prompt).encode("utf-8")).hexdigest()
-        model = self.model
+        model = self._model_for("claim_normalizer")
         cached = self._claim_normalization_cache.get(cache_key)
         if (
             cached is not None
@@ -1190,7 +1204,7 @@ class MemoryManager:
             specs = self._fallback_claim_specs(query, statements, evidence)
             cacheable = True
         else:
-            verdict = self._invoke_json(prompt)
+            verdict = self._invoke_json(prompt, purpose="claim_normalizer")
             raw_specs = verdict.get("claims") if isinstance(verdict, dict) else None
             specs = [item for item in raw_specs or [] if isinstance(item, dict)]
             cacheable = bool(specs)
@@ -1198,7 +1212,7 @@ class MemoryManager:
                 specs = self._fallback_claim_specs(query, statements, evidence)
         bindings: dict[tuple[str, str, str], str] = {}
         result = self._write_claim_specs(query, specs, statements, evidence, written_bindings=bindings)
-        if cacheable and result["claim_count"] and all(bindings.values()) and self.model is model:
+        if cacheable and result["claim_count"] and all(bindings.values()):
             self._claim_normalization_cache[cache_key] = {
                 "fingerprint": fingerprint,
                 "model": model,
@@ -1355,7 +1369,8 @@ class MemoryManager:
             verdict = self._invoke_json(
                 prompt
                 + "\n\nCorrection: return the complete valid JSON response. Include one "
-                "criteria result for every acceptance criterion and copy its text exactly."
+                "criteria result for every acceptance criterion and copy its text exactly.",
+                purpose="query_assessor",
             )
         criterion_results = self._validate_criterion_results(
             acceptance_criteria,
@@ -2686,7 +2701,7 @@ class MemoryManager:
             ], ensure_ascii=False))
             .replace("{conflicts}", json.dumps(conflicts, ensure_ascii=False))
         )
-        verdict = self._invoke_json(prompt)
+        verdict = self._invoke_json(prompt, purpose="convergence")
         fatal = verdict.get("fatal_unresolved_conflicts") or []
         goal = research_state.get_goal(goal_id)
         objective_by_key = {
@@ -3832,7 +3847,7 @@ class MemoryManager:
             .replace("{user_request}", user_request)
             .replace("{initial_query_limit}", str(initial_query_limit))
         ) + (f"\n\nCorrection after validation failure: {correction}" if correction else "")
-        return self._invoke_json(prompt)
+        return self._invoke_json(prompt, purpose="planner")
 
     def _plan_followup_queries(
         self,
@@ -3879,7 +3894,7 @@ class MemoryManager:
                 .replace("{reason}", reason or "")
                 .replace("{max_new}", str(max_new))
             )
-            parsed = self._invoke_json(prompt + extra)
+            parsed = self._invoke_json(prompt + extra, purpose="gap_expander")
             items = []
             raw_queries = parsed.get("queries") or []
             if not isinstance(raw_queries, list):
@@ -3951,7 +3966,7 @@ class MemoryManager:
             .replace("{existing_sources}", json.dumps(existing_sources or [], ensure_ascii=False))
             .replace("{empty_reason}", empty_reason or "unspecified")
         )
-        parsed = self._invoke_json(prompt)
+        parsed = self._invoke_json(prompt, purpose="query_reformulator")
         new_text = (parsed.get("query_text") or "").strip()
         if new_text and not _query_text_issue(new_text):
             if _normalize_query_text(new_text) != _normalize_query_text(original_text):
