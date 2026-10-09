@@ -348,7 +348,7 @@ Claim 规范化的目标是统一命题表述、合并同义命题并建立完�
 - Query 及其 acceptance criteria 只用于界定相关性和任务范围，不是事实证据。
 - 输入节点只属于当前 Query，不代表完整的 Research Graph，也不代表研究过程发现的全部材料。
 - Claim 的事实内容只能来自输入中的 Statement 和 Evidence。
-- 使用输入提供的 source_credibility，不要自行重新评定来源分数。
+- 使用输入提供的 source_credibility，不要自行重新评定来源分数。source_credibility 只标注在 Statement 上；每条 Evidence 与其 statement_refs 指向的 Statement 同源，可信度沿该绑定继承。
 - 不得使用模型自身知识补充输入中没有明确表达的事实、属性、分类、关系、因果或解释。
 
 # Claim 的职责边界

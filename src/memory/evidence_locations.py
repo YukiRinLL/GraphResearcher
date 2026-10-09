@@ -10,6 +10,29 @@ LOCATION_FIELDS = ("block_refs", "location_status")
 ANALYZER_BODY_CHARS = 20_000
 _TARGET_SHARE = 0.75
 
+# 网页快照里常见的内嵌图片标记：营销像素/追踪图的 URL 可达数百字符，
+# 实测 10KB 的 analyzer 输入里图片标记能占掉近 1KB 且没有任何事实价值。
+# 剥离时保留 alt 文本（可能是图表标题），仅删除标记本身。
+_MARKDOWN_IMAGE = re.compile(
+    r"!\[(?P<alt>[^\]]*)\]\(\s*(?:<[^>]*>|[^\s)]+)(?:\s+[\"'][^\"']*[\"'])?\s*\)"
+)
+_HTML_IMAGE_WITH_ALT = re.compile(
+    r"<img\b[^>]*?\balt\s*=\s*[\"'](?P<alt>[^\"']*)[\"'][^>]*?/?>",
+    re.IGNORECASE,
+)
+_HTML_IMAGE = re.compile(r"<img\b[^>]*?/?>", re.IGNORECASE)
+_BLANK_LINES = re.compile(r"\n{3,}")
+
+
+def strip_embedded_media(text: str) -> str:
+    """删除送给模型的原文中的图片标记，保留 alt 文本并收敛空行."""
+    if not text:
+        return ""
+    cleaned = _MARKDOWN_IMAGE.sub(lambda m: m.group("alt").strip(), text)
+    cleaned = _HTML_IMAGE_WITH_ALT.sub(lambda m: m.group("alt").strip(), cleaned)
+    cleaned = _HTML_IMAGE.sub("", cleaned)
+    return _BLANK_LINES.sub("\n\n", cleaned)
+
 
 def snapshot_fields(item: dict[str, Any]) -> dict[str, Any]:
     """提取显式出现的快照关联字段，保留旧调用没有这些字段的语义."""
@@ -110,7 +133,10 @@ def select_source_blocks(
     take(coverage_order, max_chars)
     return {
         "blocks": [
-            {"block_id": block["block_id"], "text": texts[block["block_id"]]}
+            {
+                "block_id": block["block_id"],
+                "text": strip_embedded_media(texts[block["block_id"]]),
+            }
             for block in blocks if block["block_id"] in selected
         ],
         "reading_coverage": {

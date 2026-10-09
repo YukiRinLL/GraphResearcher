@@ -387,6 +387,23 @@ def _parse_source_packet(text: str) -> dict:
     return packet
 
 
+def _drop_none_fields(value: Any) -> Any:
+    """递归删除送给 analyzer 的 JSON 里值为 null 的键.
+
+    如 region_scope / published_at 缺失的场景。空数组/空串保留——analyzer
+    prompt 显式描述了这些字段的语义，且 ``False`` 不能误删。
+    """
+    if isinstance(value, dict):
+        return {
+            key: _drop_none_fields(item)
+            for key, item in value.items()
+            if item is not None
+        }
+    if isinstance(value, list):
+        return [_drop_none_fields(item) for item in value]
+    return value
+
+
 def _extract_source_packet(
     query: dict[str, Any],
     research_context: dict[str, Any],
@@ -399,7 +416,9 @@ def _extract_source_packet(
     source_view = {
         "title": source.get("title"),
         "url": source.get("url"),
-        "raw_content": (source.get("raw_content") or "")[:_MAX_SOURCE_RAW_CHARS],
+        "raw_content": evidence_locations.strip_embedded_media(
+            (source.get("raw_content") or "")[:_MAX_SOURCE_RAW_CHARS]
+        ),
         "raw_content_truncated": bool(source.get("raw_content_truncated")),
         "published_at": source.get("published_at"),
         "reading_coverage": {"mode": "legacy", "reason": "no_snapshot"},
@@ -407,6 +426,9 @@ def _extract_source_packet(
     binding: dict[str, Any] = {}
     body, index = "", {"blocks": []}
     reference = source.get("source_snapshot")
+    # 模型看到的短块 id → 快照完整块 id 的回填映射；短 id 让 34 个块少发
+    # 约 2.6KB 的内部哈希，校验仍使用完整 id。
+    block_alias_map: dict[str, str] = {}
     if isinstance(reference, dict) and reference.get("status") == "stored":
         try:
             body, index, capture = source_snapshots.load_captured_snapshot(
@@ -421,7 +443,16 @@ def _extract_source_packet(
             )
             if selected["blocks"]:
                 source_view.pop("raw_content")
-                source_view.update(selected)
+                full_blocks = selected["blocks"]
+                block_alias_map = {
+                    f"b{position}": block["block_id"]
+                    for position, block in enumerate(full_blocks, start=1)
+                }
+                source_view["blocks"] = [
+                    {"block_id": alias, "text": block["text"]}
+                    for alias, block in zip(block_alias_map, full_blocks)
+                ]
+                source_view["reading_coverage"] = selected["reading_coverage"]
                 source_view["raw_content_truncated"] = bool(
                     selected["reading_coverage"]["unloaded_blocks"] or capture.get("provider_raw_content_truncated")
                 )
@@ -432,11 +463,11 @@ def _extract_source_packet(
             source_view["reading_coverage"] = {
                 "mode": "legacy", "reason": "snapshot_unavailable", "error_type": type(exc).__name__,
             }
-    analyzer_input = {
+    analyzer_input = _drop_none_fields({
         "query": query,
         "research_context": research_context,
         "source": source_view,
-    }
+    })
     with _source_analyzer_slots:
         response = config.source_analyzer_model.invoke([
             SystemMessage(content=config.analyzer_system_prompt),
@@ -448,12 +479,18 @@ def _extract_source_packet(
         packet["document"].pop(key, None)
     if packet["document"].get("document_summary"):
         packet["document"].update(binding)
-    shown_refs = {block["block_id"] for block in source_view.get("blocks", [])}
+    # shown_refs 用完整块 id；模型回填的是短别名，先经 alias 映射还原。
+    shown_refs = set(block_alias_map.values())
     location_log = [{"stage": "source_reading", **source_view["reading_coverage"]}]
     for evidence in packet["evidence"]:
         if not isinstance(evidence, dict):
             continue
-        location = evidence_locations.validate_block_refs(evidence.get("block_refs"), shown_refs)
+        raw_refs = evidence.get("block_refs")
+        if isinstance(raw_refs, list) and block_alias_map:
+            resolved_refs = [block_alias_map.get(str(ref), ref) for ref in raw_refs]
+        else:
+            resolved_refs = raw_refs
+        location = evidence_locations.validate_block_refs(resolved_refs, shown_refs)
         evidence.update(location)
         spans = evidence_locations.quote_locations(str(evidence.get("text") or ""), location["block_refs"], body, index)
         location_log.append({

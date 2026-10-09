@@ -177,6 +177,33 @@ def _truncate_text(value: Any, limit: int) -> str:
     return text[:limit].rstrip() + " …[truncated]"
 
 
+def _drop_empty_fields(value: Any) -> Any:
+    """递归删除投影字典里的空字段（None / "" / [] / {}）.
+
+    只用于送给 LLM 的 JSON 视图：键缺失与空值对模型语义等价（"未提供即
+    为空"），但每个空键都要在数万节点上重复序列化，是后期运行 prompt 膨胀
+    的主要来源。``False``、``0``、``0.0`` 是有意义的值，保留；列表中的空
+    字典元素删除。
+    """
+    if isinstance(value, dict):
+        compacted: dict[str, Any] = {}
+        for key, item in value.items():
+            if item is None or item == "" or item == [] or item == {}:
+                continue
+            nested = _drop_empty_fields(item)
+            if nested == {}:
+                continue
+            compacted[key] = nested
+        return compacted
+    if isinstance(value, list):
+        return [
+            nested
+            for item in value
+            if (nested := _drop_empty_fields(item)) != {}
+        ]
+    return value
+
+
 def _strip_internal_fields(node: dict) -> dict:
     """Return a copy of a node dict without internal scheduling fields.
 
@@ -344,7 +371,17 @@ def _query_text_issue(text: Any) -> Optional[str]:
 
 
 def _claim_normalization_input(query: dict, nodes: list[dict]) -> dict:
-    """从当前 Query 的自有材料构造稳定的规范化模型输入."""
+    """从当前 Query 的自有材料构造稳定的规范化模型输入.
+
+    实测（Langfuse）每个 Statement/Evidence 节点都带着一批规范化前恒为空
+    的字段（confidence/qualifiers/limitations/claim_ref/stance）以及模型
+    输出从不引用的内部标识（document_id/source_id），Evidence 还同时带
+    statement_ref 与 statement_refs 两份相同内容。这些键在 110+ 节点的
+    Query 上占掉输入的约三分之一，这里全部移除：
+    - 可信度只标注在 Statement 上；Evidence 与其绑定 Statement 同源
+      （建图时强制校验），模型沿 statement_refs 继承；
+    - 只保留模型输出会引用的节点 id、正文与绑定关系。
+    """
     statements = sorted(
         (node for node in nodes if node.get("type") == NodeType.STATEMENT.value),
         key=lambda node: node["id"],
@@ -364,43 +401,44 @@ def _claim_normalization_input(query: dict, nodes: list[dict]) -> dict:
 
     compact = {
         "statements": [
-            {
+            _drop_empty_fields({
                 "id": item.get("id"),
                 "text": item.get("text") or item.get("statement"),
-                "document_id": item.get("document_id"),
-                "source_id": item.get("source_id"),
                 "source_credibility": _get_source_credibility(item.get("source_id")),
+                # 这三项正常抽取路径恒为空；只有非空时才下发（既省 token，
+                # 又保证一旦出现非空值会改变缓存指纹触发重新规范化）。
+                "confidence": item.get("confidence"),
                 "qualifiers": item.get("qualifiers") or [],
                 "limitations": item.get("limitations") or [],
-                "confidence": item.get("confidence"),
-            }
+            })
             for item in statements
         ],
         "evidence": [
-            {
+            _drop_empty_fields({
                 "id": item.get("id"),
                 "text": item.get("text") or item.get("claim"),
-                "document_id": item.get("document_id"),
-                "source_id": item.get("source_id"),
-                "source_credibility": _get_source_credibility(item.get("source_id")),
-                "statement_ref": item.get("statement_ref"),
-                "statement_refs": item.get("statement_refs") or [],
-                "claim_ref": item.get("claim_ref"),
+                # statement_refs 是规范化使用的唯一绑定字段；仅当节点缺少
+                # 该键时才回退到旧的单值 statement_ref。恒空的 stance/
+                # confidence/qualifiers/limitations 只在非空时下发。
+                "statement_refs": (
+                    item.get("statement_refs")
+                    if item.get("statement_refs") is not None
+                    else ([item["statement_ref"]] if item.get("statement_ref") else [])
+                ),
                 "stance": item.get("stance"),
+                "confidence": item.get("confidence"),
                 "qualifiers": item.get("qualifiers") or [],
                 "limitations": item.get("limitations") or [],
-                "confidence": item.get("confidence"),
-            }
+            })
             for item in evidence
         ],
     }
     return {
-        "query": {
-            "id": query.get("id"),
+        "query": _drop_empty_fields({
             "text": query.get("text"),
             "objective_keys": query.get("objective_keys") or [],
             "acceptance_criteria": query.get("acceptance_criteria") or [],
-        },
+        }),
         "evidence_subgraph": compact,
     }
 
@@ -1211,7 +1249,7 @@ class MemoryManager:
             return {"created_or_updated_claim_ids": [], "claim_count": 0}
 
         prompt = _claim_normalization_prompt(_claim_normalization_input(query, nodes))
-        fingerprint = hashlib.sha256(("claim-normalization-v1\n" + prompt).encode("utf-8")).hexdigest()
+        fingerprint = hashlib.sha256(("claim-normalization-v2\n" + prompt).encode("utf-8")).hexdigest()
         model = self._model_for("claim_normalizer")
         cached = self._claim_normalization_cache.get(cache_key)
         if (
@@ -1343,7 +1381,9 @@ class MemoryManager:
 
         - 每类节点只保留白名单字段，所有长文本按字符截断；
         - 重复全文只保留一份（canonical_text / text）；
-        - 边只保留 source/target/type；
+        - 空字段（null/空数组/空字符串）递归删除，不序列化给模型；
+        - 边只保留语义关系（支撑/规范化/证据持有/冲突/限定），PRODUCED、
+          EXTRACTED_STATEMENT、FOUND_SOURCE 等纯簿记边不下发；
         - 节点 id 全部保留，模型输出的 supporting_refs / trigger_refs
           校验仍基于未压缩的完整子图进行。
         """
@@ -1419,22 +1459,36 @@ class MemoryManager:
                 base.update({"status": node.get("status")})
             else:
                 base.update({"status": node.get("status")})
-            return base
+            return _drop_empty_fields(base)
 
+        # 只保留模型做蕴含/冲突判断需要的语义边；来源→文档→SearchRun 的
+        # 产出链是内部簿记（实测占子图边文本的近一半），不下发。
+        semantic_edge_types = {
+            "supported_by",
+            "normalized_to",
+            "has_evidence",
+            "contradicted_by",
+            "qualified_by",
+            "has_conflict",
+        }
         compact_edges = [
             {
                 "source": edge.get("source"),
                 "target": edge.get("target"),
-                "type": str(edge.get("type", "")).lower(),
+                "type": edge_type,
             }
             for edge in evaluation.get("edges", [])
+            if (edge_type := str(edge.get("type", "")).lower()) in semantic_edge_types
         ]
-        return {
+        result = {
             "query": compact_node(evaluation["query"]) if evaluation.get("query") else {},
             "nodes": [compact_node(node) for node in evaluation.get("nodes", [])],
             "edges": compact_edges,
-            "children": evaluation.get("children", []),
         }
+        children = evaluation.get("children") or []
+        if children:
+            result["children"] = [_drop_empty_fields(child) for child in children]
+        return result
 
     def assess_query(self, query_id: str) -> dict:
         """Assess one Query's owned evidence and automatically advance its state."""
@@ -1459,25 +1513,26 @@ class MemoryManager:
             if any(c.get("status") not in research_state.TERMINAL_QUERY_STATUSES for c in children):
                 return {"error": f"Query {query.get('handle') or resolved} still has unfinished selected children"}
 
-        normalization = self.normalize_claims(resolved)
+        # 先固化规范化 Claim（含缓存复用），随后取到的评估子图才是最新的；
+        # 返回值本身不下发——assessor prompt 不引用它，Claim 已体现在子图里。
+        self.normalize_claims(resolved)
         evaluation = graph_tools.get_query_evaluation_subgraph(resolved)
         goal = research_state.get_goal()
         objectives = self.get_research_objectives(goal.get("id"))
         objective_by_id = {item["id"]: item for item in objectives}
         objective_by_key = {item["objective_key"]: item for item in objectives}
-        request_context = {
+        request_context = _drop_empty_fields({
             key: goal.get(key)
             for key in (
                 "request", "research_goal", "language", "time_window", "region_scope",
                 "source_preferences", "excluded_domains", "excluded_urls", "scope_mode",
             )
-        }
+        })
         query_payload = {
             "text": query.get("text"),
             "query_role": query.get("query_role") or "research",
             "objective_keys": query.get("objective_keys") or [],
             "acceptance_criteria": query.get("acceptance_criteria") or [],
-            "normalized_claims": normalization,
         }
         # 父 Query 等子 Query 完成后会整体复评，但它自有的证据子图没有变化。
         # 把上一轮 criteria 裁决带给模型，让 satisfied 项直接延续，只重新判断
@@ -1486,9 +1541,17 @@ class MemoryManager:
         if query.get("status") == "waiting_children" and prior_criterion_results:
             query_payload["prior_criterion_results"] = prior_criterion_results
         prompt = (
-            mm_prompts.assess_query.replace("{query}", json.dumps(query_payload, ensure_ascii=False))
+            mm_prompts.assess_query.replace(
+                "{query}", json.dumps(_drop_empty_fields(query_payload), ensure_ascii=False)
+            )
             .replace("{request_context}", json.dumps(request_context, ensure_ascii=False))
-            .replace("{objectives}", json.dumps(objectives, ensure_ascii=False))
+            .replace(
+                "{objectives}",
+                json.dumps(
+                    [self._assess_objective_view(item) for item in objectives],
+                    ensure_ascii=False,
+                ),
+            )
             .replace("{existing_queries}", json.dumps([
                 {"id": item.get("id"), "text": item.get("text"), "status": item.get("status")}
                 for item in graph_tools.search_nodes("query", {})
@@ -1939,7 +2002,7 @@ class MemoryManager:
                 "conflicts": len(conflicts),
                 "sources": len(sources),
             }
-            return view
+            return _drop_empty_fields(view)
         view["claims"] = [
             {
                 "id": node.get("id"),
@@ -1979,7 +2042,50 @@ class MemoryManager:
             }
             for node in sources
         ]
-        return view
+        # 实测活跃视图里 evidence.confidence 恒为 null（规范化阶段不产出
+        # confidence）、sources.published_at 大量缺失、空 conflicts 数组等，
+        # 这些空键在十几条 Query × 数百节点上重复序列化，统一剔除。
+        return _drop_empty_fields(view)
+
+    @staticmethod
+    def _portfolio_objective_view(objective: dict) -> dict:
+        """把 Objective 节点投影成 portfolio 模型实际使用的 Research contract.
+
+        实测节点里的 id/type/analysis_type/rubric_status/last_realized_gain/
+        low_gain_streak/last_evaluated_successful_rounds 是调度簿记字段，
+        模型输出从不引用；``text`` 与 ``description`` 逐字重复；
+        ``assessment_reason`` 与 supported_boundary 语义重叠（输出 schema
+        只要 supported_boundary）。只保留裁决与差距识别需要的字段。
+        """
+        return _drop_empty_fields({
+            "objective_key": objective.get("objective_key"),
+            "requirement": objective.get("requirement"),
+            "weight": objective.get("weight"),
+            "status": objective.get("status"),
+            "description": objective.get("description") or objective.get("text"),
+            "acceptance_criteria": objective.get("acceptance_criteria") or [],
+            "unmet_acceptance_criteria": objective.get("unmet_acceptance_criteria") or [],
+            "coverage": objective.get("coverage"),
+            "confidence": objective.get("confidence"),
+            "supported_boundary": objective.get("supported_boundary") or "",
+        })
+
+    @staticmethod
+    def _assess_objective_view(objective: dict) -> dict:
+        """Assessor 的 Objective 投影.
+
+        保留节点 id（delivery_requirement 类 gap 的 trigger_refs 校验需要
+        完整 id），只去掉调度簿记字段与重复的 text。
+        """
+        return _drop_empty_fields({
+            "id": objective.get("id"),
+            "objective_key": objective.get("objective_key"),
+            "requirement": objective.get("requirement"),
+            "status": objective.get("status"),
+            "description": objective.get("description") or objective.get("text"),
+            "acceptance_criteria": objective.get("acceptance_criteria") or [],
+            "unmet_acceptance_criteria": objective.get("unmet_acceptance_criteria") or [],
+        })
 
     @staticmethod
     def _portfolio_view_signature(view: dict) -> tuple:
@@ -2194,12 +2300,13 @@ class MemoryManager:
         ]
         branch_summary_text = self._build_branch_summary(active_gaps)
         query_views = [self._portfolio_query_view(query) for query in queries]
+        objective_views = [self._portfolio_objective_view(item) for item in objectives]
         material_signature = self._portfolio_material_signature(
             goal, objectives, query_views, active_gaps, branch_summary_text
         )
         prompt = (
             mm_prompts.evaluate_portfolio
-            .replace("{objectives}", json.dumps(objectives, ensure_ascii=False))
+            .replace("{objectives}", json.dumps(objective_views, ensure_ascii=False))
             .replace("{queries}", json.dumps(query_views, ensure_ascii=False))
             .replace("{branch_summary}", branch_summary_text)
         )
