@@ -1,12 +1,15 @@
 """离线验证规范化缓存、失效边界和并行评估。"""
 
+import hashlib
 import json
 import sys
 import threading
 import unittest
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from copy import deepcopy
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -15,7 +18,12 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from test_claim_normalization_regressions import FakeGraph, _claim_spec  # noqa: E402
 
-from agents.memory_manager import MemoryManager  # noqa: E402
+from agents.memory_manager import (  # noqa: E402
+    LLMResponseCircuitOpenError,
+    MemoryManager,
+    _claim_normalization_input,
+    _claim_normalization_prompt,
+)
 from prompts import memory_manager_prompts as mm_prompts  # noqa: E402
 from tools import graph_tools, research_state  # noqa: E402
 
@@ -287,6 +295,88 @@ class CacheTests(unittest.TestCase):
         self.assertEqual([kind for kind, _ in assessments], ["merged", "plain"])
         self.assertEqual(len(assessments), 2)
         self.assertEqual(len(self.model.prompts), 0)
+
+    @contextmanager
+    def assessment_boundaries(self):
+        self.graph.nodes["q1"].update(handle="q1", status="assessing")
+        with (
+            patch.object(self.manager, "_resolve_query_id", return_value="q1"),
+            patch.object(self.manager, "_query_gap_ids", return_value=[]),
+            patch.object(self.manager, "_propagate_child_completion"),
+            patch.object(self.manager, "_bump_portfolio_revision", return_value=1),
+            patch.object(graph_tools, "get_query_children", return_value=[]),
+            patch.object(graph_tools, "transition_query"),
+            patch.object(graph_tools, "upsert_node"),
+            patch.object(research_state, "get_status", return_value={"research_state": research_state.RESEARCHING}),
+            patch.object(research_state, "get_goal", return_value={"id": "goal"}),
+        ):
+            yield
+
+    def test_merged_fallback_is_not_cached_in_memory_or_on_disk(self):
+        for claims in ({}, {"claims": []}):
+            with self.subTest(claims=claims), TemporaryDirectory() as directory:
+                self.manager = MemoryManager(model=self.model, cache_dir=directory)
+                self.model.payload = {
+                    **claims, "sufficiency_score": 0.9,
+                    "recommendation": "sufficient", "gaps": [],
+                }
+                with self.assessment_boundaries():
+                    self.manager.assess_query("q1")
+                self.assertTrue(self.graph.claims(), "兜底仍应写入 Claim")
+                restarted = MemoryManager(model=self.model, cache_dir=directory)
+                for manager in (self.manager, restarted):
+                    probe = manager.normalize_claims("q1", allow_model_call=False, purpose="query_assessor")
+                    self.assertEqual(probe["source"], "skip")
+
+    def test_merged_success_can_be_reused_after_restart(self):
+        with TemporaryDirectory() as directory:
+            self.manager.cache_dir = directory
+            self.model.payload.update(sufficiency_score=0.9, recommendation="sufficient", gaps=[])
+            with self.assessment_boundaries():
+                self.manager.assess_query("q1")
+            restarted = MemoryManager(model=self.model, cache_dir=directory)
+            probe = restarted.normalize_claims("q1", allow_model_call=False, purpose="query_assessor")
+            self.assertEqual(probe["source"], "cache_hit")
+            self.assertEqual(len(self.model.prompts), 1)
+
+    def test_legacy_merged_cache_expires_but_independent_cache_remains_valid(self):
+        prompt = _claim_normalization_prompt(_claim_normalization_input(
+            self.graph.nodes["q1"], self.evaluation("q1")["nodes"],
+        ))
+        legacy_fingerprint = hashlib.sha256(("claim-normalization-v3\n" + prompt).encode()).hexdigest()
+        for purpose, expected in (("query_assessor", "skip"), ("claim_normalizer", "cache_hit")):
+            with self.subTest(purpose=purpose), TemporaryDirectory() as directory:
+                manager = MemoryManager(model=self.model, cache_dir=directory)
+                manager.normalize_claims("q1", purpose=purpose)
+                name = manager._normalization_disk_name("q1", purpose)
+                cached = manager._llm_cache_read("claim_normalizer", name)
+                cached["fingerprint"] = legacy_fingerprint
+                manager._llm_cache_write("claim_normalizer", cached, name)
+                restarted = MemoryManager(model=self.model, cache_dir=directory)
+                probe = restarted.normalize_claims("q1", allow_model_call=False, purpose=purpose)
+                self.assertEqual(probe["source"], expected)
+
+    def test_circuit_fallback_assessor_and_retry_see_new_claims(self):
+        prompts = []
+
+        def invoke(prompt):
+            prompts.append(prompt)
+            if "第二部分：Query 充分性评估" in prompt:
+                raise LLMResponseCircuitOpenError("合并调用已熔断")
+            if "Claim 规范化器" in prompt:
+                return SimpleNamespace(content=json.dumps({"claims": [_claim_spec()]}))
+            # 首次纯评估返回空对象，验证纠正重试也读取新子图。
+            payload = {} if len(prompts) == 3 else {
+                "sufficiency_score": 0.9, "recommendation": "sufficient", "gaps": [],
+            }
+            return SimpleNamespace(content=json.dumps(payload))
+
+        with self.assessment_boundaries(), patch.object(self.model, "invoke", side_effect=invoke):
+            self.manager.assess_query("q1")
+        self.assertEqual(len(prompts), 4)
+        for prompt in prompts[2:]:
+            self.assertIn('"id": "claim1"', prompt)
+            self.assertIn('"type": "Claim"', prompt)
 
 
 if __name__ == "__main__":
