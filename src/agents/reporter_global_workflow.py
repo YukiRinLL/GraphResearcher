@@ -88,6 +88,35 @@ def _build_answer_contract(context: dict[str, Any]) -> dict[str, Any]:
     )
 
 
+_NOTE_ID_LIST_FIELDS = ("confirmed_facts", "claim_refs", "source_ids")
+_NOTE_ID_LIST_CAP = 100
+
+
+def _cap_research_notes(notes: list[dict[str, Any]], max_chars: int) -> list[dict[str, Any]]:
+    """Bound per-query research notes entering the writer prompt.
+
+    Notes are compact metadata; the only unbounded parts are the
+    confirmed-fact / claim / source id lists. Trim those first, then drop
+    whole notes when the serialized budget is exceeded (notes are exported in
+    query-priority order, so the least important queries are dropped first).
+    """
+    capped: list[dict[str, Any]] = []
+    used_chars = 0
+    for raw_note in notes or []:
+        note = dict(raw_note)
+        for field in _NOTE_ID_LIST_FIELDS:
+            values = note.get(field) or []
+            if len(values) > _NOTE_ID_LIST_CAP:
+                note[field] = values[:_NOTE_ID_LIST_CAP]
+                note.setdefault("truncated_fields", {})[field] = len(values)
+        note_chars = len(json.dumps(note, ensure_ascii=False))
+        if used_chars + note_chars > max_chars:
+            continue
+        capped.append(note)
+        used_chars += note_chars
+    return capped
+
+
 def _build_packet(
     context: dict[str, Any], *, read_view: report_tools.ReportReadView | None = None,
 ) -> dict[str, Any]:
@@ -201,8 +230,18 @@ def _build_packet(
             )
             break
 
+    research_notes = _cap_research_notes(research_notes, config.GR_REPORTER_NOTES_MAX_CHARS)
+    ordered_query_refs = [
+        str(query.get("ref") or query.get("id") or "").strip()
+        for query in ordered_queries
+        if str(query.get("ref") or query.get("id") or "").strip()
+    ]
     draft_report = report_tools.build_cited_evidence_report(
-        str(context.get("user_request") or ""), **view_kwargs
+        str(context.get("user_request") or ""),
+        max_chars=config.GR_REPORTER_DRAFT_MAX_CHARS,
+        query_order=ordered_query_refs,
+        include_references=False,
+        **view_kwargs,
     )
     used_numbers.update(
         int(match.group(1))
@@ -261,6 +300,9 @@ def _build_packet(
             "query_share": _QUERY_PACKET_SHARE,
             "query_budget_chars": query_budget,
             "deduplicated_items": len(seen_evidence),
+            "draft_report_chars": len(draft_report),
+            "draft_max_chars": config.GR_REPORTER_DRAFT_MAX_CHARS,
+            "research_notes_chars": len(json.dumps(research_notes, ensure_ascii=False)),
         },
     }
     if packet["rubrics"]:

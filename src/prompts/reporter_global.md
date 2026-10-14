@@ -74,6 +74,12 @@ Explicit task requirements extracted from the user's request:
 Findings:
 <findings>
 
+Research notes: per-query evidence inventory with analysis mode, confirmed
+facts, limitations, and coverage gaps. Use it to judge where comparison or
+synthesis is actually supported and which sub-questions lack citation-ready
+evidence; it is metadata, so do not quote its internal ids or restate it verbatim:
+<research_notes>
+
 Draft report:
 <draft_report>
 

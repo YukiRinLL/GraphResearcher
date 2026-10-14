@@ -40,6 +40,16 @@ GR_GLOBAL_WRITER_OUTPUT_TOKENS = _positive_int_from_env(
     "GR_GLOBAL_WRITER_OUTPUT_TOKENS", 40_000
 )
 GR_GLOBAL_PACKET_TOKENS = _positive_int_from_env("GR_GLOBAL_PACKET_TOKENS", 48_000)
+# 初稿（draft_report）按全图证据无上限拼接，曾出现 37 万字符的草稿
+# 挤占 writer 上下文。封顶后被截断的材料仍完整保留在预算化 findings 中。
+GR_REPORTER_DRAFT_MAX_CHARS = _positive_int_from_env(
+    "GR_REPORTER_DRAFT_MAX_CHARS", 120_000
+)
+# research_notes 是每查询的证据清单/分析模式元数据，体量小但 ID 列表
+# 可能很长，这里设置打包进 writer prompt 的总字符安全上限。
+GR_REPORTER_NOTES_MAX_CHARS = _positive_int_from_env(
+    "GR_REPORTER_NOTES_MAX_CHARS", 16_000
+)
 # Max number of concurrent searcher dispatches per superstep. Each searcher
 # call involves a Tavily search + analyzer LLM pass (10-30s of I/O); running
 # multiple in parallel via ThreadPoolExecutor cuts wall-clock time for the

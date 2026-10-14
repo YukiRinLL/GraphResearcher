@@ -2448,8 +2448,25 @@ def compile_structured_report(title: str, sections: list[dict], *, persist: bool
     }
 
 
-def build_cited_evidence_report(request: str = "", *, read_view: Optional[ReportReadView] = None) -> str:
-    """Build a deterministic cited report from every citation-ready evidence item."""
+def build_cited_evidence_report(
+    request: str = "",
+    *,
+    read_view: Optional[ReportReadView] = None,
+    max_chars: Optional[int] = None,
+    query_order: Optional[list[str]] = None,
+    include_references: bool = True,
+) -> str:
+    """Build a deterministic cited report from citation-ready evidence items.
+
+    ``max_chars`` caps the total evidence-bullet footprint. The draft is only
+    a preliminary organization for the writer; the budgeted findings channel
+    retains the full material, so truncation here loses no evidence. Queries
+    are traversed in the given (priority) order, so the most important queries
+    claim the budget first. ``query_order`` accepts query ids or handles;
+    unlisted queries follow in deterministic order. ``include_references``
+    controls the inline reference list, which the global Reporter instead
+    passes separately as ``citation_registry``.
+    """
     view = _report_read_view(read_view)
     registry = build_reference_registry(read_view=view)
     cited_source_ids: set[str] = set()
@@ -2457,7 +2474,18 @@ def build_cited_evidence_report(request: str = "", *, read_view: Optional[Report
     is_chinese = bool(re.search(r"[\u4e00-\u9fff]", request or ""))
     parts = ["# 调研报告" if is_chinese else "# Research Report"]
     queries = view.search_nodes("query", {})
-    queries.sort(key=lambda query: (query.get("handle") or "", query.get("id") or ""))
+    order_rank = {str(ref): index for index, ref in enumerate(query_order or [])}
+
+    def _order_key(query: dict[str, Any]) -> tuple[int, int, str, str]:
+        for key in ("id", "handle", "ref"):
+            value = query.get(key)
+            if value is not None and str(value) in order_rank:
+                return (0, order_rank[str(value)], "", "")
+        return (1, 0, str(query.get("handle") or ""), str(query.get("id") or ""))
+
+    queries.sort(key=_order_key)
+    bullets_budget = int(max_chars) if max_chars is not None else None
+    used_bullet_chars = 0
     for query in queries:
         items: list[dict] = []
         offset = 0
@@ -2469,19 +2497,35 @@ def build_cited_evidence_report(request: str = "", *, read_view: Optional[Report
             offset = page["next_offset"]
         if not items:
             continue
+        if bullets_budget is not None and used_bullet_chars >= bullets_budget:
+            break
         heading = query.get("text") or query.get("handle") or query["id"]
         parts.append(f"## {heading}")
+        included = 0
         for item in items:
+            citations = "".join(f"[{number}]" for number in item["citations"])
+            bullet = f"- {item['text']} {citations}"
+            if bullets_budget is not None and used_bullet_chars + len(bullet) > bullets_budget:
+                break
             seen_items.add(item["id"])
             cited_source_ids.update(item["source_ids"])
-            citations = "".join(f"[{number}]" for number in item["citations"])
-            parts.append(f"- {item['text']} {citations}")
+            parts.append(bullet)
+            used_bullet_chars += len(bullet)
+            included += 1
+        omitted = len(items) - included
+        if omitted > 0:
+            parts.append(
+                f"（另有 {omitted} 条证据因初稿篇幅上限省略，完整材料见研究发现。）"
+                if is_chinese
+                else f"_(... {omitted} further evidence item(s) omitted from this preliminary "
+                f"draft due to its size cap; the full material is in findings.)_"
+            )
     if not seen_items:
         parts.extend([
             "## 结论" if is_chinese else "## Conclusion",
             "暂无可核实结论。" if is_chinese else "No verifiable findings are available.",
         ])
-    if cited_source_ids:
+    if include_references and cited_source_ids:
         parts.append(_render_references(
             registry,
             cited_source_ids,
