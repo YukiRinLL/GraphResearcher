@@ -608,7 +608,16 @@ def _merge_source_packets(search_results: dict, packets: list[dict]) -> dict:
             {"url": src_url, "title": src_title, **entry}
             for entry in packet.get("_location_log", [])
         )
-        raw_content = str(source.get("content") or source.get("raw_content") or "")
+        # Gate B must see the longest available body: the search backend's
+        # ``content`` snippet can be a 100-odd-char stub while ``raw_content``
+        # already holds thousands of chars of fetched page text. Preferring
+        # the snippet used to trip the len<400 short-page rule and discarded
+        # the whole source together with its already-extracted evidence.
+        raw_content = max(
+            str(source.get("raw_content") or ""),
+            str(source.get("content") or ""),
+            key=len,
+        )
         if _looks_like_login_wall_or_catalog(source, raw_content):
             package["extraction_log"].append({
                 "url": src_url, "title": src_title,
