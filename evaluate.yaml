@@ -1,7 +1,7 @@
 version: 1
 mode: run_and_evaluate
 seed: 42
-sample_count: 5
+sample_count: 6
 
 agent:
   model: deepseek-v4-pro

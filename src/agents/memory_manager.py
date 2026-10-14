@@ -1403,7 +1403,9 @@ class MemoryManager:
             return {"created_or_updated_claim_ids": [], "claim_count": 0, "source": "empty"}
 
         prompt = _claim_normalization_prompt(_claim_normalization_input(query, nodes))
-        fingerprint = hashlib.sha256(("claim-normalization-v3\n" + prompt).encode("utf-8")).hexdigest()
+        # 旧合并缓存可能包含模型空输出后的降级结果，统一按未命中重算。
+        version = "claim-normalization-merged-v4" if purpose == _MERGED_ASSESS_PURPOSE else "claim-normalization-v3"
+        fingerprint = hashlib.sha256((version + "\n" + prompt).encode("utf-8")).hexdigest()
         model = self._model_for(purpose)
         model_identity = self._model_identity(model)
         cached = self._claim_normalization_cache.get(cache_key)
@@ -1810,27 +1812,33 @@ class MemoryManager:
         prior_criterion_results = query.get("criterion_results") or []
         if query.get("status") == "waiting_children" and prior_criterion_results:
             query_payload["prior_criterion_results"] = prior_criterion_results
-        prompt = (
-            mm_prompts.assess_query.replace(
-                "{query}", json.dumps(_drop_empty_fields(query_payload), ensure_ascii=False)
+        existing_queries = [
+            {"id": item.get("id"), "text": item.get("text"), "status": item.get("status")}
+            for item in graph_tools.search_nodes("query", {})
+        ]
+
+        def render_assessment_prompt(current_evaluation: dict) -> str:
+            """用当前子图渲染评估输入，供正常调用和熔断降级共用."""
+            return (
+                mm_prompts.assess_query.replace(
+                    "{query}", json.dumps(_drop_empty_fields(query_payload), ensure_ascii=False)
+                )
+                .replace("{request_context}", json.dumps(request_context, ensure_ascii=False))
+                .replace(
+                    "{objectives}",
+                    json.dumps(
+                        [self._assess_objective_view(item) for item in objectives],
+                        ensure_ascii=False,
+                    ),
+                )
+                .replace("{existing_queries}", json.dumps(existing_queries, ensure_ascii=False))
+                .replace(
+                    "{evaluation_subgraph}",
+                    json.dumps(self._compact_evaluation_subgraph(current_evaluation), ensure_ascii=False),
+                )
             )
-            .replace("{request_context}", json.dumps(request_context, ensure_ascii=False))
-            .replace(
-                "{objectives}",
-                json.dumps(
-                    [self._assess_objective_view(item) for item in objectives],
-                    ensure_ascii=False,
-                ),
-            )
-            .replace("{existing_queries}", json.dumps([
-                {"id": item.get("id"), "text": item.get("text"), "status": item.get("status")}
-                for item in graph_tools.search_nodes("query", {})
-            ], ensure_ascii=False))
-            .replace(
-                "{evaluation_subgraph}",
-                json.dumps(self._compact_evaluation_subgraph(evaluation), ensure_ascii=False),
-            )
-        )
+
+        prompt = render_assessment_prompt(evaluation)
         invoke_prompt = (
             mm_prompts.build_merged_assess_prompt(merged_norm["prompt"], prompt)
             if merged_norm is not None
@@ -1875,7 +1883,7 @@ class MemoryManager:
             self.normalize_claims(resolved)
             evaluation = graph_tools.get_query_evaluation_subgraph(resolved)
             merged_norm = None
-            invoke_prompt = prompt
+            invoke_prompt = render_assessment_prompt(evaluation)
             verdict = _invoke_assessor(False)
         if merged_norm is not None:
             # 合并调用：把同一份 verdict 里的 Claims 落图并写入规范化缓存。
@@ -1894,6 +1902,7 @@ class MemoryManager:
             claim_specs = [
                 item for item in raw_claim_specs or [] if isinstance(item, dict)
             ]
+            cacheable = bool(claim_specs)
             if not claim_specs:
                 claim_specs = self._fallback_claim_specs(
                     query, norm_statements, norm_evidence
@@ -1907,7 +1916,7 @@ class MemoryManager:
                 written_bindings=claim_bindings,
             )
             merged_model = self._model_for(_MERGED_ASSESS_PURPOSE)
-            if norm_result["claim_count"] and all(claim_bindings.values()):
+            if cacheable and norm_result["claim_count"] and all(claim_bindings.values()):
                 self._persist_normalization_cache(
                     cache_key=(
                         graph_tools.get_current_context(),
@@ -3547,39 +3556,34 @@ class MemoryManager:
                 "reason": f"Globally selected {mode} search subject: {subject}",
             })
 
-        # Stage 2: author one child Query per group. Groups whose selected
-        # gaps carry a validated portfolio draft need no LLM call; all
-        # remaining groups share one batched gap_expander call, and any group
-        # the batch misses falls back to the per-group planner so worst-case
-        # behaviour matches the old serial path.
+        # 先接收有效草稿和批量结果，再补写缺失组。所有已接受文本都参与
+        # 后续调用的去重，避免补写前面的组时重复后面已规划的 Query。
         spec_by_group: dict[int, dict] = {}
-        draft_existing_keys = {
+        used_keys = {
             _normalize_query_text(text)
             for text in existing_query_texts
             if isinstance(text, str) and text.strip()
         }
+        planned_texts = list(existing_query_texts)
+
+        def accept_spec(idx: int, spec: dict) -> None:
+            text = spec["text"]
+            key = _normalize_query_text(text)
+            if _query_text_issue(text) or key in used_keys:
+                return
+            spec_by_group[idx] = spec
+            used_keys.add(key)
+            planned_texts.append(text)
+
         pending: list[int] = []
         for idx, item in enumerate(plannable):
-            spec = self._spec_from_portfolio_draft(item["group"], draft_existing_keys)
+            spec = self._spec_from_portfolio_draft(item["group"], used_keys)
             if spec is not None:
                 spec_by_group[idx] = spec
+                planned_texts.append(spec["text"])
             else:
                 pending.append(idx)
-        if len(pending) == 1:
-            orig_idx = pending[0]
-            item = plannable[orig_idx]
-            followups = self._plan_followup_queries(
-                research_goal=goal.get("research_goal") or goal.get("request") or "",
-                parent_text=parent.get("text") or parent.get("request") or "",
-                research_constraints=research_constraints,
-                existing_query_texts=existing_query_texts,
-                gaps=item["gaps_payload"],
-                reason=item["reason"],
-                max_new=1,
-            )
-            if followups:
-                spec_by_group[orig_idx] = followups[0]
-        elif len(pending) > 1:
+        if len(pending) > 1:
             assignments = [
                 {
                     "index": r_idx,
@@ -3594,36 +3598,40 @@ class MemoryManager:
                 research_goal=goal.get("research_goal") or goal.get("request") or "",
                 parent_text=parent.get("text") or parent.get("request") or "",
                 research_constraints=research_constraints,
-                existing_query_texts=existing_query_texts,
+                existing_query_texts=planned_texts,
                 assignments=assignments,
             )
-            fallback_existing = list(existing_query_texts)
             for r_idx, orig_idx in enumerate(pending):
-                item = plannable[orig_idx]
                 spec = mapped.get(r_idx)
-                if spec is None:
-                    followups = self._plan_followup_queries(
-                        research_goal=goal.get("research_goal") or goal.get("request") or "",
-                        parent_text=parent.get("text") or parent.get("request") or "",
-                        research_constraints=research_constraints,
-                        existing_query_texts=fallback_existing,
-                        gaps=item["gaps_payload"],
-                        reason=item["reason"],
-                        max_new=1,
-                    )
-                    spec = followups[0] if followups else None
                 if spec is not None:
-                    spec_by_group[orig_idx] = spec
-                    fallback_existing.append(spec["text"])
+                    accept_spec(orig_idx, spec)
+        for orig_idx in pending:
+            if orig_idx in spec_by_group:
+                continue
+            item = plannable[orig_idx]
+            followups = self._plan_followup_queries(
+                research_goal=goal.get("research_goal") or goal.get("request") or "",
+                parent_text=parent.get("text") or parent.get("request") or "",
+                research_constraints=research_constraints,
+                existing_query_texts=planned_texts,
+                gaps=item["gaps_payload"],
+                reason=item["reason"],
+                max_new=1,
+            )
+            if followups:
+                accept_spec(orig_idx, followups[0])
 
         # Stage 3: persist the child Query nodes from the authored specs.
         created = []
+        persisted_keys = {_normalize_query_text(text) for text in existing_query_texts}
         for idx, item in enumerate(plannable):
             group = item["group"]
             mode = item["mode"]
             subject = item["subject"]
             attach_parent_id = item["attach_parent_id"]
             spec = spec_by_group.get(idx)
+            if spec is not None and _normalize_query_text(spec["text"]) in persisted_keys:
+                spec = None
             if spec is None:
                 for gap in group:
                     graph_tools.upsert_node(NodeType.ANALYSIS, {
@@ -3660,6 +3668,7 @@ class MemoryManager:
             for key in objective_keys:
                 graph_tools.add_edge(child_id, objective_by_key[key]["id"], EdgeType.COVERS_OBJECTIVE)
             child = graph_tools.get_node(child_id)
+            persisted_keys.add(_normalize_query_text(spec["text"]))
             for gap in group:
                 graph_tools.upsert_node(NodeType.ANALYSIS, {
                     "status": "expanded",
@@ -5058,13 +5067,14 @@ class MemoryManager:
             for item in assignments
         ]
 
-        def author(extra: str = "") -> dict[int, dict]:
+        def author(accepted: dict[int, dict], extra: str = "") -> dict[int, dict]:
+            accepted_texts = [spec["text"] for spec in accepted.values()]
             prompt = (
                 mm_prompts.plan_followup_queries_batch
                 .replace("{research_goal}", research_goal or "")
                 .replace("{parent_text}", parent_text or "")
                 .replace("{research_constraints}", json.dumps(research_constraints or {}, ensure_ascii=False))
-                .replace("{existing_query_texts}", json.dumps(existing_query_texts or [], ensure_ascii=False))
+                .replace("{existing_query_texts}", json.dumps([*(existing_query_texts or []), *accepted_texts], ensure_ascii=False))
                 .replace("{assignments}", json.dumps(payload_assignments, ensure_ascii=False))
             )
             parsed = self._invoke_json(prompt + extra, purpose="gap_expander")
@@ -5072,14 +5082,14 @@ class MemoryManager:
             if not isinstance(raw_queries, list):
                 return {}
             mapped: dict[int, dict] = {}
-            authored_keys: set[str] = set()
+            authored_keys = {_normalize_query_text(text) for text in accepted_texts}
             for raw in raw_queries:
                 if not isinstance(raw, dict):
                     continue
                 idx = raw.get("assignment_index")
                 if type(idx) is not int or not 0 <= idx < len(assignments):
                     continue
-                if idx in mapped:
+                if idx in accepted or idx in mapped:
                     continue
                 text, criteria, objective_keys, search_mode = _followup_query_spec(raw)
                 key = _normalize_query_text(text)
@@ -5095,7 +5105,7 @@ class MemoryManager:
                 }
             return mapped
 
-        mapped = author()
+        mapped = author({})
         if len(mapped) < len(assignments):
             missing = [item["index"] for item in assignments if item["index"] not in mapped]
             retry = (
@@ -5105,8 +5115,7 @@ class MemoryManager:
                 "and constraints only — no contextual references, report tasks, or "
                 "agent instructions — and make every query text distinct."
             )
-            for idx, spec in author(retry).items():
-                mapped.setdefault(idx, spec)
+            mapped.update(author(mapped, retry))
         return mapped
 
     def _spec_from_portfolio_draft(

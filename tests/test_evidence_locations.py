@@ -60,7 +60,10 @@ def extract(source, response_factory=model_packet, *, query_id="q1", search_run_
             prompts.append(data)
             return json.dumps(response_factory(data["source"]))
 
-    with patch.dict(searcher.config._model_cache, {"default": Model()}):
+    with (
+        patch.dict(searcher.config._model_cache, {"purpose.source_analyzer": Model()}),
+        patch.object(searcher.config, "build_model", side_effect=AssertionError("离线抽取不能构建真实模型")),
+    ):
         packet = searcher._extract_source_packet(
             {"text": "sample measurement", "acceptance_criteria": ["measurement temperature"]},
             {"research_goal": "measurement accuracy and thermal drift"}, source,

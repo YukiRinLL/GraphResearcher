@@ -14,7 +14,7 @@ from agents.memory_manager import (  # noqa: E402
     LLMResponseCircuitOpenError,
     MemoryManager,
 )
-from tools import graph_tools  # noqa: E402
+from tools import graph_tools, research_state  # noqa: E402
 
 
 class FlakyModel:
@@ -197,3 +197,116 @@ def test_store_portfolio_gap_drafts_clears_stale_drafts():
         manager._store_portfolio_gap_drafts({}, [gap], [gap], [])
     assert stored["g1"]["drafted_query_text"] is None
     assert stored["g1"]["drafted_query_gap_ids"] == []
+
+
+class ScriptedModel:
+    """按调用顺序提供响应并记录真实规划输入。"""
+
+    def __init__(self, payloads):
+        self.payloads = iter(payloads)
+        self.prompts = []
+
+    def invoke(self, prompt):
+        self.prompts.append(prompt)
+        return SimpleNamespace(content=json.dumps(next(self.payloads)))
+
+
+def test_batch_retry_deduplicates_against_accepted_first_response():
+    model = ScriptedModel([
+        {"queries": [{"assignment_index": 0, "text": "Japan policy timeline"}]},
+        {"queries": [
+            {"assignment_index": 0, "text": "Japan policy funding"},
+            {"assignment_index": 1, "text": "Japan policy timeline"},
+            {"assignment_index": 1, "text": "Japan policy funding"},
+        ]},
+    ])
+    manager = MemoryManager(model=model)
+    result = manager._plan_followup_queries_batch(
+        research_goal="Japan policy", parent_text="Japan policy", research_constraints={},
+        existing_query_texts=[],
+        assignments=[
+            {"index": i, "mode": "horizontal", "subject": str(i), "gaps": [], "reason": "missing"}
+            for i in range(2)
+        ],
+    )
+    assert [result[i]["text"] for i in range(2)] == ["Japan policy timeline", "Japan policy funding"]
+    assert 'All existing Query texts (do NOT duplicate their coverage): ["Japan policy timeline"]' in model.prompts[1]
+
+
+def expand_with_fakes(gap_count, payloads, *, draft=None):
+    """运行实际草稿消费、批量规划、补写与落图控制流，仅替换外部边界。"""
+    nodes = {"goal": {"id": "goal", "type": "UserRequest", "request": "research Japan policy"}}
+    gaps = [
+        {
+            "id": f"g{i}", "type": "Analysis", "analysis_type": "gap", "status": "selected",
+            "expansion_parent_id": "goal", "expansion_mode": "horizontal",
+            "search_subject_key": str(i), "description": f"policy dimension {i}",
+        }
+        for i in range(gap_count)
+    ]
+    if draft:
+        gaps[0].update(drafted_query_text=draft, drafted_query_gap_ids=["g0"])
+    nodes.update({gap["id"]: gap for gap in gaps})
+
+    def search(kind, filters):
+        return [dict(n) for n in nodes.values() if n["type"].lower() == kind
+                and all(n.get(k) == v for k, v in filters.items())]
+
+    def upsert(_kind, properties, node_id):
+        nodes[node_id].update(properties)
+        return node_id
+
+    def create_child(**properties):
+        node_id = f"q{len(nodes)}"
+        nodes[node_id] = {**properties, "id": node_id, "handle": node_id, "type": "Query"}
+        return node_id
+
+    model = ScriptedModel(payloads)
+    manager = MemoryManager(model=model)
+    with (
+        patch.object(graph_tools, "get_node", side_effect=lambda node_id: dict(nodes.get(node_id, {}))),
+        patch.object(graph_tools, "search_nodes", side_effect=search),
+        patch.object(graph_tools, "upsert_node", side_effect=upsert),
+        patch.object(graph_tools, "create_query_child", side_effect=create_child),
+        patch.object(manager, "get_research_objectives", return_value=[]),
+        patch.object(manager, "_bump_portfolio_revision", return_value=1),
+        patch.object(research_state, "get_status", return_value={"research_state": research_state.RESEARCHING}),
+        patch.object(research_state, "get_goal", return_value=nodes["goal"]),
+        patch.object(research_state, "remaining_budget", return_value=10),
+    ):
+        result = manager.expand_gaps("goal", [gap["id"] for gap in gaps])
+    return result, nodes, model.prompts
+
+
+def test_expansion_planners_avoid_already_accepted_portfolio_drafts():
+    for pending_count in (1, 2):
+        first = [{"assignment_index": 0, "text": "Japan policy timeline"}]
+        if pending_count == 2:
+            first.append({"assignment_index": 1, "text": "Japan policy outcomes"})
+        result, _, prompts = expand_with_fakes(pending_count + 1, [
+            {"queries": first},
+            {"queries": [{"assignment_index": 0, "text": "Japan policy funding"}]},
+        ], draft="Japan policy timeline")
+        texts = [item["text"] for item in result["created"]]
+        assert len(texts) == len(set(texts)) == pending_count + 1
+        assert "Japan policy funding" in texts
+        assert 'All existing Query texts (do NOT duplicate their coverage): ["Japan policy timeline"]' in prompts[0]
+
+
+def test_expansion_fallback_reserves_all_batch_results():
+    result, _, prompts = expand_with_fakes(2, [
+        {"queries": [{"assignment_index": 1, "text": "Japan policy timeline"}]},
+        {"queries": [{"assignment_index": 1, "text": "Japan policy timeline"}]},
+        {"queries": [{"text": "Japan policy timeline"}]},
+        {"queries": [{"text": "Japan policy funding"}]},
+    ])
+    assert [item["text"] for item in result["created"]] == ["Japan policy funding", "Japan policy timeline"]
+    assert 'All existing Query texts (do NOT duplicate their coverage): ["Japan policy timeline"]' in prompts[2]
+
+
+def test_repeated_duplicate_queries_leave_unplannable_gap_blocked():
+    duplicate = {"queries": [{"text": "Japan policy timeline"}]}
+    result, nodes, _ = expand_with_fakes(2, [duplicate, duplicate], draft="Japan policy timeline")
+    assert len(result["created"]) == 1
+    assert nodes["g0"]["status"] == "expanded"
+    assert nodes["g1"]["status"] == "blocked"

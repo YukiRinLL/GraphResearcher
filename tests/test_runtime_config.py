@@ -1,11 +1,14 @@
 """离线验证共享配置解析和两个启动入口的实际生效参数。"""
 
 import json
+import os
 import subprocess
 import sys
 import tempfile
 from copy import deepcopy
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
 
 import yaml
 
@@ -76,6 +79,29 @@ def test_snapshots(root):
     assert "secret-marker" not in path.read_text()
     assert read_config_file(path)["agent"] == agent
     assert resolve_agent_config(read_config_file(path)["agent"], {"GR_MODEL": "other"}) == agent
+
+
+def test_purpose_model_routing():
+    import config
+
+    for source_model in ("", "source-model"):
+        env = {name: "" for name in config.PURPOSE_MODEL_ENV.values()}
+        env["GR_SOURCE_ANALYZER_MODEL"] = source_model
+        with (
+            patch.dict(os.environ, env),
+            patch.dict(config._model_cache, {}, clear=True),
+            patch.object(config, "DEFAULT_MODEL", "default-model"),
+            patch.object(config, "build_model", side_effect=lambda **kwargs: SimpleNamespace(**kwargs)) as build,
+        ):
+            models = {purpose: config.get_purpose_model(purpose) for purpose in config.PURPOSE_MODEL_ENV}
+            for purpose, model in models.items():
+                expected = source_model if purpose == "source_analyzer" and source_model else "default-model"
+                assert model.model_name == expected
+                assert config.get_purpose_model(purpose) is model
+            assert config.source_analyzer_model is models["source_analyzer"]
+            assert config.searcher_model is models["source_analyzer"]
+            assert len({id(model) for model in models.values()}) == len(models)
+            assert build.call_count == len(models)
 
 
 def entry_script():
@@ -183,6 +209,7 @@ def test_entrypoints(root):
 
 def main():
     test_resolution()
+    test_purpose_model_routing()
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
         test_snapshots(root)

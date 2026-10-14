@@ -89,7 +89,8 @@ def settings(model, limit=3, slots=None):
     with (
         patch.object(searcher.config, "SOURCE_EXTRACTION_CONCURRENCY", limit),
         patch.object(searcher, "_source_analyzer_slots", slots or BoundedSemaphore(limit)),
-        patch.dict(searcher.config._model_cache, {"default": model}),
+        patch.dict(searcher.config._model_cache, {"purpose.source_analyzer": model}),
+        patch.object(searcher.config, "build_model", side_effect=AssertionError("离线抽取不能构建真实模型")),
     ):
         yield
 
