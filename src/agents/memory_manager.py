@@ -1282,6 +1282,24 @@ class MemoryManager:
                 return owner["id"]
         return None
 
+    def _is_root_delivery_gap(self, gap: dict) -> bool:
+        """Root-owned delivery-requirement Gaps bypass branch balancing.
+
+        ``_recover_unactionable_research`` anchors these recovery Gaps on the
+        goal UserRequest, but ``_build_branch_summary`` only lists Query
+        owners, so the portfolio LLM can never return a branch decision for
+        them. Treating them as a cooled branch made recovery Gaps
+        unselectable (default cool_down -> hard skip -> PATH EXHAUSTED while
+        the must Objective stayed uncovered).
+        """
+        if str(gap.get("trigger_type") or "") != "delivery_requirement":
+            return False
+        owner_id = self._gap_owner_id(gap["id"])
+        if not owner_id:
+            return False
+        owner = graph_tools.get_node(owner_id)
+        return bool(owner and owner.get("type") == NodeType.USER_REQUEST.value)
+
     @staticmethod
     def _normalize_claim_key(text: str, explicit: Optional[str] = None) -> str:
         """Return a stable key for a canonical Claim."""
@@ -2523,6 +2541,9 @@ class MemoryManager:
             owner = graph_tools.get_node(owner_id)
             if not owner or owner.get("type") != NodeType.QUERY.value:
                 # UserRequest owner (root): not a branch to balance.
+                # Root-owned delivery-requirement gaps are exempted from the
+                # cool-down whitelist downstream (_is_root_delivery_gap), so
+                # omitting them here cannot make them unselectable.
                 continue
             depth = self._query_depth(owner_id)
             children = graph_tools.get_query_children(owner_id) or []
@@ -2874,11 +2895,20 @@ class MemoryManager:
                 allowed_owners.add(owner_id)
             elif action in {"cool_down", "pause"}:
                 cooled_down_owners[owner_id] = action
-        active_owner_ids = {
-            owner_id
-            for owner_id in (self._gap_owner_id(gap["id"]) for gap in active_gaps)
-            if owner_id
-        }
+        # Branch balancing only covers Query owners. Root-owned
+        # delivery-requirement recovery Gaps have no branch summary line and
+        # therefore no possible LLM decision; track them separately so they
+        # are neither default-cooled nor counted in the whitelist.
+        active_owner_ids: set[str] = set()
+        root_delivery_gap_ids: set[str] = set()
+        for gap in active_gaps:
+            owner_id = self._gap_owner_id(gap["id"])
+            if not owner_id:
+                continue
+            if self._is_root_delivery_gap(gap):
+                root_delivery_gap_ids.add(gap["id"])
+            else:
+                active_owner_ids.add(owner_id)
         branch_decisions_complete = active_owner_ids.issubset(parsed_owner_ids)
         if not branch_decisions_complete:
             for owner_id in sorted(active_owner_ids - parsed_owner_ids):
@@ -3143,12 +3173,28 @@ class MemoryManager:
             )
             for gap in group:
                 gap_owner_id = self._gap_owner_id(gap["id"])
+                gap_is_root_delivery = gap["id"] in root_delivery_gap_ids
+                gap_uncovered_must_keys = {
+                    key
+                    for key in (gap.get("objective_keys") or [])
+                    if key in objective_by_key
+                    and objective_by_key[key].get("requirement") == "must"
+                    and objective_by_key[key].get("status")
+                    not in {"satisfied", "blocked"}
+                }
+                # Root delivery gaps only bypass the cool-down whitelist
+                # while they target an uncovered must objective; lingering
+                # gaps for satisfied/blocked objectives stay deferrable.
+                gap_bypass_cooldown = gap_is_root_delivery and bool(
+                    gap_uncovered_must_keys - force_expanded_must_keys
+                )
                 gap_cooled = (
                     group_chosen_by_utility
                     and not fatal
                     and has_whitelist
                     and bool(gap_owner_id)
                     and gap_owner_id not in allowed_owners
+                    and not gap_bypass_cooldown
                 )
                 if gap_cooled:
                     gap_status = "deferred_branch_cool_down"
@@ -3166,6 +3212,10 @@ class MemoryManager:
                     # marginal-utility ordering. This preserves portfolio
                     # balancing while still guaranteeing that uncovered
                     # must objectives get at least one expansion path.
+                    # Root-owned delivery-requirement recovery gaps are
+                    # exempt from the needs_expansion precondition: the goal
+                    # node never carries that status, and the gap exists
+                    # precisely because a must objective is uncovered.
                     gap_owner = next(
                         (o for o in owners if o and o.get("id") == gap_owner_id),
                         None,
@@ -3174,19 +3224,13 @@ class MemoryManager:
                         gap_owner
                         and gap_owner.get("status") == "needs_expansion"
                     )
-                    gap_must_keys = {
-                        key
-                        for key in (gap.get("objective_keys") or [])
-                        if key in objective_by_key
-                        and objective_by_key[key].get("requirement") == "must"
-                        and objective_by_key[key].get("status")
-                        not in {"satisfied", "blocked"}
-                    }
+                    gap_must_keys = gap_uncovered_must_keys
                     gap_impacts_uncovered_must = bool(
                         gap_must_keys - force_expanded_must_keys
                     )
                     gap_force_expand = (
-                        owner_needs_expansion and gap_impacts_uncovered_must
+                        (owner_needs_expansion or gap_bypass_cooldown)
+                        and gap_impacts_uncovered_must
                     )
                     gap_choose = group_chosen_by_utility or gap_force_expand
                     gap_status = "selected" if gap_choose else "deferred_low_value"
