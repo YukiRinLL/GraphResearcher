@@ -153,9 +153,9 @@ def test_blocked_objective_with_budget_authorizes_limited_report():
         }
 
     assert observed["remaining_search_rounds"] == 12, observed
-    # 0.35 coverage / 0.60 coverage threshold = 0.5833 (confidence 0.8/0.5
-    # is non-limiting); the 0.4667 expectation predated the 0.60 thresholds.
-    assert observed["report_completeness_score"] == 0.5833, observed
+    # coverage/confidence 比值 0.5833（0.35/0.60；confidence 0.8/0.5
+    # 非限制项），再乘验收标准满足率：2 条中 1 条未满足 → 0.5。
+    assert observed["report_completeness_score"] == 0.2917, observed
     assert observed["research_state"] == research_state.LIMITED_REPORT_READY, observed
     assert observed["repeated_converged"] is True, observed
     assert observed["supported_boundary"] == (

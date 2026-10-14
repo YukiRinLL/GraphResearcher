@@ -3316,14 +3316,37 @@ class MemoryManager:
             for item in must
         ]
         total_must_weight = sum(weight for _, weight in weighted_must)
+
+        def _objective_completeness(item: dict) -> float:
+            ratio = min(
+                float(item.get("coverage") or 0.0) / OBJECTIVE_COVERAGE_THRESHOLD,
+                float(item.get("confidence") or 0.0) / OBJECTIVE_CONFIDENCE_THRESHOLD,
+                1.0,
+            )
+            # Acceptance-criteria gate: coverage/confidence merely crossing
+            # the thresholds must not saturate completeness to 1.0 while the
+            # same portfolio verdict still lists unmet must criteria. The
+            # two signals used to disagree (verdict 0.72 with an unmet
+            # criterion vs graph score 1.00). With no declared criteria the
+            # gate is open and legacy behavior is unchanged.
+            criteria = [
+                criterion
+                for criterion in (item.get("acceptance_criteria") or [])
+                if isinstance(criterion, str)
+            ]
+            if not criteria:
+                return ratio
+            unmet = {
+                str(criterion)
+                for criterion in (item.get("unmet_acceptance_criteria") or [])
+                if isinstance(criterion, str)
+            }
+            satisfied = sum(1 for criterion in criteria if criterion not in unmet)
+            return ratio * (satisfied / len(criteria))
+
         completeness = (
             sum(
-                weight
-                * min(
-                    float(item.get("coverage") or 0.0) / OBJECTIVE_COVERAGE_THRESHOLD,
-                    float(item.get("confidence") or 0.0) / OBJECTIVE_CONFIDENCE_THRESHOLD,
-                    1.0,
-                )
+                weight * _objective_completeness(item)
                 for item, weight in weighted_must
             )
             / total_must_weight

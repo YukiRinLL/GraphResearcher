@@ -115,7 +115,48 @@ def test_all_zero_weight_must_objectives_have_zero_completeness():
     assert completeness == 0.0, completeness
 
 
+def test_unmet_acceptance_criteria_block_saturation():
+    # coverage/confidence 越过阈值（旧逻辑直接饱和为 1.0），但 verdict
+    # 仍报告 must 验收标准未满足：completeness 必须随之打折。
+    objective = _objective("capped", 1.0)
+    objective["coverage"] = 0.72
+    objective["confidence"] = 0.68
+    objective["acceptance_criteria"] = [
+        "how each identified government invests",
+        "named investors and vehicles",
+    ]
+    completeness = _evaluate_completeness(
+        [objective],
+        [{
+            "objective_key": "capped",
+            "coverage": 0.72,
+            "confidence": 0.68,
+            "unmet_acceptance_criteria": ["how each identified government invests"],
+        }],
+    )
+    assert completeness == 0.5, completeness
+
+
+def test_all_criteria_unmet_forces_zero_completeness():
+    objective = _objective("empty", 1.0)
+    objective["coverage"] = 0.9
+    objective["confidence"] = 0.9
+    objective["acceptance_criteria"] = ["c1", "c2"]
+    completeness = _evaluate_completeness(
+        [objective],
+        [{
+            "objective_key": "empty",
+            "coverage": 0.9,
+            "confidence": 0.9,
+            "unmet_acceptance_criteria": ["c1", "c2"],
+        }],
+    )
+    assert completeness == 0.0, completeness
+
+
 if __name__ == "__main__":
     test_zero_weight_objective_does_not_dilute_weighted_completeness()
     test_all_zero_weight_must_objectives_have_zero_completeness()
+    test_unmet_acceptance_criteria_block_saturation()
+    test_all_criteria_unmet_forces_zero_completeness()
     print("ALL REPORT COMPLETENESS CHECKS PASSED")
