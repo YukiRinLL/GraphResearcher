@@ -1529,20 +1529,49 @@ def compile_global_writer_report(
         return match.group(0) if int(match.group(1)) in by_number else ""
 
     cleaned_body = sanitize_report(_CITE_TOKEN_RE.sub(remove_invalid, body_text)).rstrip()
-    valid_numbers = [number for number in cited_numbers if number in by_number]
-    cited_source_ids = {by_number[number]["source_id"] for number in valid_numbers}
+    valid_numbers_old = [number for number in cited_numbers if number in by_number]
+
+    # Reindex valid citations to a contiguous 1..M range, preserving
+    # first-appearance order. The LLM may emit arbitrary numbers from the
+    # filtered registry; the compiler always normalizes before rendering.
+    first_seen: list[int] = []
+    seen_old: set[int] = set()
+    for token in _CITE_TOKEN_RE.finditer(cleaned_body):
+        old = int(token.group(1))
+        if old in seen_old or old not in by_number:
+            continue
+        seen_old.add(old)
+        first_seen.append(old)
+
+    old_to_new: dict[int, int] = {
+        old: i + 1 for i, old in enumerate(first_seen)
+    }
+
+    if old_to_new:
+        def _renumber(match: re.Match) -> str:
+            new = old_to_new.get(int(match.group(1)))
+            return f"[{new}]" if new is not None else ""
+
+        cleaned_body = _CITE_TOKEN_RE.sub(_renumber, cleaned_body).rstrip()
+
+    valid_numbers_new = list(old_to_new.values())
+    cited_source_ids = {by_number[old]["source_id"] for old in first_seen}
+    reindexed_registry = [
+        {**by_number[old], "n": old_to_new[old]}
+        for old in first_seen
+    ]
     is_chinese = bool(re.search(r"[\u4e00-\u9fff]", cleaned_body))
     references = _render_references(
-        registry,
+        reindexed_registry,
         cited_source_ids,
         "参考文献" if is_chinese else "References",
     )
     report = f"{cleaned_body}\n\n{references}\n" if cleaned_body else ""
-    if valid_numbers:
+    if old_to_new:
         try:
             _persist_sections(
                 cleaned_body,
-                {number: number for number in valid_numbers},
+                old_to_new,
                 by_number,
             )
         except Exception:  # noqa: BLE001 - graph traceability is best effort
@@ -1561,11 +1590,12 @@ def compile_global_writer_report(
         str(url).rstrip(".,，。);）") for url in contract.get("blocked_sources") or []
     }
     blocked_citations = [
-        number for number in valid_numbers
-        if str(by_number[number].get("url") or "").rstrip(".,，。);）") in blocked_sources
+        (old, old_to_new.get(old, old))
+        for old in valid_numbers_old
+        if str(by_number[old].get("url") or "").rstrip(".,，。);）") in blocked_sources
     ]
     hard_issues.extend(
-        f"citation uses blocked source: [{number}]" for number in blocked_citations
+        f"citation uses blocked source: [{new}]" for _old, new in blocked_citations
     )
     body_lower = cleaned_body.casefold()
     for section in contract.get("required_sections") or []:
@@ -1579,7 +1609,7 @@ def compile_global_writer_report(
         hard_issues.append("answer contract requires Chinese prose")
     if language_hint == "en" and not re.search(r"[A-Za-z]", cleaned_body):
         hard_issues.append("answer contract requires English prose")
-    if not valid_numbers and cleaned_body:
+    if not old_to_new and cleaned_body:
         hard_issues.append("global report contains no valid inline citations")
     hard_issues.extend(
         validate_delivery_invariants(report, require_citation_per_unit=False)
@@ -1592,7 +1622,7 @@ def compile_global_writer_report(
             f"{issue}; writer coverage diagnostic only"
             for issue in rubric_issues
         ],
-        "cited_numbers": valid_numbers,
+        "cited_numbers": valid_numbers_new,
     }
 
 

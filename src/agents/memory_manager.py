@@ -4028,18 +4028,24 @@ class MemoryManager:
                 recommendation = "continue"
                 state = research_state.RESEARCHING
             else:
+                # No objective-level BLOCKED required_items, no active/pending
+                # queries, no selected gaps, and get_next_actions() confirms
+                # there is nothing actionable left beyond convergence. This is
+                # a clean closure: full REPORT_READY, not a best-effort LIMITED
+                # downgrade (see workflow.py — step-budget exhaustion, not path
+                # exhaustion, is what warrants LIMITED_REPORT_READY).
                 research_state.update_goal({
-                    "research_state": research_state.LIMITED_REPORT_READY,
+                    "research_state": research_state.REPORT_READY,
                     "last_convergence_recommendation": "stop",
                     "report_authorized_reason": (
                         "no actionable work remains according to the shared "
                         "scheduler actionability definition (no active/pending "
                         "queries and no non-convergence next action); "
-                        "authorizing best-effort report"
+                        "authorizing full report"
                     ),
                 }, goal_id)
                 recommendation = "stop"
-                state = research_state.LIMITED_REPORT_READY
+                state = research_state.REPORT_READY
         else:
             research_state.update_goal({
                 "research_state": research_state.RESEARCHING,
