@@ -18,7 +18,6 @@ sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "tests"))
 
 import test_tree_state_machine as tsm  # noqa: E402
-
 from agents.memory_manager import MemoryManager  # noqa: E402
 from memory.graph import EdgeType  # noqa: E402
 from tools import graph_tools  # noqa: E402

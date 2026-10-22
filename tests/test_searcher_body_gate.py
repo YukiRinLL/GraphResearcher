@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from agents import searcher  # noqa: E402
 
+
 VALID_BODY = (
     "The finance ministry published its annual investment review. " * 120
 )  # ~6.6k chars, no login-wall hints
