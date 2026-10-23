@@ -6,7 +6,7 @@ sample_count: 5  # 每个 Benchmark 的样本数；null 表示全部。
 
 agent:
   name: graphresearcher  # Agent 名称，用于自动生成运行目录名。
-  model: gpt-5-nano  # 本地 OpenAI 兼容网关使用的模型。
+  model: gpt-5.1  # 搜索抽取、证据评估等环节使用的模型。
   model_timeout_seconds: 180  # 单次模型请求的超时秒数。
   search_timeout_seconds: 30  # 单次搜索请求的超时秒数。
   max_rounds: 30  # 每条样本的搜索派发次数上限；0 表示不限。
@@ -22,14 +22,14 @@ agent:
   verbosity: quiet  # quiet：简略；normal：进度；debug：工具调用及详细日志。
   # 每个 LLM 环节可单独指定模型；留空或删除某个键时回退到上面的 agent.model。
   models:
-     planner: gpt-5-nano # init：初始 Query 与研究目标规划
-     source_analyzer: gpt-5-nano # Searcher 逐网页来源的证据抽取（调用量最大）
-     query_reformulator: gpt-5-nano # 首轮搜索全部撞重时改写检索词
-     claim_normalizer: gpt-5-nano # Claim 规范化归并
-     query_assessor: gpt-5-nano # Query 证据充分性裁决
-     portfolio: gpt-5-nano # 全局组合评估与 gap 取舍
-     gap_expander: gpt-5-nano # follow-up 子 Query 撰写
-     convergence: gpt-5-nano # 收敛裁决
+    planner: deepseek-v4-pro # init：初始 Query 与研究目标规划
+    source_analyzer: deepseek-v4-pro # Searcher 逐网页来源的证据抽取（调用量最大）
+    query_reformulator: deepseek-v4-pro # 首轮搜索全部撞重时改写检索词
+    claim_normalizer: deepseek-v4-pro # Claim 规范化归并
+    query_assessor: deepseek-v4-pro # Query 证据充分性裁决
+    portfolio: deepseek-v4-pro # 全局组合评估与 gap 取舍
+    gap_expander: deepseek-v4-pro # follow-up 子 Query 撰写
+    convergence: deepseek-v4-pro # 收敛裁决
   reporter:
     model: ""  # 留空时继承 agent.model。
     reviewer_model: ""  # 报告复核模型；留空时继承 agent.model。
@@ -62,8 +62,8 @@ benchmarks:  # 至少启用一个 Benchmark；仅测试 Bench I 时关闭另外�
     sample_count: null  # 覆盖顶层样本数；null 表示继承。
     runtime:
       backend: openai  # 可选 openai 或 openrouter，对应凭据从 .env 读取。
-      race_model: gpt-5-nano
-      fact_model: gpt-5-nano
+      race_model: gpt-5.5
+      fact_model: gpt-5.4-mini
       model_timeout_seconds: 600
       max_output_tokens: 64000
     selection:
@@ -79,9 +79,9 @@ benchmarks:  # 至少启用一个 Benchmark；仅测试 Bench I 时关闭另外�
     enabled: true  # 是否启用 Wiki Live Challenge。
     sample_count: null  # 覆盖顶层样本数；null 表示继承。
     runtime:
-      extract_model: gpt-5-nano
-      verifier_model: gpt-5-nano
-      writing_model: gpt-5-nano
+      extract_model: gemini-2.5-flash
+      verifier_model: gemini-2.5-flash
+      writing_model: gemini-2.5-pro
       embedding_model: text-embedding-3-small
       model_timeout_seconds: 300
       max_retries: 3  # 原生评测客户端的重试参数。
@@ -105,7 +105,7 @@ benchmarks:  # 至少启用一个 Benchmark；仅测试 Bench I 时关闭另外�
     enabled: true  # 是否启用 DeepResearch Bench II。
     sample_count: null  # 覆盖顶层样本数；null 表示继承。
     runtime:
-      model: gpt-5-nano
+      model: gpt-5.5
       reasoning_effort: medium
       max_output_tokens: 32768
       model_timeout_seconds: 600
