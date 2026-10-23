@@ -4,26 +4,26 @@ seed: 42
 sample_count: 6
 
 agent:
-  model: deepseek-v4-pro
+  model: gpt-5-nano
   model_timeout_seconds: 300.0
   search_timeout_seconds: 60.0
   assess_query_concurrency: 3
   name: graphresearcher
   # 每类大模型调用可单独指定模型；留空或删除某个键时回退到上面的 model。
   models:
-    planner: deepseek-v4-pro # init：初始 Query 与研究目标规划
-    source_analyzer: deepseek-v4-pro # Searcher 逐网页来源的证据抽取（调用量最大）
-    query_reformulator: deepseek-v4-pro # 首轮搜索全部撞重时改写检索词
-    claim_normalizer: deepseek-v4-pro # Claim 规范化归并
-    query_assessor: deepseek-v4-pro # Query 证据充分性裁决
-    portfolio: deepseek-v4-pro # 全局组合评估与 gap 取舍
-    gap_expander: deepseek-v4-pro # follow-up 子 Query 撰写
-    convergence: deepseek-v4-pro # 收敛裁决
+    planner: gpt-5-nano # init：初始 Query 与研究目标规划
+    source_analyzer: gpt-5-nano # Searcher 逐网页来源的证据抽取（调用量最大）
+    query_reformulator: gpt-5-nano # 首轮搜索全部撞重时改写检索词
+    claim_normalizer: gpt-5-nano # Claim 规范化归并
+    query_assessor: gpt-5-nano # Query 证据充分性裁决
+    portfolio: gpt-5-nano # 全局组合评估与 gap 取舍
+    gap_expander: gpt-5-nano # follow-up 子 Query 撰写
+    convergence: gpt-5-nano # 收敛裁决
   reporter:
-    model: deepseek-v4-pro
+    model: gpt-5-nano
     # 旧 submit_final_report 审核路径使用的模型；当前确定性工作流不触发，
     # 需要启用时取消注释并填写（留空回退 model）。
-    # reviewer_model: deepseek-v4-pro
+    # reviewer_model: gpt-5-nano
     model_timeout_seconds: 300.0
     packet_tokens: 48000
     output_tokens: 40000
@@ -41,14 +41,14 @@ execution:
 
 output:
   root: outputs/evaluations/drb1
-  run_id: deepseek-v4-pro
+  run_id: gpt-5-nano-local-gateway
 
 benchmarks:
   deep_research_bench:
     runtime:
       backend: openai
-      race_model: gpt-5.5
-      fact_model: gpt-5.4-mini
+      race_model: gpt-5-nano
+      fact_model: gpt-5-nano
       model_timeout_seconds: 600
       max_output_tokens: 64000
     enabled: true
@@ -62,9 +62,9 @@ benchmarks:
 
   wiki_live_challenge:
     runtime:
-      extract_model: gemini-2.5-flash
-      verifier_model: gemini-2.5-flash
-      writing_model: gemini-2.5-pro
+      extract_model: gpt-5-nano
+      verifier_model: gpt-5-nano
+      writing_model: gpt-5-nano
       embedding_model: text-embedding-3-small
       model_timeout_seconds: 300.0
       max_retries: 3
@@ -73,7 +73,7 @@ benchmarks:
 
   deep_research_bench_ii:
     runtime:
-      model: gpt-5.5
+      model: gpt-5-nano
       reasoning_effort: medium
       max_output_tokens: 32768
       model_timeout_seconds: 600

@@ -78,7 +78,15 @@ def _evaluate_drb(
         race_dir = output_dir / "race"
         command = [
             sys.executable,
-            "deepresearch_bench_race.py",
+            "-c",
+            (
+                "import runpy, sys; "
+                "script = sys.argv[1]; "
+                "sys.path.insert(0, __import__('os').path.dirname(script)); "
+                "sys.argv = sys.argv[1:]; "
+                "runpy.run_path(script, run_name='__main__')"
+            ),
+            str(bench / "deepresearch_bench_race.py"),
             "graphresearcher",
             "--raw_data_dir",
             str(raw_dir),

@@ -122,7 +122,7 @@ def benchmark_environment(
     defaults = {
         "deep_research_bench": {
             "OPENAI_API_KEY": base.get("OPENAI_API_KEY", ""),
-            "OPENAI_BASE_URL": base.get("OPENAI_BASE_URL", "https://api.openai.com/v1"),
+            "OPENAI_BASE_URL": base.get("OPENAI_BASE_URL", "http://127.0.0.1:8000/v1"),
             "OPENROUTER_API_KEY": "",
             "OPENROUTER_BASE_URL": "https://openrouter.ai/api/v1",
             "JINA_API_KEY": base.get("JINA_API_KEY", ""),
@@ -130,17 +130,17 @@ def benchmark_environment(
         "wiki_live_challenge": {
             "JINA_API_KEY": "",
             "JINA_BASE_URL": "https://r.jina.ai/",
-            "EXTRACT_API_KEY": "",
-            "EXTRACT_BASE_URL": "",
-            "VERIFIER_API_KEY": "",
-            "VERIFIER_BASE_URL": "",
-            "WRITING_API_KEY": "",
-            "WRITING_BASE_URL": "",
-            "OPENAI_API_KEY": "",
-            "OPENAI_BASE_URL": "https://api.openai.com/v1",
+            "EXTRACT_API_KEY": base.get("OPENAI_API_KEY", ""),
+            "EXTRACT_BASE_URL": base.get("OPENAI_BASE_URL", "http://127.0.0.1:8000/v1"),
+            "VERIFIER_API_KEY": base.get("OPENAI_API_KEY", ""),
+            "VERIFIER_BASE_URL": base.get("OPENAI_BASE_URL", "http://127.0.0.1:8000/v1"),
+            "WRITING_API_KEY": base.get("OPENAI_API_KEY", ""),
+            "WRITING_BASE_URL": base.get("OPENAI_BASE_URL", "http://127.0.0.1:8000/v1"),
+            "OPENAI_API_KEY": base.get("OPENAI_API_KEY", ""),
+            "OPENAI_BASE_URL": base.get("OPENAI_BASE_URL", "http://127.0.0.1:8000/v1"),
         },
         "deep_research_bench_ii": {
-            "OPENAI_API_URL": "https://api.openai.com/v1/chat/completions",
+            "OPENAI_API_URL": "http://127.0.0.1:8000/v1/chat/completions",
             "OPENAI_API_KEY": base.get("OPENAI_API_KEY", ""),
         },
     }
@@ -191,7 +191,14 @@ def validate_evaluator_environment(config: dict[str, Any], root_env: dict[str, s
                 required.append("WLC_EMBEDDING_API_KEY")
             if "writing" in dimensions:
                 required.extend(["WLC_WRITING_API_KEY", "WLC_WRITING_BASE_URL"])
-            missing.extend(name for name in required if not root_env.get(name))
+            missing.extend(
+                name for name in required
+                if not root_env.get(name)
+                and not (
+                    name.endswith("_API_KEY") and root_env.get("OPENAI_API_KEY")
+                    or name.endswith("_BASE_URL") and root_env.get("OPENAI_BASE_URL")
+                )
+            )
         elif benchmark == "deep_research_bench_ii":
             if not (root_env.get("DRB2_OPENAI_API_KEY") or root_env.get("OPENAI_API_KEY")):
                 missing.append("DRB2_OPENAI_API_KEY")
@@ -210,12 +217,15 @@ def run_command(
     """执行子进程，返回墙钟时间和错误."""
     log_path.parent.mkdir(parents=True, exist_ok=True)
     started = time.perf_counter()
+    child_env = dict(env)
+    python_path = child_env.get("PYTHONPATH")
+    child_env["PYTHONPATH"] = str(cwd) if not python_path else f"{cwd}{os.pathsep}{python_path}"
     try:
         with log_path.open("a", encoding="utf-8") as log_file:
             completed = subprocess.run(
                 command,
                 cwd=cwd,
-                env=env,
+                env=child_env,
                 stdout=log_file,
                 stderr=subprocess.STDOUT,
                 text=True,

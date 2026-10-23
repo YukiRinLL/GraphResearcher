@@ -84,13 +84,13 @@ def _evaluator_snapshot(config: dict[str, Any], env: dict[str, str]) -> dict[str
     return {
         "benchmarks": config["benchmarks"],
         "models": {
-            "deep_research_bench.race": env.get("DRB_RACE_MODEL", "gpt-5.5"),
-            "deep_research_bench.fact": env.get("DRB_FACT_MODEL", "gpt-5.4-mini"),
-            "wiki_live_challenge.extract": env.get("WLC_EXTRACT_MODEL", "gemini-2.5-flash"),
-            "wiki_live_challenge.verifier": env.get("WLC_VERIFIER_MODEL", "gemini-2.5-flash"),
-            "wiki_live_challenge.writing": env.get("WLC_WRITING_MODEL", "gemini-2.5-pro"),
+            "deep_research_bench.race": env.get("DRB_RACE_MODEL", "gpt-5-nano"),
+            "deep_research_bench.fact": env.get("DRB_FACT_MODEL", "gpt-5-nano"),
+            "wiki_live_challenge.extract": env.get("WLC_EXTRACT_MODEL", "gpt-5-nano"),
+            "wiki_live_challenge.verifier": env.get("WLC_VERIFIER_MODEL", "gpt-5-nano"),
+            "wiki_live_challenge.writing": env.get("WLC_WRITING_MODEL", "gpt-5-nano"),
             "wiki_live_challenge.embedding": env.get("WLC_EMBEDDING_MODEL", "text-embedding-3-small"),
-            "deep_research_bench_ii": env.get("DRB2_OPENAI_MODEL", "gpt-5.5"),
+            "deep_research_bench_ii": env.get("DRB2_OPENAI_MODEL", "gpt-5-nano"),
         },
     }
 

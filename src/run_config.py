@@ -14,7 +14,7 @@ import yaml
 # models.* 与 reporter.model / reporter.reviewer_model 默认空串，解析阶段会
 # 回退到顶层 agent.model，因此这里不直接写具体模型名。
 AGENT_SETTINGS = {
-    "model": ("GR_MODEL", "gpt-5.1"),
+    "model": ("GR_MODEL", "gpt-5-nano"),
     "model_timeout_seconds": ("GR_MODEL_TIMEOUT", 180.0),
     "max_retries": ("GR_MODEL_MAX_RETRIES", 3),
     "search_timeout_seconds": ("SEARCH_TIMEOUT", 30.0),
@@ -50,22 +50,22 @@ AGENT_DEFAULTS = {
 BENCHMARK_SETTINGS = {
     "deep_research_bench": {
         "backend": ("DRB_LLM_BACKEND", "openai"),
-        "race_model": ("DRB_RACE_MODEL", "gpt-5.5"),
-        "fact_model": ("DRB_FACT_MODEL", "gpt-5.4-mini"),
+        "race_model": ("DRB_RACE_MODEL", "gpt-5-nano"),
+        "fact_model": ("DRB_FACT_MODEL", "gpt-5-nano"),
         "model_timeout_seconds": ("DRB_LLM_HTTP_TIMEOUT", 600),
         "max_output_tokens": ("DRB_MAX_OUTPUT_TOKENS", 64000),
     },
     "wiki_live_challenge": {
-        "extract_model": ("WLC_EXTRACT_MODEL", "gemini-2.5-flash"),
-        "verifier_model": ("WLC_VERIFIER_MODEL", "gemini-2.5-flash"),
-        "writing_model": ("WLC_WRITING_MODEL", "gemini-2.5-pro"),
+        "extract_model": ("WLC_EXTRACT_MODEL", "gpt-5-nano"),
+        "verifier_model": ("WLC_VERIFIER_MODEL", "gpt-5-nano"),
+        "writing_model": ("WLC_WRITING_MODEL", "gpt-5-nano"),
         "embedding_model": ("WLC_EMBEDDING_MODEL", "text-embedding-3-small"),
         "model_timeout_seconds": ("WLC_API_TIMEOUT", 300.0),
         "max_retries": ("WLC_MAX_RETRIES", 3),
         "concurrency": ("WLC_CONCURRENCY", 10),
     },
     "deep_research_bench_ii": {
-        "model": ("DRB2_OPENAI_MODEL", "gpt-5.5"),
+        "model": ("DRB2_OPENAI_MODEL", "gpt-5-nano"),
         "reasoning_effort": ("DRB2_REASONING_EFFORT", "medium"),
         "max_output_tokens": ("DRB2_MAX_OUTPUT_TOKENS", 32768),
         "model_timeout_seconds": ("DRB2_TIMEOUT", 600),

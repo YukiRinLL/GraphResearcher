@@ -179,14 +179,30 @@ def build_snapshot_index(source_key: str, body: str) -> dict[str, Any]:
 
 def _contained_path(root: Path, *parts: str) -> Path:
     root = root.resolve()
-    path = root.joinpath(*parts).resolve()
+    # Do not resolve a concurrently-created leaf: on Windows, resolving a path
+    # while another worker creates its parent can spuriously report it outside
+    # the root. Normalize lexically and inspect existing ancestors for symlinks.
+    path = Path(os.path.abspath(os.path.join(str(root), *parts)))
     if not path.is_relative_to(root):
         raise ValueError("Snapshot path leaves the configured root")
+    current = root
+    for part in parts:
+        current = current / part
+        if current.exists() and current.is_symlink():
+            raise ValueError("Snapshot path leaves the configured root")
+    return path
+
+
+def _filesystem_path(path: Path) -> Path:
+    """Return a Windows long-path form only at the filesystem boundary."""
+    if os.name == "nt" and len(str(path)) >= 240 and not str(path).startswith("\\\\?\\"):
+        return Path("\\\\?\\" + str(path))
     return path
 
 
 def _publish_file(path: Path, data: bytes) -> None:
     """原子发布不可变文件；并发发布时校验已有内容，不覆盖已有文件."""
+    path = _filesystem_path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     descriptor, name = tempfile.mkstemp(dir=path.parent, prefix=".snapshot-")
     temporary = Path(name)
@@ -216,8 +232,8 @@ def read_snapshot(root: Path, snapshot_id: str, chunker_version: str = CHUNKER_V
     """只读取指定根内的有效快照，并验证正文哈希、身份和全部位置."""
     if not _SNAPSHOT_ID.fullmatch(snapshot_id) or chunker_version != CHUNKER_VERSION:
         raise ValueError("Invalid snapshot identity or unsupported chunker version")
-    index = json.loads(_contained_path(root, "snapshots", snapshot_id, f"index-{chunker_version}.json").read_bytes())
-    body = _contained_path(root, "snapshots", snapshot_id, "body.txt").read_bytes().decode("utf-8")
+    index = json.loads(_filesystem_path(_contained_path(root, "snapshots", snapshot_id, f"index-{chunker_version}.json")).read_bytes())
+    body = _filesystem_path(_contained_path(root, "snapshots", snapshot_id, "body.txt")).read_bytes().decode("utf-8")
     if not isinstance(index, dict) or not isinstance(index.get("source_key"), str):
         raise ValueError("Invalid snapshot index")
     expected = build_snapshot_index(index["source_key"], body)
@@ -279,7 +295,7 @@ def load_captured_snapshot(
     capture_id = reference.get("capture_id")
     if not isinstance(capture_id, str) or not _CAPTURE_ID.fullmatch(capture_id):
         raise ValueError("Invalid capture identity")
-    record = json.loads(_contained_path(scope.root, "captures", f"{capture_id}.json").read_bytes())
+    record = json.loads(_filesystem_path(_contained_path(scope.root, "captures", f"{capture_id}.json")).read_bytes())
     if not isinstance(record, dict) or record.get("status") != "stored" or record.get("schema_version") != 1:
         raise ValueError("Capture is not available")
     if record.get("capture_id") != capture_id or record.get("context") != context:
@@ -306,7 +322,7 @@ def load_replay_snapshot(
     capture_id = reference.get("capture_id")
     if not isinstance(capture_id, str) or not _CAPTURE_ID.fullmatch(capture_id):
         raise ValueError("Invalid capture identity")
-    record = json.loads(_contained_path(root, "captures", f"{capture_id}.json").read_bytes())
+    record = json.loads(_filesystem_path(_contained_path(root, "captures", f"{capture_id}.json")).read_bytes())
     if not isinstance(record, dict):
         raise ValueError("Invalid capture record")
     context = record.get("context")

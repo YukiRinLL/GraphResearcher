@@ -20,7 +20,7 @@ PROMPTS_DIR = Path(__file__).parent / "prompts"
 # Default model name; the project talks to an OpenAI-compatible proxy, so the
 # endpoint is taken from OPENAI_BASE_URL when set. Override the model with
 # the GR_MODEL environment variable.
-DEFAULT_MODEL = os.environ.get("GR_MODEL", "gpt-5.1")
+DEFAULT_MODEL = os.environ.get("GR_MODEL", "gpt-5-nano")
 
 
 def _positive_int_from_env(name: str, default: int) -> int:
